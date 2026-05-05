@@ -1,0 +1,23 @@
+# Build output
+build/
+
+# Backup files created by automation agents
+*.backup_*
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# CMake generated
+CMakeUserPresets.json

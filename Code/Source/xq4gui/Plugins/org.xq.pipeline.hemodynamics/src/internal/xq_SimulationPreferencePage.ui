@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>xq_SimulationPreferencePage</class>
+ <widget class="QWidget" name="xq_SimulationPreferencePage">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>450</width><height>250</height></rect>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <!-- Solver path -->
+   <item>
+    <layout class="QHBoxLayout" name="solverLayout">
+     <item>
+      <widget class="QLabel" name="lblSolverPath">
+       <property name="text"><string>Solver Path:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="editSolverPath">
+       <property name="placeholderText"><string>Path to solver executable</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnBrowseSolver">
+       <property name="text"><string>Browse...</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Num processors -->
+   <item>
+    <layout class="QHBoxLayout" name="procsLayout">
+     <item>
+      <widget class="QLabel" name="lblNumProcs">
+       <property name="text"><string>Num Processors:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="spinNumProcs">
+       <property name="minimum"><number>1</number></property>
+       <property name="maximum"><number>256</number></property>
+       <property name="value"><number>1</number></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="procsSpacer">
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+
+   <!-- MPI path -->
+   <item>
+    <layout class="QHBoxLayout" name="mpiLayout">
+     <item>
+      <widget class="QLabel" name="lblMpiPath">
+       <property name="text"><string>MPI Path:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="editMpiPath">
+       <property name="text"><string>mpiexec</string></property>
+       <property name="placeholderText"><string>Path to MPI executable</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnBrowseMpi">
+       <property name="text"><string>Browse...</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Use custom MPI -->
+   <item>
+    <widget class="QCheckBox" name="chkUseCustomMpi">
+     <property name="text"><string>Use Custom MPI</string></property>
+    </widget>
+   </item>
+
+   <!-- Spacer -->
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation"><enum>Qt::Vertical</enum></property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+</ui>

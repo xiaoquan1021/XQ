@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension point="org.blueberry.ui.views">
+    <view id="org.xq.views.datamanager"
+          name="XQ Data Manager"
+          icon="resources/DataManager_48.png"
+          class="xq_DataExplorerView"/>
+  </extension>
+  <extension-point id="contextMenuActions" name="Context menu actions"/>
+</plugin>

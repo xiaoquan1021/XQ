@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>xq_MeshCreate</class>
+ <widget class="QDialog" name="xq_MeshCreate">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>380</width><height>250</height></rect>
+  </property>
+  <property name="windowTitle"><string>Create Mesh</string></property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <!-- Mesh name -->
+   <item>
+    <layout class="QHBoxLayout" name="nameLayout">
+     <item>
+      <widget class="QLabel" name="lblMeshName">
+       <property name="text"><string>Mesh Name:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="editMeshName">
+       <property name="placeholderText"><string>Enter mesh name</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Model selection -->
+   <item>
+    <layout class="QHBoxLayout" name="modelLayout">
+     <item>
+      <widget class="QLabel" name="lblModel">
+       <property name="text"><string>Model:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboModel"/>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Mesh type -->
+   <item>
+    <layout class="QHBoxLayout" name="typeLayout">
+     <item>
+      <widget class="QLabel" name="lblMeshType">
+       <property name="text"><string>Mesh Type:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboMeshType">
+       <item><property name="text"><string>TetGen</string></property></item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Spacer -->
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation"><enum>Qt::Vertical</enum></property>
+    </spacer>
+   </item>
+
+   <!-- Buttons -->
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="btnSpacer">
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnOk">
+       <property name="text"><string>OK</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text"><string>Cancel</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+</ui>

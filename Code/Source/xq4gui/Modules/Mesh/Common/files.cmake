@@ -1,0 +1,42 @@
+set(H_FILES
+    xq_Grid.h
+    xq_TetGenGrid.h
+    xq_GridFactory.h
+    xq_GridAdaptor.h
+    xq_TetGenAdaptor.h
+    xq_MeshQuality.h
+    xq_MitkGrid.h
+    xq_MitkGridIO.h
+    xq_MitkGridMapper2D.h
+    xq_MitkGridMapper3D.h
+    xq_MitkGridOperation.h
+    xq_MitkGridObjectFactory.h
+    xq_GridLegacyIO.h
+    xq_MeshPipeline.h
+    xq_MeshGenerator.h
+)
+
+set(CPP_FILES
+    xq_Grid.cxx
+    xq_TetGenGrid.cxx
+    xq_GridFactory.cxx
+    xq_GridAdaptor.cxx
+    xq_TetGenAdaptor.cxx
+    xq_MeshQuality.cxx
+    xq_MitkGrid.cxx
+    xq_MitkGridIO.cxx
+    xq_MitkGridMapper2D.cxx
+    xq_MitkGridMapper3D.cxx
+    xq_MitkGridOperation.cxx
+    xq_MitkGridObjectFactory.cxx
+    xq_GridLegacyIO.cxx
+    xq_MeshPipeline.cxx
+    xq_MeshGenerator.cxx
+)
+
+set(MOC_H_FILES
+    xq_MitkGrid.h
+    xq_MitkGridObjectFactory.h
+)
+
+set(RESOURCE_FILES)

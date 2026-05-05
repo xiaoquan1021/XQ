@@ -1,0 +1,5 @@
+option(XQ_USE_PYTHON "Enable Python integration" ON)
+option(XQ_USE_MITK_SEGMENTATION "Enable MITK native segmentation" ON)
+option(XQ_USE_OPENCASCADE "Enable OpenCASCADE modeling" ON)
+option(XQ_BUILD_TESTING "Build tests" OFF)
+set(XQ_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "Installation prefix")

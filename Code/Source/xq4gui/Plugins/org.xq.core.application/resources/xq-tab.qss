@@ -1,0 +1,15 @@
+/* XQ Tab Style (inactive/normal view tabs) */
+berry--QCTabBar::tab:selected {
+    background: #EFF6FF;
+    border: 1px solid #93C5FD;
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    color: #1E40AF;
+    font-weight: 600;
+}
+
+QFrame#ViewFormContentFrame {
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
+}

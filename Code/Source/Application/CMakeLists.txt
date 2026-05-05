@@ -1,0 +1,17 @@
+project(XQ_Application)
+
+set(XQ_EXE "XQ")
+set(CXXSRCS main.cxx)
+
+# Include plugin list
+include(${CMAKE_CURRENT_SOURCE_DIR}/../xq4gui/Plugins/PluginList.cmake)
+
+mitkFunctionCreateBlueBerryApplication(
+    NAME ${XQ_EXE}
+    SOURCES ${CXXSRCS}
+    DESCRIPTION "XQ Medical Imaging Software"
+)
+
+# Allow unresolved symbols in transitive shared libs (HDF5 1.12 vs 1.14 ABI mismatch
+# in ITK's ITKIOHDF5 — our code doesn't use HDF5 directly)
+target_link_options(${XQ_EXE} PRIVATE "LINKER:--allow-shlib-undefined")

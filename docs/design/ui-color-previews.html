@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>XQ UI 配色方案预览</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #111; color: #eee; padding: 20px; }
+h1 { text-align: center; margin-bottom: 10px; font-size: 28px; }
+.subtitle { text-align: center; color: #888; margin-bottom: 30px; font-size: 14px; }
+.schemes { display: flex; flex-direction: column; gap: 40px; max-width: 1200px; margin: 0 auto; }
+.scheme-label { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.scheme-desc { font-size: 13px; color: #aaa; margin-bottom: 12px; }
+.color-swatches { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.swatch { width: 60px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); }
+
+/* Mock window */
+.mock-window { border-radius: 10px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+.mock-titlebar { height: 32px; display: flex; align-items: center; padding: 0 12px; gap: 8px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot.r { background: #FF5F57; } .dot.y { background: #FEBC2E; } .dot.g { background: #28C840; }
+.mock-titlebar span { font-size: 12px; margin-left: 8px; font-weight: 500; }
+
+.mock-menubar { height: 28px; display: flex; align-items: center; padding: 0 12px; gap: 16px; font-size: 12px; }
+
+.mock-stagebar { height: 42px; display: flex; align-items: center; padding: 0 16px; gap: 4px; }
+.stage-btn { padding: 6px 16px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+
+.mock-toolbar { height: 34px; display: flex; align-items: center; padding: 0 16px; gap: 8px; font-size: 11px; }
+.tool-btn { padding: 4px 10px; border-radius: 4px; font-size: 10px; border: 1px solid; cursor: pointer; }
+
+.mock-body { display: flex; height: 320px; }
+.mock-sidebar { width: 200px; padding: 10px; font-size: 11px; border-right-width: 1px; border-right-style: solid; }
+.sidebar-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.sidebar-item { padding: 6px 8px; border-radius: 4px; margin-bottom: 2px; font-size: 11px; cursor: pointer; }
+.mock-viewport { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; position: relative; }
+.viewport-label { opacity: 0.4; font-size: 14px; }
+.mock-props { width: 220px; padding: 10px; font-size: 11px; border-left-width: 1px; border-left-style: solid; }
+.prop-group { margin-bottom: 12px; }
+.prop-label { font-size: 10px; font-weight: 600; margin-bottom: 4px; }
+.prop-input { width: 100%; height: 24px; border-radius: 4px; border: 1px solid; padding: 0 6px; font-size: 10px; margin-bottom: 4px; }
+.prop-slider { width: 100%; height: 4px; border-radius: 2px; appearance: none; margin: 6px 0; }
+
+.mock-statusbar { height: 22px; display: flex; align-items: center; padding: 0 12px; font-size: 10px; justify-content: space-between; }
+
+/* Comparison note */
+.comparison { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px 16px; margin-top: 8px; font-size: 12px; line-height: 1.6; }
+.comparison strong { color: #ffa; }
+
+/* === SCHEME A: Midnight Sapphire + Electric Teal === */
+.scheme-a .mock-titlebar { background: #0A0E1A; }
+.scheme-a .mock-menubar { background: #0F1425; color: #8B92A8; }
+.scheme-a .mock-stagebar { background: #111730; }
+.scheme-a .stage-btn { background: #1A2040; color: #6B7394; }
+.scheme-a .stage-btn.active { background: #00BFA6; color: #0A0E1A; }
+.scheme-a .mock-toolbar { background: #141A2E; color: #7B83A0; border-top: 1px solid #1E2544; }
+.scheme-a .tool-btn { background: #1A2040; color: #8B92A8; border-color: #252D50; }
+.scheme-a .tool-btn:hover { background: #222A4A; border-color: #00BFA6; }
+.scheme-a .mock-sidebar { background: #0D1220; border-right-color: #1A2040; color: #8B92A8; }
+.scheme-a .sidebar-title { color: #00BFA6; }
+.scheme-a .sidebar-item:hover { background: #1A2040; }
+.scheme-a .sidebar-item.active { background: rgba(0,191,166,0.12); color: #00BFA6; }
+.scheme-a .mock-viewport { background: #0A0E1A; color: #4A5280; }
+.scheme-a .mock-props { background: #0D1220; border-left-color: #1A2040; color: #8B92A8; }
+.scheme-a .prop-input { background: #141A2E; border-color: #252D50; color: #C8CCE0; }
+.scheme-a .prop-label { color: #00BFA6; }
+.scheme-a .mock-statusbar { background: #080C16; color: #5A6180; border-top: 1px solid #1A2040; }
+.scheme-a .mock-titlebar span { color: #6B7394; }
+
+/* === SCHEME B: Warm Graphite + Coral Orange === */
+.scheme-b .mock-titlebar { background: #1C1917; }
+.scheme-b .mock-menubar { background: #231F1C; color: #A8A09A; }
+.scheme-b .mock-stagebar { background: #292420; }
+.scheme-b .stage-btn { background: #352F2A; color: #8A837D; }
+.scheme-b .stage-btn.active { background: #F97316; color: #1C1917; }
+.scheme-b .mock-toolbar { background: #252120; color: #9A938C; border-top: 1px solid #3A3430; }
+.scheme-b .tool-btn { background: #352F2A; color: #A8A09A; border-color: #4A423C; }
+.scheme-b .tool-btn:hover { background: #3E3832; border-color: #F97316; }
+.scheme-b .mock-sidebar { background: #201C1A; border-right-color: #352F2A; color: #A8A09A; }
+.scheme-b .sidebar-title { color: #F97316; }
+.scheme-b .sidebar-item:hover { background: #2E2A26; }
+.scheme-b .sidebar-item.active { background: rgba(249,115,22,0.12); color: #FB923C; }
+.scheme-b .mock-viewport { background: #1C1917; color: #5A5550; }
+.scheme-b .mock-props { background: #201C1A; border-left-color: #352F2A; color: #A8A09A; }
+.scheme-b .prop-input { background: #292420; border-color: #4A423C; color: #D4CFC8; }
+.scheme-b .prop-label { color: #FB923C; }
+.scheme-b .mock-statusbar { background: #171412; color: #6A635D; border-top: 1px solid #352F2A; }
+.scheme-b .mock-titlebar span { color: #8A837D; }
+
+/* === SCHEME C: Arctic Light + Royal Blue === */
+.scheme-c .mock-titlebar { background: #F1F5F9; }
+.scheme-c .mock-titlebar .dot.r { background: #FF5F57; } .scheme-c .mock-titlebar .dot.y { background: #FEBC2E; } .scheme-c .mock-titlebar .dot.g { background: #28C840; }
+.scheme-c .mock-menubar { background: #E8EDF4; color: #475569; }
+.scheme-c .mock-stagebar { background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
+.scheme-c .stage-btn { background: #E2E8F0; color: #64748B; }
+.scheme-c .stage-btn.active { background: #2563EB; color: #FFFFFF; }
+.scheme-c .mock-toolbar { background: #F1F5F9; color: #64748B; border-top: 1px solid #E2E8F0; }
+.scheme-c .tool-btn { background: #FFFFFF; color: #475569; border-color: #CBD5E1; }
+.scheme-c .tool-btn:hover { background: #EFF6FF; border-color: #2563EB; }
+.scheme-c .mock-sidebar { background: #F8FAFC; border-right-color: #E2E8F0; color: #475569; }
+.scheme-c .sidebar-title { color: #2563EB; }
+.scheme-c .sidebar-item:hover { background: #EFF6FF; }
+.scheme-c .sidebar-item.active { background: rgba(37,99,235,0.08); color: #2563EB; }
+.scheme-c .mock-viewport { background: #FFFFFF; color: #94A3B8; }
+.scheme-c .mock-props { background: #F8FAFC; border-left-color: #E2E8F0; color: #475569; }
+.scheme-c .prop-input { background: #FFFFFF; border-color: #CBD5E1; color: #1E293B; }
+.scheme-c .prop-label { color: #2563EB; }
+.scheme-c .mock-statusbar { background: #E8EDF4; color: #64748B; border-top: 1px solid #E2E8F0; }
+.scheme-c .mock-titlebar span { color: #475569; }
+
+/* === SCHEME D: Current (Dark Indigo + Amber Gold) === */
+.scheme-d .mock-titlebar { background: #15162A; }
+.scheme-d .mock-menubar { background: #1A1B2E; color: #8B8DA0; }
+.scheme-d .mock-stagebar { background: #1E1F35; }
+.scheme-d .stage-btn { background: #2D2F4A; color: #8B8DA0; }
+.scheme-d .stage-btn.active { background: #E8A838; color: #1A1B2E; }
+.scheme-d .mock-toolbar { background: #1A1B30; color: #8B8DA0; border-top: 1px solid #35375A; }
+.scheme-d .tool-btn { background: #232440; color: #8B8DA0; border-color: #35375A; }
+.scheme-d .tool-btn:hover { background: #2D2F4A; border-color: #E8A838; }
+.scheme-d .mock-sidebar { background: #181930; border-right-color: #35375A; color: #8B8DA0; }
+.scheme-d .sidebar-title { color: #E8A838; }
+.scheme-d .sidebar-item:hover { background: #232440; }
+.scheme-d .sidebar-item.active { background: rgba(232,168,56,0.12); color: #E8A838; }
+.scheme-d .mock-viewport { background: #1A1B2E; color: #4A4C68; }
+.scheme-d .mock-props { background: #181930; border-left-color: #35375A; color: #8B8DA0; }
+.scheme-d .prop-input { background: #232440; border-color: #35375A; color: #EEEEF2; }
+.scheme-d .prop-label { color: #E8A838; }
+.scheme-d .mock-statusbar { background: #12132A; color: #5A5C78; border-top: 1px solid #35375A; }
+.scheme-d .mock-titlebar span { color: #6B6D88; }
+
+.sv-note { background: rgba(0,100,255,0.08); border: 1px solid rgba(0,100,255,0.2); border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 12px; color: #8AF; }
+</style>
+</head>
+<body>
+
+<h1>🎨 XQ 配色方案对比预览</h1>
+<p class="subtitle">共4个方案 · 请选择最合适的风格 · 在浏览器中打开此文件查看</p>
+
+<div class="sv-note">
+⚠️ <strong>SimVascular 参考</strong>：SV 使用浅蓝背景 (#e6f2ff) + 蓝色主色 (#0047b3) + 青色强调 (#00ccff)。以下所有方案均与 SV 有明显视觉差异。
+</div>
+
+<div class="schemes">
+
+<!-- SCHEME A -->
+<div>
+<div class="scheme-label">方案 A：午夜蓝宝石 + 电光青 (Midnight Sapphire + Electric Teal)</div>
+<div class="scheme-desc">深海蓝底色，明亮的青色强调。冷色调但比 SV 暗得多。科研仪器/天文观测感。</div>
+<div class="color-swatches">
+<div class="swatch" style="background:#0A0E1A;color:#6B7394;">背景</div>
+<div class="swatch" style="background:#141A2E;color:#8B92A8;">面板</div>
+<div class="swatch" style="background:#1A2040;color:#8B92A8;">控件</div>
+<div class="swatch" style="background:#00BFA6;color:#0A0E1A;">强调</div>
+<div class="swatch" style="background:#8B92A8;color:#0A0E1A;">文字</div>
+<div class="swatch" style="background:#252D50;color:#8B92A8;">边框</div>
+</div>
+<div class="mock-window scheme-a">
+<div class="mock-titlebar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><span>XQ Medical — Midnight Sapphire</span></div>
+<div class="mock-menubar">File &nbsp; Edit &nbsp; View &nbsp; Window &nbsp; Help</div>
+<div class="mock-stagebar">
+<span style="color:#4A5280;font-size:11px;margin-right:8px;">Pipeline:</span>
+<button class="stage-btn">① Import</button>
+<button class="stage-btn active">② Trace</button>
+<button class="stage-btn">③ Contour</button>
+<button class="stage-btn">④ Build</button>
+<button class="stage-btn">⑤ Solve</button>
+</div>
+<div class="mock-toolbar">
+<button class="tool-btn">New Path</button>
+<button class="tool-btn">Edit Path</button>
+<button class="tool-btn">Smooth</button>
+<button class="tool-btn">Auto-trace</button>
+</div>
+<div class="mock-body">
+<div class="mock-sidebar">
+<div class="sidebar-title">Data Explorer</div>
+<div class="sidebar-item">📁 Patient_001</div>
+<div class="sidebar-item active">&nbsp;&nbsp;🩸 Aorta Path</div>
+<div class="sidebar-item">&nbsp;&nbsp;🩸 Carotid Path</div>
+<div class="sidebar-item">📁 Patient_002</div>
+</div>
+<div class="mock-viewport">
+<div class="viewport-label">3D Viewport — VTK Render</div>
+</div>
+<div class="mock-props">
+<div class="prop-group">
+<div class="prop-label">Path Properties</div>
+<input class="prop-input" value="Aorta_Main" readonly>
+<div class="prop-label" style="margin-top:8px;">Smoothing</div>
+<input class="prop-input" type="range" style="height:4px;padding:0;">
+</div>
+<div class="prop-group">
+<div class="prop-label">Control Points</div>
+<div style="font-size:10px;color:#6B7394;">24 points • 15.3cm length</div>
+</div>
+</div>
+</div>
+<div class="mock-statusbar"><span>Ready</span><span>Trace Stage • 24 anchors</span></div>
+</div>
+</div>
+
+<!-- SCHEME B -->
+<div>
+<div class="scheme-label">方案 B：暖石墨 + 珊瑚橙 (Warm Graphite + Coral Orange)</div>
+<div class="scheme-desc">温暖的深灰棕色调，活力橙色强调。工业设计感。与 SV 的冷蓝形成最大色温反差。</div>
+<div class="color-swatches">
+<div class="swatch" style="background:#1C1917;color:#A8A09A;">背景</div>
+<div class="swatch" style="background:#292420;color:#A8A09A;">面板</div>
+<div class="swatch" style="background:#352F2A;color:#A8A09A;">控件</div>
+<div class="swatch" style="background:#F97316;color:#1C1917;">强调</div>
+<div class="swatch" style="background:#A8A09A;color:#1C1917;">文字</div>
+<div class="swatch" style="background:#4A423C;color:#A8A09A;">边框</div>
+</div>
+<div class="mock-window scheme-b">
+<div class="mock-titlebar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><span>XQ Medical — Warm Graphite</span></div>
+<div class="mock-menubar">File &nbsp; Edit &nbsp; View &nbsp; Window &nbsp; Help</div>
+<div class="mock-stagebar">
+<span style="color:#6A635D;font-size:11px;margin-right:8px;">Pipeline:</span>
+<button class="stage-btn">① Import</button>
+<button class="stage-btn">② Trace</button>
+<button class="stage-btn active">③ Contour</button>
+<button class="stage-btn">④ Build</button>
+<button class="stage-btn">⑤ Solve</button>
+</div>
+<div class="mock-toolbar">
+<button class="tool-btn">New Profile</button>
+<button class="tool-btn">Lumen</button>
+<button class="tool-btn">3D Seg</button>
+<button class="tool-btn">Loft Preview</button>
+</div>
+<div class="mock-body">
+<div class="mock-sidebar">
+<div class="sidebar-title">Data Explorer</div>
+<div class="sidebar-item">📁 Patient_001</div>
+<div class="sidebar-item">&nbsp;&nbsp;🩸 Aorta Path</div>
+<div class="sidebar-item active">&nbsp;&nbsp;🔴 Lumen Group</div>
+<div class="sidebar-item">📁 Patient_002</div>
+</div>
+<div class="mock-viewport">
+<div class="viewport-label">3D Viewport — VTK Render</div>
+</div>
+<div class="mock-props">
+<div class="prop-group">
+<div class="prop-label">Profile Properties</div>
+<input class="prop-input" value="Circular — r=3.2mm" readonly>
+<div class="prop-label" style="margin-top:8px;">Radius</div>
+<input class="prop-input" type="range" style="height:4px;padding:0;">
+</div>
+<div class="prop-group">
+<div class="prop-label">Loft Surface</div>
+<div style="font-size:10px;color:#8A837D;">18 profiles • Area: 42.1 cm²</div>
+</div>
+</div>
+</div>
+<div class="mock-statusbar"><span>Ready</span><span>Contour Stage • 18 profiles</span></div>
+</div>
+</div>
+
+<!-- SCHEME C -->
+<div>
+<div class="scheme-label">方案 C：北极浅色 + 皇家蓝 (Arctic Light + Royal Blue)</div>
+<div class="scheme-desc">清爽的浅灰白底色，专业蓝色强调。比 SV 更冷更白净。现代医疗器械 GUI 风格。</div>
+<div class="color-swatches">
+<div class="swatch" style="background:#F8FAFC;color:#475569;">背景</div>
+<div class="swatch" style="background:#E8EDF4;color:#475569;">面板</div>
+<div class="swatch" style="background:#E2E8F0;color:#475569;">控件</div>
+<div class="swatch" style="background:#2563EB;color:#FFFFFF;">强调</div>
+<div class="swatch" style="background:#475569;color:#F8FAFC;">文字</div>
+<div class="swatch" style="background:#CBD5E1;color:#475569;">边框</div>
+</div>
+<div class="mock-window scheme-c">
+<div class="mock-titlebar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><span style="color:#475569;">XQ Medical — Arctic Light</span></div>
+<div class="mock-menubar">File &nbsp; Edit &nbsp; View &nbsp; Window &nbsp; Help</div>
+<div class="mock-stagebar">
+<span style="color:#94A3B8;font-size:11px;margin-right:8px;">Pipeline:</span>
+<button class="stage-btn">① Import</button>
+<button class="stage-btn">② Trace</button>
+<button class="stage-btn">③ Contour</button>
+<button class="stage-btn active">④ Build</button>
+<button class="stage-btn">⑤ Solve</button>
+</div>
+<div class="mock-toolbar">
+<button class="tool-btn">New Model</button>
+<button class="tool-btn">Cap</button>
+<button class="tool-btn">Blend</button>
+<button class="tool-btn">New Mesh</button>
+<button class="tool-btn">Refine</button>
+</div>
+<div class="mock-body">
+<div class="mock-sidebar">
+<div class="sidebar-title">Data Explorer</div>
+<div class="sidebar-item">📁 Patient_001</div>
+<div class="sidebar-item">&nbsp;&nbsp;🔵 Aorta Model</div>
+<div class="sidebar-item active">&nbsp;&nbsp;🟦 Surface Mesh</div>
+<div class="sidebar-item">📁 Patient_002</div>
+</div>
+<div class="mock-viewport">
+<div class="viewport-label">3D Viewport — VTK Render</div>
+</div>
+<div class="mock-props">
+<div class="prop-group">
+<div class="prop-label">Mesh Properties</div>
+<input class="prop-input" value="TetGen — Global 0.5" readonly>
+<div class="prop-label" style="margin-top:8px;">Edge Size</div>
+<input class="prop-input" type="range" style="height:4px;padding:0;">
+</div>
+<div class="prop-group">
+<div class="prop-label">Statistics</div>
+<div style="font-size:10px;color:#64748B;">128,450 elements • Quality: 0.92</div>
+</div>
+</div>
+</div>
+<div class="mock-statusbar"><span>Ready</span><span>Build Stage • 128K elements</span></div>
+</div>
+</div>
+
+<!-- SCHEME D (Current) -->
+<div>
+<div class="scheme-label">方案 D：当前方案 — 深靛蓝 + 琥珀金 (Dark Indigo + Amber Gold)</div>
+<div class="scheme-desc">当前已实现的方案。深紫靛蓝底色，琥珀金强调。如觉得"丑"可能是对比度或颜色饱和度问题。</div>
+<div class="color-swatches">
+<div class="swatch" style="background:#1A1B2E;color:#8B8DA0;">背景</div>
+<div class="swatch" style="background:#232440;color:#8B8DA0;">面板</div>
+<div class="swatch" style="background:#2D2F4A;color:#8B8DA0;">控件</div>
+<div class="swatch" style="background:#E8A838;color:#1A1B2E;">强调</div>
+<div class="swatch" style="background:#8B8DA0;color:#1A1B2E;">文字</div>
+<div class="swatch" style="background:#35375A;color:#8B8DA0;">边框</div>
+</div>
+<div class="mock-window scheme-d">
+<div class="mock-titlebar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><span>XQ Medical — Dark Indigo (当前)</span></div>
+<div class="mock-menubar">File &nbsp; Edit &nbsp; View &nbsp; Window &nbsp; Help</div>
+<div class="mock-stagebar">
+<span style="color:#5A5C78;font-size:11px;margin-right:8px;">Pipeline:</span>
+<button class="stage-btn">① Import</button>
+<button class="stage-btn">② Trace</button>
+<button class="stage-btn">③ Contour</button>
+<button class="stage-btn">④ Build</button>
+<button class="stage-btn active">⑤ Solve</button>
+</div>
+<div class="mock-toolbar">
+<button class="tool-btn">New Job</button>
+<button class="tool-btn">Set BC</button>
+<button class="tool-btn">Run Solver</button>
+<button class="tool-btn">View Results</button>
+</div>
+<div class="mock-body">
+<div class="mock-sidebar">
+<div class="sidebar-title">Data Explorer</div>
+<div class="sidebar-item">📁 Patient_001</div>
+<div class="sidebar-item">&nbsp;&nbsp;⚡ Simulation Job</div>
+<div class="sidebar-item active">&nbsp;&nbsp;📊 Results</div>
+<div class="sidebar-item">📁 Patient_002</div>
+</div>
+<div class="mock-viewport">
+<div class="viewport-label">3D Viewport — VTK Render</div>
+</div>
+<div class="mock-props">
+<div class="prop-group">
+<div class="prop-label">Solver Settings</div>
+<input class="prop-input" value="svSolver — Navier-Stokes" readonly>
+<div class="prop-label" style="margin-top:8px;">Time Steps</div>
+<input class="prop-input" value="1000" readonly>
+</div>
+<div class="prop-group">
+<div class="prop-label">Status</div>
+<div style="font-size:10px;color:#6B6D88;">Running • Step 456/1000</div>
+</div>
+</div>
+</div>
+<div class="mock-statusbar"><span>Ready</span><span>Solve Stage • Simulation running</span></div>
+</div>
+</div>
+
+</div>
+
+<div class="comparison" style="max-width:1200px;margin:30px auto;">
+<strong>对比总结：</strong><br>
+• <strong>方案A (午夜蓝宝石)</strong>：最专业的科研风格，深蓝+青色让人联想到天文/医学成像软件。WCAG AAA 对比度。<br>
+• <strong>方案B (暖石墨)</strong>：最具差异化，暖色调石墨灰+橙色在医学软件中非常罕见，个性鲜明。<br>
+• <strong>方案C (北极浅色)</strong>：最干净清爽，适合临床环境。浅色主题但与 SV 用色完全不同（灰白 vs SV的浅蓝）。<br>
+• <strong>方案D (当前)</strong>：深靛蓝+琥珀金，如果觉得丑可能需要调整色彩饱和度和对比层次。<br><br>
+<strong>推荐</strong>：方案A 或 方案B 兼顾专业感和差异化。方案C 如果更喜欢浅色主题。
+</div>
+
+</body>
+</html>

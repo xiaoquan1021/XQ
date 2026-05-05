@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>xq_LoftParamWidget</class>
+ <widget class="QWidget" name="xq_LoftParamWidget">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>350</width><height>250</height></rect>
+  </property>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="lblNumSections">
+     <property name="text"><string>Number of Sections:</string></property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QSpinBox" name="spinNumSections">
+     <property name="minimum"><number>2</number></property>
+     <property name="maximum"><number>500</number></property>
+     <property name="value"><number>12</number></property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="lblSplineDegree">
+     <property name="text"><string>Spline Degree:</string></property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QSpinBox" name="spinSplineDegree">
+     <property name="minimum"><number>2</number></property>
+     <property name="maximum"><number>5</number></property>
+     <property name="value"><number>3</number></property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="lblSamplePerSection">
+     <property name="text"><string>Samples Per Section:</string></property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QSpinBox" name="spinSamplePerSection">
+     <property name="minimum"><number>4</number></property>
+     <property name="maximum"><number>500</number></property>
+     <property name="value"><number>60</number></property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="lblLinearSample">
+     <property name="text"><string>Use Linear Sample:</string></property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QCheckBox" name="chkLinearSample"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="lblUseFFT">
+     <property name="text"><string>Use FFT:</string></property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QCheckBox" name="chkUseFFT"/>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="lblNumOutputPoints">
+     <property name="text"><string>Output Points:</string></property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QSpinBox" name="spinNumOutputPoints">
+     <property name="minimum"><number>4</number></property>
+     <property name="maximum"><number>10000</number></property>
+     <property name="value"><number>120</number></property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

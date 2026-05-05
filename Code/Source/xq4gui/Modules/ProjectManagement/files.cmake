@@ -1,0 +1,47 @@
+set(H_FILES
+    xq_WorkspaceManager.h
+    xq_LegacyImporter.h
+    xq_LegacyNodeMigration.h
+    xq_NodeMetadataIO.h
+    xq_ProjectDataWriter.h
+    xq_ProjectDataReader.h
+    xq_DataFolder.h
+    xq_ImageFolder.h
+    xq_PathFolder.h
+    xq_SegmentationFolder.h
+    xq_ModelFolder.h
+    xq_MeshFolder.h
+    xq_SimulationFolder.h
+    xq_ROMSimulationFolder.h
+    xq_MultiPhysicsFolder.h
+    xq_RepositoryFolder.h
+    xq_DataNodeOperation.h
+    xq_DataNodeOperationInterface.h
+)
+
+set(CPP_FILES
+    xq_WorkspaceManager.cxx
+    xq_LegacyImporter.cxx
+    xq_LegacyNodeMigration.cxx
+    xq_NodeMetadataIO.cxx
+    xq_ProjectDataWriter.cxx
+    xq_ProjectDataReader.cxx
+    xq_DataFolder.cxx
+    xq_ImageFolder.cxx
+    xq_PathFolder.cxx
+    xq_SegmentationFolder.cxx
+    xq_ModelFolder.cxx
+    xq_MeshFolder.cxx
+    xq_SimulationFolder.cxx
+    xq_ROMSimulationFolder.cxx
+    xq_MultiPhysicsFolder.cxx
+    xq_RepositoryFolder.cxx
+    xq_DataNodeOperation.cxx
+    xq_DataNodeOperationInterface.cxx
+)
+
+set(MOC_H_FILES
+)
+
+set(RESOURCE_FILES
+)

@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>xq_MitkSegmentationView</class>
+ <widget class="QWidget" name="xq_MitkSegmentationView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Advanced Segmentation</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <item>
+    <widget class="QGroupBox" name="referenceImageGroup">
+     <property name="title">
+      <string>Reference Image</string>
+     </property>
+     <layout class="QHBoxLayout" name="referenceImageLayout">
+      <item>
+       <widget class="QComboBox" name="imageComboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="refreshButton">
+        <property name="text">
+         <string>Refresh</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="segmentationToolsGroup">
+     <property name="title">
+      <string>Segmentation Tools</string>
+     </property>
+     <layout class="QVBoxLayout" name="toolsVLayout">
+      <item>
+       <layout class="QHBoxLayout" name="toolButtonsLayout">
+        <item>
+         <widget class="QPushButton" name="thresholdButton">
+          <property name="text">
+           <string>Threshold</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="autoExclusive">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="regionGrowButton">
+          <property name="text">
+           <string>Region Grow</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="autoExclusive">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="levelSetButton">
+          <property name="text">
+           <string>Level Set</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="autoExclusive">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="toolParametersGroup">
+     <property name="title">
+      <string>Tool Parameters</string>
+     </property>
+     <layout class="QVBoxLayout" name="toolParametersLayout">
+      <item>
+       <widget class="QStackedWidget" name="toolParameterStack">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="emptyPage">
+         <layout class="QVBoxLayout" name="emptyPageLayout">
+          <item>
+           <widget class="QLabel" name="noToolLabel">
+            <property name="text">
+             <string>Select a segmentation tool above.</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="thresholdPage">
+         <layout class="QFormLayout" name="thresholdFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="minThresholdLabel">
+            <property name="text">
+             <string>Min Threshold:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="minThresholdSpinBox">
+            <property name="minimum">
+             <double>-100000.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>100000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="maxThresholdLabel">
+            <property name="text">
+             <string>Max Threshold:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="maxThresholdSpinBox">
+            <property name="minimum">
+             <double>-100000.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>100000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>1000.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="previewLabel">
+            <property name="text">
+             <string>Preview:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="previewCheckBox">
+            <property name="text">
+             <string>Enable Preview</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QPushButton" name="applyThresholdButton">
+            <property name="text">
+             <string>Apply Threshold</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="regionGrowPage">
+         <layout class="QFormLayout" name="regionGrowFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="seedPointLabel">
+            <property name="text">
+             <string>Seed Point:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="seedInfoLabel">
+            <property name="text">
+             <string>Center of image (auto)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="toleranceLabel">
+            <property name="text">
+             <string>Tolerance:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="toleranceSpinBox">
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>100000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>100.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QPushButton" name="applyRegionGrowButton">
+            <property name="text">
+             <string>Apply Region Grow</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="levelSetPage">
+         <layout class="QFormLayout" name="levelSetFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="iterationsLabel">
+            <property name="text">
+             <string>Iterations:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="iterationsSpinBox">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="propagationLabel">
+            <property name="text">
+             <string>Propagation:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="propagationSpinBox">
+            <property name="minimum">
+             <double>-100.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="curvatureLabel">
+            <property name="text">
+             <string>Curvature:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="curvatureSpinBox">
+            <property name="minimum">
+             <double>-100.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QPushButton" name="applyLevelSetButton">
+            <property name="text">
+             <string>Apply Level Set</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="createSegmentationButton">
+     <property name="text">
+      <string>Create New Segmentation</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="morphologyGroup">
+     <property name="title">
+      <string>Morphological Operations</string>
+     </property>
+     <layout class="QVBoxLayout" name="morphologyLayout">
+      <item>
+       <layout class="QHBoxLayout" name="morphRadiusLayout">
+        <item>
+         <widget class="QLabel" name="morphRadiusLabel">
+          <property name="text">
+           <string>Radius:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="morphRadiusSpinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>10</number>
+          </property>
+          <property name="value">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="morphButtonLayout">
+        <item>
+         <widget class="QPushButton" name="erodeButton">
+          <property name="text">
+           <string>Erode</string>
+          </property>
+          <property name="toolTip">
+           <string>Shrink segmentation boundaries</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="dilateButton">
+          <property name="text">
+           <string>Dilate</string>
+          </property>
+          <property name="toolTip">
+           <string>Expand segmentation boundaries</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="invertButton">
+          <property name="text">
+           <string>Invert</string>
+          </property>
+          <property name="toolTip">
+           <string>Invert segmentation mask</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="maskImageButton">
+        <property name="text">
+         <string>Mask Image with Segmentation</string>
+        </property>
+        <property name="toolTip">
+         <string>Apply segmentation mask to reference image</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="bottomSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,48 @@
+set(H_FILES
+    xq_VascularGeometry.h
+    xq_AnalyticGeometry.h
+    xq_PolyGeometry.h
+    xq_GeometryFactory.h
+    xq_GeometryUtils.h
+    xq_ModelQuality.h
+    xq_Model.h
+    xq_GeometryOp.h
+    xq_ModelDataInteractor.h
+    xq_GeomRenderer2D.h
+    xq_GeomRenderer3D.h
+    xq_GeometryIO.h
+    xq_GeometryLegacyIO.h
+    xq_ModelObjectFactory.h
+    xq_RegisterPolyDataFunction.h
+    xq_ModelPipeline.h
+    xq_SolidModeler.h
+)
+
+set(CPP_FILES
+    xq_VascularGeometry.cxx
+    xq_AnalyticGeometry.cxx
+    xq_PolyGeometry.cxx
+    xq_GeometryFactory.cxx
+    xq_GeometryUtils.cxx
+    xq_ModelQuality.cxx
+    xq_Model.cxx
+    xq_GeometryOp.cxx
+    xq_ModelDataInteractor.cxx
+    xq_GeomRenderer2D.cxx
+    xq_GeomRenderer3D.cxx
+    xq_GeometryIO.cxx
+    xq_GeometryLegacyIO.cxx
+    xq_ModelObjectFactory.cxx
+    xq_RegisterPolyDataFunction.cxx
+    xq_ModelPipeline.cxx
+    xq_SolidModeler.cxx
+)
+
+set(MOC_H_FILES
+    xq_Model.h
+    xq_ModelObjectFactory.h
+)
+
+set(RESOURCE_FILES
+    Interactions/xq_ModelConfig.xml
+)

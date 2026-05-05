@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension point="org.blueberry.ui.views">
+    <view id="org.xq.views.meshing"
+          name="Domain Discretization"
+          icon="resources/icon.png"
+          class="xq_GridGenerationView"
+          category="Stage 4 – Build"/>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="org.xq.views.meshing.preferencepage"
+          name="Domain Discretization"
+          class="xq_GridPreferencePage"/>
+  </extension>
+
+  <extension point="org.xq.core.datamanager.contextMenuActions">
+    <contextMenuAction nodeDescriptorName="xq_GridFolder"
+                       label="Create Mesh"
+                       class="xq_MeshCreateAction"/>
+    <contextMenuAction nodeDescriptorName="xq_Model"
+                       label="Create Mesh from Model"
+                       class="xq_MeshCreateAction"/>
+  </extension>
+</plugin>

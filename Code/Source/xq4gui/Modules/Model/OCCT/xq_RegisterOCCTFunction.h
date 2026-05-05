@@ -1,0 +1,8 @@
+#ifndef XQ_REGISTEROCCTFUNCTION_H
+#define XQ_REGISTEROCCTFUNCTION_H
+
+#include <xqModelOCCTExports.h>
+
+void XQMODELOCCT_EXPORT RegisterOCCTModelType();
+
+#endif // XQ_REGISTEROCCTFUNCTION_H
