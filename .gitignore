@@ -3,6 +3,10 @@ build/
 
 # Backup files created by automation agents
 *.backup_*
+*.bak
+*.tmp
+*.orig
+*.old
 
 # Python cache
 __pycache__/
