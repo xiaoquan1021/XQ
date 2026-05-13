@@ -20,6 +20,7 @@ class QTimer;
 class QToolBar;
 class QActionGroup;
 class QButtonGroup;
+class QDockWidget;
 class QToolButton;
 class XQPerspectiveListener;
 
@@ -37,7 +38,6 @@ public:
     void PreWindowOpen() override;
     void PostWindowCreate() override;
     void PostWindowOpen() override;
-    void PostWindowClose() override;
 
     void SetWindowIcon(const QString& iconPath);
 
@@ -51,7 +51,6 @@ protected slots:
     void OnShowModeling();
     void OnShowMeshing();
     void OnShowSimulation();
-    void OnShowImageProcessing();
     void OnAbout();
     void OnExit();
 
@@ -83,7 +82,6 @@ private slots:
     void MeasureArea();
     void MeasureVolume();
     void OnSidebarStageClicked(int stageIndex);
-    void OnDataManagerDoubleClick();
 
 private:
     void AddRecentProject(const QString& projectPath);
@@ -99,8 +97,6 @@ private:
     void ClearStageToolsBar();
     void AddDisplayControlsToRibbon();
     void SetCrosshairGapZero();
-    void SetupDataManagerDoubleClick();
-    QString GetQSettingsFile() const;
 
     berry::WorkbenchAdvisor* m_WorkbenchAdvisor;
     QString m_WindowIcon;
@@ -135,6 +131,7 @@ private:
 
     QToolBar* m_StageToolsBar;
     QButtonGroup* m_SidebarStageGroup;
+    QDockWidget* m_StageSidebar;
 
     QScopedPointer<berry::IPartListener> m_TitlePartListener;
     QScopedPointer<berry::IPerspectiveListener> m_PerspectiveListener;

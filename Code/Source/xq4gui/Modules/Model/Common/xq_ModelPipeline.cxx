@@ -327,17 +327,15 @@ xq_CreateModelResult xq_ModelPipelineService::CreateModel(
         modelNode->SetBoolProperty("xq.model.qa.ok", qa.ok);
         modelNode->SetIntProperty("xq.model.qa.boundary_edges", qa.boundaryEdges);
         modelNode->SetIntProperty("xq.model.qa.non_manifold_edges", qa.nonManifoldEdges);
-        modelNode->SetIntProperty("xq.model.qa.degenerate_cells", qa.degenerateCellCount);
         modelNode->SetIntProperty("xq.model.qa.connected_components", qa.connectedComponents);
         modelNode->SetBoolProperty("xq.model.qa.has_face_ids", qa.hasFaceIds);
         modelNode->SetIntProperty("xq.model.face_count", qa.faceCount);
 
         if (!qa.ok)
         {
-            std::string message = "Model QA failed";
-            if (!qa.errors.empty())
-                message += ": " + qa.errors.front();
-            result.diagnostics.push_back(makeWarning(message));
+            result.diagnostics.push_back(makeWarning(
+                "Model QA: non-manifold edges detected (count=" +
+                std::to_string(qa.nonManifoldEdges) + ")"));
         }
     }
 

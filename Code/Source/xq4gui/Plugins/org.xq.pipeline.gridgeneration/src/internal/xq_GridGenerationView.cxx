@@ -213,7 +213,7 @@ void xq_GridGenerationView::CreateMesh()
 
     if (meshName.isEmpty())
     {
-      QMessageBox::warning(nullptr, "Mesh Generation", "Please enter a mesh name.");
+      QMessageBox::warning(nullptr, "Domain Discretization", "Please enter a mesh name.");
       return;
     }
 
@@ -234,7 +234,7 @@ void xq_GridGenerationView::CreateMesh()
 
     if (parentNode.IsNull())
     {
-      QMessageBox::warning(nullptr, "Mesh Generation", "Selected model node was not found.");
+      QMessageBox::warning(nullptr, "Domain Discretization", "Selected model node was not found.");
       return;
     }
 
@@ -253,7 +253,7 @@ void xq_GridGenerationView::CreateMesh()
       xq_MeshPipelineService::CreateVolumeMesh(GetDataStorage(), parentNode, request);
     if (!meshResult.ok || meshResult.node.IsNull())
     {
-      QMessageBox::warning(nullptr, "Mesh Generation", "Failed to create mesh node.");
+      QMessageBox::warning(nullptr, "Domain Discretization", "Failed to create mesh node.");
       return;
     }
 
@@ -268,7 +268,7 @@ void xq_GridGenerationView::RunMeshing()
 {
   if (m_CurrentModelNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Mesh Generation", "No model selected.");
+    QMessageBox::warning(nullptr, "Domain Discretization", "No model selected.");
     return;
   }
 
@@ -277,14 +277,14 @@ void xq_GridGenerationView::RunMeshing()
   auto surface = element ? element->GetWholeVtkPolyData() : nullptr;
   if (!surface || surface->GetNumberOfPoints() == 0)
   {
-    QMessageBox::warning(nullptr, "Mesh Generation", "Selected model has no usable geometry.");
+    QMessageBox::warning(nullptr, "Domain Discretization", "Selected model has no usable geometry.");
     return;
   }
 
   double globalSize = m_Ui->spinGlobalEdgeSize->value();
   if (globalSize <= 0.0)
   {
-    QMessageBox::warning(nullptr, "Mesh Generation",
+    QMessageBox::warning(nullptr, "Domain Discretization",
       "Global edge size must be positive.");
     return;
   }
@@ -386,7 +386,7 @@ void xq_GridGenerationView::RunMeshing()
     xq_MeshPipelineService::CreateVolumeMesh(GetDataStorage(), m_CurrentModelNode, request);
   if (!meshResult.ok || meshResult.node.IsNull())
   {
-    QMessageBox::warning(nullptr, "Mesh Generation", "Mesh generation failed.");
+    QMessageBox::warning(nullptr, "Domain Discretization", "Mesh generation failed.");
     return;
   }
 
@@ -395,7 +395,7 @@ void xq_GridGenerationView::RunMeshing()
   UpdateMeshStatistics();
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 
-  QMessageBox::information(nullptr, "Mesh Generation",
+  QMessageBox::information(nullptr, "Domain Discretization",
     QString("Surface mesh generated:\n"
             "Points: %1\nCells: %2\nGlobal edge size: %3")
       .arg(surface->GetNumberOfPoints())
@@ -407,7 +407,7 @@ void xq_GridGenerationView::AdaptMesh()
 {
   if (m_CurrentMeshNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Mesh Generation", "No mesh selected for adaptation.");
+    QMessageBox::warning(nullptr, "Domain Discretization", "No mesh selected for adaptation.");
     return;
   }
 

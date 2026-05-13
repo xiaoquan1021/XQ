@@ -20,7 +20,6 @@
 
 #include <memory>
 #include <string>
-#include <string_view>
 #include <vector>
 
 class XQMODULEPATH_EXPORT xq_PathPlanner
@@ -41,9 +40,6 @@ public:
         bool ok = false;
         std::string diagnostic;
         std::vector<mitk::Point3D> points;    // raw extracted path
-        std::string requestedAlgorithm;
-        std::string actualAlgorithm;
-        bool usedFallback = false;
     };
 
     virtual ~xq_PathPlanner() = default;

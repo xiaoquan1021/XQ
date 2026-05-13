@@ -149,9 +149,9 @@ void xq_WelcomePart::CreateQtPartControl(QWidget* parent)
         {"Medical\nImaging",        "#F8FAFC", nullptr},
         {"Path\nPlanning",          "#F8FAFC", "org.xq.views.pathplanning"},
         {"2D\nSegmentation",        "#F8FAFC", "org.xq.views.segmentation"},
-        {"Solid\nModeling",         "#F8FAFC", "org.xq.views.modeling"},
-        {"Mesh\nGeneration",       "#F8FAFC", "org.xq.views.meshing"},
-        {"Flow\nSimulation",        "#F8FAFC", "org.xq.views.simulation"},
+        {"3D\nModeling",            "#F8FAFC", "org.xq.views.modeling"},
+        {"Volume\nMeshing",         "#F8FAFC", "org.xq.views.meshing"},
+        {"CFD\nSimulation",         "#F8FAFC", "org.xq.views.simulation"},
     };
     for (int i = 0; i < 6; i++) {
         if (i > 0) {

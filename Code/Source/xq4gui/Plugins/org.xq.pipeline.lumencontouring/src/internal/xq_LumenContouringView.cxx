@@ -493,7 +493,7 @@ void xq_LumenContouringView::CreateContourGroup()
     QString groupName = dialog.GetGroupName();
     if (groupName.isEmpty())
     {
-      QMessageBox::warning(nullptr, "2D Segmentation", "Please enter a group name.");
+      QMessageBox::warning(nullptr, "Cross-Section Analysis", "Please enter a group name.");
       return;
     }
 
@@ -503,7 +503,7 @@ void xq_LumenContouringView::CreateContourGroup()
       {groupName.toStdString(), pathName.toStdString()});
     if (!createResult.ok || createResult.node.IsNull())
     {
-      QMessageBox::warning(nullptr, "2D Segmentation",
+      QMessageBox::warning(nullptr, "Cross-Section Analysis",
         "Failed to create contour group.");
       return;
     }
@@ -552,7 +552,7 @@ void xq_LumenContouringView::AddContour()
 {
   if (m_CurrentContourGroupNode.IsNull())
   {
-    QMessageBox::information(nullptr, "2D Segmentation",
+    QMessageBox::information(nullptr, "Cross-Section Analysis",
       "Select a contour group first.");
     return;
   }
@@ -694,14 +694,14 @@ void xq_LumenContouringView::AddContour()
     }
     else
     {
-      QMessageBox::warning(nullptr, "2D Segmentation",
+      QMessageBox::warning(nullptr, "Cross-Section Analysis",
         "Unsupported contour type for canonical profile creation.");
       return;
     }
 
     if (!profile)
     {
-      QMessageBox::warning(nullptr, "2D Segmentation",
+      QMessageBox::warning(nullptr, "Cross-Section Analysis",
         "Failed to create a canonical lumen profile.");
       return;
     }
@@ -742,7 +742,7 @@ void xq_LumenContouringView::AddContour()
 
     if (contourType == 2 || contourType == 3)
     {
-      QMessageBox::information(nullptr, "2D Segmentation",
+      QMessageBox::information(nullptr, "Cross-Section Analysis",
         "Editable profile created. Use Ctrl + Left Click to add points, Enter to finish, and Escape to cancel.");
     }
     return;
@@ -750,7 +750,7 @@ void xq_LumenContouringView::AddContour()
 
   if (contourGroup == nullptr)
   {
-    QMessageBox::warning(nullptr, "2D Segmentation",
+    QMessageBox::warning(nullptr, "Cross-Section Analysis",
       "Selected node is not a supported contour container.");
     return;
   }
@@ -813,7 +813,7 @@ void xq_LumenContouringView::DeleteContour()
     const auto indices = profileGroup->GetProfilePathIndices();
     if (row < 0 || row >= static_cast<int>(indices.size()))
     {
-      QMessageBox::information(nullptr, "2D Segmentation", "Select a contour first.");
+      QMessageBox::information(nullptr, "Cross-Section Analysis", "Select a contour first.");
       return;
     }
 
@@ -827,7 +827,7 @@ void xq_LumenContouringView::DeleteContour()
   int row = m_ContourListWidget->currentRow();
   if (row < 0)
   {
-    QMessageBox::information(nullptr, "2D Segmentation", "Select a contour first.");
+    QMessageBox::information(nullptr, "Cross-Section Analysis", "Select a contour first.");
     return;
   }
 
@@ -846,7 +846,7 @@ void xq_LumenContouringView::LoftContourGroup()
 {
   if (m_CurrentContourGroupNode.IsNull())
   {
-    QMessageBox::information(nullptr, "2D Segmentation",
+    QMessageBox::information(nullptr, "Cross-Section Analysis",
       "Select a contour group to loft.");
     return;
   }

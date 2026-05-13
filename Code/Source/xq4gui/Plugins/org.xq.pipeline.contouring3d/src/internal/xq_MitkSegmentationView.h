@@ -48,9 +48,6 @@ private slots:
   void OnMaskImageApply();
   void OnInvertSegmentation();
 
-  // P2-C: 3D Seg → Model conversion
-  void ConvertToModel();
-
 private:
   Ui::xq_MitkSegmentationView* m_Ui;
   QComboBox* m_ImageSelector;

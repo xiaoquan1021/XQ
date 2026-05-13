@@ -70,8 +70,6 @@ double CostAt(vtkImageData* vtkImg, const VoxelIdx& v, double exponent)
 xq_PathPlanner::Result xq_DijkstraPathPlanner::Plan(const Request& request)
 {
     Result res;
-    res.requestedAlgorithm = "dijkstra";
-    res.actualAlgorithm = "dijkstra";
     if (!request.image)
     {
         res.diagnostic = "Dijkstra planner: image is null.";
@@ -201,9 +199,6 @@ xq_PathPlanner::Result xq_VmtkFastMarchingPathPlanner::Plan(const Request& reque
     // functional end-to-end without silently returning empty paths.
     xq_DijkstraPathPlanner fallback;
     auto r = fallback.Plan(request);
-    r.requestedAlgorithm = "vmtk_fastmarching";
-    r.actualAlgorithm = "dijkstra";
-    r.usedFallback = true;
     if (r.ok)
         r.diagnostic = "VMTK Fast Marching is not yet linked in this build; "
                        "falling back to Dijkstra.";

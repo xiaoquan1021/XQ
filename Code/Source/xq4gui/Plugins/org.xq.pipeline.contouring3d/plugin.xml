@@ -2,9 +2,9 @@
 <plugin>
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.mitksegmentation"
-          name="3D Segmentation"
+          name="Advanced Segmentation"
           icon="resources/icon.png"
           class="xq_MitkSegmentationView"
-          category="Stage 3 – Segmentations"/>
+          category="Stage 3 – Contour"/>
   </extension>
 </plugin>

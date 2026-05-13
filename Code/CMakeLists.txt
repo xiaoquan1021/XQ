@@ -47,16 +47,9 @@ endif()
 # TinyXML2
 find_package(tinyxml2 REQUIRED)
 
-set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE TRUE CACHE BOOL "" FORCE)
 # HDF5 (needed by ITK's HDF5 IO)
-unset(HDF5_DIR CACHE)
-unset(HDF5_DIR)
-set(HDF5_ROOT "${XQ_EXTERNALS_DIR}/hdf5-1.14.3" CACHE PATH "" FORCE)
-if(TARGET hdf5-shared OR TARGET hdf5-static OR TARGET hdf5::hdf5-shared OR TARGET hdf5::hdf5-static)
-  set(HDF5_FOUND TRUE)
-else()
-  find_package(HDF5 MODULE QUIET COMPONENTS CXX C)
-endif()
+set(HDF5_DIR "${XQ_EXTERNALS_DIR}/hdf5-1.14.3/cmake")
+find_package(HDF5 QUIET COMPONENTS CXX C)
 if(HDF5_FOUND)
   link_directories(${HDF5_LIBRARY_DIRS})
 else()
@@ -203,17 +196,13 @@ set(XQ_MODULE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/xq4gui/Modules")
 # Add each module subdirectory (only if CMakeLists.txt exists)
 set(XQ_MODULE_DIRS
   Common
-  ImageProcessing
   Path
   Segmentation
   Model/Common
   Model/OCCT
   Mesh/Common
   Simulation
-  MultiPhysics
-  ROMSimulation
   ProjectManagement
-  PythonApi
 )
 
 foreach(_mod_dir ${XQ_MODULE_DIRS})

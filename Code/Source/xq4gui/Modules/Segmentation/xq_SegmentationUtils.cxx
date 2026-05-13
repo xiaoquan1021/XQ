@@ -1312,11 +1312,11 @@ std::string xq_SegmentationUtils::GetModelingPhaseBoundaryBlockingReason(
 
     if (group->IsLoftCacheDirty(timeStep))
         return "Profile group has been modified since the last loft. "
-               "Regenerate the loft in 2D Segmentation before modeling.";
+               "Regenerate the loft in Lumen Contouring before modeling.";
 
     if (!group->GetLoftedMesh(timeStep))
         return "No finalized loft surface exists for this profile group. "
-               "Run Loft in 2D Segmentation to finalize segmentation before modeling.";
+               "Run Loft in Lumen Contouring to finalize segmentation before modeling.";
 
     return {};
 }

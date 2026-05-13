@@ -1,5 +1,4 @@
 #include "xq_GridAdaptor.h"
-#include "xq_Grid.h"
 
 xq_GridAdaptor::xq_GridAdaptor() = default;
 
@@ -27,20 +26,4 @@ const std::string& xq_GridAdaptor::GetErrorMetricName() const
 double xq_GridAdaptor::GetTargetError() const
 {
     return m_TargetError;
-}
-
-void xq_GridAdaptor::PopulateStats(xq_Grid* inputMesh,
-                                   xq_Grid* outputMesh,
-                                   xq_AdaptResult& result)
-{
-    if (inputMesh)
-    {
-        result.inputCellCount = inputMesh->GetNumberOfElements();
-        result.inputNodeCount = inputMesh->GetNumberOfNodes();
-    }
-    if (outputMesh)
-    {
-        result.outputCellCount = outputMesh->GetNumberOfElements();
-        result.outputNodeCount = outputMesh->GetNumberOfNodes();
-    }
 }

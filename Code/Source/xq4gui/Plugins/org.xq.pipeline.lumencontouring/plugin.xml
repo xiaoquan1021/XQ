@@ -2,15 +2,15 @@
 <plugin>
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.segmentation"
-          name="2D Segmentation"
+          name="Cross-Section Analysis"
           icon="resources/icon.png"
           class="xq_LumenContouringView"
-          category="Stage 3 – Segmentations"/>
+          category="Stage 3 – Contour"/>
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
     <page id="org.xq.views.segmentation.preferencepage"
-          name="2D Segmentation"
+          name="Cross-Section Analysis"
           class="xq_SegmentationPreferencePage"/>
   </extension>
 

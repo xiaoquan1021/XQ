@@ -51,13 +51,6 @@ xq_MeshGenerationResult xq_MeshPipelineService::CreateVolumeMesh(
         result.diagnostics.push_back(makeError("Model node does not contain usable geometry."));
         return result;
     }
-    bool modelQaOk = true;
-    if (modelNode->GetBoolProperty("xq.model.qa.ok", modelQaOk) && !modelQaOk)
-    {
-        result.diagnostics.push_back(makeError(
-            "Mesh generation blocked: upstream model QA failed."));
-        return result;
-    }
 
     // Delegate generation to the XQMeshGenerator interface (TetGen today).
     auto generator = CreateMeshGenerator("tetgen");
@@ -107,30 +100,6 @@ xq_MeshGenerationResult xq_MeshPipelineService::CreateVolumeMesh(
     meshNode->SetIntProperty("xq.mesh.local_face_sizes", static_cast<int>(request.localFaceSizes.size()));
     meshNode->SetIntProperty("xq.mesh.refinement_regions", static_cast<int>(request.refinementRegions.size()));
     meshNode->SetBoolProperty("xq.mesh.optimize", request.optimize);
-    meshNode->SetBoolProperty("xq.mesh.local_face_sizes.applied", false);
-    meshNode->SetBoolProperty("xq.mesh.refinement_regions.applied", false);
-    meshNode->SetStringProperty(
-        "xq.mesh.capability.diagnostic",
-        "TetGen fallback uses VTK Delaunay3D; local face sizes, refinement "
-        "regions, and boundary layers are recorded but not fully applied.");
-    if (!request.localFaceSizes.empty())
-    {
-        result.diagnostics.push_back(makeWarning(
-            "Local face-size controls are recorded on the mesh node, but the "
-            "current TetGen fallback does not fully apply face-local sizing."));
-    }
-    if (!request.refinementRegions.empty())
-    {
-        result.diagnostics.push_back(makeWarning(
-            "Refinement regions are recorded on the mesh node, but the current "
-            "TetGen fallback does not apply region-specific sizing."));
-    }
-    if (request.boundaryLayerLayers > 0)
-    {
-        result.diagnostics.push_back(makeWarning(
-            "Boundary-layer parameters are recorded on the mesh node, but the "
-            "current TetGen fallback does not generate true boundary layers."));
-    }
 
     meshNode->SetBoolProperty("xq.mesh.qa.ok", qualityReport.ok);
     meshNode->SetIntProperty("xq.mesh.cells", qualityReport.numberOfCells);

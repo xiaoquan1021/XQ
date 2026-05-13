@@ -347,22 +347,26 @@ QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {
     background: #CBD5E1;
 }
 QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
-    image: url(:/xq/arrow-up.svg);
-    width: 8px;
-    height: 5px;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid #1E293B;
 }
 QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
-    image: url(:/xq/arrow-down.svg);
-    width: 8px;
-    height: 5px;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #1E293B;
 }
 QSpinBox::up-arrow:disabled, QDoubleSpinBox::up-arrow:disabled,
 QSpinBox::up-arrow:off,      QDoubleSpinBox::up-arrow:off {
-    image: url(:/xq/arrow-up-disabled.svg);
+    border-bottom-color: #CBD5E1;
 }
 QSpinBox::down-arrow:disabled, QDoubleSpinBox::down-arrow:disabled,
 QSpinBox::down-arrow:off,      QDoubleSpinBox::down-arrow:off {
-    image: url(:/xq/arrow-down-disabled.svg);
+    border-top-color: #CBD5E1;
 }
 
 /* Check Box */
@@ -716,27 +720,53 @@ QToolBar#viewToolBar QToolButton:checked {
     border-left: 3px solid #2563EB;
 }
 
-/* ========== Pipeline Stage Selector (toolbar buttons) ========== */
-QToolButton#xqStageBtn {
-    color: #1E3A8A;
+/* ========== Pipeline Sidebar (vertical stage nav) ========== */
+QDockWidget#xqStageSidebar {
+    background-color: #1E293B;
+    border: none;
+    border-right: 1px solid #334155;
+}
+QWidget#xqSidebarContent {
+    background-color: #1E293B;
+}
+QToolButton#xqSidebarStageBtn {
+    color: #94A3B8;
     background: transparent;
     border: none;
-    border-bottom: 2px solid transparent;
+    border-left: 3px solid transparent;
     border-radius: 0px;
-    padding: 4px 10px;
-    font-size: 12px;
+    padding: 6px 2px;
+    font-size: 11px;
     font-weight: 500;
-    min-height: 28px;
+    min-width: 64px;
+    min-height: 48px;
 }
-QToolButton#xqStageBtn:hover {
-    color: #1E40AF;
-    background: rgba(37, 99, 235, 0.06);
+QToolButton#xqSidebarStageBtn:hover {
+    color: #E2E8F0;
+    background: rgba(255, 255, 255, 0.08);
 }
-QToolButton#xqStageBtn:checked {
-    color: #2563EB;
-    background: rgba(37, 99, 235, 0.08);
-    border-bottom: 2px solid #2563EB;
+QToolButton#xqSidebarStageBtn:checked {
+    color: #FFFFFF;
+    background: rgba(37, 99, 235, 0.18);
+    border-left: 3px solid #2563EB;
     font-weight: bold;
+}
+QToolButton#xqSidebarUtilBtn {
+    color: #64748B;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 4px;
+    min-width: 32px;
+    min-height: 32px;
+}
+QToolButton#xqSidebarUtilBtn:hover {
+    color: #E2E8F0;
+    background: rgba(255, 255, 255, 0.08);
+}
+QToolButton#xqSidebarUtilBtn:pressed {
+    color: #FFFFFF;
+    background: rgba(37, 99, 235, 0.3);
 }
 
 /* ========== Context Ribbon (stage tools + display) ========== */

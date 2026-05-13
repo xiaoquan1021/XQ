@@ -280,7 +280,6 @@ xq_DataExplorerView::xq_DataExplorerView()
   , m_PropertiesTable(nullptr)
   , m_PropertiesToggle(nullptr)
   , m_RenderDebounceTimer(nullptr)
-  , m_CopiedNode(nullptr)
 {
 }
 
@@ -435,16 +434,6 @@ void xq_DataExplorerView::CreateQtPartControl(QWidget* parent)
   });
   m_ContextMenu->addAction(duplicateAction);
 
-  auto* copyAction = new QAction("Copy", m_ContextMenu);
-  copyAction->setShortcut(QKeySequence::Copy);
-  connect(copyAction, &QAction::triggered, this, &xq_DataExplorerView::CopySelectedNode);
-  m_ContextMenu->addAction(copyAction);
-
-  auto* pasteAction = new QAction("Paste", m_ContextMenu);
-  pasteAction->setShortcut(QKeySequence::Paste);
-  connect(pasteAction, &QAction::triggered, this, &xq_DataExplorerView::PasteDataNode);
-  m_ContextMenu->addAction(pasteAction);
-
   m_NodeTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
   connect(m_NodeTreeView, &QTreeView::customContextMenuRequested,
           this, [this](const QPoint& pos) {
@@ -579,8 +568,6 @@ void xq_DataExplorerView::CreateQtPartControl(QWidget* parent)
   m_NodeTreeView->addAction(toggleVisAction);
   m_NodeTreeView->addAction(removeAction);
   m_NodeTreeView->addAction(exportAction);
-  m_NodeTreeView->addAction(copyAction);
-  m_NodeTreeView->addAction(pasteAction);
 
   // Properties panel
   m_PropertiesToggle = m_Ui->propertiesToggle;
@@ -1399,41 +1386,6 @@ void xq_DataExplorerView::UpdatePropertiesTable(mitk::DataNode* node)
   }
 
   m_PropertiesTable->resizeColumnsToContents();
-}
-
-void xq_DataExplorerView::CopySelectedNode()
-{
-  mitk::DataNode* node = GetSelectedNode();
-  if (!node || !node->GetData())
-    return;
-
-  m_CopiedNode = node;
-}
-
-void xq_DataExplorerView::PasteDataNode()
-{
-  if (m_CopiedNode.IsNull() || !m_CopiedNode->GetData())
-    return;
-
-  mitk::DataNode::Pointer newNode = mitk::DataNode::New();
-  newNode->SetData(dynamic_cast<mitk::BaseData*>(
-      m_CopiedNode->GetData()->Clone().GetPointer()));
-  newNode->SetName(m_CopiedNode->GetName() + "_copy");
-
-  bool visible = true;
-  m_CopiedNode->GetBoolProperty("visible", visible);
-  newNode->SetBoolProperty("visible", visible);
-
-  float color[3] = {1.0f, 1.0f, 1.0f};
-  m_CopiedNode->GetColor(color);
-  newNode->SetColor(color);
-
-  float opacity = 1.0f;
-  m_CopiedNode->GetOpacity(opacity, nullptr);
-  newNode->SetOpacity(opacity);
-
-  GetDataStorage()->Add(newNode);
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 #include "xq_DataExplorerView.moc"

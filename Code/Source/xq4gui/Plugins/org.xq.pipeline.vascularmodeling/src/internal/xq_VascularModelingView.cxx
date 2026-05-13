@@ -565,7 +565,7 @@ void xq_VascularModelingView::CreateModel()
 
     if (modelName.isEmpty())
     {
-      QMessageBox::warning(nullptr, "Solid Modeling", "Please enter a model name.");
+      QMessageBox::warning(nullptr, "Geometric Construction", "Please enter a model name.");
       return;
     }
 
@@ -577,7 +577,7 @@ void xq_VascularModelingView::CreateModel()
       QStringList messages;
       for (const auto& diagnostic : createResult.diagnostics)
         messages << QString::fromStdString(diagnostic.message);
-      QMessageBox::warning(nullptr, "Solid Modeling",
+      QMessageBox::warning(nullptr, "Geometric Construction",
         messages.isEmpty() ? "Failed to create model." : messages.join("\n"));
       return;
     }
@@ -614,7 +614,7 @@ void xq_VascularModelingView::ChangeFaceColor()
   int row = m_Ui->tableFaces->currentRow();
   if (row < 0)
   {
-    QMessageBox::information(nullptr, "Solid Modeling", "Select a face first.");
+    QMessageBox::information(nullptr, "Geometric Construction", "Select a face first.");
     return;
   }
 

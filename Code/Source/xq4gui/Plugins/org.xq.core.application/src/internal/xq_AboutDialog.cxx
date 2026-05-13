@@ -76,14 +76,13 @@ void xq_AboutDialog::ComposeContent()
         QStringLiteral("font-size: 13px; color: #1D4ED8;"));
 
     static constexpr const char* kFeatures[] = {
-        "Path Planning — vessel centerline path definition",
-        "2D Segmentation — cross-sectional vessel lumen segmentation",
-        "3D Segmentation — volumetric medical image segmentation",
-        "Solid Modeling — vascular surface model construction",
-        "Mesh Generation — computational mesh generation",
-        "Flow Simulation — full 3D hemodynamic flow simulation",
-        "Reduced-Order Simulation — 0D/1D reduced-order modeling",
-        "Multiphysics Simulation — coupled physics analyses",
+        "Vessel Tracing — centerline path definition through vessels",
+        "Cross-Section Analysis — 2D contour and 3D volume segmentation",
+        "Geometric Construction — surface model construction from segmentations",
+        "Domain Discretization — computational mesh creation",
+        "Hemodynamic Analysis — full 3D fluid dynamics",
+        "Reduced-Order Modeling — reduced-order modeling",
+        "Coupled Physics Simulation — coupled simulations",
     };
 
     QString rows;

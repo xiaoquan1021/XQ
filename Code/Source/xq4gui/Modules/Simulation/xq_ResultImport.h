@@ -37,12 +37,4 @@ public:
 
     // Set the active scalar on a result node for coloring.
     static bool SetActiveScalar(mitk::DataNode* node, const std::string& name);
-
-    static std::vector<std::string> SortTimeStepFiles(
-        const std::vector<std::string>& filePaths);
-
-    static std::vector<xq_ResultImportOutcome> ImportTimeSeries(
-        mitk::DataStorage* dataStorage,
-        const std::vector<std::string>& filePaths,
-        const std::string& simulationName);
 };

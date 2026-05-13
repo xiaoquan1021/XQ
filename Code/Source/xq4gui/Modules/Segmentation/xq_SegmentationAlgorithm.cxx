@@ -1,6 +1,4 @@
 #include "xq_SegmentationAlgorithm.h"
-#include "xq_ITKLevelSetSegmentation.h"
-#include "xq_MLSegmentation.h"
 
 #include <vtkCellArray.h>
 #include <vtkContourFilter.h>
@@ -168,16 +166,6 @@ xq_LevelSetSegmentation::Extract(const SliceInput& slice, const Params& params)
     Params fallback = params;
     if (slice.slice)
     {
-        int dims[3] = {0, 0, 0};
-        slice.slice->GetDimensions(dims);
-        if (slice.seed[0] < 0.0 || slice.seed[1] < 0.0 ||
-            slice.seed[0] >= static_cast<double>(dims[0]) ||
-            slice.seed[1] >= static_cast<double>(dims[1]))
-        {
-            Contour out;
-            out.diagnostic = "LevelSet unavailable: seed outside image.";
-            return out;
-        }
         const double seedVal = slice.slice->GetScalarComponentAsDouble(
             static_cast<int>(slice.seed[0]),
             static_cast<int>(slice.seed[1]), 0, 0);
@@ -193,8 +181,6 @@ std::unique_ptr<xq_SegmentationAlgorithm>
 CreateSegmentationAlgorithm(std::string_view name)
 {
     if (name == "levelset")
-        return std::make_unique<xq_ITKLevelSetSegmentation>();
-    if (name == "ml")
-        return std::make_unique<xq_MLSegmentation>();
+        return std::make_unique<xq_LevelSetSegmentation>();
     return std::make_unique<xq_ThresholdSegmentation>();
 }
