@@ -134,6 +134,8 @@ xq_PathPlanResult xq_PathPipelineService::CreatePath(
 
     // Run the planning algorithm.
     auto planner = selectPlanner(request.algorithm);
+    const std::string requestedAlgorithm =
+        request.algorithm.empty() ? std::string(planner->Name()) : request.algorithm;
 
     xq_PathPlanner::Request pReq;
     pReq.image = image;
@@ -167,10 +169,20 @@ xq_PathPlanResult xq_PathPipelineService::CreatePath(
     pathNode->SetName(request.pathName);
     pathNode->SetBoolProperty("xq.pathplanning.path", true);
     xq::pipeline::MarkNode(pathNode, xq::pipeline::Stage::Path);
+    const std::string actualAlgorithm =
+        planResult.actualAlgorithm.empty() ? std::string(planner->Name()) : planResult.actualAlgorithm;
     xq::pipeline::SetStringProperty(
         pathNode, xq::pipeline::kSourceImageProperty, request.imageNodeName);
     xq::pipeline::SetStringProperty(
-        pathNode, xq::pipeline::kAlgorithmProperty, std::string(planner->Name()));
+        pathNode, xq::pipeline::kAlgorithmProperty, actualAlgorithm);
+    xq::pipeline::SetStringProperty(
+        pathNode, "xq.pathplanning.algorithm.requested", requestedAlgorithm);
+    xq::pipeline::SetStringProperty(
+        pathNode, "xq.pathplanning.algorithm.actual", actualAlgorithm);
+    pathNode->SetBoolProperty("xq.pathplanning.algorithm.fallback", planResult.usedFallback);
+    if (!planResult.diagnostic.empty())
+        xq::pipeline::SetStringProperty(
+            pathNode, "xq.pathplanning.algorithm.diagnostic", planResult.diagnostic);
 
     // Attach under the Paths category folder if the project has one;
     // otherwise fall back to hanging under the source Image node so the

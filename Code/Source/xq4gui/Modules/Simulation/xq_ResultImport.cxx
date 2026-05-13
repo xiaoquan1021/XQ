@@ -15,6 +15,11 @@
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkGeometryFilter.h>
 
+#include <algorithm>
+#include <cctype>
+#include <cstdlib>
+#include <utility>
+
 namespace
 {
 
@@ -37,6 +42,23 @@ std::string StripExt(const std::string& filename)
     if (pos != std::string::npos)
         return filename.substr(0, pos);
     return filename;
+}
+
+int ExtractTrailingNumber(const std::string& path)
+{
+    std::string name = StripExt(Basename(path));
+    int end = static_cast<int>(name.size()) - 1;
+    while (end >= 0 && !std::isdigit(static_cast<unsigned char>(name[end])))
+        --end;
+    if (end < 0)
+        return -1;
+
+    int begin = end;
+    while (begin >= 0 && std::isdigit(static_cast<unsigned char>(name[begin])))
+        --begin;
+
+    return std::atoi(name.substr(static_cast<size_t>(begin + 1),
+                                 static_cast<size_t>(end - begin)).c_str());
 }
 
 void CollectFieldNames(vtkDataSetAttributes* dsa, const std::string& prefix,
@@ -150,7 +172,10 @@ xq_ResultImportOutcome xq_ResultImport::Import(
     {
         xq::pipeline::SetStringProperty(
             node, "xq.source.simulation", entry.simulationName);
+        xq::pipeline::SetStringProperty(
+            node, "xq.result.source_simulation", entry.simulationName);
     }
+    xq::pipeline::SetStringProperty(node, "xq.result.file_path", entry.filePath);
 
     // Discover field names (point + cell)
     vtkDataSet* ds = nullptr;
@@ -239,13 +264,77 @@ bool xq_ResultImport::SetActiveScalar(mitk::DataNode* node, const std::string& n
         fieldName = fieldName.substr(5);
 
     vtkDataArray* arr = pd->GetPointData()->GetArray(fieldName.c_str());
-    if (!arr)
+    if (arr)
+    {
+        pd->GetPointData()->SetActiveScalars(fieldName.c_str());
+    }
+    else
+    {
         arr = pd->GetCellData()->GetArray(fieldName.c_str());
+        if (arr)
+            pd->GetCellData()->SetActiveScalars(fieldName.c_str());
+    }
     if (!arr)
         return false;
 
-    pd->GetPointData()->SetActiveScalars(fieldName.c_str());
+    xq::pipeline::SetStringProperty(node, "xq.result.active_scalar", fieldName);
     pd->Modified();
     node->Modified();
     return true;
+}
+
+std::vector<std::string> xq_ResultImport::SortTimeStepFiles(
+    const std::vector<std::string>& filePaths)
+{
+    std::vector<std::pair<std::string, int>> keyed;
+    keyed.reserve(filePaths.size());
+    for (const auto& path : filePaths)
+        keyed.emplace_back(path, ExtractTrailingNumber(path));
+
+    std::stable_sort(keyed.begin(), keyed.end(),
+        [](const auto& a, const auto& b) {
+            if (a.second >= 0 && b.second >= 0 && a.second != b.second)
+                return a.second < b.second;
+            if (a.second >= 0 && b.second < 0)
+                return true;
+            if (a.second < 0 && b.second >= 0)
+                return false;
+            return a.first < b.first;
+        });
+
+    std::vector<std::string> sorted;
+    sorted.reserve(keyed.size());
+    for (const auto& item : keyed)
+        sorted.push_back(item.first);
+    return sorted;
+}
+
+std::vector<xq_ResultImportOutcome> xq_ResultImport::ImportTimeSeries(
+    mitk::DataStorage* dataStorage,
+    const std::vector<std::string>& filePaths,
+    const std::string& simulationName)
+{
+    auto sorted = SortTimeStepFiles(filePaths);
+    std::vector<xq_ResultImportOutcome> outcomes;
+    outcomes.reserve(sorted.size());
+
+    for (size_t i = 0; i < sorted.size(); ++i)
+    {
+        xq_ResultImportEntry entry;
+        entry.filePath = sorted[i];
+        entry.simulationName = simulationName;
+        entry.nodeName = StripExt(Basename(sorted[i]));
+
+        auto outcome = Import(dataStorage, entry);
+        if (outcome.node.IsNotNull())
+        {
+            outcome.node->SetIntProperty(
+                "xq.result.time_step_index", static_cast<int>(i));
+            outcome.node->SetIntProperty(
+                "xq.result.time_step_count", static_cast<int>(sorted.size()));
+        }
+        outcomes.push_back(outcome);
+    }
+
+    return outcomes;
 }

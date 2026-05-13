@@ -21,11 +21,13 @@ namespace {
         "xq.source.simulation",
         "xq.sim.status",
         "xq.sim.export_dir",
+        "xq.sim.files_written",
         "xq.type",
         "xq.result.field_names",
         "xq.model.type",
         "xq.model.sampling",
-        "xq.mesh.type"
+        "xq.mesh.type",
+        "xq.mesh.capability.diagnostic"
     };
 
     static constexpr const char* kBoolKeys[] = {
@@ -33,6 +35,8 @@ namespace {
         "xq.model.qa.has_face_ids",
         "xq.mesh.qa.ok",
         "xq.mesh.optimize",
+        "xq.mesh.local_face_sizes.applied",
+        "xq.mesh.refinement_regions.applied",
         "xq.contour.ready",
         "visible"
     };
@@ -40,6 +44,7 @@ namespace {
     static constexpr const char* kIntKeys[] = {
         "xq.model.qa.boundary_edges",
         "xq.model.qa.non_manifold_edges",
+        "xq.model.qa.degenerate_cells",
         "xq.model.qa.connected_components",
         "xq.model.face_count",
         "xq.mesh.cells",
@@ -54,7 +59,8 @@ namespace {
         "xq.contour.error_count",
         "xq.sim.num_timesteps",
         "xq.sim.bc_count",
-        "xq.sim.export_file_count"
+        "xq.sim.export_file_count",
+        "xq.sim.files_written_count"
     };
 
     static constexpr const char* kDoubleKeys[] = {

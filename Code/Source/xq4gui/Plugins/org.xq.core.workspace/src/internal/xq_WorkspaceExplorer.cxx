@@ -338,12 +338,12 @@ void xq_WorkspaceExplorer::UpdateProjectTree()
 
   static const FolderDisplayInfo folderInfo[] = {
       {"Images",          "Medical Imaging Data",        "Volume image data (CT, MRI, etc.)"},
-      {"Paths",           "Vessel Centerlines",          "Anatomical centerline paths for vessel tracing"},
-      {"Segmentations",   "Cross-Section Contours",      "2D cross-sectional contour groups along paths"},
-      {"Models",          "Geometric Models",            "3D surface models (NURBS/PolyData)"},
-      {"Meshes",          "Computational Domains",       "Finite element meshes for simulation"},
-      {"Simulations",     "Hemodynamic Analyses",        "CFD simulation configurations and results"},
-      {"ROMSimulations",  "Reduced-Order Models",        "0D/1D lumped-parameter network simulations"},
+      {"Paths",           "Path Planning",               "Anatomical centerline paths for vessel path planning"},
+      {"Segmentations",   "2D Segmentations",            "2D cross-sectional segmentation groups along paths"},
+      {"Models",          "Solid Models",                "3D vascular solid models (NURBS/PolyData)"},
+      {"Meshes",          "Mesh Generation",             "Finite element meshes for flow simulation"},
+      {"Simulations",     "Flow Simulations",            "Flow simulation configurations and results"},
+      {"ROMSimulations",  "Reduced-Order Simulations",   "0D/1D lumped-parameter network simulations"},
       {"MultiPhysics",    "Coupled Physics",             "Multi-physics (FSI, mass transport) analyses"},
       {"Repository",      "Data Repository",             "Shared data and external references"},
       {"flow-files",      "Flow Waveforms",              "Inflow/outflow boundary condition data"},

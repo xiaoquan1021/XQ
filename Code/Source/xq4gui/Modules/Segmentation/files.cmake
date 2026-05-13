@@ -31,6 +31,8 @@ set(H_FILES
     xq_SegUndoActor.h
     xq_SegmentationPipeline.h
     xq_SegmentationAlgorithm.h
+    xq_ITKLevelSetSegmentation.h
+    xq_MLSegmentation.h
 )
 
 set(CPP_FILES
@@ -66,6 +68,8 @@ set(CPP_FILES
     xq_SegUndoActor.cxx
     xq_SegmentationPipeline.cxx
     xq_SegmentationAlgorithm.cxx
+    xq_ITKLevelSetSegmentation.cxx
+    xq_MLSegmentation.cxx
 )
 
 set(MOC_H_FILES

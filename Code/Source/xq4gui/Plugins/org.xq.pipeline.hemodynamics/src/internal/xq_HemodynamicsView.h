@@ -48,10 +48,13 @@ private slots:
   void OnAutoRangeToggled(bool checked);
 
 private:
+  void SetSimulationStatus(const char* status);
+
   Ui::xq_HemodynamicsView* m_Ui;
   mitk::DataNode::Pointer m_CurrentMeshNode;
   mitk::DataNode::Pointer m_SimPrepNode;
   xq_SolverProcessHandler* m_SolverHandler;
+  bool m_StopRequested;
   bool m_LegendVisible;
 };
 

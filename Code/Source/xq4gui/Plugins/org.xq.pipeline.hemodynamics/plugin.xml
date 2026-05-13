@@ -2,15 +2,15 @@
 <plugin>
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.simulation"
-          name="Flow Analysis"
+          name="Flow Simulation"
           icon="resources/icon.png"
           class="xq_HemodynamicsView"
-          category="Stage 5 – Solve"/>
+          category="Stage 5 – Simulation"/>
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
     <page id="org.xq.views.simulation.preferencepage"
-          name="Flow Analysis"
+          name="Flow Simulation"
           class="xq_SimulationPreferencePage"/>
   </extension>
 

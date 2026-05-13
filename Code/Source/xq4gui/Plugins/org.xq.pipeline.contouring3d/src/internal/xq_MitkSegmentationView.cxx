@@ -11,9 +11,12 @@
 #include <mitkToolManagerProvider.h>
 
 #include <xq_ProfileGroup.h>
+#include <xq_Seg3DUtils.h>
 #include <xq_SegmentationUtils.h>
 #include <xq_SegUndoActor.h>
 #include <xq_UndoHelper.h>
+
+#include <mitkSurface.h>
 
 #include <vtkImageData.h>
 #include <vtkPointData.h>
@@ -98,6 +101,10 @@ void xq_MitkSegmentationView::CreateQtPartControl(QWidget* parent)
           this, &xq_MitkSegmentationView::OnInvertSegmentation);
   connect(m_Ui->maskImageButton, &QPushButton::clicked,
           this, &xq_MitkSegmentationView::OnMaskImageApply);
+
+  // P2-C: 3D Seg → Model conversion
+  connect(m_Ui->convertToModelButton, &QPushButton::clicked,
+          this, &xq_MitkSegmentationView::ConvertToModel);
 }
 
 void xq_MitkSegmentationView::SetFocus()
@@ -185,7 +192,7 @@ void xq_MitkSegmentationView::OnThresholdApply()
 {
   if (m_ReferenceNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Please select a reference image first.");
     return;
   }
@@ -194,7 +201,7 @@ void xq_MitkSegmentationView::OnThresholdApply()
       dynamic_cast<mitk::Image*>(m_ReferenceNode->GetData());
   if (image.IsNull())
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Selected node does not contain a valid image.");
     return;
   }
@@ -202,7 +209,7 @@ void xq_MitkSegmentationView::OnThresholdApply()
   QString targetBlockReason;
   if (!CheckPreprocessingTarget(targetBlockReason))
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation", targetBlockReason);
+    QMessageBox::warning(nullptr, "3D Segmentation", targetBlockReason);
     return;
   }
 
@@ -211,7 +218,7 @@ void xq_MitkSegmentationView::OnThresholdApply()
 
   if (minThreshold > maxThreshold)
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Minimum threshold must be less than or equal to maximum threshold.");
     return;
   }
@@ -220,7 +227,7 @@ void xq_MitkSegmentationView::OnThresholdApply()
   vtkImageData* vtkImg = image->GetVtkImageData();
   if (!vtkImg)
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Failed to obtain VTK image data.");
     return;
   }
@@ -234,7 +241,7 @@ void xq_MitkSegmentationView::OnThresholdApply()
   vtkImageData* vtkSeg = segResult->GetVtkImageData();
   if (!vtkSeg)
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Failed to initialize segmentation result.");
     return;
   }
@@ -276,7 +283,7 @@ void xq_MitkSegmentationView::OnRegionGrowApply()
 {
   if (m_ReferenceNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Please select a reference image first.");
     return;
   }
@@ -285,7 +292,7 @@ void xq_MitkSegmentationView::OnRegionGrowApply()
       dynamic_cast<mitk::Image*>(m_ReferenceNode->GetData());
   if (image.IsNull())
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Selected node does not contain a valid image.");
     return;
   }
@@ -293,7 +300,7 @@ void xq_MitkSegmentationView::OnRegionGrowApply()
   QString targetBlockReason;
   if (!CheckPreprocessingTarget(targetBlockReason))
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation", targetBlockReason);
+    QMessageBox::warning(nullptr, "3D Segmentation", targetBlockReason);
     return;
   }
 
@@ -303,7 +310,7 @@ void xq_MitkSegmentationView::OnRegionGrowApply()
   vtkImageData* vtkImg = image->GetVtkImageData();
   if (!vtkImg)
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Failed to obtain VTK image data.");
     return;
   }
@@ -314,7 +321,7 @@ void xq_MitkSegmentationView::OnRegionGrowApply()
   vtkImageData* vtkSeg = segResult->GetVtkImageData();
   if (!vtkSeg)
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Failed to initialize segmentation result.");
     return;
   }
@@ -356,7 +363,7 @@ void xq_MitkSegmentationView::OnLevelSetApply()
 {
   if (m_ReferenceNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Please select a reference image first.");
     return;
   }
@@ -365,7 +372,7 @@ void xq_MitkSegmentationView::OnLevelSetApply()
       dynamic_cast<mitk::Image*>(m_ReferenceNode->GetData());
   if (image.IsNull())
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Selected node does not contain a valid image.");
     return;
   }
@@ -373,7 +380,7 @@ void xq_MitkSegmentationView::OnLevelSetApply()
   QString targetBlockReason;
   if (!CheckPreprocessingTarget(targetBlockReason))
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation", targetBlockReason);
+    QMessageBox::warning(nullptr, "3D Segmentation", targetBlockReason);
     return;
   }
 
@@ -472,7 +479,7 @@ void xq_MitkSegmentationView::OnLevelSetApply()
   }
   catch (const mitk::Exception& e)
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          QString("Level set segmentation failed: %1").arg(e.what()));
     return;
   }
@@ -494,7 +501,7 @@ void xq_MitkSegmentationView::CreateNewSegmentation()
 {
   if (m_ReferenceNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Please select a reference image first.");
     return;
   }
@@ -503,7 +510,7 @@ void xq_MitkSegmentationView::CreateNewSegmentation()
       dynamic_cast<mitk::Image*>(m_ReferenceNode->GetData());
   if (refImage.IsNull())
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation",
+    QMessageBox::warning(nullptr, "3D Segmentation",
                          "Selected node does not contain a valid image.");
     return;
   }
@@ -511,7 +518,7 @@ void xq_MitkSegmentationView::CreateNewSegmentation()
   QString targetBlockReason;
   if (!CheckPreprocessingTarget(targetBlockReason))
   {
-    QMessageBox::warning(nullptr, "Advanced Segmentation", targetBlockReason);
+    QMessageBox::warning(nullptr, "3D Segmentation", targetBlockReason);
     return;
   }
 
@@ -890,6 +897,85 @@ void xq_MitkSegmentationView::OnMaskImageApply()
   {
     QMessageBox::warning(nullptr, "Mask", QString("Masking failed: %1").arg(e.what()));
   }
+}
+
+// ---------------------------------------------------------------------------
+// P2-C: 3D Seg → Model conversion
+// ---------------------------------------------------------------------------
+
+void xq_MitkSegmentationView::ConvertToModel()
+{
+  if (m_WorkingNode.IsNull())
+  {
+    QMessageBox::warning(nullptr, "Convert to Model",
+                         "No working segmentation. Create or generate one first.");
+    return;
+  }
+
+  mitk::Image::Pointer segImage =
+      dynamic_cast<mitk::Image*>(m_WorkingNode->GetData());
+  if (segImage.IsNull())
+  {
+    QMessageBox::warning(nullptr, "Convert to Model",
+                         "Working node is not an image.");
+    return;
+  }
+
+  vtkImageData* vtkImg = segImage->GetVtkImageData();
+  if (!vtkImg)
+  {
+    QMessageBox::warning(nullptr, "Convert to Model",
+                         "Failed to obtain VTK image data.");
+    return;
+  }
+
+  // Step 1: Marching cubes at iso-value 0.5 (binary boundary)
+  auto surface = xq_Seg3DUtils::MarchingCubes(vtkImg, 0.5);
+  if (!surface || surface->GetNumberOfCells() == 0)
+  {
+    QMessageBox::warning(nullptr, "Convert to Model",
+                         "Marching cubes produced no surface. "
+                         "Ensure the segmentation contains foreground voxels.");
+    return;
+  }
+
+  // Step 2: Optional smoothing
+  int smoothIter = m_Ui->smoothIterSpinBox->value();
+  if (smoothIter > 0)
+  {
+    surface = xq_Seg3DUtils::SmoothSurface(surface, smoothIter, 0.1);
+  }
+
+  // Step 3: Optional decimation
+  int decimatePct = m_Ui->decimateSpinBox->value();
+  if (decimatePct > 0)
+  {
+    surface = xq_Seg3DUtils::DecimateSurface(
+        surface, decimatePct / 100.0);
+  }
+
+  // Step 4: Compute normals
+  surface = xq_Seg3DUtils::ComputeNormals(surface);
+
+  // Create a mitk::Surface node
+  mitk::Surface::Pointer mitkSurface = mitk::Surface::New();
+  mitkSurface->SetVtkPolyData(surface);
+
+  mitk::DataNode::Pointer modelNode = mitk::DataNode::New();
+  modelNode->SetData(mitkSurface);
+  modelNode->SetName(m_WorkingNode->GetName() + "_model");
+  modelNode->SetColor(0.8, 0.8, 0.2);
+  modelNode->SetStringProperty("xq.pipeline.stage", "model");
+  modelNode->SetStringProperty("xq.model.source", "seg3d_conversion");
+
+  GetDataStorage()->Add(modelNode, m_WorkingNode);
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+
+  QMessageBox::information(nullptr, "Convert to Model",
+      QString("Surface model '%1' created (%2 points, %3 triangles).")
+          .arg(QString::fromStdString(modelNode->GetName()))
+          .arg(surface->GetNumberOfPoints())
+          .arg(surface->GetNumberOfCells()));
 }
 
 // ---------------------------------------------------------------------------

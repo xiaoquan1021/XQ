@@ -2,15 +2,15 @@
 <plugin>
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.pathplanning"
-          name="Vessel Tracing"
+          name="Path Planning"
           icon="resources/icon.png"
           class="xq_VesselPlanningView"
-          category="Stage 2 – Trace"/>
+          category="Stage 2 – Paths"/>
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
     <page id="org.xq.views.pathplanning.preferencepage"
-          name="Vessel Tracing"
+          name="Path Planning"
           class="xq_PathPreferencePage"/>
   </extension>
 

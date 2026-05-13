@@ -134,8 +134,8 @@ void xq_AppWorkbenchAdvisor::AdaptToDisplayMetrics(
     const QRect   available = screen->availableGeometry();
 
     // HiDPI displays get a larger default window to compensate for scaling.
-    constexpr double kHiDpiFraction   = 0.80;
-    constexpr double kNormalFraction  = 0.70;
+    constexpr double kHiDpiFraction   = 0.92;
+    constexpr double kNormalFraction  = 0.90;
     constexpr qreal  kDensityThreshold = 1.5;
     const double frac = (density > kDensityThreshold) ? kHiDpiFraction
                                                       : kNormalFraction;

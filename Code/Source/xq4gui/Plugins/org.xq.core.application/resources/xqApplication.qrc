@@ -19,5 +19,9 @@
         <file>sidebar-undo.svg</file>
         <file>sidebar-redo.svg</file>
         <file>sidebar-screenshot.svg</file>
+        <file>arrow-up.svg</file>
+        <file>arrow-up-disabled.svg</file>
+        <file>arrow-down.svg</file>
+        <file>arrow-down-disabled.svg</file>
     </qresource>
 </RCC>

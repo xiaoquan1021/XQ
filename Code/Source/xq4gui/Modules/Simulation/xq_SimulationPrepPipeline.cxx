@@ -17,6 +17,7 @@
 #include <cmath>
 #include <limits>
 #include <optional>
+#include <sstream>
 
 namespace
 {
@@ -60,6 +61,53 @@ double DistanceSquared(const std::array<double, 3>& a, const mitk::Point3D& b)
     const double dy = a[1] - b[1];
     const double dz = a[2] - b[2];
     return dx * dx + dy * dy + dz * dz;
+}
+
+std::string ValidateBoundaryCondition(const xq_BoundaryCondition& bc)
+{
+    if (bc.faceName.empty())
+        return "Boundary condition has an empty face name.";
+    if (bc.faceRole != "wall" && bc.faceRole != "inflow" && bc.faceRole != "outflow")
+        return "Boundary condition for face '" + bc.faceName +
+               "' has unsupported role '" + bc.faceRole + "'.";
+    if (bc.bcType.empty())
+        return "Boundary condition for face '" + bc.faceName + "' has an empty type.";
+
+    const bool knownType =
+        bc.bcType == "no_slip" ||
+        bc.bcType == "prescribed_velocity" ||
+        bc.bcType == "resistance" ||
+        bc.bcType == "rcr" ||
+        bc.bcType == "pressure" ||
+        bc.bcType == "impedance" ||
+        bc.bcType == "coronary";
+    if (!knownType)
+        return "Boundary condition for face '" + bc.faceName +
+               "' has unsupported type '" + bc.bcType + "'.";
+
+    const bool compatible =
+        (bc.faceRole == "wall" && bc.bcType == "no_slip") ||
+        (bc.faceRole == "inflow" && bc.bcType == "prescribed_velocity") ||
+        (bc.faceRole == "outflow" &&
+         (bc.bcType == "resistance" || bc.bcType == "rcr" ||
+          bc.bcType == "pressure" || bc.bcType == "impedance" ||
+          bc.bcType == "coronary"));
+    if (!compatible)
+        return "Boundary condition for face '" + bc.faceName + "' has role '" +
+               bc.faceRole + "' incompatible with type '" + bc.bcType + "'.";
+
+    if (bc.bcType == "rcr")
+    {
+        if (bc.parameters.find("Rp") == bc.parameters.end() ||
+            bc.parameters.find("C") == bc.parameters.end() ||
+            bc.parameters.find("Rd") == bc.parameters.end())
+        {
+            return "Boundary condition for face '" + bc.faceName +
+                   "' uses RCR but is missing Rp, C, or Rd.";
+        }
+    }
+
+    return {};
 }
 
 // XQ fix: the previous implementation blindly labelled the first cap as
@@ -187,6 +235,20 @@ xq_SimulationPrepResult xq_SimulationPrepPipelineService::CreateOrUpdateSimulati
         result.diagnostics.push_back(makeError("Model node does not expose a model element."));
         return result;
     }
+    bool modelQaOk = true;
+    if (modelNode->GetBoolProperty("xq.model.qa.ok", modelQaOk) && !modelQaOk)
+    {
+        result.diagnostics.push_back(makeError(
+            "Simulation prep blocked: upstream model QA failed."));
+        return result;
+    }
+    bool meshQaOk = true;
+    if (meshNode->GetBoolProperty("xq.mesh.qa.ok", meshQaOk) && !meshQaOk)
+    {
+        result.diagnostics.push_back(makeError(
+            "Simulation prep blocked: upstream mesh QA failed."));
+        return result;
+    }
 
     // Resolve the upstream Path (via Model's xq.source.path) so we can
     // determine inflow vs outflow geometrically instead of by cap order.
@@ -230,6 +292,21 @@ xq_SimulationPrepResult xq_SimulationPrepPipelineService::CreateOrUpdateSimulati
     solverJob->SetNumNonlinearIterations(request.numNonlinearIterations);
 
     const auto faceRoles = deriveFaceRoles(geometry, centerline, request.faceRoleOverrides);
+    for (const auto& bc : request.boundaryConditions)
+    {
+        const auto validation = ValidateBoundaryCondition(bc);
+        if (!validation.empty())
+        {
+            result.diagnostics.push_back(makeError(validation));
+            return result;
+        }
+        if (faceRoles.find(bc.faceName) == faceRoles.end())
+        {
+            result.diagnostics.push_back(makeError(
+                "Boundary condition references unknown face '" + bc.faceName + "'."));
+            return result;
+        }
+    }
     for (const auto& [faceName, role] : faceRoles)
         solverJob->SetCapProp(faceName, "role", role);
 
@@ -373,8 +450,20 @@ xq_SimulationExportResult xq_SimulationPrepPipelineService::ExportForSolver(
         result.filesWritten.push_back(p.string());
 
     // Mark the simulation-prep node as exported and record the export directory
+    if (mitkJob)
+        mitkJob->SetStatus("exported");
     simPrepNode->SetStringProperty("xq.sim.status", "exported");
     simPrepNode->SetStringProperty("xq.sim.export_dir", request.outputDir.c_str());
+    simPrepNode->SetIntProperty(
+        "xq.sim.files_written_count", static_cast<int>(result.filesWritten.size()));
+    std::ostringstream files;
+    for (size_t i = 0; i < result.filesWritten.size(); ++i)
+    {
+        if (i > 0)
+            files << '\n';
+        files << result.filesWritten[i];
+    }
+    simPrepNode->SetStringProperty("xq.sim.files_written", files.str().c_str());
 
     result.ok = true;
     return result;

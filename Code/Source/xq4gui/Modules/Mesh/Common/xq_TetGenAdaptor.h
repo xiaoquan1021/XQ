@@ -11,6 +11,7 @@ public:
     ~xq_TetGenAdaptor() override = default;
 
     bool Adapt() override;
+    [[nodiscard]] xq_AdaptResult AdaptWithResult();
 
     void SetMaxRefinementRatio(double ratio);
     [[nodiscard]] double GetMaxRefinementRatio() const;

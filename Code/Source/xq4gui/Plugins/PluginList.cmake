@@ -4,10 +4,13 @@ set(XQ_PLUGINS
     org.xq.data.pythonnodes:ON
     org.xq.core.datamanager:ON
     org.xq.core.workspace:ON
+    org.xq.pipeline.imageprocessing:ON
     org.xq.pipeline.vesselplanning:ON
     org.xq.pipeline.lumencontouring:ON
     org.xq.pipeline.contouring3d:ON
     org.xq.pipeline.vascularmodeling:ON
     org.xq.pipeline.gridgeneration:ON
     org.xq.pipeline.hemodynamics:ON
+    org.xq.pipeline.romsimulation:ON
+    org.xq.pipeline.multiphysics:ON
 )

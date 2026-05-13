@@ -5,6 +5,7 @@
 
 #include <xq_Model.h>
 #include <xq_MitkGrid.h>
+#include <xq_MitkSolverJob.h>
 #include <xq_SimulationPrepPipeline.h>
 #include <xq_PipelineDataUtils.h>
 
@@ -48,6 +49,7 @@ xq_HemodynamicsView::xq_HemodynamicsView()
   , m_CurrentMeshNode(nullptr)
   , m_SimPrepNode(nullptr)
   , m_SolverHandler(nullptr)
+  , m_StopRequested(false)
   , m_LegendVisible(false)
 {
 }
@@ -174,7 +176,7 @@ void xq_HemodynamicsView::CreateSimJob()
     QString jobName = dialog.GetJobName();
     if (jobName.isEmpty())
     {
-      QMessageBox::warning(nullptr, "Flow Analysis", "Please enter a job name.");
+      QMessageBox::warning(nullptr, "Flow Simulation", "Please enter a job name.");
       return;
     }
 
@@ -194,7 +196,7 @@ void xq_HemodynamicsView::SaveJob()
 {
   if (m_CurrentMeshNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Flow Analysis",
+    QMessageBox::warning(nullptr, "Flow Simulation",
       "No mesh selected. Cannot save job.");
     return;
   }
@@ -334,7 +336,7 @@ void xq_HemodynamicsView::SaveJob()
 
   if (modelNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Flow Analysis",
+    QMessageBox::warning(nullptr, "Flow Simulation",
       "No upstream model node is attached to the selected mesh.");
     return;
   }
@@ -343,22 +345,36 @@ void xq_HemodynamicsView::SaveJob()
     GetDataStorage(), modelNode, m_CurrentMeshNode, request);
   if (!simResult.ok || simResult.node.IsNull())
   {
-    QMessageBox::warning(nullptr, "Flow Analysis",
+    QMessageBox::warning(nullptr, "Flow Simulation",
       "Failed to generate the simulation-prep node.");
     return;
   }
 
   m_SimPrepNode = simResult.node;
 
-  QMessageBox::information(nullptr, "Flow Analysis",
+  QMessageBox::information(nullptr, "Flow Simulation",
     "Simulation job saved successfully.");
+}
+
+void xq_HemodynamicsView::SetSimulationStatus(const char* status)
+{
+  if (m_SimPrepNode.IsNull() || status == nullptr)
+    return;
+
+  xq::pipeline::SetStringProperty(m_SimPrepNode, "xq.sim.status", status);
+  if (auto* simJob = dynamic_cast<xq_MitkSolverJob*>(m_SimPrepNode->GetData()))
+  {
+    simJob->SetStatus(status);
+    simJob->Modified();
+  }
+  m_SimPrepNode->Modified();
 }
 
 void xq_HemodynamicsView::RunSimulation()
 {
   if (m_CurrentMeshNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Flow Analysis",
+    QMessageBox::warning(nullptr, "Flow Simulation",
       "No mesh selected. Cannot run simulation.");
     return;
   }
@@ -370,9 +386,19 @@ void xq_HemodynamicsView::RunSimulation()
             this, &xq_HemodynamicsView::OnSolverOutput);
     connect(m_SolverHandler, &xq_SolverProcessHandler::solverFinished,
             this, &xq_HemodynamicsView::OnSolverFinished);
+    connect(m_SolverHandler, &xq_SolverProcessHandler::solverStarted,
+            this, [this]() {
+              SetSimulationStatus("running");
+            });
     connect(m_SolverHandler, &xq_SolverProcessHandler::solverError,
             this, [this](const QString& err) {
               m_Ui->textLog->append("ERROR: " + err);
+              SetSimulationStatus("failed");
+              if (m_SimPrepNode.IsNotNull())
+                xq::pipeline::SetStringProperty(
+                  m_SimPrepNode, "xq.sim.last_error", err.toStdString());
+              m_Ui->btnRunSim->setEnabled(true);
+              m_Ui->btnStopSim->setEnabled(false);
             });
     connect(m_SolverHandler, &xq_SolverProcessHandler::progressUpdate,
             this, [this](int pct) {
@@ -413,6 +439,7 @@ void xq_HemodynamicsView::RunSimulation()
   m_Ui->progressBar->setValue(0);
   m_Ui->btnRunSim->setEnabled(false);
   m_Ui->btnStopSim->setEnabled(true);
+  m_StopRequested = false;
 
   m_SolverHandler->StartSolver(workDir);
 }
@@ -420,7 +447,11 @@ void xq_HemodynamicsView::RunSimulation()
 void xq_HemodynamicsView::StopSimulation()
 {
   if (m_SolverHandler)
+  {
+    m_StopRequested = true;
     m_SolverHandler->StopSolver();
+  }
+  SetSimulationStatus("stopped");
 
   m_Ui->btnRunSim->setEnabled(true);
   m_Ui->btnStopSim->setEnabled(false);
@@ -471,7 +502,7 @@ void xq_HemodynamicsView::ExportOnly()
 
   if (m_SimPrepNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Flow Analysis",
+    QMessageBox::warning(nullptr, "Flow Simulation",
       "No simulation-prep node found. Please save the job first.");
     return;
   }
@@ -492,14 +523,14 @@ void xq_HemodynamicsView::ExportOnly()
     QString errMsg = "Export failed.";
     for (const auto& diag : exportResult.diagnostics)
       errMsg += "\n" + QString::fromStdString(diag.message);
-    QMessageBox::warning(nullptr, "Flow Analysis", errMsg);
+    QMessageBox::warning(nullptr, "Flow Simulation", errMsg);
     return;
   }
 
   QString fileList;
   for (const auto& f : exportResult.filesWritten)
     fileList += QString::fromStdString(f) + "\n";
-  QMessageBox::information(nullptr, "Flow Analysis",
+  QMessageBox::information(nullptr, "Flow Simulation",
     QString("Export completed. Files written (%1):\n%2")
       .arg(exportResult.filesWritten.size()).arg(fileList));
 }
@@ -532,7 +563,7 @@ void xq_HemodynamicsView::ExportAndRun()
 
   if (m_SimPrepNode.IsNull())
   {
-    QMessageBox::warning(nullptr, "Flow Analysis",
+    QMessageBox::warning(nullptr, "Flow Simulation",
       "No simulation-prep node found. Please save the job first.");
     return;
   }
@@ -553,7 +584,7 @@ void xq_HemodynamicsView::ExportAndRun()
     QString errMsg = "Export failed.";
     for (const auto& diag : exportResult.diagnostics)
       errMsg += "\n" + QString::fromStdString(diag.message);
-    QMessageBox::warning(nullptr, "Flow Analysis", errMsg);
+    QMessageBox::warning(nullptr, "Flow Simulation", errMsg);
     return;
   }
 
@@ -562,7 +593,7 @@ void xq_HemodynamicsView::ExportAndRun()
   QDir dir(outputDir);
   if (!dir.exists())
   {
-    QMessageBox::warning(nullptr, "Flow Analysis",
+    QMessageBox::warning(nullptr, "Flow Simulation",
       QString("Export directory does not exist: %1").arg(outputDir));
     return;
   }
@@ -591,7 +622,7 @@ void xq_HemodynamicsView::ExportAndRun()
 
   if (solverPath.isEmpty())
   {
-    QMessageBox::warning(nullptr, "Flow Analysis",
+    QMessageBox::warning(nullptr, "Flow Simulation",
       "Solver path is not configured.\n\n"
       "Files were exported successfully, but the solver cannot be launched.\n"
       "Please configure the solver path in Preferences.");
@@ -616,7 +647,7 @@ void xq_HemodynamicsView::ExportAndRun()
     .arg(command)
     .arg(outputDir);
 
-  QMessageBox::information(nullptr, "Flow Analysis", msg);
+  QMessageBox::information(nullptr, "Flow Simulation", msg);
 }
 
 void xq_HemodynamicsView::OnSolverOutput(const QString& text)
@@ -629,15 +660,27 @@ void xq_HemodynamicsView::OnSolverFinished(int exitCode)
   m_Ui->btnRunSim->setEnabled(true);
   m_Ui->btnStopSim->setEnabled(false);
 
+  if (m_SimPrepNode.IsNotNull())
+    m_SimPrepNode->SetIntProperty("xq.sim.exit_code", exitCode);
+
+  if (m_StopRequested)
+  {
+    SetSimulationStatus("stopped");
+    m_StopRequested = false;
+    return;
+  }
+
   if (exitCode == 0)
   {
+    SetSimulationStatus("finished");
     m_Ui->progressBar->setValue(100);
-    QMessageBox::information(nullptr, "Flow Analysis",
+    QMessageBox::information(nullptr, "Flow Simulation",
       "Simulation completed successfully.");
   }
   else
   {
-    QMessageBox::warning(nullptr, "Flow Analysis",
+    SetSimulationStatus("failed");
+    QMessageBox::warning(nullptr, "Flow Simulation",
       QString("Simulation finished with exit code %1.").arg(exitCode));
   }
 }

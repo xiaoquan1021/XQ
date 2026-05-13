@@ -2,15 +2,15 @@
 <plugin>
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.modeling"
-          name="Geometric Construction"
+          name="Solid Modeling"
           icon="resources/icon.png"
           class="xq_VascularModelingView"
-          category="Stage 4 – Build"/>
+          category="Stage 4 – Modeling"/>
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
     <page id="org.xq.views.modeling.preferencepage"
-          name="Geometric Construction"
+          name="Solid Modeling"
           class="xq_ModelPreferencePage"/>
   </extension>
 

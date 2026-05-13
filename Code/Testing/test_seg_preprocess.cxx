@@ -37,6 +37,7 @@
 #include "xq_SplineProfile.h"
 #include "xq_VesselCenterline.h"
 #include "xq_CenterlineSegment.h"
+#include "xq_PathPipeline.h"
 #include "xq_ModelPipeline.h"
 #include "xq_Model.h"
 #include "xq_MeshPipeline.h"
@@ -67,6 +68,8 @@
 #include <vtkTriangleFilter.h>
 
 #include <cassert>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -130,6 +133,42 @@ static mitk::Image::Pointer MakeThresholdSphereImage()
                 vtkImage->SetScalarComponentFromDouble(
                     x, y, z, 0, radiusSquared <= 36.0 ? 100.0 : 0.0);
             }
+        }
+    }
+
+    return image;
+}
+
+static mitk::Image::Pointer MakeBentPathImage()
+{
+    auto vtkTemplate = vtkSmartPointer<vtkImageData>::New();
+    vtkTemplate->SetDimensions(25, 25, 1);
+    vtkTemplate->SetSpacing(1.0, 1.0, 1.0);
+    vtkTemplate->SetOrigin(0.0, 0.0, 0.0);
+    vtkTemplate->AllocateScalars(VTK_DOUBLE, 1);
+
+    auto image = mitk::Image::New();
+    image->Initialize(vtkTemplate);
+
+    auto* vtkImage = image->GetVtkImageData();
+    if (!vtkImage)
+        return image;
+
+    vtkImage->SetDimensions(25, 25, 1);
+    vtkImage->SetSpacing(1.0, 1.0, 1.0);
+    vtkImage->SetOrigin(0.0, 0.0, 0.0);
+
+    if (!vtkImage->GetPointData() || !vtkImage->GetPointData()->GetScalars())
+        vtkImage->AllocateScalars(VTK_DOUBLE, 1);
+
+    for (int y = 0; y < 25; ++y)
+    {
+        for (int x = 0; x < 25; ++x)
+        {
+            const bool onHorizontal = (y == 10 && x >= 2 && x <= 18);
+            const bool onVertical = (x == 18 && y >= 10 && y <= 18);
+            vtkImage->SetScalarComponentFromDouble(
+                x, y, 0, 0, (onHorizontal || onVertical) ? 1000.0 : 1.0);
         }
     }
 
@@ -214,6 +253,13 @@ static mitk::DataNode::Pointer MakePathNode(const std::string& name)
     node->SetBoolProperty("xq.pathplanning.path", true);
     xq::pipeline::MarkNode(node, xq::pipeline::Stage::Path);
     return node;
+}
+
+static std::string ReadTextFile(const std::filesystem::path& path)
+{
+    std::ifstream in(path);
+    return std::string(std::istreambuf_iterator<char>(in),
+                       std::istreambuf_iterator<char>());
 }
 
 // ---------------------------------------------------------------------------
@@ -341,6 +387,130 @@ static bool test_contour_group_pipeline_contract()
     return true;
 }
 
+static bool test_path_pipeline_vmtk_fallback_metadata()
+{
+    auto ds = mitk::StandaloneDataStorage::New();
+
+    auto imageNode = mitk::DataNode::New();
+    imageNode->SetName("path_source_image");
+    imageNode->SetData(MakeBentPathImage());
+    ds->Add(imageNode);
+
+    xq_PathPlanRequest request;
+    request.pathName = "vmtk_requested_path";
+    request.imageNodeName = "path_source_image";
+    request.algorithm = "vmtk_fastmarching";
+    request.sampleCount = 12;
+    request.smoothCurve = false;
+
+    mitk::Point3D start;
+    start.Fill(0.0);
+    start[0] = 2.0;
+    start[1] = 10.0;
+    mitk::Point3D end;
+    end.Fill(0.0);
+    end[0] = 18.0;
+    end[1] = 18.0;
+    request.seeds = {start, end};
+
+    const auto result = xq_PathPipelineService::CreatePath(ds, request);
+    if (!result.ok || result.node.IsNull())
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_fallback_metadata: path service failed\n";
+        for (const auto& d : result.diagnostics)
+            std::cerr << "  diag: " << d.message << "\n";
+        return false;
+    }
+
+    const std::string pipelineAlgorithm =
+        xq::pipeline::GetStringProperty(result.node, xq::pipeline::kAlgorithmProperty);
+    if (pipelineAlgorithm != "dijkstra")
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_fallback_metadata: "
+                  << "xq.pipeline.algorithm should record actual algorithm 'dijkstra', got '"
+                  << pipelineAlgorithm << "'\n";
+        return false;
+    }
+
+    const std::string requested =
+        xq::pipeline::GetStringProperty(result.node, "xq.pathplanning.algorithm.requested");
+    const std::string actual =
+        xq::pipeline::GetStringProperty(result.node, "xq.pathplanning.algorithm.actual");
+    if (requested != "vmtk_fastmarching" || actual != "dijkstra")
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_fallback_metadata: "
+                  << "requested/actual metadata mismatch requested='" << requested
+                  << "' actual='" << actual << "'\n";
+        return false;
+    }
+
+    bool usedFallback = false;
+    if (!result.node->GetBoolProperty("xq.pathplanning.algorithm.fallback", usedFallback) ||
+        !usedFallback)
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_fallback_metadata: "
+                  << "fallback metadata should be true\n";
+        return false;
+    }
+
+    const std::string diagnostic =
+        xq::pipeline::GetStringProperty(result.node, "xq.pathplanning.algorithm.diagnostic");
+    if (diagnostic.find("VMTK") == std::string::npos ||
+        diagnostic.find("Dijkstra") == std::string::npos)
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_fallback_metadata: "
+                  << "diagnostic should mention VMTK and Dijkstra, got '"
+                  << diagnostic << "'\n";
+        return false;
+    }
+
+    bool sawFallbackWarning = false;
+    for (const auto& d : result.diagnostics)
+    {
+        if (d.message.find("falling back to Dijkstra") != std::string::npos)
+            sawFallbackWarning = true;
+    }
+    if (!sawFallbackWarning)
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_fallback_metadata: "
+                  << "result diagnostics should include fallback warning\n";
+        return false;
+    }
+
+    auto* segment = result.centerline ? result.centerline->GetSegment() : nullptr;
+    const auto anchors = segment ? segment->GetAnchorPositions() : std::vector<mitk::Point3D>();
+    if (anchors.empty())
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_fallback_metadata: "
+                  << "planned path anchors should not be empty\n";
+        return false;
+    }
+
+    bool sawBend = false;
+    int offCorridorCount = 0;
+    for (const auto& point : anchors)
+    {
+        const int x = static_cast<int>(std::round(point[0]));
+        const int y = static_cast<int>(std::round(point[1]));
+        const bool onHorizontal = (y == 10 && x >= 2 && x <= 18);
+        const bool onVertical = (x == 18 && y >= 10 && y <= 18);
+        if (x == 18 && y == 10)
+            sawBend = true;
+        if (!onHorizontal && !onVertical)
+            ++offCorridorCount;
+    }
+    if (!sawBend || offCorridorCount != 0)
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_fallback_metadata: "
+                  << "path should follow the bent bright channel; sawBend="
+                  << sawBend << " offCorridorCount=" << offCorridorCount << "\n";
+        return false;
+    }
+
+    std::cout << "PASS test_path_pipeline_vmtk_fallback_metadata\n";
+    return true;
+}
+
 static bool test_model_mesh_simprep_pipeline_contract()
 {
     auto ds = mitk::StandaloneDataStorage::New();
@@ -407,6 +577,13 @@ static bool test_model_mesh_simprep_pipeline_contract()
     xq_MeshGenerationRequest meshRequest;
     meshRequest.meshName = "iliac_mesh";
     meshRequest.globalEdgeSize = 2.5;
+    meshRequest.localFaceSizes[faceIds->GetValue(0)] = 1.25;
+    xq_RefinementRegion refinementRegion;
+    refinementRegion.type = xq_RefinementRegion::Type::Sphere;
+    refinementRegion.center = {0.0, 0.0, 5.0};
+    refinementRegion.radiusOrSize = {2.0, 2.0, 2.0};
+    refinementRegion.edgeSize = 0.75;
+    meshRequest.refinementRegions.push_back(refinementRegion);
     meshRequest.boundaryLayerLayers = 2;
     meshRequest.boundaryLayerGrowthRate = 1.3;
 
@@ -415,6 +592,36 @@ static bool test_model_mesh_simprep_pipeline_contract()
     if (!meshResult.ok || meshResult.node.IsNull())
     {
         std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: mesh service failed\n";
+        return false;
+    }
+    bool sawMeshCapabilityWarning = false;
+    for (const auto& d : meshResult.diagnostics)
+    {
+        if (d.message.find("recorded") != std::string::npos)
+            sawMeshCapabilityWarning = true;
+    }
+    if (!sawMeshCapabilityWarning)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: mesh capability warning missing\n";
+        return false;
+    }
+    int localSizeCount = 0;
+    int refinementCount = 0;
+    bool localSizesApplied = true;
+    bool refinementApplied = true;
+    std::string meshCapabilityDiagnostic;
+    if (!meshResult.node->GetIntProperty("xq.mesh.local_face_sizes", localSizeCount) ||
+        localSizeCount != 1 ||
+        !meshResult.node->GetIntProperty("xq.mesh.refinement_regions", refinementCount) ||
+        refinementCount != 1 ||
+        !meshResult.node->GetBoolProperty("xq.mesh.local_face_sizes.applied", localSizesApplied) ||
+        localSizesApplied ||
+        !meshResult.node->GetBoolProperty("xq.mesh.refinement_regions.applied", refinementApplied) ||
+        refinementApplied ||
+        !meshResult.node->GetStringProperty("xq.mesh.capability.diagnostic", meshCapabilityDiagnostic) ||
+        meshCapabilityDiagnostic.find("not fully applied") == std::string::npos)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: mesh parameter capability metadata missing\n";
         return false;
     }
 
@@ -432,6 +639,16 @@ static bool test_model_mesh_simprep_pipeline_contract()
         std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: mesh node should derive from the model node\n";
         return false;
     }
+
+    modelResult.node->SetBoolProperty("xq.model.qa.ok", false);
+    const auto blockedMeshResult = xq_MeshPipelineService::CreateVolumeMesh(
+        ds, modelResult.node, meshRequest);
+    if (blockedMeshResult.ok)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: bad model QA should block meshing\n";
+        return false;
+    }
+    modelResult.node->SetBoolProperty("xq.model.qa.ok", true);
 
     xq_SimulationPrepRequest simRequest;
     simRequest.jobName = "iliac_job";
@@ -459,6 +676,99 @@ static bool test_model_mesh_simprep_pipeline_contract()
         std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: simulation prep stage metadata missing\n";
         return false;
     }
+
+    meshResult.node->SetBoolProperty("xq.mesh.qa.ok", false);
+    const auto blockedSimResult =
+        xq_SimulationPrepPipelineService::CreateOrUpdateSimulationPrep(
+            ds, modelResult.node, meshResult.node, simRequest);
+    if (blockedSimResult.ok)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: bad mesh QA should block simulation prep\n";
+        return false;
+    }
+    meshResult.node->SetBoolProperty("xq.mesh.qa.ok", true);
+
+    xq_SimulationPrepRequest invalidBcRequest = simRequest;
+    xq_BoundaryCondition invalidBc;
+    invalidBc.faceName = "definitely_missing_face";
+    invalidBc.faceRole = "outflow";
+    invalidBc.bcType = "resistance";
+    invalidBcRequest.boundaryConditions.push_back(invalidBc);
+    const auto invalidBcResult =
+        xq_SimulationPrepPipelineService::CreateOrUpdateSimulationPrep(
+            ds, modelResult.node, meshResult.node, invalidBcRequest);
+    if (invalidBcResult.ok)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: invalid BC should fail\n";
+        return false;
+    }
+    bool sawBcDiagnostic = false;
+    for (const auto& d : invalidBcResult.diagnostics)
+    {
+        if (d.message.find("unknown face") != std::string::npos ||
+            d.message.find("Boundary condition") != std::string::npos)
+            sawBcDiagnostic = true;
+    }
+    if (!sawBcDiagnostic)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: invalid BC diagnostic missing\n";
+        return false;
+    }
+
+    const std::filesystem::path exportDir =
+        std::filesystem::temp_directory_path() / "xq_simprep_export_contract";
+    std::filesystem::remove_all(exportDir);
+    xq_SimulationExportRequest exportRequest;
+    exportRequest.outputDir = exportDir.string();
+    exportRequest.inletWaveform = {{0.0, 1.0}, {0.5, 2.0}, {1.0, 1.0}};
+    const auto exportResult = xq_SimulationPrepPipelineService::ExportForSolver(
+        ds, simResult.node, exportRequest);
+    if (!exportResult.ok || exportResult.filesWritten.empty())
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: solver export failed\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    std::string simStatus;
+    if (!simResult.node->GetStringProperty("xq.sim.status", simStatus) ||
+        simStatus != "exported")
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: export status not recorded\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    if (simJob->GetStatus() != "exported")
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: mitk solver job status not exported\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    int fileCount = 0;
+    if (!simResult.node->GetIntProperty("xq.sim.files_written_count", fileCount) ||
+        fileCount != static_cast<int>(exportResult.filesWritten.size()))
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: export file count metadata mismatch\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    std::string filesCsv;
+    if (!simResult.node->GetStringProperty("xq.sim.files_written", filesCsv) ||
+        filesCsv.find("solver.inp") == std::string::npos ||
+        filesCsv.find("bct.dat") == std::string::npos)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: export file list metadata missing\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    const auto bctText = ReadTextFile(exportDir / "bct.dat");
+    if (bctText.find("3 10") == std::string::npos ||
+        bctText.find("0.5 2") == std::string::npos)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: waveform bct.dat content missing\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    std::filesystem::remove_all(exportDir);
 
     std::cout << "PASS test_model_mesh_simprep_pipeline_contract\n";
     return true;
@@ -3600,6 +3910,7 @@ int main()
     if (!test_write_sparse_profiles())         ++failures;
     if (!test_version_validation())            ++failures;
     if (!test_contour_group_pipeline_contract()) ++failures;
+    if (!test_path_pipeline_vmtk_fallback_metadata()) ++failures;
     if (!test_model_mesh_simprep_pipeline_contract()) ++failures;
     if (!test_sv_project_import_creates_vascular_nodes()) ++failures;
     if (!test_segmentation_object_factory_creates_mappers()) ++failures;

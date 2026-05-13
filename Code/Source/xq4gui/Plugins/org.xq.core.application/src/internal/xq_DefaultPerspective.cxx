@@ -36,11 +36,9 @@ constexpr const char* kDeferredViews[] = {
 // opened on demand via the "Logging" button on the ribbon and docks to the
 // right of the editor area (see kLogSidebarPlaceholderId below).
 const XqPanelRegion kRegions[] = {
-    // ── left column (24 % of total width) ──
-    // Wide enough to show Image Navigator's "Loc. (mm)" / "Axial" /
-    // "Sagittal" / "Coronal" labels side-by-side with their full-length
-    // sliders without triggering a horizontal scrollbar.
-    { kDataManager,    berry::IPageLayout::LEFT,   0.24f, nullptr,         false },
+    // ── left column (20 % of total width) ──
+    // Sidebar wide enough to show Image Navigator sliders without scrollbar.
+    { kDataManager,    berry::IPageLayout::LEFT,   0.20f, nullptr,         false },
     // Image Navigator sits directly beneath Data Manager (50/50 split).
     { kImageNavigator, berry::IPageLayout::BOTTOM, 0.50f, kDataManager,    true  },
 };
@@ -98,12 +96,13 @@ void xq_DefaultPerspective::RegisterToolSlots(berry::IPageLayout::Pointer layout
                                                const QString& editorArea)
 {
     // Right-side panel — hosts both pipeline tool views and the log
-    // console as peer tabs.  Editor keeps the left 60 %; the right panel
-    // gets the remaining 40 %.
+    // console as peer tabs.  Editor keeps the left 45 %; the right panel
+    // gets the remaining 55 %, wide enough to show tool controls without
+    // horizontal scrollbars.
     berry::IPlaceholderFolderLayout::Pointer rightDock =
         layout->CreatePlaceholderFolder(kLogSidebarFolderId,
                                         berry::IPageLayout::RIGHT,
-                                        0.60f, editorArea);
+                                        0.55f, editorArea);
 
     for (const char* id : kDeferredViews)
     {

@@ -35,9 +35,10 @@
 #include <QTimer>
 #include <QRegularExpression>
 #include <QToolButton>
+#include <QTreeView>
+#include <QSettings>
 #include <QActionGroup>
 #include <QButtonGroup>
-#include <QDockWidget>
 #include <QVBoxLayout>
 
 #include <mitkCoreServices.h>
@@ -69,10 +70,13 @@
 #include <mitkTransferFunction.h>
 #include <mitkTransferFunctionProperty.h>
 #include <mitkUndoController.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkDataNodeSelection.h>
 
 #include <berryIIntroManager.h>
 
 #include "xq_WorkspaceManager.h"
+#include "xq_DataExplorerView.h"
 
 #include <QmitkPreferencesDialog.h>
 
@@ -167,7 +171,6 @@ xq_WorkbenchWindowAdvisor::xq_WorkbenchWindowAdvisor(
     , m_LastNodeCount(-1)
     , m_StageToolsBar(nullptr)
     , m_SidebarStageGroup(nullptr)
-    , m_StageSidebar(nullptr)
 {
 }
 
@@ -236,7 +239,7 @@ void xq_WorkbenchWindowAdvisor::PreWindowOpen()
     berry::IWorkbenchWindowConfigurer::Pointer configurer = GetWindowConfigurer();
 
     configurer->SetTitle("XQ");
-    configurer->SetInitialSize(QPoint(1200, 800));
+    configurer->AddEditorAreaTransfer(QStringList() << "text/uri-list");
 
     m_TitlePartListener.reset(new XQPartListenerForTitle(this));
     configurer->GetWindow()->GetPartService()->AddPartListener(m_TitlePartListener.data());
@@ -423,6 +426,66 @@ void xq_WorkbenchWindowAdvisor::PostWindowCreate()
 
     // (Pipeline menu removed — replaced by Stage Bar toolbar)
 
+    // ----- Tools Menu (direct access to all pipeline views) -----
+    QMenu* toolsMenu = menuBar->addMenu("&Tools");
+
+    // -- Import stage --
+    auto* toolImportDicom = new QAction("Import DICOM...", nullptr);
+    connect(toolImportDicom, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnImportDicom);
+    toolsMenu->addAction(toolImportDicom);
+
+    auto* toolOpenData = new QAction("Open Data File...", nullptr);
+    connect(toolOpenData, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnOpenDataFile);
+    toolsMenu->addAction(toolOpenData);
+
+    auto* toolDataExplorer = new QAction("Data Explorer", nullptr);
+    connect(toolDataExplorer, &QAction::triggered, this, [this]() { ShowView("org.xq.views.datamanager"); });
+    toolsMenu->addAction(toolDataExplorer);
+
+    auto* toolImageProcessing = new QAction("Image Processing", nullptr);
+    connect(toolImageProcessing, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnShowImageProcessing);
+    toolsMenu->addAction(toolImageProcessing);
+
+    toolsMenu->addSeparator();
+
+    // -- Trace stage --
+    auto* toolPathPlanning = new QAction("Path Planning", nullptr);
+    connect(toolPathPlanning, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnShowPathPlanning);
+    toolsMenu->addAction(toolPathPlanning);
+
+    toolsMenu->addSeparator();
+
+    // -- Contour stage --
+    auto* toolLumenContour = new QAction("2D Segmentation", nullptr);
+    connect(toolLumenContour, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnShowSegmentation);
+    toolsMenu->addAction(toolLumenContour);
+
+    auto* tool3dContour = new QAction("3D Segmentation", nullptr);
+    connect(tool3dContour, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnShowMitkSegmentation);
+    toolsMenu->addAction(tool3dContour);
+
+    toolsMenu->addSeparator();
+
+    // -- Build stage --
+    auto* toolModeling = new QAction("Solid Modeling", nullptr);
+    connect(toolModeling, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnShowModeling);
+    toolsMenu->addAction(toolModeling);
+
+    auto* toolMeshing = new QAction("Mesh Generation", nullptr);
+    connect(toolMeshing, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnShowMeshing);
+    toolsMenu->addAction(toolMeshing);
+
+    toolsMenu->addSeparator();
+
+    // -- Solve stage --
+    auto* toolSolver = new QAction("Flow Simulation", nullptr);
+    connect(toolSolver, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnShowSimulation);
+    toolsMenu->addAction(toolSolver);
+
+    auto* toolWorkspace = new QAction("Workspace Explorer", nullptr);
+    connect(toolWorkspace, &QAction::triggered, this, [this]() { ShowView("org.xq.views.projectmanager"); });
+    toolsMenu->addAction(toolWorkspace);
+
     // ----- Window Menu -----
     QMenu* windowMenu = menuBar->addMenu("&Window");
 
@@ -488,107 +551,7 @@ void xq_WorkbenchWindowAdvisor::PostWindowCreate()
             this, &xq_WorkbenchWindowAdvisor::OnAbout);
     helpMenu->addAction(aboutAction);
 
-    // ========== Left Sidebar: Pipeline Navigation ==========
-    m_StageSidebar = new QDockWidget(mainWindow);
-    m_StageSidebar->setObjectName("xqStageSidebar");
-    m_StageSidebar->setFeatures(QDockWidget::NoDockWidgetFeatures);
-    m_StageSidebar->setFixedWidth(76);
-    m_StageSidebar->setTitleBarWidget(new QWidget());  // hide title
-
-    auto* sidebarContent = new QWidget();
-    sidebarContent->setObjectName("xqSidebarContent");
-    // Force light text on the dark sidebar so labels/icons are readable
-    QPalette sidebarPal = sidebarContent->palette();
-    sidebarPal.setColor(QPalette::WindowText, QColor("#CBD5E1"));
-    sidebarPal.setColor(QPalette::ButtonText, QColor("#CBD5E1"));
-    sidebarPal.setColor(QPalette::Text, QColor("#CBD5E1"));
-    sidebarPal.setColor(QPalette::Window, QColor("#1E293B"));
-    sidebarPal.setColor(QPalette::Button, QColor("#1E293B"));
-    sidebarContent->setPalette(sidebarPal);
-    auto* sidebarLayout = new QVBoxLayout(sidebarContent);
-    sidebarLayout->setContentsMargins(0, 12, 0, 8);
-    sidebarLayout->setSpacing(2);
-
-    // Pipeline stage buttons
-    struct SidebarStage { const char* label; const char* icon; };
-    SidebarStage stages[] = {
-        {"Import",  ":/xq/stage-import.svg"},
-        {"Trace",   ":/xq/stage-trace.svg"},
-        {"Contour", ":/xq/stage-contour.svg"},
-        {"Build",   ":/xq/stage-build.svg"},
-        {"Solve",   ":/xq/stage-solve.svg"},
-    };
-
-    m_SidebarStageGroup = new QButtonGroup(sidebarContent);
-    m_SidebarStageGroup->setExclusive(true);
-
-    int stageIdx = 0;
-    for (const auto& s : stages)
-    {
-        auto* btn = new QToolButton();
-        btn->setObjectName("xqSidebarStageBtn");
-        btn->setText(s.label);
-        btn->setIcon(QIcon(s.icon));
-        btn->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-        btn->setCheckable(true);
-        btn->setIconSize(QSize(22, 22));
-        btn->setFixedSize(68, 52);
-        if (stageIdx == 0) btn->setChecked(true);
-        m_SidebarStageGroup->addButton(btn, stageIdx);
-        sidebarLayout->addWidget(btn, 0, Qt::AlignCenter);
-        ++stageIdx;
-    }
-
-    sidebarLayout->addStretch(1);
-
-    // Sidebar separator line
-    auto* sidebarSep = new QFrame();
-    sidebarSep->setFrameShape(QFrame::HLine);
-    sidebarSep->setFixedHeight(1);
-    sidebarSep->setStyleSheet("background-color: #334155; border: none;");
-    sidebarLayout->addWidget(sidebarSep);
-    sidebarLayout->addSpacing(4);
-
-    // Utility buttons at bottom of sidebar
-    struct UtilBtn { const char* icon; const char* tip; };
-    UtilBtn utilBtns[] = {
-        {":/xq/document-save.svg",  "Save Project (Ctrl+S)"},
-        {":/xq/edit-undo.svg",      "Undo (Ctrl+Z)"},
-        {":/xq/edit-redo.svg",      "Redo (Ctrl+Y)"},
-        {":/xq/camera-photo.svg",   "Screenshot (Ctrl+Shift+P)"},
-    };
-
-    QToolButton* utilButtonPtrs[4];
-    int ui = 0;
-    for (const auto& u : utilBtns)
-    {
-        auto* btn = new QToolButton();
-        btn->setObjectName("xqSidebarUtilBtn");
-        btn->setIcon(QIcon(u.icon));
-        btn->setToolTip(u.tip);
-        btn->setIconSize(QSize(18, 18));
-        btn->setFixedSize(36, 36);
-        utilButtonPtrs[ui] = btn;
-        sidebarLayout->addWidget(btn, 0, Qt::AlignCenter);
-        sidebarLayout->addSpacing(2);
-        ++ui;
-    }
-
-    // Connect utility buttons
-    connect(utilButtonPtrs[0], &QToolButton::clicked, m_SaveProjectAction, &QAction::trigger);
-    connect(utilButtonPtrs[1], &QToolButton::clicked, m_UndoAction, &QAction::trigger);
-    connect(utilButtonPtrs[2], &QToolButton::clicked, m_RedoAction, &QAction::trigger);
-    connect(utilButtonPtrs[3], &QToolButton::clicked, this, &xq_WorkbenchWindowAdvisor::OnScreenshot);
-
-    sidebarContent->setLayout(sidebarLayout);
-    m_StageSidebar->setWidget(sidebarContent);
-    mainWindow->addDockWidget(Qt::LeftDockWidgetArea, m_StageSidebar);
-
-    // Connect stage button group
-    connect(m_SidebarStageGroup, &QButtonGroup::idClicked,
-            this, &xq_WorkbenchWindowAdvisor::OnSidebarStageClicked);
-
-    // ========== Context Ribbon: Stage-Specific Tools + Display Controls ==========
+    // ========== Top Toolbar: Stage Selector + Context Tools + Display Controls ==========
     m_StageToolsBar = new QToolBar("Pipeline Tools");
     m_StageToolsBar->setObjectName("xqStageToolsBar");
     m_StageToolsBar->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -597,6 +560,44 @@ void xq_WorkbenchWindowAdvisor::PostWindowCreate()
 #ifndef __APPLE__
     m_StageToolsBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 #endif
+
+    // Pipeline stage selector buttons integrated directly into the toolbar
+    struct StageEntry { const char* label; const char* icon; };
+    StageEntry stages[] = {
+        {"Images",        ":/xq/stage-import.svg"},
+        {"Paths",         ":/xq/stage-trace.svg"},
+        {"Segmentations", ":/xq/stage-contour.svg"},
+        {"Modeling",      ":/xq/stage-build.svg"},
+        {"Simulation",    ":/xq/stage-solve.svg"},
+    };
+
+    m_SidebarStageGroup = new QButtonGroup(m_StageToolsBar);
+    m_SidebarStageGroup->setExclusive(true);
+
+    int stageIdx = 0;
+    for (const auto& s : stages)
+    {
+        auto* btn = new QToolButton();
+        btn->setObjectName("xqStageBtn");
+        btn->setText(s.label);
+        btn->setToolTip(s.label);
+        btn->setIcon(QIcon(s.icon));
+        btn->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        btn->setCheckable(true);
+        btn->setIconSize(QSize(20, 20));
+        btn->setMinimumWidth(btn->fontMetrics().horizontalAdvance(s.label) + 16);
+        btn->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+        if (stageIdx == 0) btn->setChecked(true);
+        m_SidebarStageGroup->addButton(btn, stageIdx);
+        m_StageToolsBar->addWidget(btn);
+        ++stageIdx;
+    }
+
+    // Separator between stage selector and context tools
+    m_StageToolsBar->addSeparator();
+
+    connect(m_SidebarStageGroup, &QButtonGroup::idClicked,
+            this, &xq_WorkbenchWindowAdvisor::OnSidebarStageClicked);
 
     mainWindow->addToolBar(m_StageToolsBar);
     ShowImportTools();  // populate for initial stage
@@ -669,6 +670,14 @@ void xq_WorkbenchWindowAdvisor::PostWindowCreate()
         styleFile.close();
         qApp->setStyleSheet(styleSheet);
     }
+
+    // Restore toolbar state from settings
+    QSettings settings(GetQSettingsFile(), QSettings::IniFormat);
+    QByteArray savedState = settings.value("ToolbarState").toByteArray();
+    if (!savedState.isEmpty())
+    {
+        mainWindow->restoreState(savedState);
+    }
 }
 
 void xq_WorkbenchWindowAdvisor::PostWindowOpen()
@@ -696,6 +705,8 @@ void xq_WorkbenchWindowAdvisor::PostWindowOpen()
             QTimer::singleShot(0, this, &xq_WorkbenchWindowAdvisor::SetCrosshairGapZero);
         }
     }
+
+    SetupDataManagerDoubleClick();
 }
 
 void xq_WorkbenchWindowAdvisor::SetCrosshairGapZero()
@@ -719,6 +730,131 @@ void xq_WorkbenchWindowAdvisor::SetCrosshairGapZero()
             node->SetIntProperty("Crosshair.Gap Size", 0);
     }
     mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+}
+
+void xq_WorkbenchWindowAdvisor::SetupDataManagerDoubleClick()
+{
+    berry::IWorkbench* workbench = berry::PlatformUI::GetWorkbench();
+    if (!workbench)
+        return;
+
+    if (workbench->GetWorkbenchWindows().size() == 0)
+        return;
+
+    berry::IWorkbenchWindow::Pointer window = workbench->GetWorkbenchWindows()[0];
+    if (window.IsNull())
+        return;
+
+    berry::IWorkbenchPage::Pointer page = window->GetActivePage();
+    if (page.IsNull())
+        return;
+
+    berry::IViewPart::Pointer dataManagerView =
+        page->FindView("org.xq.views.datamanager");
+    if (dataManagerView.IsNull())
+        return;
+
+    xq_DataExplorerView* dataManager =
+        dynamic_cast<xq_DataExplorerView*>(dataManagerView.GetPointer());
+    if (!dataManager)
+        return;
+
+    QTreeView* treeView = dataManager->GetTreeView();
+    if (!treeView)
+        return;
+
+    QObject::connect(treeView, &QTreeView::doubleClicked,
+                     this, &xq_WorkbenchWindowAdvisor::OnDataManagerDoubleClick);
+}
+
+void xq_WorkbenchWindowAdvisor::OnDataManagerDoubleClick()
+{
+    berry::IWorkbenchWindow::Pointer window =
+        berry::PlatformUI::GetWorkbench()->GetActiveWorkbenchWindow();
+    if (window.IsNull())
+        return;
+
+    berry::IWorkbenchPage::Pointer page = window->GetActivePage();
+    if (page.IsNull())
+        return;
+
+    berry::ISelectionService* selService = window->GetSelectionService();
+    if (!selService)
+        return;
+
+    mitk::DataNodeSelection::ConstPointer nodeSelection =
+        selService->GetSelection().Cast<const mitk::DataNodeSelection>();
+    if (nodeSelection.IsNull())
+        return;
+
+    std::list<mitk::DataNode::Pointer> selectedNodes =
+        nodeSelection->GetSelectedDataNodes();
+    if (selectedNodes.empty())
+        return;
+
+    mitk::DataNode::Pointer selectedNode = selectedNodes.front();
+    if (selectedNode.IsNull())
+        return;
+
+    using Pred = mitk::NodePredicateDataType;
+
+    if (Pred::New("xq_VesselCenterline")->CheckNode(selectedNode))
+    {
+        page->ShowView("org.xq.views.pathplanning");
+    }
+    else if (Pred::New("xq_ProfileGroup")->CheckNode(selectedNode))
+    {
+        page->ShowView("org.xq.views.segmentation");
+    }
+    else if (Pred::New("xq_Model")->CheckNode(selectedNode))
+    {
+        page->ShowView("org.xq.views.modeling");
+    }
+    else if (Pred::New("xq_MitkGrid")->CheckNode(selectedNode))
+    {
+        page->ShowView("org.xq.views.meshing");
+    }
+    else if (Pred::New("xq_MitkSolverJob")->CheckNode(selectedNode))
+    {
+        page->ShowView("org.xq.views.simulation");
+    }
+    else if (Pred::New("xq_MitkROMSimJob")->CheckNode(selectedNode))
+    {
+        page->ShowView("org.xq.views.romsimulation");
+    }
+    else if (Pred::New("xq_MitkMPJob")->CheckNode(selectedNode))
+    {
+        page->ShowView("org.xq.views.multiphysics");
+    }
+    else if (dynamic_cast<mitk::Image*>(selectedNode->GetData()))
+    {
+        mitk::Image* image = dynamic_cast<mitk::Image*>(selectedNode->GetData());
+        if (image && image->GetDimension() >= 3)
+        {
+            page->ShowView("org.mitk.views.volumevisualization");
+        }
+    }
+}
+
+void xq_WorkbenchWindowAdvisor::PostWindowClose()
+{
+    berry::IWorkbenchWindow::Pointer window =
+        this->GetWindowConfigurer()->GetWindow();
+    QMainWindow* mainWindow =
+        static_cast<QMainWindow*>(window->GetShell()->GetControl());
+
+    QSettings settings(GetQSettingsFile(), QSettings::IniFormat);
+    settings.setValue("ToolbarState", mainWindow->saveState());
+}
+
+QString xq_WorkbenchWindowAdvisor::GetQSettingsFile() const
+{
+    ctkPluginContext* context = xq_ApplicationPluginActivator::getContext();
+    if (!context)
+        return QString();
+
+    QFileInfo settingsInfo = context->getDataFile("xq_settings.ini");
+    return settingsInfo.canonicalFilePath();
 }
 
 mitk::DataStorage::Pointer xq_WorkbenchWindowAdvisor::GetDataStorage()
@@ -797,6 +933,11 @@ void xq_WorkbenchWindowAdvisor::OnShowSimulation()
     ShowView("org.xq.views.simulation");
 }
 
+void xq_WorkbenchWindowAdvisor::OnShowImageProcessing()
+{
+    ShowView("org.xq.views.imageprocessing");
+}
+
 void xq_WorkbenchWindowAdvisor::OnAbout()
 {
     auto* aboutDialog = new xq_AboutDialog(
@@ -806,6 +947,17 @@ void xq_WorkbenchWindowAdvisor::OnAbout()
 
 void xq_WorkbenchWindowAdvisor::OnExit()
 {
+    QWidget* parent = qobject_cast<QWidget*>(
+        GetWindowConfigurer()->GetWindow()->GetShell()->GetControl());
+
+    if (QMessageBox::question(parent, "Exit XQ",
+            "Are you sure you want to exit?\nPlease make sure your data is saved.",
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No) != QMessageBox::Yes)
+    {
+        return;
+    }
+
     berry::PlatformUI::GetWorkbench()->Close();
 }
 
@@ -1137,7 +1289,7 @@ void xq_WorkbenchWindowAdvisor::OnWelcome()
             "Welcome to XQ",
             "Welcome to XQ — a cardiovascular analysis application.\n\n"
             "Use the Stage Bar to navigate the workflow:\n"
-            "Import → Trace → Contour → Build → Solve.");
+            "Images → Paths → Segmentations → Modeling → Simulation.");
     }
 }
 
@@ -1947,7 +2099,24 @@ void xq_WorkbenchWindowAdvisor::OpenPreferencesDialog()
 void xq_WorkbenchWindowAdvisor::ClearStageToolsBar()
 {
     if (!m_StageToolsBar) return;
-    m_StageToolsBar->clear();
+
+    // Remove only context-specific actions that come AFTER the stage selector
+    // buttons.  The stage buttons are QToolButtons added via addWidget() and
+    // are kept; we remove everything after the first separator (which marks
+    // the end of the stage selector section).
+    QList<QAction*> actions = m_StageToolsBar->actions();
+    bool pastStageSeparator = false;
+    for (QAction* a : actions)
+    {
+        if (!pastStageSeparator)
+        {
+            if (a->isSeparator())
+                pastStageSeparator = true;
+            continue;
+        }
+        m_StageToolsBar->removeAction(a);
+        delete a;
+    }
 }
 
 // Adds the common display controls to the right side of the ribbon
@@ -1956,7 +2125,7 @@ void xq_WorkbenchWindowAdvisor::AddDisplayControlsToRibbon()
     m_StageToolsBar->addSeparator();
 
     // Create the slice toggle actions fresh each time (they get destroyed on clear)
-    m_ToggleAxialAction = new QAction("Axial", m_StageToolsBar);
+    m_ToggleAxialAction = new QAction("Axl", m_StageToolsBar);
     m_ToggleAxialAction->setCheckable(true);
     m_ToggleAxialAction->setChecked(true);
     m_ToggleAxialAction->setToolTip("Show/hide axial slice plane in 3D view");
@@ -1964,7 +2133,7 @@ void xq_WorkbenchWindowAdvisor::AddDisplayControlsToRibbon()
             this, &xq_WorkbenchWindowAdvisor::OnToggleAxial);
     m_StageToolsBar->addAction(m_ToggleAxialAction);
 
-    m_ToggleSagittalAction = new QAction("Sagittal", m_StageToolsBar);
+    m_ToggleSagittalAction = new QAction("Sag", m_StageToolsBar);
     m_ToggleSagittalAction->setCheckable(true);
     m_ToggleSagittalAction->setChecked(true);
     m_ToggleSagittalAction->setToolTip("Show/hide sagittal slice plane in 3D view");
@@ -1972,7 +2141,7 @@ void xq_WorkbenchWindowAdvisor::AddDisplayControlsToRibbon()
             this, &xq_WorkbenchWindowAdvisor::OnToggleSagittal);
     m_StageToolsBar->addAction(m_ToggleSagittalAction);
 
-    m_ToggleCoronalAction = new QAction("Coronal", m_StageToolsBar);
+    m_ToggleCoronalAction = new QAction("Cor", m_StageToolsBar);
     m_ToggleCoronalAction->setCheckable(true);
     m_ToggleCoronalAction->setChecked(true);
     m_ToggleCoronalAction->setToolTip("Show/hide coronal slice plane in 3D view");
@@ -1982,13 +2151,10 @@ void xq_WorkbenchWindowAdvisor::AddDisplayControlsToRibbon()
 
     m_StageToolsBar->addSeparator();
 
-    // Logging toggle — opens the Log Console docked to the right of the
-    // Standard Display editor (see kLogSidebarFolderId placeholder in
-    // xq_DefaultPerspective). Pressing again hides it.
-    m_ToggleLoggingAction = new QAction("Logging", m_StageToolsBar);
+    m_ToggleLoggingAction = new QAction("Log", m_StageToolsBar);
     m_ToggleLoggingAction->setCheckable(true);
     m_ToggleLoggingAction->setChecked(false);
-    m_ToggleLoggingAction->setToolTip("Show/hide the log console (docks to the right of the Standard Display)");
+    m_ToggleLoggingAction->setToolTip("Show/hide the log console");
     connect(m_ToggleLoggingAction, &QAction::triggered,
             this, &xq_WorkbenchWindowAdvisor::OnToggleLogging);
     m_StageToolsBar->addAction(m_ToggleLoggingAction);
@@ -1998,19 +2164,25 @@ void xq_WorkbenchWindowAdvisor::ShowImportTools()
 {
     ClearStageToolsBar();
 
-    auto* importDicom = new QAction("Import DICOM", m_StageToolsBar);
+    auto* importDicom = new QAction("DICOM", m_StageToolsBar);
     importDicom->setToolTip("Import medical images from DICOM files");
     connect(importDicom, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnImportDicom);
     m_StageToolsBar->addAction(importDicom);
 
-    auto* openData = new QAction("Open Data File", m_StageToolsBar);
+    auto* openData = new QAction("Open File", m_StageToolsBar);
     openData->setToolTip("Open an existing data file");
     connect(openData, &QAction::triggered, this, &xq_WorkbenchWindowAdvisor::OnOpenDataFile);
     m_StageToolsBar->addAction(openData);
 
     m_StageToolsBar->addSeparator();
 
-    auto* dataExplorer = new QAction("Data Explorer", m_StageToolsBar);
+    auto* imageProcessing = new QAction("ImgProc", m_StageToolsBar);
+    imageProcessing->setToolTip("Open image processing tools");
+    connect(imageProcessing, &QAction::triggered,
+            this, &xq_WorkbenchWindowAdvisor::OnShowImageProcessing);
+    m_StageToolsBar->addAction(imageProcessing);
+
+    auto* dataExplorer = new QAction("Explorer", m_StageToolsBar);
     dataExplorer->setToolTip("Open the Data Explorer view");
     connect(dataExplorer, &QAction::triggered, this, [this]() {
         ShowView("org.xq.views.datamanager");
@@ -2024,8 +2196,8 @@ void xq_WorkbenchWindowAdvisor::ShowTraceTools()
 {
     ClearStageToolsBar();
 
-    auto* vesselPlanning = new QAction("Vessel Planning", m_StageToolsBar);
-    vesselPlanning->setToolTip("Plan vessel centerline paths");
+    auto* vesselPlanning = new QAction("Path Planning", m_StageToolsBar);
+    vesselPlanning->setToolTip("Create and edit vessel centerline paths");
     connect(vesselPlanning, &QAction::triggered,
             this, &xq_WorkbenchWindowAdvisor::OnShowPathPlanning);
     m_StageToolsBar->addAction(vesselPlanning);
@@ -2037,14 +2209,14 @@ void xq_WorkbenchWindowAdvisor::ShowContourTools()
 {
     ClearStageToolsBar();
 
-    auto* lumenContour = new QAction("Lumen Contouring", m_StageToolsBar);
-    lumenContour->setToolTip("Segment lumen contours along vessel paths");
+    auto* lumenContour = new QAction("2D Segmentation", m_StageToolsBar);
+    lumenContour->setToolTip("Segment vessel cross-sections along paths");
     connect(lumenContour, &QAction::triggered,
             this, &xq_WorkbenchWindowAdvisor::OnShowSegmentation);
     m_StageToolsBar->addAction(lumenContour);
 
-    auto* contour3d = new QAction("3D Contouring", m_StageToolsBar);
-    contour3d->setToolTip("3D segmentation and contouring");
+    auto* contour3d = new QAction("3D Segmentation", m_StageToolsBar);
+    contour3d->setToolTip("Volumetric 3D segmentation tools");
     connect(contour3d, &QAction::triggered,
             this, &xq_WorkbenchWindowAdvisor::OnShowMitkSegmentation);
     m_StageToolsBar->addAction(contour3d);
@@ -2056,14 +2228,14 @@ void xq_WorkbenchWindowAdvisor::ShowBuildTools()
 {
     ClearStageToolsBar();
 
-    auto* modeling = new QAction("Vascular Modeling", m_StageToolsBar);
-    modeling->setToolTip("Build vascular solid model from contours");
+    auto* modeling = new QAction("Solid Modeling", m_StageToolsBar);
+    modeling->setToolTip("Construct solid model by lofting segmentations");
     connect(modeling, &QAction::triggered,
             this, &xq_WorkbenchWindowAdvisor::OnShowModeling);
     m_StageToolsBar->addAction(modeling);
 
-    auto* meshing = new QAction("Grid Generation", m_StageToolsBar);
-    meshing->setToolTip("Generate computational mesh");
+    auto* meshing = new QAction("Mesh Generation", m_StageToolsBar);
+    meshing->setToolTip("Generate finite element mesh for simulation");
     connect(meshing, &QAction::triggered,
             this, &xq_WorkbenchWindowAdvisor::OnShowMeshing);
     m_StageToolsBar->addAction(meshing);
@@ -2075,15 +2247,15 @@ void xq_WorkbenchWindowAdvisor::ShowSolveTools()
 {
     ClearStageToolsBar();
 
-    auto* solver = new QAction("Hemodynamics Solver", m_StageToolsBar);
-    solver->setToolTip("Configure and run the hemodynamics solver");
+    auto* solver = new QAction("Flow Simulation", m_StageToolsBar);
+    solver->setToolTip("Configure and run computational flow simulation");
     connect(solver, &QAction::triggered,
             this, &xq_WorkbenchWindowAdvisor::OnShowSimulation);
     m_StageToolsBar->addAction(solver);
 
     m_StageToolsBar->addSeparator();
 
-    auto* workspaceExplorer = new QAction("Workspace Explorer", m_StageToolsBar);
+    auto* workspaceExplorer = new QAction("Workspace", m_StageToolsBar);
     workspaceExplorer->setToolTip("Open the Workspace Explorer view");
     connect(workspaceExplorer, &QAction::triggered, this, [this]() {
         ShowView("org.xq.views.projectmanager");

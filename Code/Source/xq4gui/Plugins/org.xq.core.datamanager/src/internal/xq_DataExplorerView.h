@@ -66,6 +66,9 @@ public slots:
   // DICOM information
   void ShowDicomInfo();
 
+  void CopySelectedNode();
+  void PasteDataNode();
+
 protected:
   void CreateQtPartControl(QWidget* parent) override;
   void SetFocus() override;
@@ -94,6 +97,8 @@ private:
 
   // Render debounce timer
   QTimer* m_RenderDebounceTimer;
+
+  mitk::DataNode::Pointer m_CopiedNode;
 };
 
 #endif // XQ_DATAEXPLORERVIEW_H

@@ -7,6 +7,7 @@
 #include "xq_CenterlineSegment.h"
 #include "xq_CenterlineOp.h"
 #include "xq_UndoHelper.h"
+#include <xq_PathPlanner.h>
 #include <xq_PipelineDataUtils.h>
 #include <xq_SegmentationUtils.h>
 #include <xq_LegacyNodeMigration.h>
@@ -107,6 +108,15 @@ void xq_VesselPlanningView::CreateQtPartControl(QWidget* parent)
   m_PathTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_PathTableView->setSelectionMode(QAbstractItemView::SingleSelection);
   m_PathTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+  auto defaultPlanner = CreateDefaultPathPlanner();
+  auto* algorithmStatusLabel = new QLabel(parent);
+  if (defaultPlanner && defaultPlanner->Name() == std::string_view("vmtk_fastmarching"))
+    algorithmStatusLabel->setText("Automatic path planner: VMTK Fast Marching");
+  else
+    algorithmStatusLabel->setText("Automatic path planner: Dijkstra (VMTK Fast Marching not linked)");
+  algorithmStatusLabel->setWordWrap(true);
+  m_Ui->pathLayout->insertWidget(0, algorithmStatusLabel);
 
   // Initialize point table model
   auto* pointModel = new QStandardItemModel(0, 4, this);

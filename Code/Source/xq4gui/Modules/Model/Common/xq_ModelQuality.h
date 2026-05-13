@@ -14,6 +14,7 @@ struct XQMODELCOMMON_EXPORT xq_ModelQualityReport
     int numberOfCells = 0;
     int boundaryEdges = 0;
     int nonManifoldEdges = 0;
+    int degenerateCellCount = 0;
     int connectedComponents = 0;
     bool hasFaceIds = false;
     int faceCount = 0;
