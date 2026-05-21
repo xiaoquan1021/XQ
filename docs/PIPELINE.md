@@ -23,7 +23,7 @@ tagged with:
 | `xq.source.model`                | `<model node name>`      | Upstream Model dependency      |
 | `xq.source.mesh`                 | `<mesh node name>`       | Upstream VolumeMesh dependency |
 
-The helpers live in `@/home/xiaoquan/XQ/Code/Source/xq4gui/Modules/Common/xq_PipelineDataUtils.h`:
+The helpers live in `@/home/xiaoquan/XQ/Code/Source/ImagingWorkbench/Modules/Common/xq_PipelineDataUtils.h`:
 
 - `xq::pipeline::MarkNode(node, stage)` — stamp the stage property.
 - `xq::pipeline::HasStage(node, stage)` — check it.
@@ -38,11 +38,11 @@ touching the pipeline driver. A factory chooses the default implementation.
 
 | Stage           | Interface                    | Default impl          | Alt impl (stubbed)          |
 |-----------------|------------------------------|-----------------------|-----------------------------|
-| Path            | `xq_PathPlanner`             | `xq_DijkstraPathPlanner` | `xq_VmtkFastMarchingPathPlanner` (TODO VMTK) |
-| 2D Segmentation | `xq_SegmentationAlgorithm`   | `xq_ThresholdSegmentation` | `xq_LevelSetSegmentation` (TODO ITK)   |
-| 3D Model        | `xq_SolidModeler` (Bridge)   | `xq_VtkSolidModeler`  | `xq_OccSolidModeler` (TODO OCCT)           |
+| Path            | `xq_PathPlanner`             | `xq_DijkstraPathPlanner` | `xq_VmtkFastMarchingPathPlanner` (diagnostic-only; VMTK not linked) |
+| 2D Segmentation | `xq_SegmentationAlgorithm`   | `xq_ThresholdSegmentation` | `xq_ITKLevelSetSegmentation` (`levelset` factory key) |
+| 3D Model        | `xq_SolidModeler` (Bridge)   | `xq_VtkSolidModeler`  | OCCT path remains deferred; no hidden OCCT result is claimed |
 | Volume Mesh     | `xq_MeshGenerator`           | `xq_TetGenMeshGenerator` | Netgen/MMG (not yet)                     |
-| Simulation Prep | `xq_SvPreWriter` (exporter)  | writes .svpre/bct.dat | —                                           |
+| Simulation Prep | `xq_FlowSolverExportWriter` (exporter)  | writes XQ-native case metadata plus legacy-compatible solver text files | solver execution is backend-gated |
 
 ## 3. Stage data flow
 
@@ -50,7 +50,7 @@ touching the pipeline driver. A factory chooses the default implementation.
 - **Input**: Image node + seed points.
 - **Output**: Path node (`xq_VesselCenterline`) with `xq.source.image`.
 - **Driver**: `xq_PathPipelineService::CreatePath`.
-- **Algorithm**: VMTK Fast Marching (preferred) or Dijkstra on the voxel graph.
+- **Algorithm**: XQ-native Dijkstra on the voxel graph. The VMTK Fast Marching request path is diagnostic-only in the native build and does not create a fallback result.
 - **Smoothing**: `xq_VtkParametricSpline::GetSplineFramePoints` produces a 3D cardinal spline plus a Frenet-like frame (`tangent`, `normal`, `rotation`) used by all downstream stages.
 
 ### Stage 2 — 2D segmentation
@@ -59,6 +59,7 @@ touching the pipeline driver. A factory chooses the default implementation.
 - **Driver**: `xq_SegmentationPipelineService::ExtractContours`.
 - **Resampling**: for every Nth trace vertex, `vtkImageReslice` is fed a `vtkMatrix4x4` whose column 2 is the tangent and whose columns 0,1 are the persisted in-plane axes. The 2D slice is handed to the selected algorithm.
 - **Algorithm interface**: `xq_SegmentationAlgorithm::Extract(slice, params)` returns an ordered closed polygon in slice coords; the driver lifts each polygon back to world coords using the same frame.
+- **Level-set policy**: `CreateSegmentationAlgorithm("levelset")` returns the registered XQ-native `xq_ITKLevelSetSegmentation` implementation. The legacy `xq_LevelSetSegmentation` class is deliberately diagnostic-only so it cannot fabricate a threshold fallback.
 
 ### Stage 3 — Solid modeling
 - **Input**: one or more ContourGroup nodes.
@@ -78,11 +79,13 @@ touching the pipeline driver. A factory chooses the default implementation.
 - **Output**: SimulationPrep node (`xq_MitkSolverJob`) with `xq.source.model` + `xq.source.mesh`.
 - **Driver**: `xq_SimulationPrepPipelineService::CreateOrUpdateSimulationPrep`.
 - **Face-role policy (fixed)**: if the upstream Model carries `xq.source.path`, the driver resolves that Path and labels the cap whose centroid is closest to the **first trace vertex** as `inflow`; every other cap becomes `outflow`. When no path is resolvable, the legacy "first cap = inflow" heuristic is used and a warning diagnostic is emitted. User overrides in `faceRoleOverrides` always win.
-- **Export**: `xq_SimulationPrepPipelineService::ExportForSolver` resolves Model + Mesh via `ResolveUpstreamNode` and calls `xq_SvPreWriter::Export`, which writes:
-  - `<jobName>.svpre` — SimVascular preprocessor script
+- **Export**: `xq_SimulationPrepPipelineService::ExportForSolver` resolves Model + Mesh via `ResolveUpstreamNode` and calls `xq_FlowSolverExportWriter::Export`, which writes:
+  - `<jobName>.svpre` — legacy-compatible preprocessor text emitted by XQ, not a SimVascular backend integration
   - `mesh-complete/mesh-complete.mesh.vtu` — binary VTU of the volumetric grid
   - `mesh-complete/<face>.vtp` — per-face surface polydata
-  - `bct.dat` — inlet waveform table (placeholder constant-flow if caller supplies no waveform)
+  - `bct.dat` — inlet waveform table; export fails if the caller does not supply a waveform
+  - `resistance.dat` or `rcrt.dat` for supported outlet BC families
+  - `solver.inp` with fluid, wall, time-step, nonlinear, linear-solver, and restart parameters from the job
 
 ## 4. Bug fixes in this refactor
 
@@ -95,13 +98,16 @@ touching the pipeline driver. A factory chooses the default implementation.
 | `xq_SimulationPrepPipeline.cxx:26-34`     | "first cap = inflow" hard-coded                     | Geometric inflow detection via centerline start vertex |
 | `xq_SegmentationPipeline.cxx:20-70`       | `CreateContourGroup` just made an empty container  | New `ExtractContours` drives `vtkImageReslice` + `xq_SegmentationAlgorithm` |
 
-## 5. Known deferred work (TODO markers in code)
+## 5. Known deferred work and honesty boundaries
 
-- **VMTK Fast Marching**: `xq_VmtkFastMarchingPathPlanner` falls back to Dijkstra until the VMTK package is wired through CMake.
-- **LevelSet segmentation**: `xq_LevelSetSegmentation` falls back to Threshold until ITK GAC filter is integrated.
-- **OCCT solid modeling**: `xq_OccSolidModeler` delegates to the VTK modeler until `xq_OCCTGeometry` + `BRepAlgoAPI_Fuse/Fillet` is wired through the Bridge.
-- **Inflow BC**: `bct.dat` currently writes a placeholder constant-flow row when no waveform is supplied — Womersley 3D-inlet support needs a separate profile generator.
-- **Outflow BC**: `.svpre` emits `pressure_vtp … 0.0` for outflow caps with a `TODO` comment; RCR/impedance models live in `xq_SolverJob` properties but are not yet serialized.
+- **VMTK Fast Marching**: `xq_VmtkFastMarchingPathPlanner` reports a diagnostic and produces no path in the XQ-native build. It must not fall back silently to Dijkstra.
+- **Legacy LevelSet class**: `xq_LevelSetSegmentation` is diagnostic-only. Real level-set extraction is provided through `CreateSegmentationAlgorithm("levelset")`, which returns `xq_ITKLevelSetSegmentation`.
+- **OCCT solid modeling**: native OCCT BRep lofting/filleting remains deferred. Any VTK-backed result must be labeled as VTK/XQ output and must not claim OCCT success.
+- **Inflow BC**: `bct.dat` requires an explicit waveform. Missing waveforms fail export instead of creating placeholder flow data.
+- **Outflow BC**: resistance, RCR, and pressure outlets are serialized with validation. Coronary and impedance outlets remain unsupported and fail with diagnostics.
+- **Solver backend**: exported files are case-preparation artifacts. Native solver execution and result import are backend-gated and must not report success unless a backend validates outputs.
+- **Python automation**: the C++ service can create/read metadata-consistent nodes and route project save/open through `xq_WorkspaceManager`; a real Python module ABI remains out of scope until pybind11/Python linkage is approved.
+- **Metadata-only automation nodes**: Python/API-created empty geometry containers are not saved as real model or mesh geometry. Job-style XML nodes such as ROM/MultiPhysics contexts can roundtrip when their native XML writer supports them.
 
 ## 6. Extending the pipeline
 

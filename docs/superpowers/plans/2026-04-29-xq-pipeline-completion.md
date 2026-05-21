@@ -13,14 +13,14 @@
 ### Task A1: Fix ProjectDataWriter — ProfileGroup and MitkSolverJob real file writing
 
 **Files:**
-- Modify: `Code/Source/xq4gui/Modules/ProjectManagement/xq_ProjectDataWriter.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Modules/ProjectManagement/xq_ProjectDataWriter.cxx`
 
 - [ ] **Step 1: Read the ProfileGroup and SolverJob headers to understand their API**
 
 Read these files to understand the data structures:
-- `Code/Source/xq4gui/Modules/Segmentation/xq_ProfileGroup.h`
-- `Code/Source/xq4gui/Modules/Simulation/xq_SolverJob.h`
-- `Code/Source/xq4gui/Modules/Simulation/xq_MitkSolverJob.h`
+- `Code/Source/ImagingWorkbench/Modules/Segmentation/xq_ProfileGroup.h`
+- `Code/Source/ImagingWorkbench/Modules/Simulation/xq_SolverJob.h`
+- `Code/Source/ImagingWorkbench/Modules/Simulation/xq_MitkSolverJob.h`
 
 - [ ] **Step 2: Rewrite ProfileGroup writer to produce .xqprofiles.xml**
 
@@ -263,7 +263,7 @@ cmake --build /home/xiaoquan/XQ/build --target xqModuleProjectManagement XQ -j2
 ### Task A2: Fix ProjectDataReader to restore XQ custom types
 
 **Files:**
-- Modify: `Code/Source/xq4gui/Modules/ProjectManagement/xq_ProjectDataReader.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Modules/ProjectManagement/xq_ProjectDataReader.cxx`
 
 - [ ] **Step 1: Rewrite LoadNodeData to dispatch by extension**
 
@@ -657,7 +657,7 @@ cmake --build /home/xiaoquan/XQ/build --target xqModuleProjectManagement XQ -j2
 ### Task A3: Update OpenProject to use ProjectDataReader
 
 **Files:**
-- Modify: `Code/Source/xq4gui/Modules/ProjectManagement/xq_WorkspaceManager.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Modules/ProjectManagement/xq_WorkspaceManager.cxx`
 
 - [ ] **Step 1: Include ProjectDataReader header**
 
@@ -740,16 +740,16 @@ cmake --build /home/xiaoquan/XQ/build --target xqModuleProjectManagement XQ -j2
 ### Task C: Add missing context menu actions
 
 **Files:**
-- Modify: `Code/Source/xq4gui/Plugins/org.xq.pipeline.vascularmodeling/plugin.xml`
-- Create: `Code/Source/xq4gui/Plugins/org.xq.pipeline.vascularmodeling/src/internal/xq_ModelCreateAction.h`
-- Create: `Code/Source/xq4gui/Plugins/org.xq.pipeline.vascularmodeling/src/internal/xq_ModelCreateAction.cxx`
-- Modify: `Code/Source/xq4gui/Plugins/org.xq.pipeline.hemodynamics/plugin.xml`
-- Create: `Code/Source/xq4gui/Plugins/org.xq.pipeline.hemodynamics/src/internal/xq_SimJobCreateAction.h`
-- Create: `Code/Source/xq4gui/Plugins/org.xq.pipeline.hemodynamics/src/internal/xq_SimJobCreateAction.cxx`
-- Create: `Code/Source/xq4gui/Plugins/org.xq.pipeline.hemodynamics/src/internal/xq_SolverExportAction.h`
-- Create: `Code/Source/xq4gui/Plugins/org.xq.pipeline.hemodynamics/src/internal/xq_SolverExportAction.cxx`
-- Create: `Code/Source/xq4gui/Plugins/org.xq.pipeline.hemodynamics/src/internal/xq_ResultImportAction.h`
-- Create: `Code/Source/xq4gui/Plugins/org.xq.pipeline.hemodynamics/src/internal/xq_ResultImportAction.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.anatomymodeling/plugin.xml`
+- Create: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.anatomymodeling/src/internal/xq_ModelCreateAction.h`
+- Create: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.anatomymodeling/src/internal/xq_ModelCreateAction.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.flowanalysis/plugin.xml`
+- Create: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.flowanalysis/src/internal/xq_SimJobCreateAction.h`
+- Create: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.flowanalysis/src/internal/xq_SimJobCreateAction.cxx`
+- Create: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.flowanalysis/src/internal/xq_SolverExportAction.h`
+- Create: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.flowanalysis/src/internal/xq_SolverExportAction.cxx`
+- Create: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.flowanalysis/src/internal/xq_ResultImportAction.h`
+- Create: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.flowanalysis/src/internal/xq_ResultImportAction.cxx`
 
 These need to be created following the pattern of existing actions like `xq_MeshCreateAction` in gridgeneration plugin. Each action implements `xqmitk::IContextMenuAction`. After creating the files, register in plugin.xml and add to the plugin's CMakeLists/fils.cmake.
 
@@ -758,8 +758,8 @@ These need to be created following the pattern of existing actions like `xq_Mesh
 ### Task D: Wire Model QA into pipeline and view
 
 **Files:**
-- Modify: `Code/Source/xq4gui/Modules/Model/Common/xq_ModelPipeline.cxx`
-- Modify: `Code/Source/xq4gui/Plugins/org.xq.pipeline.vascularmodeling/src/internal/xq_VascularModelingView.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Modules/Model/Common/xq_ModelPipeline.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.anatomymodeling/src/internal/xq_VascularModelingView.cxx`
 
 After creating a model node in `CreateModel()`, call `xq_ModelQuality::Evaluate()` and write properties:
 ```cpp
@@ -779,8 +779,8 @@ In `ShowModelStatistics()`, use `xq_ModelQuality::Evaluate()` to display QA summ
 ### Task E: Wire Contour readiness report into view and node properties
 
 **Files:**
-- Modify: `Code/Source/xq4gui/Plugins/org.xq.pipeline.lumencontouring/src/internal/xq_LumenContouringView.cxx`
-- Modify: `Code/Source/xq4gui/Modules/Segmentation/xq_SegmentationPipeline.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.lumenanalysis/src/internal/xq_LumenContouringView.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Modules/Segmentation/xq_SegmentationPipeline.cxx`
 
 After contour group creation/modification, call `xq_SegmentationUtils::BuildReadinessReport()` and write properties:
 ```cpp
@@ -797,9 +797,9 @@ node->SetIntProperty("xq.contour.error_count", static_cast<int>(report.errors.si
 ### Task F: Simulation job save UI parameters completely
 
 **Files:**
-- Modify: `Code/Source/xq4gui/Modules/Simulation/xq_SimulationPrepPipeline.h`
-- Modify: `Code/Source/xq4gui/Modules/Simulation/xq_SimulationPrepPipeline.cxx`
-- Modify: `Code/Source/xq4gui/Plugins/org.xq.pipeline.hemodynamics/src/internal/xq_HemodynamicsView.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Modules/Simulation/xq_SimulationPrepPipeline.h`
+- Modify: `Code/Source/ImagingWorkbench/Modules/Simulation/xq_SimulationPrepPipeline.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.flowanalysis/src/internal/xq_HemodynamicsView.cxx`
 
 Extend `xq_SimulationPrepRequest` to include all fields (fluidDensity, fluidViscosity, wallThickness, etc.) and boundary conditions. In `SaveJob()`, read all UI values and fill the request. In `CreateOrUpdateSimulationPrep()`, write all fields to the solver job.
 
@@ -808,7 +808,7 @@ Extend `xq_SimulationPrepRequest` to include all fields (fluidDensity, fluidVisc
 ### Task G: Solver export correctness improvements
 
 **Files:**
-- Modify: `Code/Source/xq4gui/Modules/Simulation/xq_SvPreWriter.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Modules/Simulation/xq_FlowSolverExportWriter.cxx`
 
 Ensure `filesWritten` only lists files actually created. Add diagnostic warnings for placeholder files. Verify `solver.inp` contains actual density/viscosity/timestep values from the job.
 
@@ -817,8 +817,8 @@ Ensure `filesWritten` only lists files actually created. Add diagnostic warnings
 ### Task H: Result import Data Manager action
 
 **Files:**
-- Modify: `Code/Source/xq4gui/Plugins/org.xq.pipeline.hemodynamics/plugin.xml`
-- Modify: `Code/Source/xq4gui/Modules/Simulation/xq_ResultImport.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Plugins/org.xq.imaging.flowanalysis/plugin.xml`
+- Modify: `Code/Source/ImagingWorkbench/Modules/Simulation/xq_ResultImport.cxx`
 
 Add `ResultImportAction` implementing `IContextMenuAction`. Support both `vtkPolyData` and `vtkUnstructuredGrid` in result import. Register in plugin.xml on `xq_SimulationFolder`.
 
@@ -827,7 +827,7 @@ Add `ResultImportAction` implementing `IContextMenuAction`. Support both `vtkPol
 ### Task I: Pipeline consistency checker enhancements
 
 **Files:**
-- Modify: `Code/Source/xq4gui/Modules/Common/xq_PipelineConsistency.cxx`
+- Modify: `Code/Source/ImagingWorkbench/Modules/Common/xq_PipelineConsistency.cxx`
 
 Add checks for: stage vs folder mismatch, QA property failures, missing data type for stage, metadata-only orphans.
 
@@ -837,5 +837,5 @@ Add checks for: stage vs folder mismatch, QA property failures, missing data typ
 
 After all tasks, run full build:
 ```bash
-cmake --build /home/xiaoquan/XQ/build --target org_xq_core_datamanager org_xq_core_workspace org_xq_pipeline_vesselplanning org_xq_pipeline_lumencontouring org_xq_pipeline_vascularmodeling org_xq_pipeline_gridgeneration org_xq_pipeline_hemodynamics XQ -j2
+cmake --build /home/xiaoquan/XQ/build --target org_xq_core_datamanager org_xq_core_workspace org_xq_imaging_centerline org_xq_imaging_lumenanalysis org_xq_imaging_anatomymodeling org_xq_imaging_volumemeshing org_xq_imaging_flowanalysis XQ -j2
 ```

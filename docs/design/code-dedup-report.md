@@ -1,7 +1,7 @@
 # XQ ↔ SimVascular Code Deduplication Report
 
 **Date:** 2025-07-17  
-**Scope:** `XQ/Code/Source/xq4gui/` vs `Simvascular/Code/Source/sv4gui/`  
+**Scope:** `XQ/Code/Source/ImagingWorkbench/` vs `Simvascular/Code/Source/sv4gui/`  
 **Method:** Normalized diff comparison (prefix-agnostic: `xq_` ↔ `sv4gui_` treated as identical)
 
 ---
@@ -29,13 +29,13 @@ The XQ codebase shares significant structural heritage with SimVascular (SV). Af
 |-----------|---------|---------|-----------|----------|
 | `xq_Spline.cxx` ↔ `sv4gui_Spline.cxx` | 39 | 186 | **53%** | 🔴 P1 |
 | `xq_Spline.h` ↔ `sv4gui_Spline.h` | 31 | 81 | **51%** | 🔴 P1 |
-| `xq_Math3.h` ↔ `sv4gui_Math3.h` | 50 | 64 | 41% | 🟡 P3 |
+| `xq_SpatialMath.h` ↔ `sv4gui_SpatialMath.h` | 50 | 64 | 41% | 🟡 P3 |
 | `xq_StringUtils.h` ↔ `sv4gui_StringUtils.h` | 24 | 102 | **47%** | 🟠 P2 |
 | `xq_XmlIOUtil.h` ↔ `sv4gui_XmlIOUtil.h` | 40 | 65 | 43% | 🟡 P3 |
 | `xq_VtkUtils.h` ↔ `sv4gui_VtkUtils.h` | 41 | 58 | 43% | 🟡 P3 |
 | `xq_VtkParametricSpline.h` ↔ `sv4gui_VtkParametricSpline.h` | 32 | 55 | 38% | 🟡 P3 |
 | `xq_VtkUtils.cxx` ↔ `sv4gui_VtkUtils.cxx` | 124 | 124 | 19% | 🟢 OK |
-| `xq_Math3.cxx` ↔ `sv4gui_Math3.cxx` | 202 | 354 | 39% | 🟡 P3 |
+| `xq_SpatialMath.cxx` ↔ `sv4gui_SpatialMath.cxx` | 202 | 354 | 39% | 🟡 P3 |
 | `xq_XmlIOUtil.cxx` ↔ `sv4gui_XmlIOUtil.cxx` | 93 | 132 | 37% | 🟡 P3 |
 | `xq_StringUtils.cxx` ↔ `sv4gui_StringUtils.cxx` | 90 | 74 | 27% | 🟢 OK |
 | `xq_VtkParametricSpline.cxx` ↔ `sv4gui_VtkParametricSpline.cxx` | 163 | 84 | 39% | 🟡 P3 |
@@ -73,7 +73,7 @@ public:
 **Recommendations for Common:**
 - `Spline`: Refactor to use a different spline parameterization (e.g., Catmull-Rom or custom arc-length) instead of mirroring SV's vtkParametricSpline wrapper. Change class interface to builder pattern.
 - `VtkUtils`: The 3 new methods already differentiate XQ. Remove or rename `MergePoints` / `MitkImage2VtkImage` — wrap in XQ-specific namespace or combine into a broader geometry-ops utility.
-- `Math3`: Rewrite using Eigen or glm vector ops instead of raw array math matching SV's style.
+- `SpatialMath`: Rewrite using Eigen or glm vector ops instead of raw array math matching SV's style.
 
 ---
 

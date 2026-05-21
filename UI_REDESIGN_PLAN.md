@@ -281,7 +281,7 @@ Stage: Trace
 
 ### Todo 6: Create SVG Stage Icons
 
-**Directory**: `xq4gui/Plugins/org.xq.core.application/resources/`
+**Directory**: `ImagingWorkbench/Plugins/org.xq.core.application/resources/`
 
 Create 5 simple SVG icons for the sidebar stages:
 - `stage-import.svg` — arrow-down-to-bracket (data import)

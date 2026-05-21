@@ -28,3 +28,6 @@ Thumbs.db
 
 # CMake generated
 CMakeUserPresets.json
+
+# Test artifacts
+Testing/

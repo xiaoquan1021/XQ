@@ -50,7 +50,7 @@
 
 | 类 | XQ | SV | 相似度 |
 |----|----|----|--------|
-| Math3 | `xq_Math3` (线性插值) | `sv4guiMath3` (傅里叶平滑) | **30%** |
+| SpatialMath | `xq_SpatialMath` (线性插值) | `sv4guiSpatialMath` (傅里叶平滑) | **30%** |
 | VtkUtils | `xq_VtkUtils` (975B) | `sv4guiVtkUtils` (2.2KB) | **35%** |
 | StringUtils | `xq_StringUtils` (函数式) | `sv4guiStringUtils` (传统式) | **15%** |
 | Spline | `xq_Spline` | `sv4guiSpline` | **20%** |
@@ -138,7 +138,7 @@
 7. **About 对话框 (40%)** — 公共接口方法名完全一致
 8. **数据管理器 (35-40%)** — MITK 节点描述符模式相同
 9. **VtkUtils (35%)** — VTK 封装函数有重叠
-10. **Math3 (30%)** — 部分算法接口类似
+10. **SpatialMath (30%)** — 部分算法接口类似
 11. **Mesh 模块 (25-30%)** — 结构 (Grid+Adaptor) 与 SV (Mesh+Adaptor) 平行
 
 ---
@@ -159,7 +159,7 @@
 
 ### Phase 3: 模块去重 (25-35% → <10%)
 
-- **VtkUtils/Math3**: 重构算法接口
+- **VtkUtils/SpatialMath**: 重构算法接口
 - **Mesh 模块**: 改变类层次结构
 - **ProjectManagement**: 重新设计文件夹节点架构
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension point="org.blueberry.ui.views">
+    <view id="org.xq.views.multiphysics"
+          name="Multi-Physics"
+          class="xq_MultiPhysicsView"
+          category="Stage 5 – Simulation"/>
+  </extension>
+
+  <extension point="org.xq.core.datamanager.contextMenuActions">
+    <contextMenuAction nodeDescriptorName="xq_MitkGrid"
+                       label="Create MultiPhysics Job"
+                       class="xq_MultiPhysicsJobCreateAction"/>
+  </extension>
+</plugin>

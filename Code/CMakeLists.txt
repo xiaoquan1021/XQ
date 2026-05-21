@@ -47,9 +47,16 @@ endif()
 # TinyXML2
 find_package(tinyxml2 REQUIRED)
 
+set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE TRUE CACHE BOOL "" FORCE)
 # HDF5 (needed by ITK's HDF5 IO)
-set(HDF5_DIR "${XQ_EXTERNALS_DIR}/hdf5-1.14.3/cmake")
-find_package(HDF5 QUIET COMPONENTS CXX C)
+unset(HDF5_DIR CACHE)
+unset(HDF5_DIR)
+set(HDF5_ROOT "${XQ_EXTERNALS_DIR}/hdf5-1.14.3" CACHE PATH "" FORCE)
+if(TARGET hdf5-shared OR TARGET hdf5-static OR TARGET hdf5::hdf5-shared OR TARGET hdf5::hdf5-static)
+  set(HDF5_FOUND TRUE)
+else()
+  find_package(HDF5 MODULE QUIET COMPONENTS CXX C)
+endif()
 if(HDF5_FOUND)
   link_directories(${HDF5_LIBRARY_DIRS})
 else()
@@ -191,18 +198,22 @@ link_directories("${XQ_EXTERNALS_DIR}/hdf5-1.14.3/lib")
 #-----------------------------------------------------------------------------
 # 9. Add Module subdirectories
 #-----------------------------------------------------------------------------
-set(XQ_MODULE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/xq4gui/Modules")
+set(XQ_MODULE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Modules")
 
 # Add each module subdirectory (only if CMakeLists.txt exists)
 set(XQ_MODULE_DIRS
   Common
+  ImageProcessing
   Path
   Segmentation
   Model/Common
   Model/OCCT
   Mesh/Common
   Simulation
+  MultiPhysics
+  ROMSimulation
   ProjectManagement
+  PythonApi
 )
 
 foreach(_mod_dir ${XQ_MODULE_DIRS})
@@ -214,7 +225,7 @@ endforeach()
 #-----------------------------------------------------------------------------
 # 10. Add Plugin subdirectories (CTK-integrated)
 #-----------------------------------------------------------------------------
-include(${CMAKE_CURRENT_SOURCE_DIR}/Source/xq4gui/Plugins/PluginList.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Plugins/PluginList.cmake)
 
 # Register XQ plugin libraries variable with CTK plugin framework.
 # ctkFunctionGetAllPluginTargets() reads CTK_PLUGIN_LIBRARIES_VARS to discover
@@ -231,7 +242,7 @@ macro(GetMyTargetLibraries all_target_libraries varname)
   ctkMacroListFilter(_tmp_list re_ctkplugin OUTPUT_VARIABLE ${varname})
 endmacro()
 
-set(XQ_PLUGIN_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/xq4gui/Plugins")
+set(XQ_PLUGIN_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Plugins")
 
 foreach(_plugin_entry ${XQ_PLUGINS})
   # Parse "plugin_name:ON/OFF"

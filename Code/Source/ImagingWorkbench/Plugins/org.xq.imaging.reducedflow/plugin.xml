@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension point="org.blueberry.ui.views">
+    <view id="org.xq.views.romsimulation"
+          name="ROM Simulation"
+          class="xq_ROMSimulationView"
+          category="Stage 5 – Simulation"/>
+  </extension>
+
+  <extension point="org.xq.core.datamanager.contextMenuActions">
+    <contextMenuAction nodeDescriptorName="xq_MitkGrid"
+                       label="Create ROM Simulation Job"
+                       class="xq_ROMJobCreateAction"/>
+    <contextMenuAction nodeDescriptorName="xq_Model"
+                       label="Create ROM Simulation Job"
+                       class="xq_ROMJobCreateAction"/>
+  </extension>
+</plugin>

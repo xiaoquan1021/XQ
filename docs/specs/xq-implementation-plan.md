@@ -272,7 +272,7 @@ XQ Logo + 版本号 + MITK/Qt/VTK/ITK 版本 + 简介 + [OK]
     │   │   ├── xq.ini                      # MITK 应用配置文件
     │   │   └── target_libraries.cmake      # Application 链接目标
     │   │
-    │   ├── xq4gui/
+    │   ├── ImagingWorkbench/
     │   │   ├── Modules/                    # MITK 模块层 (数据/渲染/交互)
     │   │   │   ├── Common/                 # 公共工具模块
     │   │   │   ├── Path/                   # 路径数据模块
@@ -387,8 +387,8 @@ add_subdirectory(Code)
 4. `include(CMake/XQMacros.cmake)` — 自定义模块/插件宏
 5. `include(CppMicroServices/usFunctionGenerateModuleInit.cmake)` 等
 6. `add_subdirectory(Source/Application)`
-7. `add_subdirectory(Source/xq4gui/Modules)` — 各子模块
-8. `add_subdirectory(Source/xq4gui/Plugins)` — 各子插件
+7. `add_subdirectory(Source/ImagingWorkbench/Modules)` — 各子模块
+8. `add_subdirectory(Source/ImagingWorkbench/Plugins)` — 各子插件
 
 **SV参考**: `Simvascular/Code/CMakeLists.txt`
 
@@ -458,7 +458,7 @@ list(APPEND CMAKE_PREFIX_PATH
 
 ### Task 1.5: PluginList.cmake
 
-**文件**: `~/XQ/Code/Source/xq4gui/Plugins/PluginList.cmake`
+**文件**: `~/XQ/Code/Source/ImagingWorkbench/Plugins/PluginList.cmake`
 
 **说明**: 必须在 Phase 1 创建，而非等到插件开发阶段。此文件被 `Code/CMakeLists.txt` 引用以决定构建哪些插件。
 
@@ -665,7 +665,7 @@ org.xq.gui.qt.projectmanager/
 **文件清单**:
 | 文件 | 职责 |
 |------|------|
-| `xq_Math3.h/.cxx` | 3D 数学工具（向量、矩阵、变换） |
+| `xq_SpatialMath.h/.cxx` | 3D 数学工具（向量、矩阵、变换） |
 | `xq_Spline.h/.cxx` | ★ 样条曲线基类 |
 | `xq_VtkParametricSpline.h/.cxx` | ★ VTK 参数化样条实现 |
 | `xq_VtkUtils.h/.cxx` | VTK 辅助工具（polydata 操作等） |

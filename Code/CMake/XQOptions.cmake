@@ -1,4 +1,4 @@
-option(XQ_USE_PYTHON "Enable Python integration" ON)
+option(XQ_USE_PYTHON "Build the disabled Python API service skeleton; no Python scripting runtime is enabled unless pybind11 bindings are added" ON)
 option(XQ_USE_MITK_SEGMENTATION "Enable MITK native segmentation" ON)
 option(XQ_USE_OPENCASCADE "Enable OpenCASCADE modeling" ON)
 option(XQ_BUILD_TESTING "Build tests" OFF)

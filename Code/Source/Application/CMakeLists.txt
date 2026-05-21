@@ -2,9 +2,10 @@ project(XQ_Application)
 
 set(XQ_EXE "XQ")
 set(CXXSRCS main.cxx)
+set(MITK_USE_HDF5 OFF)
 
 # Include plugin list
-include(${CMAKE_CURRENT_SOURCE_DIR}/../xq4gui/Plugins/PluginList.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../ImagingWorkbench/Plugins/PluginList.cmake)
 
 mitkFunctionCreateBlueBerryApplication(
     NAME ${XQ_EXE}

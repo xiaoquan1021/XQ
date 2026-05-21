@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension point="org.blueberry.ui.views">
+    <view id="org.xq.views.segmentation"
+          name="2D Segmentation"
+          icon="resources/icon.png"
+          class="xq_LumenContouringView"
+          category="Stage 3 – Segmentations"/>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="org.xq.views.segmentation.preferencepage"
+          name="2D Segmentation"
+          class="xq_SegmentationPreferencePage"/>
+  </extension>
+
+  <extension point="org.xq.core.datamanager.contextMenuActions">
+    <contextMenuAction nodeDescriptorName="xq_SegmentationFolder"
+                       label="Create Contour Group"
+                       class="xq_ContourGroupCreateAction"/>
+  </extension>
+</plugin>

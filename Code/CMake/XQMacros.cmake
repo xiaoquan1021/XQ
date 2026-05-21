@@ -33,6 +33,17 @@ function(xq_create_module)
   set(QRC_FILES "")
   include(${CMAKE_CURRENT_SOURCE_DIR}/files.cmake)
 
+  set(_xq_resource_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resource")
+    set(_xq_resource_working_dir "${CMAKE_CURRENT_SOURCE_DIR}/resource")
+  endif()
+
+  # CppMicroServices resources must be part of the target sources when using
+  # LINK mode; otherwise the XML state machines are not available at runtime.
+  if(RESOURCE_FILES)
+    usFunctionGetResourceSource(TARGET ${XQ_MOD_TARGET} OUT CPP_FILES LINK)
+  endif()
+
   # 2. CppMicroServices module init
   usFunctionGenerateModuleInit(CPP_FILES)
 
@@ -56,13 +67,15 @@ function(xq_create_module)
 
   # 8. Embed resources if RESOURCE_FILES defined
   if(RESOURCE_FILES)
-    usFunctionGetResourceSource(TARGET ${XQ_MOD_TARGET} OUT CPP_FILES)
     usFunctionAddResources(TARGET ${XQ_MOD_TARGET}
       MODULE_NAME ${XQ_MOD_TARGET}
+      WORKING_DIRECTORY ${_xq_resource_working_dir}
       FILES ${RESOURCE_FILES}
     )
     usFunctionEmbedResources(TARGET ${XQ_MOD_TARGET}
       MODULE_NAME ${XQ_MOD_TARGET}
+      WORKING_DIRECTORY ${_xq_resource_working_dir}
+      LINK
     )
   endif()
 

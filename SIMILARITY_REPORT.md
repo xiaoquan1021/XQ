@@ -68,22 +68,22 @@ namespace/using statements, Qt/MITK registration macros, lines < 10 characters.
 
 | File | Raw Lines | Meaningful Lines | Similar | Similarity % |
 |------|-----------|------------------|---------|--------------|
-| Plugins/org.xq.pipeline.lumencontouring/xq_SegmentationPlugin.h | 17 | 3 | 3 | 100.0% |
-| Plugins/org.xq.pipeline.vascularmodeling/xq_ModelingPlugin.h | 17 | 3 | 3 | 100.0% |
-| Plugins/org.xq.pipeline.gridgeneration/xq_MeshingPlugin.h | 17 | 3 | 3 | 100.0% |
-| Plugins/org.xq.pipeline.hemodynamics/xq_SimulationPlugin.h | 17 | 3 | 3 | 100.0% |
+| Plugins/org.xq.imaging.lumenanalysis/xq_SegmentationPlugin.h | 17 | 3 | 3 | 100.0% |
+| Plugins/org.xq.imaging.anatomymodeling/xq_ModelingPlugin.h | 17 | 3 | 3 | 100.0% |
+| Plugins/org.xq.imaging.volumemeshing/xq_MeshingPlugin.h | 17 | 3 | 3 | 100.0% |
+| Plugins/org.xq.imaging.flowanalysis/xq_SimulationPlugin.h | 17 | 3 | 3 | 100.0% |
 | Plugins/org.xq.core.application/xq_Application.h | 18 | 3 | 3 | 100.0% |
 | Plugins/org.xq.core.application/xq_ViewerPerspective.h | 16 | 2 | 2 | 100.0% |
 | Plugins/org.xq.core.application/xq_VisualizationPerspective.h | 16 | 2 | 2 | 100.0% |
 | Plugins/org.xq.core.datamanager/xq_DataExplorerPluginActivator.h | 17 | 3 | 3 | 100.0% |
 | Plugins/org.xq.data.projectnodes/xq_ProjectDataNodesPluginActivator.h | 28 | 8 | 5 | 62.5% |
 | Plugins/org.xq.data.pythonnodes/xq_PythonDataNodesPluginActivator.h | 29 | 8 | 5 | 62.5% |
-| Plugins/org.xq.pipeline.contouring3d/xq_MitkSegmentationPlugin.h | 19 | 5 | 3 | 60.0% |
-| Plugins/org.xq.pipeline.vascularmodeling/xq_ModelPreferencePage.h | 40 | 14 | 8 | 57.1% |
+| Plugins/org.xq.imaging.volumesegmentation/xq_MitkSegmentationPlugin.h | 19 | 5 | 3 | 60.0% |
+| Plugins/org.xq.imaging.anatomymodeling/xq_ModelPreferencePage.h | 40 | 14 | 8 | 57.1% |
 | Plugins/org.xq.core.application/xq_ApplicationPluginActivator.h | 26 | 7 | 4 | 57.1% |
 | Plugins/org.xq.core.datamanager/xq_mitkIContextMenuAction.h | 30 | 9 | 5 | 55.6% |
-| Plugins/org.xq.pipeline.vesselplanning/xq_PathPlanningPlugin.h | 23 | 6 | 3 | 50.0% |
-| Plugins/org.xq.pipeline.hemodynamics/xq_SimulationPreferencePage.h | 40 | 14 | 7 | 50.0% |
+| Plugins/org.xq.imaging.centerline/xq_PathPlanningPlugin.h | 23 | 6 | 3 | 50.0% |
+| Plugins/org.xq.imaging.flowanalysis/xq_SimulationPreferencePage.h | 40 | 14 | 7 | 50.0% |
 | Plugins/org.xq.core.workspace/xq_WorkspacePluginActivator.h | 24 | 6 | 3 | 50.0% |
 | Modules/Mesh/xq_MitkGridOperation.cxx | 19 | 9 | 4 | 44.4% |
 | Modules/ProjectMgmt/xq_DataNodeOperation.cxx | 25 | 12 | 5 | 41.7% |
@@ -101,11 +101,11 @@ namespace/using statements, Qt/MITK registration macros, lines < 10 characters.
 | Modules/Model/xq_GeomRenderer2D.h | 43 | 11 | 3 | 27.3% |
 | Modules/Model/xq_GeomRenderer3D.h | 42 | 11 | 3 | 27.3% |
 | Modules/Mesh/xq_MitkGridObjectFactory.h | 30 | 11 | 3 | 27.3% |
-| Plugins/org.xq.pipeline.vascularmodeling/xq_ExtractCenterlinesAction.h | 51 | 19 | 5 | 26.3% |
+| Plugins/org.xq.imaging.anatomymodeling/xq_ExtractCenterlinesAction.h | 51 | 19 | 5 | 26.3% |
 | Modules/Segmentation/xq_ContourModelVtkMapper2D.h | 59 | 20 | 5 | 25.0% |
 | Modules/Segmentation/xq_MitkSeg3DIO.h | 18 | 4 | 1 | 25.0% |
 | Modules/Segmentation/xq_SurfaceRenderer3D.h | 57 | 20 | 5 | 25.0% |
-| Plugins/org.xq.pipeline.contouring3d/xq_MitkSegmentationView.h | 60 | 25 | 6 | 24.0% |
+| Plugins/org.xq.imaging.volumesegmentation/xq_MitkSegmentationView.h | 60 | 25 | 6 | 24.0% |
 | Modules/Path/xq_PathObjectFactory.h | 42 | 13 | 3 | 23.1% |
 | Plugins/org.xq.core.application/xq_Application.cxx | 24 | 9 | 2 | 22.2% |
 | Modules/Model/xq_GeometryOp.cxx | 27 | 14 | 3 | 21.4% |
@@ -120,8 +120,8 @@ namespace/using statements, Qt/MITK registration macros, lines < 10 characters.
 | xq_XmlIOUtil.h | 37 | 15 | 1 | 6.7% |
 | xq_XmlIOUtil.cxx | 93 | 49 | 3 | 6.1% |
 | xq_VtkParametricSpline.cxx | 163 | 73 | 1 | 1.4% |
-| xq_Math3.cxx | 202 | 93 | 0 | 0.0% |
-| xq_Math3.h | 40 | 15 | 0 | 0.0% |
+| xq_SpatialMath.cxx | 202 | 93 | 0 | 0.0% |
+| xq_SpatialMath.h | 40 | 15 | 0 | 0.0% |
 | xq_Spline.cxx | 39 | 14 | 0 | 0.0% |
 | xq_Spline.h | 31 | 10 | 0 | 0.0% |
 | xq_StringUtils.cxx | 90 | 31 | 0 | 0.0% |

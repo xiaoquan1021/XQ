@@ -24,11 +24,12 @@
 
 #include "xq_ProfileGroup.h"
 #include "xq_PipelineDataUtils.h"
-#include "xq_Math3.h"
+#include "xq_SpatialMath.h"
 #include "xq_CircularProfile.h"
 #include "xq_EllipticProfile.h"
 #include "xq_LumenSegIO.h"
 #include "xq_SegmentationPipeline.h"
+#include "xq_SegmentationAlgorithm.h"
 #include "xq_ContourGroup.h"
 #include "xq_ContourGroupMigration.h"
 #include "xq_SegmentationUtils.h"
@@ -37,6 +38,7 @@
 #include "xq_SplineProfile.h"
 #include "xq_VesselCenterline.h"
 #include "xq_CenterlineSegment.h"
+#include "xq_PathPipeline.h"
 #include "xq_ModelPipeline.h"
 #include "xq_Model.h"
 #include "xq_MeshPipeline.h"
@@ -67,6 +69,8 @@
 #include <vtkTriangleFilter.h>
 
 #include <cassert>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -130,6 +134,42 @@ static mitk::Image::Pointer MakeThresholdSphereImage()
                 vtkImage->SetScalarComponentFromDouble(
                     x, y, z, 0, radiusSquared <= 36.0 ? 100.0 : 0.0);
             }
+        }
+    }
+
+    return image;
+}
+
+static mitk::Image::Pointer MakeBentPathImage()
+{
+    auto vtkTemplate = vtkSmartPointer<vtkImageData>::New();
+    vtkTemplate->SetDimensions(25, 25, 1);
+    vtkTemplate->SetSpacing(1.0, 1.0, 1.0);
+    vtkTemplate->SetOrigin(0.0, 0.0, 0.0);
+    vtkTemplate->AllocateScalars(VTK_DOUBLE, 1);
+
+    auto image = mitk::Image::New();
+    image->Initialize(vtkTemplate);
+
+    auto* vtkImage = image->GetVtkImageData();
+    if (!vtkImage)
+        return image;
+
+    vtkImage->SetDimensions(25, 25, 1);
+    vtkImage->SetSpacing(1.0, 1.0, 1.0);
+    vtkImage->SetOrigin(0.0, 0.0, 0.0);
+
+    if (!vtkImage->GetPointData() || !vtkImage->GetPointData()->GetScalars())
+        vtkImage->AllocateScalars(VTK_DOUBLE, 1);
+
+    for (int y = 0; y < 25; ++y)
+    {
+        for (int x = 0; x < 25; ++x)
+        {
+            const bool onHorizontal = (y == 10 && x >= 2 && x <= 18);
+            const bool onVertical = (x == 18 && y >= 10 && y <= 18);
+            vtkImage->SetScalarComponentFromDouble(
+                x, y, 0, 0, (onHorizontal || onVertical) ? 1000.0 : 1.0);
         }
     }
 
@@ -214,6 +254,82 @@ static mitk::DataNode::Pointer MakePathNode(const std::string& name)
     node->SetBoolProperty("xq.pathplanning.path", true);
     xq::pipeline::MarkNode(node, xq::pipeline::Stage::Path);
     return node;
+}
+
+static std::string ReadTextFile(const std::filesystem::path& path)
+{
+    std::ifstream in(path);
+    return std::string(std::istreambuf_iterator<char>(in),
+                       std::istreambuf_iterator<char>());
+}
+
+static bool test_legacy_import_preserves_distinct_final_suffix()
+{
+    const auto tmpDir = std::filesystem::temp_directory_path() /
+                        "xq_legacy_import_final_suffix_contract";
+    std::filesystem::remove_all(tmpDir);
+    std::filesystem::create_directories(tmpDir);
+
+    const auto pathFile = tmpDir / "artery.path";
+    {
+        std::ofstream os(pathFile);
+        os <<
+            "<path id=\"17\">"
+            "  <timestep>"
+            "    <path_element>"
+            "      <control_points>"
+            "        <point x=\"0\" y=\"0\" z=\"0\"/>"
+            "        <point x=\"0\" y=\"0\" z=\"1\"/>"
+            "      </control_points>"
+            "    </path_element>"
+            "  </timestep>"
+            "</path>";
+    }
+
+    const auto contourFile = tmpDir / "artery.ctgr";
+    {
+        std::ofstream os(contourFile);
+        os <<
+            "<contourgroup path_name=\"artery_final\">"
+            "  <timestep>"
+            "    <contour>"
+            "      <contour_points>"
+            "        <point x=\"0\" y=\"0\" z=\"0\"/>"
+            "        <point x=\"1\" y=\"0\" z=\"0\"/>"
+            "        <point x=\"0\" y=\"1\" z=\"0\"/>"
+            "      </contour_points>"
+            "    </contour>"
+            "  </timestep>"
+            "</contourgroup>";
+    }
+
+    xq_LegacyImporter importer;
+    if (!importer.ParsePathFile(pathFile.string()))
+    {
+        std::cerr << "FAIL test_legacy_import_preserves_distinct_final_suffix: path parse failed\n";
+        std::filesystem::remove_all(tmpDir);
+        return false;
+    }
+
+    auto contourNode = importer.ParseContourGroupFile(contourFile.string());
+    if (contourNode.IsNull())
+    {
+        std::cerr << "FAIL test_legacy_import_preserves_distinct_final_suffix: contour parse failed\n";
+        std::filesystem::remove_all(tmpDir);
+        return false;
+    }
+
+    auto* group = dynamic_cast<xq_ProfileGroup*>(contourNode->GetData());
+    if (!group || group->GetAttribute("path_name") != "artery_final")
+    {
+        std::cerr << "FAIL test_legacy_import_preserves_distinct_final_suffix: path name was normalized unexpectedly\n";
+        std::filesystem::remove_all(tmpDir);
+        return false;
+    }
+
+    std::filesystem::remove_all(tmpDir);
+    std::cout << "PASS test_legacy_import_preserves_distinct_final_suffix\n";
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -307,6 +423,7 @@ static bool test_contour_group_pipeline_contract()
 {
     auto ds = mitk::StandaloneDataStorage::New();
     auto pathNode = MakePathNode("aorta_path");
+    pathNode->SetStringProperty(xq::pipeline::kSourceImageProperty, "aorta_image");
     ds->Add(pathNode);
 
     const auto result = xq_SegmentationPipelineService::CreateContourGroup(
@@ -320,6 +437,24 @@ static bool test_contour_group_pipeline_contract()
     if (!xq::pipeline::HasStage(result.node, xq::pipeline::Stage::ContourGroup))
     {
         std::cerr << "FAIL test_contour_group_pipeline_contract: stage metadata missing\n";
+        return false;
+    }
+    if (xq::pipeline::GetStringProperty(result.node, xq::pipeline::kAlgorithmProperty) != "manual" ||
+        xq::pipeline::GetStringProperty(result.node, "xq.segmentation.method") != "manual")
+    {
+        std::cerr << "FAIL test_contour_group_pipeline_contract: manual algorithm metadata missing\n";
+        return false;
+    }
+    if (xq::pipeline::GetStringProperty(result.node, xq::pipeline::kSourceImageProperty) != "aorta_image")
+    {
+        std::cerr << "FAIL test_contour_group_pipeline_contract: source image not inherited from path\n";
+        return false;
+    }
+    double resliceSize = 0.0;
+    if (!result.node->GetDoubleProperty("xq.segmentation.reslice_size", resliceSize) ||
+        std::abs(resliceSize - 12.0) > 1e-9)
+    {
+        std::cerr << "FAIL test_contour_group_pipeline_contract: default reslice metadata missing\n";
         return false;
     }
 
@@ -338,6 +473,141 @@ static bool test_contour_group_pipeline_contract()
     }
 
     std::cout << "PASS test_contour_group_pipeline_contract\n";
+    return true;
+}
+
+static bool test_path_pipeline_vmtk_disabled_diagnostic()
+{
+    auto ds = mitk::StandaloneDataStorage::New();
+
+    auto imageNode = mitk::DataNode::New();
+    imageNode->SetName("path_source_image");
+    imageNode->SetData(MakeBentPathImage());
+    ds->Add(imageNode);
+
+    xq_PathPlanRequest request;
+    request.pathName = "vmtk_requested_path";
+    request.imageNodeName = "path_source_image";
+    request.algorithm = "vmtk_fastmarching";
+    request.sampleCount = 12;
+    request.smoothCurve = false;
+
+    mitk::Point3D start;
+    start.Fill(0.0);
+    start[0] = 2.0;
+    start[1] = 10.0;
+    mitk::Point3D end;
+    end.Fill(0.0);
+    end[0] = 18.0;
+    end[1] = 18.0;
+    request.seeds = {start, end};
+
+    const auto result = xq_PathPipelineService::CreatePath(ds, request);
+    if (result.ok || result.node.IsNotNull())
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_disabled_diagnostic: "
+                  << "VMTK request must not create a fallback path\n";
+        return false;
+    }
+
+    bool sawVmtkDiagnostic = false;
+    for (const auto& d : result.diagnostics)
+    {
+        if (d.message.find("VMTK Fast Marching is not available") != std::string::npos &&
+            d.message.find("Dijkstra") != std::string::npos)
+        {
+            sawVmtkDiagnostic = true;
+        }
+    }
+    if (!sawVmtkDiagnostic)
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_disabled_diagnostic: missing diagnostic\n";
+        for (const auto& d : result.diagnostics)
+            std::cerr << "  diag: " << d.message << "\n";
+        return false;
+    }
+
+    xq_PathPlanRequest dijkstraRequest = request;
+    dijkstraRequest.pathName = "dijkstra_path";
+    dijkstraRequest.algorithm = "dijkstra";
+    const auto dijkstraResult = xq_PathPipelineService::CreatePath(ds, dijkstraRequest);
+    if (!dijkstraResult.ok || dijkstraResult.node.IsNull())
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_disabled_diagnostic: explicit Dijkstra failed\n";
+        for (const auto& d : dijkstraResult.diagnostics)
+            std::cerr << "  diag: " << d.message << "\n";
+        return false;
+    }
+
+    const std::string pipelineAlgorithm =
+        xq::pipeline::GetStringProperty(dijkstraResult.node, xq::pipeline::kAlgorithmProperty);
+    if (pipelineAlgorithm != "dijkstra")
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_disabled_diagnostic: "
+                  << "explicit Dijkstra path should record 'dijkstra', got '"
+                  << pipelineAlgorithm << "'\n";
+        return false;
+    }
+    std::string pathMethod;
+    std::string paramsPathMethod;
+    std::string pathUnitsLength;
+    std::string requestedAlgorithm;
+    std::string actualAlgorithm;
+    double pathSpacing = 0.0;
+    double pathPointSize = 0.0;
+    int pathCalculationNumber = 0;
+    int pathPointCount = 0;
+    bool pathEditable = false;
+    if (!dijkstraResult.node->GetStringProperty("xq.path.method", pathMethod) ||
+        pathMethod != "dijkstra" ||
+        !dijkstraResult.node->GetStringProperty("xq.params.path.method", paramsPathMethod) ||
+        paramsPathMethod != "dijkstra" ||
+        !dijkstraResult.node->GetStringProperty("xq.units.length", pathUnitsLength) ||
+        pathUnitsLength != "mm" ||
+        !dijkstraResult.node->GetStringProperty("xq.pathplanning.algorithm.requested", requestedAlgorithm) ||
+        requestedAlgorithm != "dijkstra" ||
+        !dijkstraResult.node->GetStringProperty("xq.pathplanning.algorithm.actual", actualAlgorithm) ||
+        actualAlgorithm != "dijkstra" ||
+        !dijkstraResult.node->GetDoubleProperty("xq.path.spacing", pathSpacing) ||
+        std::abs(pathSpacing - dijkstraRequest.stepSize) > 1e-9 ||
+        !dijkstraResult.node->GetDoubleProperty("xq.path.point_size", pathPointSize) ||
+        pathPointSize <= 0.0 ||
+        !dijkstraResult.node->GetIntProperty("xq.path.calculation_number", pathCalculationNumber) ||
+        pathCalculationNumber != dijkstraRequest.sampleCount ||
+        !dijkstraResult.node->GetIntProperty("xq.path.point_count", pathPointCount) ||
+        pathPointCount <= 0 ||
+        !dijkstraResult.node->GetBoolProperty("xq.path.editable", pathEditable) ||
+        !pathEditable)
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_disabled_diagnostic: "
+                  << "path restore metadata missing or incorrect\n";
+        return false;
+    }
+
+    auto* segment = dijkstraResult.centerline ? dijkstraResult.centerline->GetSegment() : nullptr;
+    const auto anchors = segment ? segment->GetAnchorPositions() : std::vector<mitk::Point3D>();
+    bool sawBend = false;
+    int offCorridorCount = 0;
+    for (const auto& point : anchors)
+    {
+        const int x = static_cast<int>(std::round(point[0]));
+        const int y = static_cast<int>(std::round(point[1]));
+        const bool onHorizontal = (y == 10 && x >= 2 && x <= 18);
+        const bool onVertical = (x == 18 && y >= 10 && y <= 18);
+        if (x == 18 && y == 10)
+            sawBend = true;
+        if (!onHorizontal && !onVertical)
+            ++offCorridorCount;
+    }
+    if (!sawBend || offCorridorCount != 0)
+    {
+        std::cerr << "FAIL test_path_pipeline_vmtk_disabled_diagnostic: "
+                  << "Dijkstra path should follow the bent bright channel; sawBend="
+                  << sawBend << " offCorridorCount=" << offCorridorCount << "\n";
+        return false;
+    }
+
+    std::cout << "PASS test_path_pipeline_vmtk_disabled_diagnostic\n";
     return true;
 }
 
@@ -397,6 +667,43 @@ static bool test_model_mesh_simprep_pipeline_contract()
         return false;
     }
 
+    std::string sourceContourGroups;
+    std::string sourcePath;
+    std::string modelType;
+    std::string loftParams;
+    std::string capInfo;
+    int modelSampling = 0;
+    int modelFaceCount = 0;
+    bool modelQaOk = false;
+    if (!modelResult.node->GetStringProperty("xq.source.contour_groups", sourceContourGroups) ||
+        sourceContourGroups != "iliac_profiles" ||
+        !modelResult.node->GetStringProperty("xq.source.path", sourcePath) ||
+        sourcePath != "iliac_path" ||
+        !modelResult.node->GetStringProperty("xq.model.type", modelType) ||
+        modelType != "PolyData" ||
+        !modelResult.node->GetIntProperty("xq.model.sampling", modelSampling) ||
+        modelSampling != 48 ||
+        !modelResult.node->GetStringProperty("xq.model.loft.parameters", loftParams) ||
+        loftParams.find("sampling=48") == std::string::npos ||
+        !modelResult.node->GetStringProperty("xq.model.cap_info", capInfo) ||
+        capInfo.empty() ||
+        !modelResult.node->GetBoolProperty("xq.model.qa.ok", modelQaOk) ||
+        !modelQaOk ||
+        !modelResult.node->GetIntProperty("xq.model.face_count", modelFaceCount) ||
+        modelFaceCount < 1)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: model restore metadata missing"
+                  << " sourceContourGroups='" << sourceContourGroups << "'"
+                  << " sourcePath='" << sourcePath << "'"
+                  << " modelType='" << modelType << "'"
+                  << " modelSampling=" << modelSampling
+                  << " loftParams='" << loftParams << "'"
+                  << " capInfo='" << capInfo << "'"
+                  << " modelQaOk=" << modelQaOk
+                  << " modelFaceCount=" << modelFaceCount << "\n";
+        return false;
+    }
+
     auto* faceIds = vtkIntArray::SafeDownCast(modelPoly->GetCellData()->GetArray("FaceIds"));
     if (!faceIds || modelElement->GetFaceNumber() < 1)
     {
@@ -404,9 +711,89 @@ static bool test_model_mesh_simprep_pipeline_contract()
         return false;
     }
 
+    xq_CreateModelRequest occtRequest;
+    occtRequest.modelName = "iliac_model_occt_request";
+    occtRequest.modelType = "PolyData";
+    occtRequest.numSampling = 48;
+    occtRequest.engine = "occt";
+    const auto occtResult = xq_ModelPipelineService::CreateModel(ds, occtRequest);
+    if (!occtResult.ok || occtResult.node.IsNull())
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: OCCT fallback diagnostic path failed\n";
+        return false;
+    }
+    std::string modelAlgorithm;
+    std::string requestedEngine;
+    std::string actualEngine;
+    bool modelFallback = false;
+    if (!occtResult.node->GetStringProperty("xq.pipeline.algorithm", modelAlgorithm) ||
+        modelAlgorithm != "vtk_fallback" ||
+        !occtResult.node->GetBoolProperty("xq.model.algorithm.fallback", modelFallback) ||
+        !modelFallback ||
+        !occtResult.node->GetStringProperty("xq.model.requested_engine", requestedEngine) ||
+        requestedEngine != "occt" ||
+        !occtResult.node->GetStringProperty("xq.model.actual_engine", actualEngine) ||
+        actualEngine != "vtk_fallback")
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: OCCT fallback metadata dishonest\n";
+        return false;
+    }
+
+    const auto secondContourResult = xq_SegmentationPipelineService::CreateContourGroup(
+        ds, {"renal_profiles", "iliac_path"});
+    auto* secondGroup = dynamic_cast<xq_ProfileGroup*>(secondContourResult.node->GetData());
+    if (!secondGroup)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: second contour group missing\n";
+        return false;
+    }
+    auto* secondLower = MakeCircle();
+    auto* secondUpper = MakeCircle();
+    secondLower->SetMethod("manual");
+    secondUpper->SetMethod("manual");
+    {
+        mitk::Point3D origin; origin.Fill(0.0);
+        secondLower->SetProfileCenter(origin);
+        secondUpper->SetProfileCenter(origin);
+    }
+    secondLower->SetRadius(2.0);
+    secondUpper->SetRadius(2.0);
+    secondGroup->AppendProfile(secondLower, 0);
+    secondGroup->AppendProfile(secondUpper, 1);
+    xq_SegmentationUtils::ApplyPlacementFrame(
+        secondGroup->GetProfileAtPathPos(0), MakeAxialFrame(0, -3.0));
+    xq_SegmentationUtils::ApplyPlacementFrame(
+        secondGroup->GetProfileAtPathPos(1), MakeAxialFrame(1, 3.0));
+    secondGroup->SetLoftedMesh(xq_SegmentationUtils::LoftProfileGroup(secondGroup));
+
+    xq_CreateModelRequest selectedOnlyRequest;
+    selectedOnlyRequest.modelName = "selected_only_model";
+    selectedOnlyRequest.modelType = "PolyData";
+    selectedOnlyRequest.numSampling = 48;
+    selectedOnlyRequest.sourceContourGroupNames = {"iliac_profiles"};
+    const auto selectedOnlyResult =
+        xq_ModelPipelineService::CreateModel(ds, selectedOnlyRequest);
+    std::string selectedOnlySources;
+    if (!selectedOnlyResult.ok || selectedOnlyResult.node.IsNull() ||
+        !selectedOnlyResult.node->GetStringProperty(
+            "xq.source.contour_groups", selectedOnlySources) ||
+        selectedOnlySources != "iliac_profiles")
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: selected contour groups not honored"
+                  << " sources='" << selectedOnlySources << "'\n";
+        return false;
+    }
+
     xq_MeshGenerationRequest meshRequest;
     meshRequest.meshName = "iliac_mesh";
     meshRequest.globalEdgeSize = 2.5;
+    meshRequest.localFaceSizes[faceIds->GetValue(0)] = 1.25;
+    xq_RefinementRegion refinementRegion;
+    refinementRegion.type = xq_RefinementRegion::Type::Sphere;
+    refinementRegion.center = {0.0, 0.0, 5.0};
+    refinementRegion.radiusOrSize = {2.0, 2.0, 2.0};
+    refinementRegion.edgeSize = 0.75;
+    meshRequest.refinementRegions.push_back(refinementRegion);
     meshRequest.boundaryLayerLayers = 2;
     meshRequest.boundaryLayerGrowthRate = 1.3;
 
@@ -415,6 +802,63 @@ static bool test_model_mesh_simprep_pipeline_contract()
     if (!meshResult.ok || meshResult.node.IsNull())
     {
         std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: mesh service failed\n";
+        return false;
+    }
+    bool sawMeshCapabilityWarning = false;
+    for (const auto& d : meshResult.diagnostics)
+    {
+        if (d.message.find("recorded") != std::string::npos)
+            sawMeshCapabilityWarning = true;
+    }
+    if (!sawMeshCapabilityWarning)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: mesh capability warning missing\n";
+        return false;
+    }
+    int localSizeCount = 0;
+    int refinementCount = 0;
+    bool localSizesApplied = true;
+    bool refinementApplied = true;
+    std::string meshCapabilityDiagnostic;
+    std::string requestedBackend;
+    std::string actualBackend;
+    std::string localFaceSizeValues;
+    std::string refinementRegionValues;
+    bool backendFallback = false;
+    bool preserveSurface = false;
+    double blFirstHeight = 0.0;
+    double minDihedral = 0.0;
+    double maxEdgeSize = -1.0;
+    if (!meshResult.node->GetIntProperty("xq.mesh.local_face_sizes", localSizeCount) ||
+        localSizeCount != 1 ||
+        !meshResult.node->GetIntProperty("xq.mesh.refinement_regions", refinementCount) ||
+        refinementCount != 1 ||
+        !meshResult.node->GetBoolProperty("xq.mesh.local_face_sizes.applied", localSizesApplied) ||
+        localSizesApplied ||
+        !meshResult.node->GetBoolProperty("xq.mesh.refinement_regions.applied", refinementApplied) ||
+        refinementApplied ||
+        !meshResult.node->GetStringProperty("xq.mesh.requested_backend", requestedBackend) ||
+        requestedBackend != "tetgen" ||
+        !meshResult.node->GetStringProperty("xq.mesh.actual_backend", actualBackend) ||
+        actualBackend != "vtk_delaunay3d_fallback" ||
+        !meshResult.node->GetBoolProperty("xq.mesh.backend.fallback", backendFallback) ||
+        !backendFallback ||
+        !meshResult.node->GetStringProperty("xq.mesh.local_face_sizes.values", localFaceSizeValues) ||
+        localFaceSizeValues.find(":1.25") == std::string::npos ||
+        !meshResult.node->GetStringProperty("xq.mesh.refinement_regions.values", refinementRegionValues) ||
+        refinementRegionValues.find("Sphere,0,0,5,2,2,2,0.75") == std::string::npos ||
+        !meshResult.node->GetBoolProperty("xq.mesh.preserve_surface", preserveSurface) ||
+        !preserveSurface ||
+        !meshResult.node->GetDoubleProperty("xq.mesh.bl.firstHeight", blFirstHeight) ||
+        std::abs(blFirstHeight - meshRequest.boundaryLayerFirstHeight) > 1e-9 ||
+        !meshResult.node->GetDoubleProperty("xq.mesh.min_dihedral", minDihedral) ||
+        std::abs(minDihedral - meshRequest.minDihedral) > 1e-9 ||
+        !meshResult.node->GetDoubleProperty("xq.mesh.max_edge_size", maxEdgeSize) ||
+        std::abs(maxEdgeSize - meshRequest.maxEdgeSize) > 1e-9 ||
+        !meshResult.node->GetStringProperty("xq.mesh.capability.diagnostic", meshCapabilityDiagnostic) ||
+        meshCapabilityDiagnostic.find("not fully applied") == std::string::npos)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: mesh parameter capability metadata missing\n";
         return false;
     }
 
@@ -432,6 +876,16 @@ static bool test_model_mesh_simprep_pipeline_contract()
         std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: mesh node should derive from the model node\n";
         return false;
     }
+
+    modelResult.node->SetBoolProperty("xq.model.qa.ok", false);
+    const auto blockedMeshResult = xq_MeshPipelineService::CreateVolumeMesh(
+        ds, modelResult.node, meshRequest);
+    if (blockedMeshResult.ok)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: bad model QA should block meshing\n";
+        return false;
+    }
+    modelResult.node->SetBoolProperty("xq.model.qa.ok", true);
 
     xq_SimulationPrepRequest simRequest;
     simRequest.jobName = "iliac_job";
@@ -459,6 +913,181 @@ static bool test_model_mesh_simprep_pipeline_contract()
         std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: simulation prep stage metadata missing\n";
         return false;
     }
+
+    std::string solverType;
+    std::string simUnitsLength;
+    std::string simUnitsTime;
+    std::string simWallModel;
+    bool deformableWall = true;
+    double fluidDensity = 0.0;
+    double fluidViscosity = 0.0;
+    double initialPressure = -1.0;
+    double initialVelocity = -1.0;
+    double wallThickness = 0.0;
+    double wallElasticModulus = 0.0;
+    double wallPoissonRatio = 0.0;
+    double wallDensity = 0.0;
+    int numTimesteps = 0;
+    int numCycles = 0;
+    int numLinearIterations = 0;
+    int numNonlinearIterations = 0;
+    int bcCount = 0;
+    int faceRoleCount = 0;
+    int paramsNumSteps = 0;
+    int paramsNumCycles = 0;
+    if (!simResult.node->GetStringProperty("xq.sim.solver_type", solverType) ||
+        solverType != "xq_export_only" ||
+        !simResult.node->GetStringProperty("xq.units.length", simUnitsLength) ||
+        simUnitsLength != "mm" ||
+        !simResult.node->GetStringProperty("xq.units.time", simUnitsTime) ||
+        simUnitsTime != "s" ||
+        !simResult.node->GetStringProperty("xq.params.simulation.wall_model", simWallModel) ||
+        simWallModel != "rigid" ||
+        !simResult.node->GetBoolProperty("xq.sim.deformable_wall", deformableWall) ||
+        deformableWall ||
+        !simResult.node->GetDoubleProperty("xq.sim.fluid_density", fluidDensity) ||
+        std::abs(fluidDensity - simRequest.fluidDensity) > 1e-9 ||
+        !simResult.node->GetDoubleProperty("xq.sim.fluid_viscosity", fluidViscosity) ||
+        std::abs(fluidViscosity - simRequest.fluidViscosity) > 1e-9 ||
+        !simResult.node->GetDoubleProperty("xq.sim.initial_pressure", initialPressure) ||
+        std::abs(initialPressure - simRequest.initialPressure) > 1e-9 ||
+        !simResult.node->GetDoubleProperty("xq.sim.initial_velocity", initialVelocity) ||
+        std::abs(initialVelocity - simRequest.initialVelocity) > 1e-9 ||
+        !simResult.node->GetDoubleProperty("xq.sim.wall_thickness", wallThickness) ||
+        std::abs(wallThickness - simRequest.wallThickness) > 1e-9 ||
+        !simResult.node->GetDoubleProperty("xq.sim.wall_elastic_modulus", wallElasticModulus) ||
+        std::abs(wallElasticModulus - simRequest.wallElasticModulus) > 1e-6 ||
+        !simResult.node->GetDoubleProperty("xq.sim.wall_poisson_ratio", wallPoissonRatio) ||
+        std::abs(wallPoissonRatio - simRequest.wallPoissonRatio) > 1e-9 ||
+        !simResult.node->GetDoubleProperty("xq.sim.wall_density", wallDensity) ||
+        std::abs(wallDensity - simRequest.wallDensity) > 1e-9 ||
+        !simResult.node->GetIntProperty("xq.sim.num_timesteps", numTimesteps) ||
+        numTimesteps != simRequest.numTimesteps ||
+        !simResult.node->GetIntProperty("xq.sim.num_cycles", numCycles) ||
+        numCycles != simRequest.numCycles ||
+        !simResult.node->GetIntProperty("xq.sim.num_linear_iterations", numLinearIterations) ||
+        numLinearIterations != simRequest.numLinearIterations ||
+        !simResult.node->GetIntProperty("xq.sim.num_nonlinear_iterations", numNonlinearIterations) ||
+        numNonlinearIterations != simRequest.numNonlinearIterations ||
+        !simResult.node->GetIntProperty("xq.sim.bc_count", bcCount) ||
+        bcCount == 0 ||
+        !simResult.node->GetIntProperty("xq.simprep.face_role_count", faceRoleCount) ||
+        faceRoleCount == 0 ||
+        !simResult.node->GetIntProperty("xq.params.simulation.num_steps", paramsNumSteps) ||
+        paramsNumSteps != simRequest.numTimesteps ||
+        !simResult.node->GetIntProperty("xq.params.simulation.num_cycles", paramsNumCycles) ||
+        paramsNumCycles != simRequest.numCycles)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: simulation prep restore metadata missing\n";
+        return false;
+    }
+
+    meshResult.node->SetBoolProperty("xq.mesh.qa.ok", false);
+    const auto blockedSimResult =
+        xq_SimulationPrepPipelineService::CreateOrUpdateSimulationPrep(
+            ds, modelResult.node, meshResult.node, simRequest);
+    if (blockedSimResult.ok)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: bad mesh QA should block simulation prep\n";
+        return false;
+    }
+    meshResult.node->SetBoolProperty("xq.mesh.qa.ok", true);
+
+    xq_SimulationPrepRequest invalidBcRequest = simRequest;
+    xq_BoundaryCondition invalidBc;
+    invalidBc.faceName = "definitely_missing_face";
+    invalidBc.faceRole = "outflow";
+    invalidBc.bcType = "resistance";
+    invalidBcRequest.boundaryConditions.push_back(invalidBc);
+    const auto invalidBcResult =
+        xq_SimulationPrepPipelineService::CreateOrUpdateSimulationPrep(
+            ds, modelResult.node, meshResult.node, invalidBcRequest);
+    if (invalidBcResult.ok)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: invalid BC should fail\n";
+        return false;
+    }
+    bool sawBcDiagnostic = false;
+    for (const auto& d : invalidBcResult.diagnostics)
+    {
+        if (d.message.find("unknown face") != std::string::npos ||
+            d.message.find("Boundary condition") != std::string::npos)
+            sawBcDiagnostic = true;
+    }
+    if (!sawBcDiagnostic)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: invalid BC diagnostic missing\n";
+        return false;
+    }
+
+    const std::filesystem::path exportDir =
+        std::filesystem::temp_directory_path() / "xq_simprep_export_contract";
+    std::filesystem::remove_all(exportDir);
+    xq_SimulationExportRequest exportRequest;
+    exportRequest.outputDir = exportDir.string();
+    exportRequest.inletWaveform = {{0.0, 1.0}, {0.5, 2.0}, {1.0, 1.0}};
+    const auto exportResult = xq_SimulationPrepPipelineService::ExportForSolver(
+        ds, simResult.node, exportRequest);
+    if (!exportResult.ok || exportResult.filesWritten.empty())
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: solver export failed\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    std::string simStatus;
+    const bool exportHasWarnings = !exportResult.diagnostics.empty();
+    const std::string expectedExportStatus =
+        exportHasWarnings ? "exported_with_warnings" : "exported";
+    if (!simResult.node->GetStringProperty("xq.sim.status", simStatus) ||
+        simStatus != expectedExportStatus)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: export status not recorded\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    if (simJob->GetStatus() != expectedExportStatus)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: mitk solver job status not exported\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    if (exportHasWarnings)
+    {
+        std::string exportWarnings;
+        if (!simResult.node->GetStringProperty("xq.sim.export_warnings", exportWarnings) ||
+            exportWarnings.empty())
+        {
+            std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: export warning metadata missing\n";
+            std::filesystem::remove_all(exportDir);
+            return false;
+        }
+    }
+    int fileCount = 0;
+    if (!simResult.node->GetIntProperty("xq.sim.files_written_count", fileCount) ||
+        fileCount != static_cast<int>(exportResult.filesWritten.size()))
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: export file count metadata mismatch\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    std::string filesCsv;
+    if (!simResult.node->GetStringProperty("xq.sim.files_written", filesCsv) ||
+        filesCsv.find("solver.inp") == std::string::npos ||
+        filesCsv.find("bct.dat") == std::string::npos)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: export file list metadata missing\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    const auto bctText = ReadTextFile(exportDir / "bct.dat");
+    if (bctText.find("3 10") == std::string::npos ||
+        bctText.find("0.5 2") == std::string::npos)
+    {
+        std::cerr << "FAIL test_model_mesh_simprep_pipeline_contract: waveform bct.dat content missing\n";
+        std::filesystem::remove_all(exportDir);
+        return false;
+    }
+    std::filesystem::remove_all(exportDir);
 
     std::cout << "PASS test_model_mesh_simprep_pipeline_contract\n";
     return true;
@@ -1583,8 +2212,8 @@ static bool test_centerline_rotation_matches_inplane_xhat_convention()
     }
 
     const auto& first = traceVertices.front();
-    const auto expectedXhat = xq_Math3::ComputeOrthogonalVector(first.tangent);
-    const auto dot = xq_Math3::DotProduct3D(first.rotation, expectedXhat);
+    const auto expectedXhat = xq_SpatialMath::ComputeOrthogonalVector(first.tangent);
+    const auto dot = xq_SpatialMath::DotProduct3D(first.rotation, expectedXhat);
 
     if (std::abs(dot - 1.0) > 1e-6)
     {
@@ -3585,6 +4214,44 @@ static bool test_view_check_preprocessing_target_logic()
     return true;
 }
 
+static bool test_legacy_levelset_does_not_return_threshold_fallback()
+{
+    auto image = vtkSmartPointer<vtkImageData>::New();
+    image->SetDimensions(16, 16, 1);
+    image->AllocateScalars(VTK_DOUBLE, 1);
+    for (int y = 0; y < 16; ++y)
+    {
+        for (int x = 0; x < 16; ++x)
+            image->SetScalarComponentFromDouble(x, y, 0, 0, 100.0);
+    }
+
+    xq_SegmentationAlgorithm::SliceInput slice;
+    slice.slice = image;
+    slice.seed[0] = 8.0;
+    slice.seed[1] = 8.0;
+
+    xq_SegmentationAlgorithm::Params params;
+    params.threshold = 50.0;
+
+    xq_LevelSetSegmentation legacyLevelSet;
+    const auto result = legacyLevelSet.Extract(slice, params);
+    if (result.ok || result.polygon)
+    {
+        std::cerr << "FAIL test_legacy_levelset_does_not_return_threshold_fallback: "
+                     "legacy LevelSet must not return a threshold fallback contour\n";
+        return false;
+    }
+    if (result.diagnostic.find("disabled") == std::string::npos)
+    {
+        std::cerr << "FAIL test_legacy_levelset_does_not_return_threshold_fallback: "
+                     "missing disabled diagnostic\n";
+        return false;
+    }
+
+    std::cout << "PASS test_legacy_levelset_does_not_return_threshold_fallback\n";
+    return true;
+}
+
 // ---------------------------------------------------------------------------
 // main
 // ---------------------------------------------------------------------------
@@ -3600,6 +4267,8 @@ int main()
     if (!test_write_sparse_profiles())         ++failures;
     if (!test_version_validation())            ++failures;
     if (!test_contour_group_pipeline_contract()) ++failures;
+    if (!test_path_pipeline_vmtk_disabled_diagnostic()) ++failures;
+    if (!test_legacy_import_preserves_distinct_final_suffix()) ++failures;
     if (!test_model_mesh_simprep_pipeline_contract()) ++failures;
     if (!test_sv_project_import_creates_vascular_nodes()) ++failures;
     if (!test_segmentation_object_factory_creates_mappers()) ++failures;
@@ -3646,6 +4315,7 @@ int main()
     if (!test_preprocess_target_ineligible_unresolved_placement()) ++failures;
     if (!test_preprocess_target_valid_target())               ++failures;
     if (!test_view_check_preprocessing_target_logic())        ++failures;
+    if (!test_legacy_levelset_does_not_return_threshold_fallback()) ++failures;
 
     if (failures == 0)
         std::cout << "All tests PASSED.\n";

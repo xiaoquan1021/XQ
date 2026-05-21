@@ -8,8 +8,8 @@
 
 | # | XQ File | SV File | XQ Lines | SV Lines | Matching | Similarity % |
 |---|---------|---------|----------|----------|----------|-------------|
-| 1 | `Common/xq_Math3.h` | `Common/sv4gui_Math3.h` | 17 | 10 | 1 | **5.9%** |
-| 2 | `Common/xq_Math3.cxx` | `Common/sv4gui_Math3.cxx` | 116 | 182 | 2 | **1.1%** |
+| 1 | `Common/xq_SpatialMath.h` | `Common/sv4gui_SpatialMath.h` | 17 | 10 | 1 | **5.9%** |
+| 2 | `Common/xq_SpatialMath.cxx` | `Common/sv4gui_SpatialMath.cxx` | 116 | 182 | 2 | **1.1%** |
 | 3 | `Common/xq_Spline.h` | `Common/sv4gui_Spline.h` | 15 | 19 | 2 | **10.5%** |
 | 4 | `Common/xq_Spline.cxx` | `Common/sv4gui_Spline.cxx` | 15 | 90 | 0 | **0.0%** |
 | 5 | `Common/xq_VtkUtils.h` | `Common/sv4gui_VtkUtils.h` | 11 | 6 | 1 | **9.1%** |

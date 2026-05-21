@@ -416,12 +416,12 @@ Help (帮助)
 
 | 原 Plugin ID | 新 Plugin ID |
 |-------------|-------------|
-| org.xq.gui.qt.pathplanning | org.xq.pipeline.vesselplanning |
-| org.xq.gui.qt.segmentation | org.xq.pipeline.lumencontouring |
-| org.xq.gui.qt.mitksegmentation | org.xq.pipeline.contouring3d |
-| org.xq.gui.qt.modeling | org.xq.pipeline.vascularmodeling |
-| org.xq.gui.qt.meshing | org.xq.pipeline.gridgeneration |
-| org.xq.gui.qt.simulation | org.xq.pipeline.hemodynamics |
+| org.xq.gui.qt.pathplanning | org.xq.imaging.centerline |
+| org.xq.gui.qt.segmentation | org.xq.imaging.lumenanalysis |
+| org.xq.gui.qt.mitksegmentation | org.xq.imaging.volumesegmentation |
+| org.xq.gui.qt.modeling | org.xq.imaging.anatomymodeling |
+| org.xq.gui.qt.meshing | org.xq.imaging.volumemeshing |
+| org.xq.gui.qt.simulation | org.xq.imaging.flowanalysis |
 | org.xq.gui.qt.datamanager | org.xq.core.datamanager |
 | org.xq.gui.qt.projectmanager | org.xq.core.workspace |
 | org.xq.gui.qt.application | org.xq.core.application |
@@ -489,4 +489,4 @@ Phase 7 (编译验证) ← 所有 Phase 完成后
 | **菜单结构** | 与 SV 一致 | Pipeline 替代 Tools |
 | **模块数量** | 11 → 8 | 精简核心 |
 | **插件数量** | 14 → 11 | 精简核心 |
-| **Plugin ID** | org.xq.gui.qt.* | org.xq.pipeline.* / org.xq.core.* |
+| **Plugin ID** | org.xq.gui.qt.* | org.xq.imaging.* / org.xq.core.* |
