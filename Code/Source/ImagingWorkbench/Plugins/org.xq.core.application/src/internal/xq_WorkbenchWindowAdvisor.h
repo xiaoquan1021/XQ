@@ -10,20 +10,14 @@
 #include <mitkDataStorage.h>
 
 #include <QAction>
-#include <QList>
 #include <QHash>
-#include <QPointer>
+#include <QList>
 #include <QStringList>
 
 class QMenu;
-class QEvent;
-class QFrame;
-class QHBoxLayout;
 class QLabel;
 class QTimer;
 class QToolBar;
-class QActionGroup;
-class QButtonGroup;
 class QToolButton;
 class XQPerspectiveListener;
 
@@ -46,8 +40,6 @@ public:
     void SetWindowIcon(const QString& iconPath);
 
     mitk::DataStorage::Pointer GetDataStorage();
-
-    bool eventFilter(QObject* watched, QEvent* event) override;
 
 protected slots:
     void ShowView(const QString& viewId);
@@ -96,24 +88,6 @@ private:
     void LoadRecentProjects();
     void SaveRecentProjects();
     void RebuildRecentProjectsMenu();
-    void ShowImportTools();
-    void ShowTraceTools();
-    void ShowContourTools();
-    void ShowBuildTools();
-    void ShowSolveTools();
-    void ClearStageToolsBar();
-    QToolButton* AddStageDrawerButton(
-        const QIcon& icon,
-        const QString& label,
-        const QString& activeStage,
-        const QString& stageKey);
-    void SetActiveStageButton(QToolButton* button);
-    void EnsureStageDrawerPanel();
-    void ActivateStageDrawer(QToolButton* button, const QString& stageKey);
-    void DeactivateStageDrawer();
-    void RebuildStageDrawer(const QString& stageKey);
-    void PositionStageDrawer(QToolButton* button);
-    void AddDisplayControlsToRibbon();
     void SetCrosshairGapZero();
 
     berry::WorkbenchAdvisor* m_WorkbenchAdvisor;
@@ -138,6 +112,7 @@ private:
     QAction* m_ImportDicomAction;
     QAction* m_VolumeRenderingAction;
     QAction* m_CrosshairAction;
+    QHash<QString, QAction*> m_ToolActionsByViewId;
 
     QMenu* m_RecentProjectsMenu;
     QStringList m_RecentProjects;
@@ -146,12 +121,6 @@ private:
     QLabel* m_CoordLabel;
     QTimer* m_StatusTimer;
     int m_LastNodeCount;
-
-    QToolBar* m_StageToolsBar;
-    QPointer<QToolButton> m_ActiveStageButton;
-    QFrame* m_StageDrawerPanel;
-    QHBoxLayout* m_StageDrawerLayout;
-    QString m_ActiveStageKey;
 
     QScopedPointer<berry::IPartListener> m_TitlePartListener;
     QScopedPointer<berry::IPerspectiveListener> m_PerspectiveListener;

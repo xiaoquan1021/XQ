@@ -3,7 +3,7 @@
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.mitksegmentation"
           name="3D Segmentation"
-          icon="resources/icon.png"
+          icon="resources/segmentation3d.svg"
           class="xq_MitkSegmentationView"
           category="Stage 3 – Segmentations"/>
   </extension>

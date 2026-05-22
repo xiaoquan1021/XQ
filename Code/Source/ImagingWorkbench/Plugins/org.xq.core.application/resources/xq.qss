@@ -79,12 +79,14 @@ QToolBar QToolButton:hover {
     border: 1px solid #2563EB;
 }
 QToolBar QToolButton:pressed {
-    background: #1E40AF;
-    color: #FFFFFF;
+    background: #DBEAFE;
+    border: 1px solid #93C5FD;
+    color: #1E293B;
 }
 QToolBar QToolButton:checked {
-    background: #EFF6FF;
-    border-left: 3px solid #2563EB;
+    background: #DBEAFE;
+    border: 1px solid #93C5FD;
+    color: #1E293B;
 }
 
 /* Dock Widget (View Panels) */
@@ -226,9 +228,9 @@ QPushButton:hover {
     color: #2563EB;
 }
 QPushButton:pressed {
-    background: #1E40AF;
-    color: #FFFFFF;
-    border-color: #1E40AF;
+    background: #DBEAFE;
+    color: #1E293B;
+    border-color: #93C5FD;
 }
 QPushButton:disabled {
     background: #F1F5F9;
@@ -565,9 +567,9 @@ QDoubleSpinBox#m_ZWorldCoordinateSpinBox {
 
 /* Tooltip */
 QToolTip {
-    background: #1E293B;
-    border: 1px solid #2563EB;
-    color: #FFFFFF;
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    color: #1E293B;
     padding: 4px 8px;
     border-radius: 4px;
 }
@@ -595,6 +597,9 @@ QToolBar#mainActionsToolBar QToolButton {
     border: 1px solid transparent;
     border-radius: 4px;
     padding: 3px 10px;
+    min-width: 28px;
+    min-height: 24px;
+    icon-size: 24px;
     font-size: 12px;
     color: #1E293B;
     background: transparent;
@@ -606,13 +611,15 @@ QToolBar#mainActionsToolBar QToolButton:hover {
 }
 
 QToolBar#mainActionsToolBar QToolButton:pressed {
-    background: #1E40AF;
-    color: #FFFFFF;
+    background: #DBEAFE;
+    border: 1px solid #93C5FD;
+    color: #1E293B;
 }
 
 QToolBar#mainActionsToolBar QToolButton:checked {
-    background: #EFF6FF;
-    border-left: 3px solid #2563EB;
+    background: #DBEAFE;
+    border: 1px solid #93C5FD;
+    color: #1E293B;
 }
 
 /* ========== Perspective Toolbar ========== */
@@ -639,12 +646,14 @@ QToolBar#perspectiveToolBar QToolButton:hover {
 }
 
 QToolBar#perspectiveToolBar QToolButton:pressed {
-    background: #1E40AF;
-    color: #FFFFFF;
+    background: #DBEAFE;
+    border: 1px solid #93C5FD;
+    color: #1E293B;
 }
 
 QToolBar#perspectiveToolBar QToolButton:checked {
     background: #EFF6FF;
+    border: 1px solid #93C5FD;
     border-left: 3px solid #2563EB;
 }
 
@@ -674,12 +683,14 @@ QToolBar#xqViewToolBar QToolButton:hover {
 }
 
 QToolBar#xqViewToolBar QToolButton:pressed {
-    background: #1E40AF;
-    color: #FFFFFF;
+    background: #DBEAFE;
+    border: 1px solid #93C5FD;
+    color: #1E293B;
 }
 
 QToolBar#xqViewToolBar QToolButton:checked {
     background: #EFF6FF;
+    border: 1px solid #93C5FD;
     border-left: 3px solid #2563EB;
 }
 
@@ -707,91 +718,15 @@ QToolBar#viewToolBar QToolButton:hover {
 }
 
 QToolBar#viewToolBar QToolButton:pressed {
-    background: #1E40AF;
-    color: #FFFFFF;
+    background: #DBEAFE;
+    border: 1px solid #93C5FD;
+    color: #1E293B;
 }
 
 QToolBar#viewToolBar QToolButton:checked {
     background: #EFF6FF;
+    border: 1px solid #93C5FD;
     border-left: 3px solid #2563EB;
-}
-
-/* ========== Context Ribbon (stage tools + display) ========== */
-QToolBar#xqStageToolsBar {
-    background-color: #FFFFFF;
-    border-bottom: 1px solid #E2E8F0;
-    padding: 3px 12px;
-    spacing: 4px;
-}
-QToolBar#xqStageToolsBar QToolButton {
-    color: #1E293B;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    padding: 5px 12px;
-    font-size: 12px;
-    font-weight: 500;
-}
-QToolBar#xqStageToolsBar QToolButton:hover {
-    background: #EFF6FF;
-    border: 1px solid #93C5FD;
-}
-QToolBar#xqStageToolsBar QToolButton:pressed {
-    background: #1E40AF;
-    color: #FFFFFF;
-}
-QToolBar#xqStageToolsBar QToolButton:checked {
-    background: #DBEAFE;
-    border: 1px solid #2563EB;
-    color: #1E40AF;
-}
-QToolBar#xqStageToolsBar QToolButton#xqStageDrawerButton {
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    padding: 5px 12px;
-    outline: none;
-}
-QToolBar#xqStageToolsBar QToolButton#xqStageDrawerButton:hover {
-    background: #EFF6FF;
-    border: 1px solid #93C5FD;
-    color: #1E40AF;
-}
-QToolBar#xqStageToolsBar QToolButton#xqStageDrawerButton:checked {
-    background: #DBEAFE;
-    border: 1px solid #2563EB;
-    color: #1E40AF;
-}
-QToolBar#xqStageToolsBar QToolButton#xqStageDrawerButton:focus {
-    outline: none;
-}
-
-QFrame#xqStageDrawerPanel {
-    background: #FFFFFF;
-    border: 1px solid #B7C9F7;
-    border-radius: 6px;
-}
-
-QToolButton#xqStageDrawerToolButton {
-    color: #1E293B;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-QToolButton#xqStageDrawerToolButton:hover {
-    background: #EFF6FF;
-    border: 1px solid #93C5FD;
-    color: #1E40AF;
-}
-
-QToolButton#xqStageDrawerToolButton:pressed {
-    background: #DBEAFE;
-    border: 1px solid #2563EB;
-    color: #1E40AF;
 }
 
 /* ========== MITK Render Window Controls ========== */
@@ -837,6 +772,12 @@ QToolBar QToolButton {
     min-width: 24px;
     min-height: 24px;
     icon-size: 18px;
+}
+
+QToolBar#mainActionsToolBar QToolButton {
+    min-width: 28px;
+    min-height: 24px;
+    icon-size: 24px;
 }
 
 /* ========== BlueBerry View Tabs (XQ Data Manager, etc.) ========== */

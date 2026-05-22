@@ -3,6 +3,7 @@
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.multiphysics"
           name="Multi-Physics"
+          icon="resources/multiphysics.svg"
           class="xq_MultiPhysicsView"
           category="Stage 5 – Simulation"/>
   </extension>

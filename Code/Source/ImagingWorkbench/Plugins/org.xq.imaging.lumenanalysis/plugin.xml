@@ -3,7 +3,7 @@
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.segmentation"
           name="2D Segmentation"
-          icon="resources/icon.png"
+          icon="resources/segmentation2d.svg"
           class="xq_LumenContouringView"
           category="Stage 3 – Segmentations"/>
   </extension>

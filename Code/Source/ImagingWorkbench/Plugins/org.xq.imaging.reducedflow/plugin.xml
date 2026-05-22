@@ -3,6 +3,7 @@
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.romsimulation"
           name="ROM Simulation"
+          icon="resources/romsimulation.svg"
           class="xq_ROMSimulationView"
           category="Stage 5 – Simulation"/>
   </extension>

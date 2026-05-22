@@ -115,7 +115,7 @@ void xq_WelcomePart::CreateQtPartControl(QWidget* parent)
     StartEntry startActions[] = {
         {"New Project",             "Start a new cardiovascular project",    nullptr},
         {"Open Project",            "Open an existing project folder",       nullptr},
-        {"Import Project",          "Import from external format",           nullptr},
+        {"Import Legacy Project",    "Import from external format",           nullptr},
         {"Open Data File",          "Load images, surfaces, or scenes",      nullptr},
     };
     for (int i = 0; i < 4; i++) {

@@ -14,5 +14,5 @@ set(UI_FILES
 
 set(CACHED_RESOURCE_FILES
   plugin.xml
-  resources/DataManager_48.png
+  resources/datamanager.svg
 )

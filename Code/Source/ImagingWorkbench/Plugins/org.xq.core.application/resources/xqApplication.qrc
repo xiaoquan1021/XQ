@@ -10,11 +10,6 @@
         <file>edit-undo.svg</file>
         <file>edit-redo.svg</file>
         <file>camera-photo.svg</file>
-        <file>stage-import.svg</file>
-        <file>stage-trace.svg</file>
-        <file>stage-contour.svg</file>
-        <file>stage-build.svg</file>
-        <file>stage-solve.svg</file>
         <file>tool-process.svg</file>
         <file>tool-path.svg</file>
         <file>tool-seg-2d.svg</file>

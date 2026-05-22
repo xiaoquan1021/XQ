@@ -3,7 +3,7 @@
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.modeling"
           name="Solid Modeling"
-          icon="resources/icon.png"
+          icon="resources/modeling.svg"
           class="xq_VascularModelingView"
           category="Stage 4 – Modeling"/>
   </extension>

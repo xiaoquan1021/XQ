@@ -16,6 +16,7 @@ set(UI_FILES
 
 set(CACHED_RESOURCE_FILES
   plugin.xml
+  resources/imageprocessing.svg
 )
 
 set(QRC_FILES

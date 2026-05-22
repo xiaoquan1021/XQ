@@ -15,4 +15,5 @@ set(UI_FILES
 set(CACHED_RESOURCE_FILES
   plugin.xml
   resources/icon.png
+  resources/segmentation3d.svg
 )

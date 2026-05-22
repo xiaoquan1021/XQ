@@ -3,7 +3,7 @@
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.simulation"
           name="Flow Simulation"
-          icon="resources/icon.png"
+          icon="resources/simulation.svg"
           class="xq_HemodynamicsView"
           category="Stage 5 – Simulation"/>
   </extension>

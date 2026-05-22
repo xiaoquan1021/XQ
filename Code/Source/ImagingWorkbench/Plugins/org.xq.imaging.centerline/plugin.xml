@@ -3,7 +3,7 @@
   <extension point="org.blueberry.ui.views">
     <view id="org.xq.views.pathplanning"
           name="Path Planning"
-          icon="resources/icon.png"
+          icon="resources/pathplanning.svg"
           class="xq_VesselPlanningView"
           category="Stage 2 – Paths"/>
   </extension>
