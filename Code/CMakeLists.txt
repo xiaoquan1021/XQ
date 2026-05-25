@@ -125,7 +125,7 @@ set(US_RCC_EXECUTABLE_NAME usResourceCompiler)
 #-----------------------------------------------------------------------------
 # 6. MITK include directories
 #-----------------------------------------------------------------------------
-set(MITK_SRC_DIR "$ENV{HOME}/Externals/src/MITK-2024.06")
+set(MITK_SRC_DIR "${XQ_EXTERNALS_ROOT}/src/MITK-2024.06")
 set(MITK_BUILD_DIR "${MITK_SRC_DIR}/build/MITK-build")
 
 # MITK build-tree headers (Modules, Plugins)

@@ -3,19 +3,27 @@ set -euo pipefail
 
 XQ_ROOT="${XQ_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 BUILD_DIR="${XQ_BUILD_DIR:-${XQ_ROOT}/build}"
-EXTERNALS_ROOT="${XQ_EXTERNALS_ROOT:-${HOME}/Externals}"
-EXTERNALS_INSTALL="${EXTERNALS_ROOT}/install"
 BUILD_TYPE="${XQ_BUILD_TYPE:-Release}"
 JOBS="${XQ_BUILD_JOBS:-$(nproc)}"
 
+# shellcheck source=scripts/xq-env.sh
+source "${XQ_ROOT}/scripts/xq-env.sh"
+
+init_env() {
+  xq_env_init
+  EXTERNALS_ROOT="${XQ_EXTERNALS_ROOT}"
+  EXTERNALS_INSTALL="${XQ_EXTERNALS_INSTALL}"
+}
+
 usage() {
   cat <<'EOF'
-Usage: ./build-xq.sh [clean] [configure] [build] [test] [run-check]
+Usage: ./build-xq.sh [clean] [doctor] [configure] [build] [test] [run-check]
 
 Default with no arguments: configure build test.
 
 Commands:
   clean       Remove the build directory before configuring.
+  doctor      Print resolved paths and verify required external dependencies.
   configure   Configure CMake.
   build       Build all targets.
   test        Run ctest with the XQ runtime library path.
@@ -23,25 +31,10 @@ Commands:
 
 Environment:
   XQ_BUILD_DIR=/path/to/build
-  XQ_EXTERNALS_ROOT=/path/to/Externals
+  XQ_EXTERNALS_ROOT=/path/to/svExternals
   XQ_BUILD_TYPE=Release|Debug|RelWithDebInfo|MinSizeRel
   XQ_BUILD_JOBS=4
 EOF
-}
-
-runtime_path() {
-  printf '%s' \
-    "${BUILD_DIR}/lib:${BUILD_DIR}/lib/plugins:${BUILD_DIR}/bin:"\
-"${EXTERNALS_INSTALL}/python-3.11.0/lib:"\
-"${EXTERNALS_INSTALL}/hdf5-1.14.3/lib:${EXTERNALS_INSTALL}/hdf5-1.12.2/lib:"\
-"${EXTERNALS_INSTALL}/gdcm-3.0.10/lib:${EXTERNALS_INSTALL}/vtk-9.3.0/lib:"\
-"${EXTERNALS_INSTALL}/itk-5.4.0/lib:${EXTERNALS_INSTALL}/qt-6.7.0/lib:"\
-"${EXTERNALS_INSTALL}/mitk-2024.06/lib:${EXTERNALS_INSTALL}/opencascade-7.6.0/lib:"\
-"${EXTERNALS_INSTALL}/freetype-2.13.0/lib:"\
-"${EXTERNALS_ROOT}/src/MITK-2024.06/build/MITK-build/lib:"\
-"${EXTERNALS_ROOT}/src/MITK-2024.06/build/MITK-build/lib/plugins:"\
-"${EXTERNALS_ROOT}/src/MITK-2024.06/build/ep/lib:"\
-"${EXTERNALS_ROOT}/src/MITK-2024.06/build/ep/src/CTK-build/CTK-build/bin"
 }
 
 require_path() {
@@ -52,6 +45,7 @@ require_path() {
 }
 
 check_dependencies() {
+  init_env
   require_path "${XQ_ROOT}/CMakeLists.txt"
   require_path "${EXTERNALS_INSTALL}/qt-6.7.0/lib/cmake/Qt6/Qt6Config.cmake"
   require_path "${EXTERNALS_INSTALL}/qt-6.7.0/lib/cmake/Qt6GuiTools/Qt6GuiToolsConfig.cmake"
@@ -62,9 +56,21 @@ check_dependencies() {
   require_path "${EXTERNALS_ROOT}/src/MITK-2024.06/build/MITK-build/MITKConfig.cmake"
 }
 
+doctor() {
+  check_dependencies
+  echo "[XQ] XQ_ROOT=${XQ_ROOT}"
+  echo "[XQ] XQ_BUILD_DIR=${BUILD_DIR}"
+  echo "[XQ] XQ_EXTERNALS_ROOT=${EXTERNALS_ROOT}"
+  echo "[XQ] XQ_EXTERNALS_INSTALL=${EXTERNALS_INSTALL}"
+  echo "[XQ] XQ_MITK_BUILD=${XQ_MITK_BUILD}"
+  echo "[XQ] QT_QPA_PLATFORM=${QT_QPA_PLATFORM:-<unset>}"
+  echo "[XQ] QT_XCB_GL_INTEGRATION=${QT_XCB_GL_INTEGRATION:-<unset>}"
+  echo "[XQ] LIBGL_ALWAYS_SOFTWARE=${LIBGL_ALWAYS_SOFTWARE:-<unset>}"
+}
+
 configure() {
   check_dependencies
-  export LD_LIBRARY_PATH="$(runtime_path):${LD_LIBRARY_PATH:-}"
+  xq_env_apply_runtime_paths "${BUILD_DIR}"
   cmake -S "${XQ_ROOT}" -B "${BUILD_DIR}" \
     -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
     -DXQ_EXTERNALS_ROOT="${EXTERNALS_ROOT}" \
@@ -76,14 +82,16 @@ build() {
 }
 
 test_xq() {
-  export LD_LIBRARY_PATH="$(runtime_path):${LD_LIBRARY_PATH:-}"
+  init_env
+  xq_env_apply_runtime_paths "${BUILD_DIR}"
   ctest --test-dir "${BUILD_DIR}" --output-on-failure
 }
 
 run_check() {
   local log="/tmp/xq_run_check.log"
-  export LD_LIBRARY_PATH="$(runtime_path):${LD_LIBRARY_PATH:-}"
-  export QT_PLUGIN_PATH="${EXTERNALS_INSTALL}/qt-6.7.0/plugins"
+  init_env
+  xq_env_apply_runtime_paths "${BUILD_DIR}"
+  xq_env_apply_qt_runtime_defaults
   rm -f "${log}"
   set +e
   timeout 10s "${BUILD_DIR}/bin/XQ" >"${log}" 2>&1
@@ -110,6 +118,9 @@ for command in "$@"; do
   case "${command}" in
     clean)
       rm -rf "${BUILD_DIR}"
+      ;;
+    doctor)
+      doctor
       ;;
     configure)
       configure
