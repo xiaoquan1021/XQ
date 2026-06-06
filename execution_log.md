@@ -112,3 +112,22 @@
 - Prepared the next unattended loop phase in `plan.md`:
   - Promoted Monolith Project Service Foundation to completed.
   - Added Active Phase: Monolith Selection API Foundation.
+- Committed and pushed XQ iteration:
+  - Commit: `efd8975 Add monolith project service foundation`.
+  - Remote branch: `feature/windows-monolith-foundation`.
+- Started the next unattended loop iteration:
+  - Added failing selection regression test first.
+  - `test_monolith_selection_context` failed because `SelectionChanged` and `ClearActiveNode` did not exist on `ApplicationContext`.
+- Implemented the monolith selection API foundation:
+  - Added `ApplicationContext::ClearActiveNode()`.
+  - Added `SelectionChanged(mitk::DataNode::Pointer)` while preserving the existing `ActiveNodeChanged()` signal.
+  - Reused the existing pointer equality guard so repeated selection of the same node is a no-op.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 6/6.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Prepared the next unattended loop phase in `plan.md`:
+  - Promoted Monolith Selection API Foundation to completed.
+  - Added Active Phase: Monolith Task Runner Foundation.

@@ -62,7 +62,7 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
-## Active Phase: Monolith Selection API Foundation
+## Completed Phase: Monolith Selection API Foundation
 
 1. Strengthen `xq::core::ApplicationContext` selection behavior for workflow pages.
    - Keep the existing active-node interface available.
@@ -81,3 +81,25 @@ The next monolith slice is grounded in these comparable systems:
    - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
    - `git diff --check`
 4. Commit and push the verified XQ iteration.
+
+## Active Phase: Monolith Task Runner Foundation
+
+1. Add a monolith Core task runner service for long-running workflow operations.
+   - Keep the first implementation synchronous/blocking for deterministic tests.
+   - Emit task started/finished signals.
+   - Store queryable task history with task name, success flag, and message.
+   - Reject empty task names before running work.
+2. Add `TaskRunner` ownership/access through `xq::core::ApplicationContext`.
+   - Future workflow pages should dispatch import/segmentation/modeling jobs through this service.
+3. Add C++ regression tests before implementation:
+   - New runner has empty history.
+   - Successful task emits start/finish and records success.
+   - Failed task emits finish and records failure message.
+   - Empty task name fails without invoking work.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.

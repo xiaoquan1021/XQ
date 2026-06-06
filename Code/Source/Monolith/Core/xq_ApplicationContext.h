@@ -30,10 +30,12 @@ public:
 
 public slots:
     void SetActiveNode(mitk::DataNode::Pointer node);
+    void ClearActiveNode();
     void PostDiagnostic(const QString& message);
 
 signals:
     void ActiveNodeChanged();
+    void SelectionChanged(mitk::DataNode::Pointer node);
     void DiagnosticPosted(const QString& message);
 
 private:

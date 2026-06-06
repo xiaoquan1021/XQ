@@ -47,6 +47,12 @@ void ApplicationContext::SetActiveNode(mitk::DataNode::Pointer node)
 
     m_ActiveNode = node;
     emit ActiveNodeChanged();
+    emit SelectionChanged(m_ActiveNode);
+}
+
+void ApplicationContext::ClearActiveNode()
+{
+    SetActiveNode(nullptr);
 }
 
 void ApplicationContext::PostDiagnostic(const QString& message)
