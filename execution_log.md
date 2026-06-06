@@ -1,0 +1,56 @@
+# XQ Execution Log
+
+## 2026-06-07
+
+- Continued the Windows monolith migration loop from the pushed `feature/windows-monolith-foundation` branch.
+- Verified current starting point:
+  - `xiaoquan1021/Externals` branch `feature/windows-monolith-foundation` at `a195f74`.
+  - `xiaoquan1021/XQ` branch `feature/windows-monolith-foundation` at `4521e21`.
+  - XQ configure had previously reached `build/windows-msvc-release`; the active task is now build convergence.
+- Created this execution log and `plan.md` to make autonomous progress auditable.
+- Ran `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`.
+  - Failure: MSVC does not define the non-standard `M_PI` macro.
+  - Affected first compiled files: `xq_CircularProfile.cxx` and `xq_EllipticProfile.cxx`.
+  - Added `tests/test_windows_no_m_pi_macro.ps1`.
+  - Replaced `M_PI` with local `constexpr` pi constants in segmentation profile code and legacy plugin sources.
+  - Verification: `tests/test_windows_no_m_pi_macro.ps1` passed.
+- Continued XQ build convergence after the first MSVC failure.
+  - Failure: `xq_ProfileGroup` defaulted its destructor inline while owning `std::unique_ptr<xq_LumenProfile>` through a forward declaration.
+  - Added `tests/test_windows_profilegroup_complete_destructor.ps1`.
+  - Moved `xq_ProfileGroup::~xq_ProfileGroup()` defaulting into `xq_ProfileGroup.cxx` after `xq_LumenProfile.h` is included.
+  - Verification: profile-group destructor test passed.
+- Re-ran `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`.
+  - Failure: MSVC instantiated copy assignment for `xq_FlowSolverRegistry`, which owns `std::vector<std::unique_ptr<xq_FlowSolverBackend>>`.
+  - Added `tests/test_windows_flow_registry_noncopyable.ps1`.
+  - Explicitly deleted copy and move operations for the singleton registry.
+  - Verification: flow-registry noncopyable test passed.
+- Re-ran XQ build.
+  - Failure: `ProjectManagement` used POSIX `dirent.h` directory APIs unavailable on MSVC.
+  - Added `tests/test_windows_project_management_no_dirent.ps1`.
+  - Replaced `opendir` / `readdir` / `closedir` directory scans with `std::filesystem::directory_iterator`.
+  - Verification: ProjectManagement no-dirent test passed.
+- Re-ran XQ build.
+  - Failure: `xq_WorkspaceManager` used `_mkdir` without the MSVC declaration and mixed C/POSIX path helpers.
+  - Added `tests/test_windows_workspace_manager_filesystem_paths.ps1`.
+  - Replaced `DirExists`, `FileExists`, and `CreateDir` with `std::filesystem` helpers.
+  - Verification: workspace-manager filesystem-path test passed.
+- Re-ran XQ build.
+  - Failure: `M_PI` was still used in `Code/Testing/test_seg_preprocess.cxx`; the earlier test only scanned `Code/Source`.
+  - Expanded `tests/test_windows_no_m_pi_macro.ps1` to scan all of `Code`.
+  - Replaced testing `M_PI` references with a local `constexpr` pi constant.
+  - Verification: expanded no-`M_PI` test passed.
+- XQ build succeeded:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` exited `0`.
+  - Incremental verification showed `ninja: no work to do`.
+- CTest convergence:
+  - Initial `ctest --test-dir build\windows-msvc-release --output-on-failure` hung because generated CTest environment appended raw Windows `$ENV{PATH}` and test output was buffered.
+  - Added `tests/test_windows_ctest_output_unbuffered.ps1` and enabled unbuffered stdout/stderr in C++ test mains.
+  - Added `tests/test_windows_tests_no_host_specific_paths.ps1`; replaced a hardcoded `/home/xiaoquan/0007_H_AO_H` dependency with generated minimal legacy SV project files, and replaced `rm -rf` cleanup with `std::filesystem::remove_all`.
+  - Added `tests/test_windows_ctest_path_escaping.ps1`; escaped host PATH in `Code/Testing/CMakeLists.txt` and regenerated the build tree.
+  - Added `tests/test_windows_no_unguarded_gcc_pragmas.ps1`; guarded GCC-only diagnostic pragmas so MSVC builds are warning-clean.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: `2/2`.
+  - `git diff --check` passed in both `XQ` and `Externals`.

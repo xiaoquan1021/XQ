@@ -28,6 +28,12 @@ if(WIN32)
     )
     cmake_path(CONVERT "${XQ_TEST_LIBRARY_PATHS}" TO_NATIVE_PATH_LIST XQ_TEST_LIBRARY_PATH NORMALIZE)
     string(REPLACE ";" "\\;" XQ_TEST_LIBRARY_PATH_ESCAPED "${XQ_TEST_LIBRARY_PATH}")
+    string(REPLACE ";" "\\;" XQ_HOST_PATH_ESCAPED "$ENV{PATH}")
+    set(XQ_TEST_ENVIRONMENT
+        "PATH=${XQ_TEST_LIBRARY_PATH_ESCAPED}\;${XQ_HOST_PATH_ESCAPED}"
+        "QT_PLUGIN_PATH=${XQ_EXTERNALS_DIR}/qt-6.7.0/plugins"
+        "XQ_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins"
+    )
 else()
     list(APPEND XQ_TEST_LIBRARY_PATHS
         "${XQ_EXTERNALS_DIR}/python-3.11.0/lib"
@@ -47,7 +53,7 @@ endif()
 function(xq_set_test_runtime_environment target)
     if(WIN32)
         set_tests_properties(${target} PROPERTIES
-            ENVIRONMENT "PATH=${XQ_TEST_LIBRARY_PATH_ESCAPED}\;$ENV{PATH};QT_PLUGIN_PATH=${XQ_EXTERNALS_DIR}/qt-6.7.0/plugins;XQ_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins"
+            ENVIRONMENT "${XQ_TEST_ENVIRONMENT}"
         )
     else()
         set_tests_properties(${target} PROPERTIES

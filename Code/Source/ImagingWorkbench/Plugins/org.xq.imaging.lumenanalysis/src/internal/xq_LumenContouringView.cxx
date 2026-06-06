@@ -65,6 +65,9 @@
 namespace
 {
 
+constexpr double kPi = 3.141592653589793238462643383279502884;
+constexpr double kTwoPi = 2.0 * kPi;
+
 xq_ProfileGroup* GetProfileGroup(mitk::DataNode* node)
 {
   return node ? dynamic_cast<xq_ProfileGroup*>(node->GetData()) : nullptr;
@@ -1068,7 +1071,7 @@ void xq_LumenContouringView::AddContour()
   {
     for (int i = 0; i < numPoints; ++i)
     {
-      double angle = 2.0 * M_PI * i / numPoints;
+      double angle = kTwoPi * i / numPoints;
       mitk::Point3D pt;
       pt[0] = radius * std::cos(angle);
       pt[1] = radius * std::sin(angle);
@@ -1080,7 +1083,7 @@ void xq_LumenContouringView::AddContour()
   {
     for (int i = 0; i < numPoints; ++i)
     {
-      double angle = 2.0 * M_PI * i / numPoints;
+      double angle = kTwoPi * i / numPoints;
       mitk::Point3D pt;
       pt[0] = radiusX * std::cos(angle);
       pt[1] = radiusY * std::sin(angle);

@@ -91,6 +91,11 @@
 #include <QDoubleSpinBox>
 #include <cmath>
 
+namespace
+{
+constexpr double kPi = 3.141592653589793238462643383279502884;
+}
+
 // Title listener for tracking editor changes
 class XQPartListenerForTitle : public berry::IPartListener
 {
@@ -1539,7 +1544,7 @@ void xq_WorkbenchWindowAdvisor::MeasureAngle()
 
     double cosAngle = dot / (magBA * magBC);
     cosAngle = std::max(-1.0, std::min(1.0, cosAngle));
-    double angleDeg = std::acos(cosAngle) * 180.0 / M_PI;
+    double angleDeg = std::acos(cosAngle) * 180.0 / kPi;
 
     QMessageBox::information(mainWin, "Angle Measurement",
         QString("Angle at B: %1°").arg(angleDeg, 0, 'f', 2));

@@ -65,6 +65,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -73,7 +74,8 @@
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-static const char* kTestProjectPath = "/tmp/xq_test_project";
+static const std::string kTestProjectPath =
+    (std::filesystem::temp_directory_path() / "xq_test_project").string();
 static const char* kTestProjectName = "RoundtripTest";
 
 // ---------------------------------------------------------------------------
@@ -105,9 +107,9 @@ static bool EndsWithString(const std::string& value, const std::string& suffix)
 
 static bool RemoveDir(const std::string& path)
 {
-    // Recursive remove using system call; tests own tmp dir
-    std::string cmd = "rm -rf \"" + path + "\"";
-    return (std::system(cmd.c_str()) == 0);
+    std::error_code ec;
+    std::filesystem::remove_all(path, ec);
+    return !ec;
 }
 
 static vtkSmartPointer<vtkPolyData> MakeSpherePolyData()
@@ -3768,6 +3770,9 @@ static int test_required_parameter_metadata_roundtrip()
 
 int main()
 {
+    std::cout.setf(std::ios::unitbuf);
+    std::cerr.setf(std::ios::unitbuf);
+
     // Ensure MITK core is initialized (required for DataStorage operations)
     mitk::CoreObjectFactory::GetInstance();
 

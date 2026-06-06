@@ -43,6 +43,8 @@ xq_ProfileGroup::xq_ProfileGroup(const xq_ProfileGroup& other)
     }
 }
 
+xq_ProfileGroup::~xq_ProfileGroup() = default;
+
 itk::LightObject::Pointer xq_ProfileGroup::InternalClone() const
 {
     Pointer smartPtr = new Self(*this);
