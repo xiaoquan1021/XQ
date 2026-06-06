@@ -5,27 +5,55 @@ set(XQ_TEST_LIBRARY_PATHS
     "${CMAKE_BINARY_DIR}/lib"
     "${CMAKE_BINARY_DIR}/lib/plugins"
     "${CMAKE_BINARY_DIR}/bin"
-    "${XQ_EXTERNALS_DIR}/python-3.11.0/lib"
-    "${XQ_EXTERNALS_DIR}/hdf5-1.14.3/lib"
-    "${XQ_EXTERNALS_DIR}/hdf5-1.12.2/lib"
-    "${XQ_EXTERNALS_DIR}/gdcm-3.0.10/lib"
-    "${XQ_EXTERNALS_DIR}/vtk-9.3.0/lib"
-    "${XQ_EXTERNALS_DIR}/itk-5.4.0/lib"
-    "${XQ_EXTERNALS_DIR}/qt-6.7.0/lib"
-    "${XQ_EXTERNALS_DIR}/mitk-2024.06/lib"
-    "${XQ_EXTERNALS_DIR}/opencascade-7.6.0/lib"
-    "${XQ_EXTERNALS_DIR}/freetype-2.13.0/lib"
     "${XQ_EXTERNALS_ROOT}/src/MITK-2024.06/build/MITK-build/lib"
     "${XQ_EXTERNALS_ROOT}/src/MITK-2024.06/build/MITK-build/lib/plugins"
     "${XQ_EXTERNALS_ROOT}/src/MITK-2024.06/build/ep/lib"
     "${XQ_EXTERNALS_ROOT}/src/MITK-2024.06/build/ep/src/CTK-build/CTK-build/bin"
 )
-list(JOIN XQ_TEST_LIBRARY_PATHS ":" XQ_TEST_LIBRARY_PATH)
+
+if(WIN32)
+    list(APPEND XQ_TEST_LIBRARY_PATHS
+        "${XQ_EXTERNALS_DIR}/python-3.11.0"
+        "${XQ_EXTERNALS_DIR}/hdf5-1.14.3/bin"
+        "${XQ_EXTERNALS_DIR}/gdcm-3.0.10/bin"
+        "${XQ_EXTERNALS_DIR}/vtk-9.3.0/bin"
+        "${XQ_EXTERNALS_DIR}/itk-5.4.0/bin"
+        "${XQ_EXTERNALS_DIR}/qt-6.7.0/bin"
+        "${XQ_EXTERNALS_DIR}/mitk-2024.06/bin"
+        "${XQ_EXTERNALS_DIR}/opencascade-7.6.0/bin"
+        "${XQ_EXTERNALS_DIR}/opencascade-7.6.0/win64/vc14/bin"
+        "${XQ_EXTERNALS_DIR}/freetype-2.13.0/bin"
+        "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/MITK/MITK-build/bin"
+        "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/MITK/MITK-build/bin/plugins"
+    )
+    cmake_path(CONVERT "${XQ_TEST_LIBRARY_PATHS}" TO_NATIVE_PATH_LIST XQ_TEST_LIBRARY_PATH NORMALIZE)
+    string(REPLACE ";" "\\;" XQ_TEST_LIBRARY_PATH_ESCAPED "${XQ_TEST_LIBRARY_PATH}")
+else()
+    list(APPEND XQ_TEST_LIBRARY_PATHS
+        "${XQ_EXTERNALS_DIR}/python-3.11.0/lib"
+        "${XQ_EXTERNALS_DIR}/hdf5-1.14.3/lib"
+        "${XQ_EXTERNALS_DIR}/hdf5-1.12.2/lib"
+        "${XQ_EXTERNALS_DIR}/gdcm-3.0.10/lib"
+        "${XQ_EXTERNALS_DIR}/vtk-9.3.0/lib"
+        "${XQ_EXTERNALS_DIR}/itk-5.4.0/lib"
+        "${XQ_EXTERNALS_DIR}/qt-6.7.0/lib"
+        "${XQ_EXTERNALS_DIR}/mitk-2024.06/lib"
+        "${XQ_EXTERNALS_DIR}/opencascade-7.6.0/lib"
+        "${XQ_EXTERNALS_DIR}/freetype-2.13.0/lib"
+    )
+    list(JOIN XQ_TEST_LIBRARY_PATHS ":" XQ_TEST_LIBRARY_PATH)
+endif()
 
 function(xq_set_test_runtime_environment target)
-    set_tests_properties(${target} PROPERTIES
-        ENVIRONMENT "LD_LIBRARY_PATH=${XQ_TEST_LIBRARY_PATH}:$ENV{LD_LIBRARY_PATH};QT_PLUGIN_PATH=${XQ_EXTERNALS_DIR}/qt-6.7.0/plugins"
-    )
+    if(WIN32)
+        set_tests_properties(${target} PROPERTIES
+            ENVIRONMENT "PATH=${XQ_TEST_LIBRARY_PATH_ESCAPED}\;$ENV{PATH};QT_PLUGIN_PATH=${XQ_EXTERNALS_DIR}/qt-6.7.0/plugins;XQ_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins"
+        )
+    else()
+        set_tests_properties(${target} PROPERTIES
+            ENVIRONMENT "LD_LIBRARY_PATH=${XQ_TEST_LIBRARY_PATH}:$ENV{LD_LIBRARY_PATH};QT_PLUGIN_PATH=${XQ_EXTERNALS_DIR}/qt-6.7.0/plugins"
+        )
+    endif()
 endfunction()
 
 function(xq_add_registered_test target)

@@ -21,7 +21,7 @@ include(${XQ_CMAKE_DIR}/XQExternals.cmake)
 # Qt6
 find_package(Qt6 REQUIRED COMPONENTS
   Core Widgets Gui Xml OpenGL OpenGLWidgets
-  Network WebEngineWidgets Svg UiTools
+  Network Svg UiTools
 )
 
 # VTK (save VTK_DIR before ITK overwrites it)
@@ -125,8 +125,8 @@ set(US_RCC_EXECUTABLE_NAME usResourceCompiler)
 #-----------------------------------------------------------------------------
 # 6. MITK include directories
 #-----------------------------------------------------------------------------
-set(MITK_SRC_DIR "${XQ_EXTERNALS_ROOT}/src/MITK-2024.06")
-set(MITK_BUILD_DIR "${MITK_SRC_DIR}/build/MITK-build")
+set(MITK_SRC_DIR "${XQ_EXTERNALS_ROOT}/src/MITK-2024.06" CACHE PATH "MITK source tree")
+set(MITK_BUILD_DIR "${MITK_DIR}" CACHE PATH "MITK build tree containing generated headers")
 
 # MITK build-tree headers (Modules, Plugins)
 include_directories(
@@ -223,50 +223,56 @@ foreach(_mod_dir ${XQ_MODULE_DIRS})
 endforeach()
 
 #-----------------------------------------------------------------------------
-# 10. Add Plugin subdirectories (CTK-integrated)
+# 10. Add legacy Plugin subdirectories (CTK-integrated)
 #-----------------------------------------------------------------------------
-include(${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Plugins/PluginList.cmake)
+if(XQ_BUILD_LEGACY_BLUEBERRY)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Plugins/PluginList.cmake)
 
-# Register XQ plugin libraries variable with CTK plugin framework.
-# ctkFunctionGetAllPluginTargets() reads CTK_PLUGIN_LIBRARIES_VARS to discover
-# all known plugins. We add our own variable so our plugins appear in provisioning.
-set(XQ_PLUGIN_LIBRARIES "" CACHE INTERNAL "XQ CTK plug-in targets" FORCE)
-set_property(GLOBAL APPEND PROPERTY CTK_PLUGIN_LIBRARIES_VARS XQ_PLUGIN_LIBRARIES)
+  # Register XQ plugin libraries variable with CTK plugin framework.
+  # ctkFunctionGetAllPluginTargets() reads CTK_PLUGIN_LIBRARIES_VARS to discover
+  # all known plugins. We add our own variable so our plugins appear in provisioning.
+  set(XQ_PLUGIN_LIBRARIES "" CACHE INTERNAL "XQ CTK plug-in targets" FORCE)
+  set_property(GLOBAL APPEND PROPERTY CTK_PLUGIN_LIBRARIES_VARS XQ_PLUGIN_LIBRARIES)
 
-# Define GetMyTargetLibraries so ctkMacroGetAllProjectTargetLibraries can
-# identify XQ plugin targets as "project" targets (not external).
-macro(GetMyTargetLibraries all_target_libraries varname)
-  set(re_ctkplugin "^org_xq_[a-zA-Z0-9_]+$")
-  set(_tmp_list)
-  list(APPEND _tmp_list ${all_target_libraries})
-  ctkMacroListFilter(_tmp_list re_ctkplugin OUTPUT_VARIABLE ${varname})
-endmacro()
+  # Define GetMyTargetLibraries so ctkMacroGetAllProjectTargetLibraries can
+  # identify XQ plugin targets as "project" targets (not external).
+  macro(GetMyTargetLibraries all_target_libraries varname)
+    set(re_ctkplugin "^org_xq_[a-zA-Z0-9_]+$")
+    set(_tmp_list)
+    list(APPEND _tmp_list ${all_target_libraries})
+    ctkMacroListFilter(_tmp_list re_ctkplugin OUTPUT_VARIABLE ${varname})
+  endmacro()
 
-set(XQ_PLUGIN_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Plugins")
+  set(XQ_PLUGIN_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Plugins")
 
-foreach(_plugin_entry ${XQ_PLUGINS})
-  # Parse "plugin_name:ON/OFF"
-  string(REPLACE ":" ";" _plugin_parts "${_plugin_entry}")
-  list(GET _plugin_parts 0 _plugin_name)
-  list(GET _plugin_parts 1 _plugin_enabled)
+  foreach(_plugin_entry ${XQ_PLUGINS})
+    # Parse "plugin_name:ON/OFF"
+    string(REPLACE ":" ";" _plugin_parts "${_plugin_entry}")
+    list(GET _plugin_parts 0 _plugin_name)
+    list(GET _plugin_parts 1 _plugin_enabled)
 
-  if(_plugin_enabled STREQUAL "ON")
-    if(EXISTS "${XQ_PLUGIN_BASE_DIR}/${_plugin_name}/CMakeLists.txt")
-      add_subdirectory("${XQ_PLUGIN_BASE_DIR}/${_plugin_name}")
+    if(_plugin_enabled STREQUAL "ON")
+      if(EXISTS "${XQ_PLUGIN_BASE_DIR}/${_plugin_name}/CMakeLists.txt")
+        add_subdirectory("${XQ_PLUGIN_BASE_DIR}/${_plugin_name}")
+      endif()
     endif()
-  endif()
-endforeach()
+  endforeach()
+endif()
 
 #-----------------------------------------------------------------------------
-# 11. Add Application subdirectory
+# 11. Add Application subdirectories
 #-----------------------------------------------------------------------------
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Application/CMakeLists.txt")
+if(XQ_BUILD_MONOLITH AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Monolith/CMakeLists.txt")
+  add_subdirectory(Source/Monolith)
+endif()
+
+if(XQ_BUILD_LEGACY_BLUEBERRY AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Application/CMakeLists.txt")
   add_subdirectory(Source/Application)
 endif()
 
 #-----------------------------------------------------------------------------
 # 12. Add Testing subdirectory
 #-----------------------------------------------------------------------------
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Testing/CMakeLists.txt")
+if(XQ_BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Testing/CMakeLists.txt")
   add_subdirectory(Testing)
 endif()

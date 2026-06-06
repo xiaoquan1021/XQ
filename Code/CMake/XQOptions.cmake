@@ -2,4 +2,6 @@ option(XQ_USE_PYTHON "Build the disabled Python API service skeleton; no Python 
 option(XQ_USE_MITK_SEGMENTATION "Enable MITK native segmentation" ON)
 option(XQ_USE_OPENCASCADE "Enable OpenCASCADE modeling" ON)
 option(XQ_BUILD_TESTING "Build tests" OFF)
+option(XQ_BUILD_MONOLITH "Build the new monolithic Qt/MITK application shell" OFF)
+option(XQ_BUILD_LEGACY_BLUEBERRY "Build the legacy BlueBerry plugin application during migration" ON)
 set(XQ_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "Installation prefix")

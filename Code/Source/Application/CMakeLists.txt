@@ -15,4 +15,6 @@ mitkFunctionCreateBlueBerryApplication(
 
 # Allow unresolved symbols in transitive shared libs (HDF5 1.12 vs 1.14 ABI mismatch
 # in ITK's ITKIOHDF5 — our code doesn't use HDF5 directly)
-target_link_options(${XQ_EXE} PRIVATE "LINKER:--allow-shlib-undefined")
+if(NOT WIN32)
+    target_link_options(${XQ_EXE} PRIVATE "LINKER:--allow-shlib-undefined")
+endif()
