@@ -1,5 +1,7 @@
 #include "xq_ApplicationContext.h"
 
+#include "xq_ProjectService.h"
+
 #include <mitkStandaloneDataStorage.h>
 
 namespace xq::core
@@ -9,6 +11,7 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
                                        QObject* parent)
     : QObject(parent)
     , m_DataStorage(dataStorage)
+    , m_ProjectService(new ProjectService(this))
 {
 }
 
@@ -30,6 +33,11 @@ mitk::DataNode::Pointer ApplicationContext::ActiveNode() const
 QStringList ApplicationContext::Diagnostics() const
 {
     return m_Diagnostics;
+}
+
+ProjectService* ApplicationContext::Projects() const
+{
+    return m_ProjectService;
 }
 
 void ApplicationContext::SetActiveNode(mitk::DataNode::Pointer node)

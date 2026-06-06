@@ -11,6 +11,8 @@
 namespace xq::core
 {
 
+class ProjectService;
+
 class ApplicationContext : public QObject
 {
     Q_OBJECT
@@ -24,6 +26,7 @@ public:
     mitk::DataStorage::Pointer DataStorage() const;
     mitk::DataNode::Pointer ActiveNode() const;
     QStringList Diagnostics() const;
+    ProjectService* Projects() const;
 
 public slots:
     void SetActiveNode(mitk::DataNode::Pointer node);
@@ -37,6 +40,7 @@ private:
     mitk::DataStorage::Pointer m_DataStorage;
     mitk::DataNode::Pointer m_ActiveNode;
     QStringList m_Diagnostics;
+    ProjectService* m_ProjectService = nullptr;
 };
 
 } // namespace xq::core

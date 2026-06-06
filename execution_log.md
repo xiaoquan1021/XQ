@@ -88,3 +88,27 @@
   - All PowerShell tests in `tests\*.ps1` passed: 15/15.
   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 4/4.
   - `git diff --check` passed in both `XQ` and `Externals`.
+- Committed and pushed XQ iteration:
+  - Commit: `97a123c Add monolith workflow registry foundation`.
+  - Remote branch: `feature/windows-monolith-foundation`.
+- Started the next unattended loop iteration:
+  - Promoted Monolith Workflow Foundation to completed in `plan.md`.
+  - Added Active Phase: Monolith Project Service Foundation.
+  - Selected the next implementation slice: fresh `.xqproj` schema `2.0` project service owned by `ApplicationContext`.
+- Added failing ProjectService regression test first:
+  - `test_monolith_project_service` failed because `Core/xq_ProjectService.h` did not exist.
+- Implemented the monolith project service foundation:
+  - Added `xq::core::ProjectService` and `ProjectMetadata`.
+  - New projects use fresh schema version `2.0`.
+  - `SaveProject` writes JSON `.xqproj` files with project name and relative `workspace` directory.
+  - `OpenProject` restores schema `2.0` metadata and rejects unsupported schema versions.
+  - `ApplicationContext` now owns and exposes `ProjectService` through `Projects()`.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 5/5.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Prepared the next unattended loop phase in `plan.md`:
+  - Promoted Monolith Project Service Foundation to completed.
+  - Added Active Phase: Monolith Selection API Foundation.

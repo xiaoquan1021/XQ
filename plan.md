@@ -22,7 +22,7 @@ The next monolith slice is grounded in these comparable systems:
 - OHIF: mode/extension registry concepts for workflow-specific panels and commands.
 - ITK-SNAP/MONAI Label: focused segmentation UX, semi-automatic/AI-assisted entry points, and clear feedback loops.
 
-## Active Phase: Monolith Workflow Foundation
+## Completed Phase: Monolith Workflow Foundation
 
 1. Add a typed `xq::core::WorkflowDescriptor` and deterministic default workflow registry in the monolith Core layer.
    - Include all first-version workflows: project/data, image preprocessing, path, 2D segmentation, 3D segmentation, modeling, meshing, flow, ROM, multiphysics, and Python API.
@@ -40,3 +40,44 @@ The next monolith slice is grounded in these comparable systems:
    - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
+
+## Completed Phase: Monolith Project Service Foundation
+
+1. Add a monolith Core `xq::core::ProjectService` for the fresh project format.
+   - Use schema version `2.0`.
+   - Save and open `.xqproj` files with project name, schema version, and relative workspace directory.
+   - Do not attempt legacy project migration in this phase.
+2. Add `ProjectService` ownership/access through `xq::core::ApplicationContext`.
+   - UI and future workflow pages should ask the context for project operations instead of calling legacy project code directly.
+3. Add C++ regression tests before implementation:
+   - New service starts without an active project.
+   - `CreateProject` + `SaveProject` writes schema `2.0`.
+   - `OpenProject` restores the same project metadata.
+   - Unsupported schema versions fail with an error.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
+## Active Phase: Monolith Selection API Foundation
+
+1. Strengthen `xq::core::ApplicationContext` selection behavior for workflow pages.
+   - Keep the existing active-node interface available.
+   - Add explicit `ClearActiveNode()`.
+   - Emit selection-change notifications only when the selected node pointer actually changes.
+   - Emit the selected node pointer with the change signal so future Presentation code does not need to re-query global state.
+2. Add C++ regression tests before implementation:
+   - Default context starts without an active node.
+   - Setting a node stores it and emits one selection signal.
+   - Setting the same node again is a no-op.
+   - Clearing selection emits once and leaves no active node.
+3. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+4. Commit and push the verified XQ iteration.
