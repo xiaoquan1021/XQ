@@ -12,6 +12,7 @@ namespace xq::core
 {
 
 class ProjectService;
+class TaskRunner;
 
 class ApplicationContext : public QObject
 {
@@ -27,6 +28,7 @@ public:
     mitk::DataNode::Pointer ActiveNode() const;
     QStringList Diagnostics() const;
     ProjectService* Projects() const;
+    TaskRunner* Tasks() const;
 
 public slots:
     void SetActiveNode(mitk::DataNode::Pointer node);
@@ -43,6 +45,7 @@ private:
     mitk::DataNode::Pointer m_ActiveNode;
     QStringList m_Diagnostics;
     ProjectService* m_ProjectService = nullptr;
+    TaskRunner* m_TaskRunner = nullptr;
 };
 
 } // namespace xq::core

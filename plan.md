@@ -82,7 +82,7 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 4. Commit and push the verified XQ iteration.
 
-## Active Phase: Monolith Task Runner Foundation
+## Completed Phase: Monolith Task Runner Foundation
 
 1. Add a monolith Core task runner service for long-running workflow operations.
    - Keep the first implementation synchronous/blocking for deterministic tests.
@@ -96,6 +96,26 @@ The next monolith slice is grounded in these comparable systems:
    - Successful task emits start/finish and records success.
    - Failed task emits finish and records failure message.
    - Empty task name fails without invoking work.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
+## Next Phase: Monolith Preferences Foundation
+
+1. Add a monolith Core preferences service for app-level settings.
+   - Keep the first implementation in-memory with explicit JSON save/load for deterministic tests.
+   - Support string, boolean, and integer values.
+   - Keep settings independent from legacy BlueBerry preferences.
+2. Add `PreferencesService` ownership/access through `xq::core::ApplicationContext`.
+3. Add C++ regression tests before implementation:
+   - New service starts empty.
+   - Values roundtrip through set/get.
+   - JSON save/load restores all supported value types.
+   - Invalid preference files fail with an error.
 4. Run:
    - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`

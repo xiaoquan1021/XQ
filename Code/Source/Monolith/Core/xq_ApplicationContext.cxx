@@ -1,6 +1,7 @@
 #include "xq_ApplicationContext.h"
 
 #include "xq_ProjectService.h"
+#include "xq_TaskRunner.h"
 
 #include <mitkStandaloneDataStorage.h>
 
@@ -12,6 +13,7 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
     : QObject(parent)
     , m_DataStorage(dataStorage)
     , m_ProjectService(new ProjectService(this))
+    , m_TaskRunner(new TaskRunner(this))
 {
 }
 
@@ -38,6 +40,11 @@ QStringList ApplicationContext::Diagnostics() const
 ProjectService* ApplicationContext::Projects() const
 {
     return m_ProjectService;
+}
+
+TaskRunner* ApplicationContext::Tasks() const
+{
+    return m_TaskRunner;
 }
 
 void ApplicationContext::SetActiveNode(mitk::DataNode::Pointer node)

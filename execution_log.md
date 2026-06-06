@@ -131,3 +131,24 @@
 - Prepared the next unattended loop phase in `plan.md`:
   - Promoted Monolith Selection API Foundation to completed.
   - Added Active Phase: Monolith Task Runner Foundation.
+- Committed and pushed XQ iteration:
+  - Commit: `41cef64 Add monolith selection API foundation`.
+  - Remote branch: `feature/windows-monolith-foundation`.
+- Started the next unattended loop iteration:
+  - Added failing task runner regression test first.
+  - `test_monolith_task_runner` failed because `Core/xq_TaskRunner.h` did not exist.
+- Implemented the monolith task runner foundation:
+  - Added `xq::core::TaskRunner` and `TaskRecord`.
+  - Added synchronous `RunBlocking` for deterministic first-stage task execution.
+  - Added task started/finished signals and queryable task history.
+  - Empty task names fail without invoking work.
+  - `ApplicationContext` now owns and exposes `TaskRunner` through `Tasks()`.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 7/7.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Prepared the next phase in `plan.md`:
+  - Promoted Monolith Task Runner Foundation to completed.
+  - Added Next Phase: Monolith Preferences Foundation.
