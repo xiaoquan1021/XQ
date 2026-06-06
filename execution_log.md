@@ -54,3 +54,37 @@
   - All PowerShell tests in `tests\*.ps1` passed.
   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: `2/2`.
   - `git diff --check` passed in both `XQ` and `Externals`.
+
+## 2026-06-08
+
+- Continued the requested unattended loop after the user enabled full access mode.
+- Reviewed `plan.md`, `execution_log.md`, and the monolith scaffold:
+  - `ApplicationContext` currently owns MITK `DataStorage`, active node, and a fire-and-forget diagnostic signal.
+  - `MainWindow` currently hardcodes workflow pages directly in Presentation.
+- Completed the autonomous research phase using comparable medical imaging workstations:
+  - 3D Slicer: module/workflow navigation and Segment Editor-style interactive segmentation.
+  - SimVascular: project-centered image-to-path-to-model-to-mesh-to-simulation pipeline.
+  - MITK Workbench: DataStorage-centered rendering, segmentation, diagnostics, and toolkit structure.
+  - OHIF: mode/extension registry model for workflow-specific panels and commands.
+  - ITK-SNAP/MONAI Label: focused segmentation UX, semi-automatic/AI-assisted entry points, and user-visible feedback loops.
+- Updated `plan.md` with the next executable phase: Monolith Workflow Foundation.
+- Selected the first implementation slice:
+  - Add a typed Core workflow registry covering the first-version XQ workflow pages.
+  - Extend `ApplicationContext` with queryable diagnostic history.
+  - Drive `MainWindow` page creation from the registry.
+  - Add tests first, then implementation.
+- Added failing monolith Core tests first:
+  - `test_monolith_workflows` failed because `Core/xq_WorkflowRegistry.h` did not exist.
+  - `test_monolith_application_context` failed because `ApplicationContext::Diagnostics()` did not exist.
+- Implemented the monolith workflow foundation:
+  - Added `xq::core::WorkflowDescriptor`, `WorkflowCategory`, `DefaultWorkflowRegistry()`, and `FindWorkflowById()`.
+  - Added deterministic first-version workflow ids/titles for project, data, image preprocessing, path, 2D/3D segmentation, modeling, meshing, flow, ROM, multiphysics, and Python API.
+  - Extended `ApplicationContext` with queryable diagnostic history while preserving `DiagnosticPosted`.
+  - Ignored empty/whitespace-only diagnostics.
+  - Updated `MainWindow` to create workflow pages from the Core registry instead of hardcoded UI strings.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 4/4.
+  - `git diff --check` passed in both `XQ` and `Externals`.

@@ -262,6 +262,19 @@ xq_add_registered_test(test_ml_segmentation_placeholder
     xqModuleCommon
 )
 
+if(TARGET xqMonolithCore)
+    xq_add_registered_test(test_monolith_workflows
+        xqMonolithCore
+        Qt6::Core
+    )
+
+    xq_add_registered_test(test_monolith_application_context
+        xqMonolithCore
+        Qt6::Core
+        MitkCore
+    )
+endif()
+
 xq_add_registered_test(test_seg3d_to_model
     xqModuleSegmentation
     xqModulePath

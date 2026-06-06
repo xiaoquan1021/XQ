@@ -27,6 +27,11 @@ mitk::DataNode::Pointer ApplicationContext::ActiveNode() const
     return m_ActiveNode;
 }
 
+QStringList ApplicationContext::Diagnostics() const
+{
+    return m_Diagnostics;
+}
+
 void ApplicationContext::SetActiveNode(mitk::DataNode::Pointer node)
 {
     if (m_ActiveNode.GetPointer() == node.GetPointer())
@@ -38,6 +43,10 @@ void ApplicationContext::SetActiveNode(mitk::DataNode::Pointer node)
 
 void ApplicationContext::PostDiagnostic(const QString& message)
 {
+    if (message.trimmed().isEmpty())
+        return;
+
+    m_Diagnostics.append(message);
     emit DiagnosticPosted(message);
 }
 

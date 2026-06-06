@@ -1,6 +1,7 @@
 #include "xq_MainWindow.h"
 
 #include "Core/xq_ApplicationContext.h"
+#include "Core/xq_WorkflowRegistry.h"
 
 #include <QDockWidget>
 #include <QFrame>
@@ -55,18 +56,8 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     splitter->setSizes({420, 1020});
     setCentralWidget(splitter);
 
-    AddWorkflowPage(QStringLiteral("Project"));
-    AddWorkflowPage(QStringLiteral("Data"));
-    AddWorkflowPage(QStringLiteral("Image Processing"));
-    AddWorkflowPage(QStringLiteral("Path Planning"));
-    AddWorkflowPage(QStringLiteral("2D Segmentation"));
-    AddWorkflowPage(QStringLiteral("3D Segmentation"));
-    AddWorkflowPage(QStringLiteral("Modeling"));
-    AddWorkflowPage(QStringLiteral("Meshing"));
-    AddWorkflowPage(QStringLiteral("Flow Simulation"));
-    AddWorkflowPage(QStringLiteral("ROM Simulation"));
-    AddWorkflowPage(QStringLiteral("Multi-Physics"));
-    AddWorkflowPage(QStringLiteral("Python API"));
+    for (const auto& workflow : xq::core::DefaultWorkflowRegistry())
+        AddWorkflowPage(workflow.Title);
 
     connect(m_Navigation, &QListWidget::currentRowChanged,
             m_Pages, &QStackedWidget::setCurrentIndex);

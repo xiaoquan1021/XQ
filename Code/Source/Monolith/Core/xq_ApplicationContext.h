@@ -6,6 +6,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 namespace xq::core
 {
@@ -22,6 +23,7 @@ public:
 
     mitk::DataStorage::Pointer DataStorage() const;
     mitk::DataNode::Pointer ActiveNode() const;
+    QStringList Diagnostics() const;
 
 public slots:
     void SetActiveNode(mitk::DataNode::Pointer node);
@@ -34,6 +36,7 @@ signals:
 private:
     mitk::DataStorage::Pointer m_DataStorage;
     mitk::DataNode::Pointer m_ActiveNode;
+    QStringList m_Diagnostics;
 };
 
 } // namespace xq::core

@@ -2,10 +2,12 @@ project(XQ_Monolith)
 
 set(XQ_MONOLITH_CORE_SRCS
     Core/xq_ApplicationContext.cxx
+    Core/xq_WorkflowRegistry.cxx
 )
 
 set(XQ_MONOLITH_CORE_HDRS
     Core/xq_ApplicationContext.h
+    Core/xq_WorkflowRegistry.h
 )
 
 add_library(xqMonolithCore STATIC
