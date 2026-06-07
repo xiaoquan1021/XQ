@@ -13,6 +13,7 @@ class QWidget;
 namespace xq::core
 {
 class ApplicationContext;
+struct ProjectMetadata;
 }
 
 namespace xq::presentation
@@ -33,6 +34,7 @@ private:
     QWidget* CreateWorkflowPage(const QString& title);
     void AddWorkflowPage(const QString& title);
     void RemoveSelectedData();
+    void UpdateProjectWindowState(const xq::core::ProjectMetadata& project);
     void SyncTreeSelectionFromCore(const QString& hierarchyNodeId);
     void UpdateDataActions();
 

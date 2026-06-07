@@ -4,6 +4,7 @@
 #include "Core/xq_DataHierarchyService.h"
 #include "Core/xq_DataManagementService.h"
 #include "Core/xq_DataSelectionService.h"
+#include "Core/xq_ProjectService.h"
 #include "Core/xq_WorkflowRegistry.h"
 #include "xq_DataHierarchyModel.h"
 
@@ -17,6 +18,7 @@
 #include <QSignalBlocker>
 #include <QSplitter>
 #include <QStackedWidget>
+#include <QStatusBar>
 #include <QTextEdit>
 #include <QToolBar>
 #include <QTreeView>
@@ -32,6 +34,8 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
 {
     setWindowTitle(QStringLiteral("XQ"));
     resize(1440, 960);
+    statusBar()->setObjectName(QStringLiteral("xqProjectStatusBar"));
+    statusBar()->showMessage(QStringLiteral("No project"));
 
     auto* splitter = new QSplitter(Qt::Horizontal, this);
     auto* workflowPanel = new QWidget(splitter);
@@ -142,6 +146,15 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
 
     UpdateDataActions();
 
+    connect(m_Context.Projects(),
+            &xq::core::ProjectService::ProjectChanged,
+            this,
+            [this](const xq::core::ProjectMetadata& project) {
+                UpdateProjectWindowState(project);
+            });
+    if (const auto* project = m_Context.Projects()->CurrentProject())
+        UpdateProjectWindowState(*project);
+
     m_Diagnostics = new QTextEdit(this);
     m_Diagnostics->setReadOnly(true);
     auto* diagnosticsDock = new QDockWidget(QStringLiteral("Diagnostics"), this);
@@ -173,6 +186,14 @@ void MainWindow::SetRenderHost(QWidget* renderHost)
     m_RenderHost = renderHost;
     m_RenderHost->setParent(m_RenderHostContainer);
     layout->addWidget(m_RenderHost);
+}
+
+void MainWindow::UpdateProjectWindowState(
+    const xq::core::ProjectMetadata& project)
+{
+    setWindowTitle(QStringLiteral("XQ - %1").arg(project.Name));
+    statusBar()->showMessage(
+        QStringLiteral("%1 | %2").arg(project.Name, project.ProjectFilePath));
 }
 
 void MainWindow::RemoveSelectedData()

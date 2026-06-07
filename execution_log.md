@@ -764,3 +764,37 @@
 - Promoted Monolith Project State Notification Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked project/window-state behavior after adding `ProjectChanged`.
+  - Comparable workstation shells keep the active scene/project visible in
+    window chrome or persistent status surfaces, so users can tell which study
+    or project workflow pages are acting on.
+  - Chosen next slice: connect `ProjectService::ProjectChanged` to
+    `MainWindow` title/status state without adding file dialogs yet.
+- Added next executable phase to `plan.md`: Monolith Project Window State
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing project-window-state regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_project_state`
+    failed with `MainWindow should expose a project status bar`.
+- Implemented the monolith project window state foundation:
+  - Added stable `xqProjectStatusBar` to `MainWindow`.
+  - New windows show base title `XQ` and `No project` status.
+  - `MainWindow` listens to `ProjectService::ProjectChanged`.
+  - Successful project create/open updates title to `XQ - <project>` and
+    status to include project name and project file path.
+  - Save and failed open leave the last successful project window state
+    unchanged.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_project_state`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 27/27.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Project Window State Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
