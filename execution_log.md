@@ -2210,3 +2210,43 @@
 - Promoted Monolith Image Preprocessing Handler DataNode Registry Integration
   to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked Core data lifecycle after handler registry resolution landed.
+  - The next gap is cleanup: `DataManagementService::RemoveEntry()` removes
+    catalog, hierarchy, and selection state, but bound MITK node registry
+    entries need to be cleared with the same data lifecycle.
+  - Chosen next slice: integrate optional `DataNodeRegistryService` cleanup into
+    Core data removal.
+- Added next executable phase to `plan.md`: Monolith Data Management DataNode
+  Registry Cleanup.
+- Started the next unattended loop iteration:
+  - Adding failing data-management registry cleanup regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` compiled the
+    updated data-management test successfully.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_management_service`
+    failed because successful `RemoveEntry()` left the bound data-node registry
+    entry behind.
+- Implemented data-management data-node registry cleanup:
+  - Added an overload so `DataManagementService` can receive
+    `DataNodeRegistryService`.
+  - `ApplicationContext` now constructs `DataManagementService` with the shared
+    data-node registry.
+  - Successful removes clear any existing node binding for the removed catalog
+    id.
+  - Metadata-only removes still succeed because missing node bindings are
+    harmless.
+  - Failed removes preserve existing node bindings.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_management_service`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 51/51.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Management DataNode Registry Cleanup to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

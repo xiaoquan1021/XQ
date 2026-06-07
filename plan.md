@@ -2277,6 +2277,38 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Management DataNode Registry Cleanup
+
+1. Integrate `DataNodeRegistryService` into Core data removal lifecycle.
+   - Allow `DataManagementService` to receive a data-node registry from
+     `ApplicationContext`.
+   - When removing a catalog entry succeeds, remove any bound MITK data node
+     registry entry for that catalog id.
+   - Treat missing registry bindings as harmless; metadata-only imports should
+     still remove cleanly.
+2. Preserve transactional behavior.
+   - Failed catalog/hierarchy removes must not clear data-node bindings.
+   - Rename should not alter node bindings.
+3. Add C++ regression tests before implementation:
+   - Removing a bound selected entry clears its data-node registry binding.
+   - Removing metadata-only entries still succeeds.
+   - Failed remove keeps existing registry bindings.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

@@ -2,6 +2,7 @@
 
 #include "xq_DataCatalogService.h"
 #include "xq_DataHierarchyService.h"
+#include "xq_DataNodeRegistryService.h"
 #include "xq_DataSelectionService.h"
 #include "xq_TaskRunner.h"
 
@@ -18,6 +19,22 @@ DataManagementService::DataManagementService(
     , m_DataCatalog(dataCatalog)
     , m_DataHierarchy(dataHierarchy)
     , m_DataSelection(dataSelection)
+    , m_TaskRunner(taskRunner)
+{
+}
+
+DataManagementService::DataManagementService(
+    DataCatalogService& dataCatalog,
+    DataHierarchyService& dataHierarchy,
+    DataSelectionService& dataSelection,
+    DataNodeRegistryService& dataNodes,
+    TaskRunner& taskRunner,
+    QObject* parent)
+    : QObject(parent)
+    , m_DataCatalog(dataCatalog)
+    , m_DataHierarchy(dataHierarchy)
+    , m_DataSelection(dataSelection)
+    , m_DataNodes(&dataNodes)
     , m_TaskRunner(taskRunner)
 {
 }
@@ -102,6 +119,13 @@ bool DataManagementService::RemoveEntry(const QString& dataCatalogEntryId,
 
             m_DataCatalog.ReplaceWith(parsedCatalog);
             m_DataHierarchy.ReplaceWith(parsedHierarchy);
+            if (m_DataNodes &&
+                m_DataNodes->FindNode(normalizedEntryId).IsNotNull())
+            {
+                QString nodeRegistryError;
+                m_DataNodes->RemoveNode(normalizedEntryId,
+                                        &nodeRegistryError);
+            }
             SetError(message, QStringLiteral("Removed data entry."));
             return true;
         },

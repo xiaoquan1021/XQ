@@ -3,10 +3,13 @@
 #include "Core/xq_DataHierarchyService.h"
 #include "Core/xq_DataImportService.h"
 #include "Core/xq_DataManagementService.h"
+#include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_DataSelectionService.h"
 #include "Core/xq_TaskRunner.h"
 
 #include <QCoreApplication>
+
+#include <mitkDataNode.h>
 
 #include <iostream>
 
@@ -32,6 +35,13 @@ xq::core::DataImportRequest MakeImageImport(const QString& id,
     request.Modality = QStringLiteral("CT");
     request.WorkflowRole = xq::core::DataWorkflowRole::Image;
     return request;
+}
+
+mitk::DataNode::Pointer MakeNode(const std::string& name)
+{
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    return node;
 }
 
 } // namespace
@@ -114,6 +124,15 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto boundNode = MakeNode("CTA node");
+    if (Expect(context->DataNodes()->BindNode(QStringLiteral("image-001"),
+                                              boundNode,
+                                              &errorMessage),
+               "test fixture should bind data node before removal"))
+    {
+        delete context;
+        return 1;
+    }
     if (Expect(context->Tasks()->History().size() == 2,
                "rename should record a task after import"))
     {
@@ -177,6 +196,14 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(context->DataNodes()
+                   ->FindNode(QStringLiteral("image-001"))
+                   .IsNull(),
+               "remove should clear data node registry binding"))
+    {
+        delete context;
+        return 1;
+    }
 
     const auto secondImport =
         context->DataImports()->Import(MakeImageImport(
@@ -184,6 +211,15 @@ int main(int argc, char** argv)
                                            QStringLiteral("CTA B")),
                                        &errorMessage);
     if (Expect(secondImport.Succeeded, "second image import should succeed"))
+    {
+        delete context;
+        return 1;
+    }
+    auto secondBoundNode = MakeNode("CTA B node");
+    if (Expect(context->DataNodes()->BindNode(QStringLiteral("image-002"),
+                                              secondBoundNode,
+                                              &errorMessage),
+               "test fixture should bind second data node before failed remove"))
     {
         delete context;
         return 1;
@@ -206,6 +242,14 @@ int main(int argc, char** argv)
     if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
                    QStringLiteral("image-002"),
                "failed remove should preserve current selection"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->DataNodes()
+                   ->FindNode(QStringLiteral("image-002"))
+                   .GetPointer() == secondBoundNode.GetPointer(),
+               "failed remove should preserve data node registry binding"))
     {
         delete context;
         return 1;

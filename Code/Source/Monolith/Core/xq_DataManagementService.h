@@ -9,6 +9,7 @@ namespace xq::core
 
 class DataCatalogService;
 class DataHierarchyService;
+class DataNodeRegistryService;
 class DataSelectionService;
 class TaskRunner;
 
@@ -20,6 +21,12 @@ public:
     DataManagementService(DataCatalogService& dataCatalog,
                           DataHierarchyService& dataHierarchy,
                           DataSelectionService& dataSelection,
+                          TaskRunner& taskRunner,
+                          QObject* parent = nullptr);
+    DataManagementService(DataCatalogService& dataCatalog,
+                          DataHierarchyService& dataHierarchy,
+                          DataSelectionService& dataSelection,
+                          DataNodeRegistryService& dataNodes,
                           TaskRunner& taskRunner,
                           QObject* parent = nullptr);
 
@@ -35,6 +42,7 @@ private:
     DataCatalogService& m_DataCatalog;
     DataHierarchyService& m_DataHierarchy;
     DataSelectionService& m_DataSelection;
+    DataNodeRegistryService* m_DataNodes = nullptr;
     TaskRunner& m_TaskRunner;
 };
 

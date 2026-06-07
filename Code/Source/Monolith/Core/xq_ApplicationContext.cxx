@@ -36,6 +36,7 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
     , m_DataManagementService(new DataManagementService(*m_DataCatalogService,
                                                         *m_DataHierarchyService,
                                                         *m_DataSelectionService,
+                                                        *m_DataNodeRegistryService,
                                                         *m_TaskRunner,
                                                         this))
     , m_DataImportService(new DataImportService(*m_DataCatalogService,
