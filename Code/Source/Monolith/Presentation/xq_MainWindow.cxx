@@ -7,6 +7,7 @@
 #include "Core/xq_DataSelectionService.h"
 #include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_ProjectService.h"
+#include "Core/xq_WorkflowContextService.h"
 #include "Core/xq_WorkflowRegistry.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "xq_DataHierarchyModel.h"
@@ -136,8 +137,15 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             [this](const QString& workflowId) {
                 SyncWorkflowNavigationFromCore(workflowId);
             });
+    connect(m_Context.WorkflowContext(),
+            &xq::core::WorkflowContextService::ContextChanged,
+            this,
+            [this]() {
+                UpdateWorkflowContextStatusPage();
+            });
     SyncWorkflowNavigationFromCore(
         m_Context.WorkflowSelection()->SelectedWorkflowId());
+    UpdateWorkflowContextStatusPage();
 
     connect(m_DataHierarchyView->selectionModel(),
             &QItemSelectionModel::currentChanged,
@@ -323,6 +331,36 @@ void MainWindow::SyncWorkflowNavigationFromCore(const QString& workflowId)
     }
 }
 
+void MainWindow::UpdateWorkflowContextStatusPage()
+{
+    const xq::core::WorkflowContextSnapshot snapshot =
+        m_Context.WorkflowContext()->Snapshot();
+    auto* label = m_WorkflowContextStatusLabels.value(snapshot.WorkflowId,
+                                                      nullptr);
+    if (!label)
+        return;
+
+    if (!snapshot.HasSelectedData)
+    {
+        label->setText(QStringLiteral("Select compatible data to continue."));
+        return;
+    }
+
+    if (!snapshot.HasCompatibleSelection)
+    {
+        label->setText(
+            QStringLiteral("Selected data is not compatible with %1.")
+                .arg(snapshot.WorkflowTitle));
+        return;
+    }
+
+    const QString displayName =
+        snapshot.SelectedDataDisplayName.trimmed().isEmpty()
+            ? snapshot.SelectedCatalogEntryId
+            : snapshot.SelectedDataDisplayName;
+    label->setText(QStringLiteral("Using %1.").arg(displayName));
+}
+
 void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)
 {
     if (!m_ProjectNameLabel || !m_ProjectPathLabel || !m_ProjectSchemaLabel)
@@ -491,6 +529,16 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
         layout->addWidget(m_DataCatalogIdLabel);
         layout->addWidget(m_DataDisplayNameLabel);
         layout->addWidget(m_DataSourcePathLabel);
+    }
+    else if (!xq::core::WorkflowContextService::AcceptedDataRolesForWorkflow(
+                  id).isEmpty())
+    {
+        auto* statusLabel = new QLabel(page);
+        statusLabel->setObjectName(
+            QStringLiteral("xqWorkflowContextStatus_%1").arg(id));
+        statusLabel->setWordWrap(true);
+        m_WorkflowContextStatusLabels.insert(id, statusLabel);
+        layout->addWidget(statusLabel);
     }
     layout->addStretch(1);
 

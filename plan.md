@@ -1108,6 +1108,53 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Workflow Context Status Page Foundation
+
+1. Add stable Presentation labels for workflow data context.
+   - Data-dependent workflow pages should expose a label named
+     `xqWorkflowContextStatus_<workflow-id>`.
+   - Cover `image-preprocessing`, `path`, `segmentation-2d`,
+     `segmentation-3d`, `modeling`, `meshing`, `flow-simulation`,
+     `rom-simulation`, and `multiphysics`.
+   - Keep `project`, `data`, and `python-api` pages unchanged in this slice.
+2. Bind labels to `WorkflowContextService`.
+   - Selecting a data-dependent workflow with no selected data should show a
+     neutral missing-input status.
+   - A compatible selected data entry should show the selected display name.
+   - An incompatible selected data entry should show an incompatible-input
+     status.
+   - Rename/import/selection changes should refresh through
+     `WorkflowContextService::ContextChanged()`.
+3. Keep this slice display-only.
+   - Do not add workflow action buttons yet.
+   - Do not start migrating image/path/segmentation algorithms yet.
+   - Preserve existing navigation, project, data, diagnostics, and render host
+     behavior.
+4. Add C++/Qt regression tests before implementation:
+   - Data-dependent workflow pages expose their context status label.
+   - Selecting image preprocessing with no data shows missing-input status.
+   - Importing/selecting image data updates image preprocessing status with
+     the display name.
+   - Switching to meshing with image data shows incompatible-input status.
+   - Importing/selecting model data updates meshing status with the display
+     name.
+   - Renaming selected data refreshes the active workflow status label.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

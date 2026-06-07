@@ -1098,3 +1098,39 @@
 - Promoted Monolith Workflow Data Context Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked UI-facing workflow context patterns now that Core can derive
+    workflow/data compatibility.
+  - Comparable workstation shells surface current input readiness inside the
+    active module/page before exposing tool-specific controls, so users see
+    whether the selected data can drive the current workflow.
+  - Chosen next slice: add stable workflow context status labels to
+    data-dependent workflow pages and bind them to `WorkflowContextService`.
+- Added next executable phase to `plan.md`: Monolith Workflow Context Status
+  Page Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing workflow context status page regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_workflow_context_status_page`
+    failed with `data-dependent workflow page should expose a context status label`.
+- Implemented the monolith workflow context status page foundation:
+  - Added stable `xqWorkflowContextStatus_<workflow-id>` labels to
+    data-dependent workflow pages.
+  - Bound status text to `WorkflowContextService::ContextChanged()`.
+  - Missing input, incompatible input, compatible selected data, and selected
+    data rename changes now update the active workflow page status.
+  - Kept this slice display-only with no workflow action buttons or algorithm
+    migration.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_workflow_context_status_page`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 37/37.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Workflow Context Status Page Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

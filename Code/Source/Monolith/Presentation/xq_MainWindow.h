@@ -1,6 +1,7 @@
 #ifndef XQ_MAINWINDOW_H
 #define XQ_MAINWINDOW_H
 
+#include <QHash>
 #include <QMainWindow>
 
 class QAction;
@@ -37,6 +38,7 @@ private:
     void RemoveSelectedData();
     void SaveProject();
     void SyncWorkflowNavigationFromCore(const QString& workflowId);
+    void UpdateWorkflowContextStatusPage();
     void UpdateDataWorkflowPage();
     void UpdateProjectPage(const xq::core::ProjectMetadata* project);
     void UpdateProjectPageDataCount();
@@ -56,6 +58,7 @@ private:
     QLabel* m_DataCatalogIdLabel = nullptr;
     QLabel* m_DataDisplayNameLabel = nullptr;
     QLabel* m_DataSourcePathLabel = nullptr;
+    QHash<QString, QLabel*> m_WorkflowContextStatusLabels;
     QAction* m_SaveProjectAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
     QListWidget* m_Navigation = nullptr;
