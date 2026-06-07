@@ -1280,3 +1280,38 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Task History Panel Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked workflow action execution after task history landed.
+  - The action service now has a stable task surface, but still cannot delegate
+    to per-workflow implementations.
+  - Chosen next slice: add per-workflow handler registration and dispatch in
+    `WorkflowActionService`, preserving placeholder behavior when no handler is
+    registered.
+- Added next executable phase to `plan.md`: Monolith Workflow Action Handler
+  Dispatcher Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing workflow action handler dispatch regression test first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_workflow_action_service` because
+    `WorkflowActionService` had no handler registration/query API.
+- Implemented the monolith workflow action handler dispatcher foundation:
+  - Added `WorkflowActionService::WorkflowActionHandler`.
+  - Added validated `RegisterHandler` and `HasHandler`.
+  - `RunActiveWorkflowAction` now dispatches to a registered handler for the
+    active workflow when one exists.
+  - Workflows without handlers preserve placeholder task behavior.
+  - Handler-provided task messages are stored in task history.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_workflow_action_service`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 40/40.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Workflow Action Handler Dispatcher Foundation to completed
+  in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

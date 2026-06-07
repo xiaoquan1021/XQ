@@ -1336,6 +1336,51 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 7. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Workflow Action Handler Dispatcher Foundation
+
+1. Add per-workflow action handler registration to Core.
+   - Extend `WorkflowActionService` with a handler type that receives the
+     current `WorkflowContextSnapshot` and writes a task message.
+   - Add `RegisterHandler(workflowId, handler, message)` and `HasHandler`.
+   - Reject missing workflow ids, unknown workflow ids, and empty handlers.
+2. Dispatch successful workflow tasks through registered handlers.
+   - `RunActiveWorkflowAction` should keep rejecting missing or incompatible
+     data before creating a task.
+   - If the active workflow has a registered handler, the task body should call
+     the handler.
+   - If no handler is registered, preserve the current placeholder task
+     behavior.
+   - Task names should remain `Run <WorkflowTitle>`.
+3. Keep UI behavior stable.
+   - MainWindow primary actions should continue to call only
+     `WorkflowActionService::RunActiveWorkflowAction`.
+   - Existing placeholder diagnostics and task history behavior should remain
+     stable when no handler is registered.
+4. Add C++ regression tests before implementation:
+   - Unknown workflow handler registration is rejected.
+   - Empty handler registration is rejected.
+   - Valid image preprocessing handler registration succeeds and is reported by
+     `HasHandler`.
+   - Running image preprocessing with a registered handler calls it once with
+     the active snapshot.
+   - The resulting task history row uses the handler-provided task message.
+   - Running a workflow without a handler preserves placeholder behavior.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

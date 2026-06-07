@@ -1,7 +1,9 @@
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataImportService.h"
+#include "Core/xq_DataSelectionService.h"
 #include "Core/xq_TaskRunner.h"
 #include "Core/xq_WorkflowActionService.h"
+#include "Core/xq_WorkflowContextService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 
 #include <QCoreApplication>
@@ -232,6 +234,165 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    auto* handlerContext = xq::core::ApplicationContext::CreateDefault();
+    auto* handlerActions = handlerContext->WorkflowActions();
+    if (Expect(!handlerActions->RegisterHandler(
+                   QStringLiteral("missing-workflow"),
+                   [](const xq::core::WorkflowContextSnapshot&, QString*) {
+                       return true;
+                   },
+                   &message),
+               "unknown workflow handler registration should be rejected"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(!handlerActions->RegisterHandler(
+                   QStringLiteral("image-preprocessing"),
+                   xq::core::WorkflowActionService::WorkflowActionHandler(),
+                   &message),
+               "empty workflow handler registration should be rejected"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+
+    int handlerCalls = 0;
+    QString handlerWorkflowId;
+    QString handlerSelectedData;
+    const bool handlerRegistered = handlerActions->RegisterHandler(
+        QStringLiteral("image-preprocessing"),
+        [&handlerCalls,
+         &handlerWorkflowId,
+         &handlerSelectedData](
+            const xq::core::WorkflowContextSnapshot& snapshot,
+            QString* taskMessage) {
+            ++handlerCalls;
+            handlerWorkflowId = snapshot.WorkflowId;
+            handlerSelectedData = snapshot.SelectedDataDisplayName;
+            if (taskMessage)
+            {
+                *taskMessage =
+                    QStringLiteral("Custom preprocessing completed for %1.")
+                        .arg(snapshot.SelectedDataDisplayName);
+            }
+            return true;
+        },
+        &message);
+    if (Expect(handlerRegistered,
+               "valid workflow handler registration should succeed"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(handlerActions->HasHandler(
+                   QStringLiteral("image-preprocessing")),
+               "registered workflow handler should be discoverable"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+
+    if (Expect(handlerContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("image-preprocessing")),
+               "handler image preprocessing workflow should be selectable"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+    const auto handlerImageImport =
+        handlerContext->DataImports()->Import(MakeImport(
+                                                  QStringLiteral("handler-image"),
+                                                  QStringLiteral("Handler CTA"),
+                                                  xq::core::DataWorkflowRole::Image),
+                                              &errorMessage);
+    if (Expect(handlerImageImport.Succeeded,
+               "handler image import should succeed"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+
+    const int handlerHistoryBeforeRun =
+        handlerContext->Tasks()->History().size();
+    if (Expect(handlerActions->RunActiveWorkflowAction(&message),
+               "registered workflow handler action should be accepted"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+    const auto handlerHistoryAfterRun =
+        handlerContext->Tasks()->History();
+    if (Expect(handlerCalls == 1,
+               "registered workflow handler should be called once"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(handlerWorkflowId == QStringLiteral("image-preprocessing"),
+               "handler should receive active workflow id"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(handlerSelectedData == QStringLiteral("Handler CTA"),
+               "handler should receive selected data display name"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(handlerHistoryAfterRun.size() == handlerHistoryBeforeRun + 1,
+               "registered handler run should create one task"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(handlerHistoryAfterRun.back().Message ==
+                   QStringLiteral("Custom preprocessing completed for Handler CTA."),
+               "registered handler task should use handler message"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+
+    handlerContext->DataSelection()->SelectCatalogEntry(QStringLiteral("handler-image"));
+    if (Expect(handlerContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("path")),
+               "path workflow should be selectable"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(handlerActions->RunActiveWorkflowAction(&message),
+               "workflow without registered handler should preserve placeholder action"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(message ==
+                   QStringLiteral("Path action requested for Handler CTA."),
+               "unregistered workflow should keep placeholder message"))
+    {
+        delete handlerContext;
+        delete context;
+        return 1;
+    }
+
+    delete handlerContext;
     delete context;
     return 0;
 }

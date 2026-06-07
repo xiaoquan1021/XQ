@@ -1,7 +1,9 @@
 #include "xq_WorkflowActionService.h"
 
 #include "xq_TaskRunner.h"
-#include "xq_WorkflowContextService.h"
+#include "xq_WorkflowRegistry.h"
+
+#include <utility>
 
 namespace xq::core
 {
@@ -14,6 +16,34 @@ WorkflowActionService::WorkflowActionService(
     , m_WorkflowContext(workflowContext)
     , m_TaskRunner(taskRunner)
 {
+}
+
+bool WorkflowActionService::RegisterHandler(
+    const QString& workflowId,
+    WorkflowActionHandler handler,
+    QString* message)
+{
+    const QString normalizedWorkflowId = workflowId.trimmed();
+    if (!FindWorkflowById(normalizedWorkflowId))
+    {
+        SetMessage(message, QStringLiteral("Workflow was not found."));
+        return false;
+    }
+
+    if (!handler)
+    {
+        SetMessage(message, QStringLiteral("Workflow action handler is required."));
+        return false;
+    }
+
+    m_Handlers.insert(normalizedWorkflowId, std::move(handler));
+    SetMessage(message, QString());
+    return true;
+}
+
+bool WorkflowActionService::HasHandler(const QString& workflowId) const
+{
+    return m_Handlers.contains(workflowId.trimmed());
 }
 
 bool WorkflowActionService::RequestActiveWorkflowAction(
@@ -58,6 +88,19 @@ bool WorkflowActionService::RunActiveWorkflowAction(QString* message)
 
     const QString taskName =
         QStringLiteral("Run %1").arg(snapshot.WorkflowTitle);
+    const WorkflowActionHandler handler =
+        m_Handlers.value(snapshot.WorkflowId);
+    if (handler)
+    {
+        m_TaskRunner.RunBlocking(
+            taskName,
+            [handler, snapshot](QString* taskMessage) {
+                return handler(snapshot, taskMessage);
+            },
+            message);
+        return true;
+    }
+
     return m_TaskRunner.RunBlocking(
         taskName,
         [requestMessage](QString* taskMessage) {
