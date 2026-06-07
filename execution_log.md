@@ -1625,3 +1625,37 @@
 - Promoted Monolith Image Preprocessing Infrastructure Adapter Foundation to
   completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked legacy image-processing primitives after the first Gaussian
+    smoothing Infrastructure adapter landed.
+  - Binary threshold is the next low-risk operation because it uses scalar
+    parameters already covered by the Domain schema and returns a VTK image.
+  - Chosen next slice: add binary-threshold execution to the same
+    Infrastructure adapter.
+- Added next executable phase to `plan.md`: Monolith Binary Threshold
+  Infrastructure Adapter.
+- Started the next unattended loop iteration:
+  - Adding failing binary-threshold adapter regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_algorithm_adapter` because
+    `ImagePreprocessingAlgorithmAdapter` had no `RunBinaryThreshold` member.
+- Implemented the monolith binary-threshold infrastructure adapter:
+  - Added `RunBinaryThreshold(vtkImageData*, QVariantMap parameters)`.
+  - Reused Domain validation for `binary-threshold` parameters.
+  - Delegated valid requests to `xq_ImageProcessingUtils::BinaryThreshold`.
+  - Preserved layer separation: Domain still does not link legacy algorithm
+    modules.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_algorithm_adapter`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 43/43.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Binary Threshold Infrastructure Adapter to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

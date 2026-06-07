@@ -1720,6 +1720,42 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Binary Threshold Infrastructure Adapter
+
+1. Extend the image-preprocessing algorithm adapter with binary threshold.
+   - Add `RunBinaryThreshold(vtkImageData*, QVariantMap parameters)`.
+   - Use the domain service to validate `binary-threshold` parameters.
+   - Delegate valid requests to `xq_ImageProcessingUtils::BinaryThreshold`.
+2. Preserve adapter layering.
+   - Keep Domain independent from legacy algorithms.
+   - Keep Infrastructure as the only monolith layer linking to
+     `xqModuleImageProcessing` in this slice.
+3. Keep this slice as algorithm smoke coverage.
+   - Do not mutate MITK `DataStorage`, `DataCatalogService`, or project files.
+   - Do not add UI controls yet.
+4. Add C++ regression tests before implementation:
+   - Adapter rejects null input with the legacy binary-threshold diagnostic.
+   - Adapter rejects missing threshold parameters through domain validation.
+   - Adapter runs binary threshold on a small VTK image and returns a non-null
+     image with matching dimensions.
+   - Adapter output contains the expected inside/outside values for a simple
+     voxel sample.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

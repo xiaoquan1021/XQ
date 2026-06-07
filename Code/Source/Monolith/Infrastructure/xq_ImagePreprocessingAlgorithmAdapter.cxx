@@ -20,6 +20,33 @@ ImagePreprocessingAlgorithmResult FailedResult(const QString& message)
 } // namespace
 
 ImagePreprocessingAlgorithmResult
+ImagePreprocessingAlgorithmAdapter::RunBinaryThreshold(
+    vtkImageData* input,
+    const QVariantMap& parameters) const
+{
+    xq::domain::ImagePreprocessingWorkflowService domainService;
+    const auto validation =
+        domainService.ValidateOperationParameters(
+            QStringLiteral("binary-threshold"), parameters);
+    if (!validation.Succeeded)
+        return FailedResult(validation.Message);
+
+    const auto imageResult =
+        xq_ImageProcessingUtils::BinaryThreshold(
+            input,
+            parameters.value(QStringLiteral("lower")).toDouble(),
+            parameters.value(QStringLiteral("upper")).toDouble(),
+            parameters.value(QStringLiteral("inside-value")).toDouble(),
+            parameters.value(QStringLiteral("outside-value")).toDouble());
+
+    ImagePreprocessingAlgorithmResult result;
+    result.Succeeded = imageResult.ok;
+    result.Image = imageResult.image;
+    result.Message = QString::fromStdString(imageResult.diagnostic);
+    return result;
+}
+
+ImagePreprocessingAlgorithmResult
 ImagePreprocessingAlgorithmAdapter::RunGaussianSmoothing(
     vtkImageData* input,
     const QVariantMap& parameters) const

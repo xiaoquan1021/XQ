@@ -20,6 +20,10 @@ struct ImagePreprocessingAlgorithmResult
 class ImagePreprocessingAlgorithmAdapter
 {
 public:
+    ImagePreprocessingAlgorithmResult RunBinaryThreshold(
+        vtkImageData* input,
+        const QVariantMap& parameters) const;
+
     ImagePreprocessingAlgorithmResult RunGaussianSmoothing(
         vtkImageData* input,
         const QVariantMap& parameters) const;

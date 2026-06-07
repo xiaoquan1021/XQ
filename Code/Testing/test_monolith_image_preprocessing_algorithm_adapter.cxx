@@ -49,6 +49,16 @@ QVariantMap GaussianParameters(double sigma)
     return parameters;
 }
 
+QVariantMap BinaryThresholdParameters()
+{
+    QVariantMap parameters;
+    parameters.insert(QStringLiteral("lower"), 3.0);
+    parameters.insert(QStringLiteral("upper"), 6.0);
+    parameters.insert(QStringLiteral("inside-value"), 1.0);
+    parameters.insert(QStringLiteral("outside-value"), 0.0);
+    return parameters;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -95,6 +105,57 @@ int main(int argc, char** argv)
                    outputDimensions[1] == inputDimensions[1] &&
                    outputDimensions[2] == inputDimensions[2],
                "Gaussian smoothing should preserve image dimensions"))
+        return 1;
+
+    const auto nullThresholdResult =
+        adapter.RunBinaryThreshold(nullptr, BinaryThresholdParameters());
+    if (Expect(!nullThresholdResult.Succeeded,
+               "null binary-threshold input should fail"))
+        return 1;
+    if (Expect(nullThresholdResult.Message ==
+                   QStringLiteral("BinaryThreshold: input image is null."),
+               "null binary-threshold input should use legacy diagnostic"))
+        return 1;
+
+    const auto missingThresholdParameterResult =
+        adapter.RunBinaryThreshold(MakeImage(), QVariantMap());
+    if (Expect(!missingThresholdParameterResult.Succeeded,
+               "missing binary-threshold parameters should fail"))
+        return 1;
+    if (Expect(missingThresholdParameterResult.Message ==
+                   QStringLiteral("Image preprocessing parameter is required: lower."),
+               "missing binary-threshold parameter should use domain validation"))
+        return 1;
+    if (Expect(missingThresholdParameterResult.Image == nullptr,
+               "invalid binary-threshold parameters should not produce image"))
+        return 1;
+
+    input = MakeImage();
+    inputDimensions = input->GetDimensions();
+    const auto thresholdResult =
+        adapter.RunBinaryThreshold(input, BinaryThresholdParameters());
+    if (Expect(thresholdResult.Succeeded,
+               "valid binary-threshold request should succeed"))
+        return 1;
+    if (Expect(thresholdResult.Image != nullptr,
+               "valid binary-threshold request should return image"))
+        return 1;
+    outputDimensions = thresholdResult.Image->GetDimensions();
+    if (Expect(outputDimensions[0] == inputDimensions[0] &&
+                   outputDimensions[1] == inputDimensions[1] &&
+                   outputDimensions[2] == inputDimensions[2],
+               "binary threshold should preserve image dimensions"))
+        return 1;
+
+    const auto* insideVoxel =
+        static_cast<float*>(thresholdResult.Image->GetScalarPointer(1, 1, 1));
+    if (Expect(insideVoxel && *insideVoxel == 1.0f,
+               "binary threshold should write inside value for in-range voxel"))
+        return 1;
+    const auto* outsideVoxel =
+        static_cast<float*>(thresholdResult.Image->GetScalarPointer(0, 0, 0));
+    if (Expect(outsideVoxel && *outsideVoxel == 0.0f,
+               "binary threshold should write outside value for out-of-range voxel"))
         return 1;
 
     return 0;
