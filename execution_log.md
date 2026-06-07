@@ -2034,3 +2034,52 @@
 - Promoted Monolith Image Preprocessing Catalog Commit Service to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable workstation architecture:
+    MITK keeps rendering data centered on `DataStorage`, Slicer modules
+    separate widget actions from scene/logic mutation, SimVascular presents a
+    project pipeline from images through paths, segmentation, modeling,
+    meshing, simulation, ROM, and multiphysics, and OHIF routes toolbar/workflow
+    behavior through command/service registration.
+  - The completed preprocessing slices now cover Domain validation, algorithm
+    dispatch, MITK image conversion, result node creation, storage commit, and
+    catalog/hierarchy commit.
+  - Chosen next slice: add an Infrastructure application commit service that
+    composes storage and catalog commits and preflights generated metadata
+    targets before mutating `DataStorage`.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing
+  Application Commit Service.
+- Started the next unattended loop iteration:
+  - Adding failing application commit service regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_application_commit_service`
+    because
+    `Infrastructure/xq_ImagePreprocessingApplicationCommitService.h` did not
+    exist.
+- Implemented the monolith image-preprocessing application commit service:
+  - Added `ImagePreprocessingApplicationCommitRequest` and
+    `ImagePreprocessingApplicationCommitResult`.
+  - Added target preflight for duplicate generated catalog ids and generated
+    hierarchy node ids before invoking image-processing algorithms.
+  - Composed `ImagePreprocessingStorageCommitService` and
+    `ImagePreprocessingCatalogCommitService` into one Infrastructure
+    application commit path.
+  - Preserved storage failure diagnostics without catalog/hierarchy mutation
+    and kept this slice free of UI, `ApplicationContext` registration, and
+    project-file writes.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_application_commit_service`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 49/49.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Application Commit Service to completed
+  in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
