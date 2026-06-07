@@ -1554,6 +1554,47 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing Operation Parameter Schema
+
+1. Add metadata-only parameter descriptors for image-preprocessing operations.
+   - Introduce `ImagePreprocessingParameterDescriptor`.
+   - Add parameter id, title, value type, and required flag.
+   - Keep descriptors independent from Qt widgets and old algorithm calls.
+2. Extend operation descriptors with ordered parameter lists.
+   - Binary threshold: lower, upper, inside value, outside value.
+   - Connected threshold: lower, upper, seeds.
+   - Gaussian smoothing: sigma.
+   - Morphology open/close: radius.
+   - Crop: origin x/y/z and size x/y/z.
+   - Resample: spacing x/y/z.
+3. Add supported parameter value types.
+   - Numeric scalar.
+   - Integer scalar.
+   - Integer point list for connected-threshold seeds.
+4. Add C++ regression tests before implementation:
+   - Binary threshold exposes four numeric required parameters.
+   - Gaussian smoothing exposes a required numeric sigma parameter.
+   - Morphology exposes a required integer radius parameter.
+   - Crop exposes six required integer parameters in stable order.
+   - Resample exposes three required numeric spacing parameters.
+   - Connected threshold exposes lower/upper numeric parameters and required
+     seed list parameter.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

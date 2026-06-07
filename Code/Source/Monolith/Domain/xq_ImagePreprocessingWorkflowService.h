@@ -19,10 +19,27 @@ struct ImagePreprocessingWorkflowResult
     QString Message;
 };
 
+enum class ImagePreprocessingParameterValueType
+{
+    NumericScalar,
+    IntegerScalar,
+    IntegerPointList
+};
+
+struct ImagePreprocessingParameterDescriptor
+{
+    QString Id;
+    QString Title;
+    ImagePreprocessingParameterValueType Type =
+        ImagePreprocessingParameterValueType::NumericScalar;
+    bool Required = true;
+};
+
 struct ImagePreprocessingOperationDescriptor
 {
     QString Id;
     QString Title;
+    QVector<ImagePreprocessingParameterDescriptor> Parameters;
 };
 
 class ImagePreprocessingWorkflowService

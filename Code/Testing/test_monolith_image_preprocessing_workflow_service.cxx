@@ -56,6 +56,27 @@ xq::core::DataImportRequest MakeImport(const QString& id,
     return request;
 }
 
+int ExpectParameter(
+    const xq::domain::ImagePreprocessingParameterDescriptor& parameter,
+    const QString& id,
+    xq::domain::ImagePreprocessingParameterValueType valueType)
+{
+    if (Expect(parameter.Id == id,
+               "image preprocessing parameter id should be stable"))
+        return 1;
+    if (Expect(!parameter.Title.trimmed().isEmpty(),
+               "image preprocessing parameter title should be user-facing"))
+        return 1;
+    if (Expect(parameter.Type == valueType,
+               "image preprocessing parameter type should match operation"))
+        return 1;
+    if (Expect(parameter.Required,
+               "image preprocessing operation parameters should be required"))
+        return 1;
+
+    return 0;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -98,6 +119,103 @@ int main(int argc, char** argv)
     if (Expect(service.FindOperation(QStringLiteral("marching-cubes")) == nullptr,
                "surface extraction should not be in preprocessing catalog"))
         return 1;
+
+    const auto* binaryThreshold =
+        service.FindOperation(QStringLiteral("binary-threshold"));
+    if (Expect(binaryThreshold->Parameters.size() == 4,
+               "binary threshold should expose four parameters"))
+        return 1;
+    if (ExpectParameter(binaryThreshold->Parameters.at(0),
+                        QStringLiteral("lower"),
+                        xq::domain::ImagePreprocessingParameterValueType::NumericScalar))
+        return 1;
+    if (ExpectParameter(binaryThreshold->Parameters.at(1),
+                        QStringLiteral("upper"),
+                        xq::domain::ImagePreprocessingParameterValueType::NumericScalar))
+        return 1;
+    if (ExpectParameter(binaryThreshold->Parameters.at(2),
+                        QStringLiteral("inside-value"),
+                        xq::domain::ImagePreprocessingParameterValueType::NumericScalar))
+        return 1;
+    if (ExpectParameter(binaryThreshold->Parameters.at(3),
+                        QStringLiteral("outside-value"),
+                        xq::domain::ImagePreprocessingParameterValueType::NumericScalar))
+        return 1;
+
+    const auto* connectedThreshold =
+        service.FindOperation(QStringLiteral("connected-threshold"));
+    if (Expect(connectedThreshold->Parameters.size() == 3,
+               "connected threshold should expose three parameters"))
+        return 1;
+    if (ExpectParameter(connectedThreshold->Parameters.at(0),
+                        QStringLiteral("lower"),
+                        xq::domain::ImagePreprocessingParameterValueType::NumericScalar))
+        return 1;
+    if (ExpectParameter(connectedThreshold->Parameters.at(1),
+                        QStringLiteral("upper"),
+                        xq::domain::ImagePreprocessingParameterValueType::NumericScalar))
+        return 1;
+    if (ExpectParameter(connectedThreshold->Parameters.at(2),
+                        QStringLiteral("seeds"),
+                        xq::domain::ImagePreprocessingParameterValueType::IntegerPointList))
+        return 1;
+
+    const auto* gaussianSmoothing =
+        service.FindOperation(QStringLiteral("gaussian-smoothing"));
+    if (Expect(gaussianSmoothing->Parameters.size() == 1,
+               "Gaussian smoothing should expose one parameter"))
+        return 1;
+    if (ExpectParameter(gaussianSmoothing->Parameters.at(0),
+                        QStringLiteral("sigma"),
+                        xq::domain::ImagePreprocessingParameterValueType::NumericScalar))
+        return 1;
+
+    const auto* morphology =
+        service.FindOperation(QStringLiteral("morphology-open-close"));
+    if (Expect(morphology->Parameters.size() == 1,
+               "morphology should expose one parameter"))
+        return 1;
+    if (ExpectParameter(morphology->Parameters.at(0),
+                        QStringLiteral("radius"),
+                        xq::domain::ImagePreprocessingParameterValueType::IntegerScalar))
+        return 1;
+
+    const auto* crop = service.FindOperation(QStringLiteral("crop"));
+    const QStringList cropParameterIds = {
+        QStringLiteral("origin-x"),
+        QStringLiteral("origin-y"),
+        QStringLiteral("origin-z"),
+        QStringLiteral("size-x"),
+        QStringLiteral("size-y"),
+        QStringLiteral("size-z"),
+    };
+    if (Expect(crop->Parameters.size() == cropParameterIds.size(),
+               "crop should expose six ordered parameters"))
+        return 1;
+    for (int i = 0; i < cropParameterIds.size(); ++i)
+    {
+        if (ExpectParameter(crop->Parameters.at(i),
+                            cropParameterIds.at(i),
+                            xq::domain::ImagePreprocessingParameterValueType::IntegerScalar))
+            return 1;
+    }
+
+    const auto* resample = service.FindOperation(QStringLiteral("resample"));
+    const QStringList resampleParameterIds = {
+        QStringLiteral("spacing-x"),
+        QStringLiteral("spacing-y"),
+        QStringLiteral("spacing-z"),
+    };
+    if (Expect(resample->Parameters.size() == resampleParameterIds.size(),
+               "resample should expose three ordered parameters"))
+        return 1;
+    for (int i = 0; i < resampleParameterIds.size(); ++i)
+    {
+        if (ExpectParameter(resample->Parameters.at(i),
+                            resampleParameterIds.at(i),
+                            xq::domain::ImagePreprocessingParameterValueType::NumericScalar))
+            return 1;
+    }
 
     const auto smoothOperationResult = service.RunOperation(
         MakeSnapshot(QStringLiteral("image-preprocessing"),

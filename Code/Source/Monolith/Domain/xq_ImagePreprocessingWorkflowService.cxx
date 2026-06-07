@@ -6,21 +6,89 @@ namespace xq::domain
 namespace
 {
 
+ImagePreprocessingParameterDescriptor Parameter(
+    const QString& id,
+    const QString& title,
+    ImagePreprocessingParameterValueType type)
+{
+    ImagePreprocessingParameterDescriptor parameter;
+    parameter.Id = id;
+    parameter.Title = title;
+    parameter.Type = type;
+    parameter.Required = true;
+    return parameter;
+}
+
+ImagePreprocessingParameterDescriptor NumericParameter(
+    const QString& id,
+    const QString& title)
+{
+    return Parameter(id,
+                     title,
+                     ImagePreprocessingParameterValueType::NumericScalar);
+}
+
+ImagePreprocessingParameterDescriptor IntegerParameter(
+    const QString& id,
+    const QString& title)
+{
+    return Parameter(id,
+                     title,
+                     ImagePreprocessingParameterValueType::IntegerScalar);
+}
+
 const QVector<ImagePreprocessingOperationDescriptor>& DefaultOperations()
 {
     static const QVector<ImagePreprocessingOperationDescriptor> operations = {
         {QStringLiteral("binary-threshold"),
-         QStringLiteral("Binary Threshold")},
+         QStringLiteral("Binary Threshold"),
+         {NumericParameter(QStringLiteral("lower"),
+                           QStringLiteral("Lower Threshold")),
+          NumericParameter(QStringLiteral("upper"),
+                           QStringLiteral("Upper Threshold")),
+          NumericParameter(QStringLiteral("inside-value"),
+                           QStringLiteral("Inside Value")),
+          NumericParameter(QStringLiteral("outside-value"),
+                           QStringLiteral("Outside Value"))}},
         {QStringLiteral("connected-threshold"),
-         QStringLiteral("Connected Threshold")},
+         QStringLiteral("Connected Threshold"),
+         {NumericParameter(QStringLiteral("lower"),
+                           QStringLiteral("Lower Threshold")),
+          NumericParameter(QStringLiteral("upper"),
+                           QStringLiteral("Upper Threshold")),
+          Parameter(QStringLiteral("seeds"),
+                    QStringLiteral("Seeds"),
+                    ImagePreprocessingParameterValueType::IntegerPointList)}},
         {QStringLiteral("gaussian-smoothing"),
-         QStringLiteral("Gaussian Smoothing")},
+         QStringLiteral("Gaussian Smoothing"),
+         {NumericParameter(QStringLiteral("sigma"),
+                           QStringLiteral("Sigma"))}},
         {QStringLiteral("morphology-open-close"),
-         QStringLiteral("Morphology Open/Close")},
+         QStringLiteral("Morphology Open/Close"),
+         {IntegerParameter(QStringLiteral("radius"),
+                           QStringLiteral("Radius"))}},
         {QStringLiteral("crop"),
-         QStringLiteral("Crop")},
+         QStringLiteral("Crop"),
+         {IntegerParameter(QStringLiteral("origin-x"),
+                           QStringLiteral("Origin X")),
+          IntegerParameter(QStringLiteral("origin-y"),
+                           QStringLiteral("Origin Y")),
+          IntegerParameter(QStringLiteral("origin-z"),
+                           QStringLiteral("Origin Z")),
+          IntegerParameter(QStringLiteral("size-x"),
+                           QStringLiteral("Size X")),
+          IntegerParameter(QStringLiteral("size-y"),
+                           QStringLiteral("Size Y")),
+          IntegerParameter(QStringLiteral("size-z"),
+                           QStringLiteral("Size Z"))}},
         {QStringLiteral("resample"),
-         QStringLiteral("Resample")},
+         QStringLiteral("Resample"),
+         {NumericParameter(QStringLiteral("spacing-x"),
+                           QStringLiteral("Spacing X")),
+          NumericParameter(QStringLiteral("spacing-y"),
+                           QStringLiteral("Spacing Y")),
+          NumericParameter(QStringLiteral("spacing-z"),
+                           QStringLiteral("Spacing Z"))}},
     };
 
     return operations;
