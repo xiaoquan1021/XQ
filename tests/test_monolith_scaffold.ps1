@@ -27,14 +27,26 @@ if ($ContextHeader -notmatch "DataStorage\(\)") {
 if ($CodeCMake -notmatch "if\(XQ_BUILD_LEGACY_BLUEBERRY\)[\s\S]*Source/ImagingWorkbench/Plugins/PluginList\.cmake[\s\S]*foreach\(_plugin_entry \$\{XQ_PLUGINS\}\)") {
     throw "legacy plugin directories must only be added when XQ_BUILD_LEGACY_BLUEBERRY is ON"
 }
-if ($MainWindowSource -notmatch "QmitkStdMultiWidget") {
-    throw "monolith MainWindow must host a QmitkStdMultiWidget render area"
+if ($MainWindowSource -match "QmitkStdMultiWidget") {
+    throw "monolith MainWindow must not hard-code QmitkStdMultiWidget; inject the render host from main"
 }
-if ($MainWindowSource -notmatch "SetDataStorage\(m_Context\.DataStorage\(\)\.GetPointer\(\)\)") {
+if ($MainWindowSource -notmatch "SetRenderHost") {
+    throw "monolith MainWindow must expose a render host injection point"
+}
+if ($MainWindowSource -notmatch "xqRenderHostContainer") {
+    throw "monolith MainWindow must keep a stable render host container"
+}
+if ($MonolithMain -notmatch "QmitkStdMultiWidget") {
+    throw "monolith main must create the MITK render host"
+}
+if ($MonolithMain -notmatch "SetDataStorage\(context->DataStorage\(\)\.GetPointer\(\)\)") {
     throw "monolith render host must use ApplicationContext DataStorage"
 }
-if ($MainWindowSource -notmatch "InitializeMultiWidget\(\)") {
+if ($MonolithMain -notmatch "InitializeMultiWidget\(\)") {
     throw "monolith render host must initialize MITK render windows"
+}
+if ($MonolithMain -notmatch "window\.SetRenderHost\(renderHost\)") {
+    throw "monolith main must inject the MITK render host into MainWindow"
 }
 if ($MonolithMain -notmatch "QSurfaceFormat::setDefaultFormat\(QVTKOpenGLNativeWidget::defaultFormat\(\)\)") {
     throw "monolith main must initialize the QVTK OpenGL surface format before QApplication"

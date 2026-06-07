@@ -79,9 +79,6 @@ target_link_libraries(xqMonolithPresentation
         xqMonolithCore
         Qt6::Core
         Qt6::Widgets
-    PRIVATE
-        MitkCore
-        MitkQtWidgets
 )
 
 add_executable(XQMonolith

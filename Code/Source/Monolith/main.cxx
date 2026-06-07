@@ -5,6 +5,7 @@
 #include <QCoreApplication>
 #include <QSurfaceFormat>
 
+#include <QmitkStdMultiWidget.h>
 #include <QVTKOpenGLNativeWidget.h>
 
 #include <memory>
@@ -21,6 +22,14 @@ int main(int argc, char* argv[])
         xq::core::ApplicationContext::CreateDefault());
 
     xq::presentation::MainWindow window(*context);
+
+    auto* renderHost = new QmitkStdMultiWidget();
+    renderHost->setObjectName(QStringLiteral("xqMitkRenderHost"));
+    renderHost->SetDataStorage(context->DataStorage().GetPointer());
+    renderHost->InitializeMultiWidget();
+    renderHost->AddPlanesToDataStorage();
+    window.SetRenderHost(renderHost);
+
     window.show();
 
     return app.exec();

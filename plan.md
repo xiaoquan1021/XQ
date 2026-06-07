@@ -582,6 +582,46 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Project Data Panel Foundation
+
+1. Add a persistent Project/Data tree to `xq::presentation::MainWindow`.
+   - Create a `QTreeView` with object name `xqDataHierarchyView`.
+   - Back the view with `xq::presentation::DataHierarchyModel`.
+   - Place it in the left workflow area above or alongside the workflow
+     navigation so data remains visible while switching workflow pages.
+2. Keep the UI connected to Core services.
+   - Selecting a data-entry hierarchy node in the tree should call
+     `DataSelectionService::SelectHierarchyNode`.
+   - Folder selection should not replace an existing data selection.
+   - Successful import/rename/remove operations should update the tree through
+     the existing model notification path.
+3. Keep the first UI panel read-only.
+   - Do not add context menus, rename actions, delete actions, or file dialogs
+     in this slice.
+   - Preserve existing workflow navigation behavior and MITK render host setup.
+4. Add C++/Qt regression tests before implementation:
+   - `MainWindow` exposes a hierarchy tree view backed by
+     `DataHierarchyModel`.
+   - Importing data through `ApplicationContext` refreshes the visible tree.
+   - Selecting an imported data row updates `DataSelectionService`.
+   - Selecting a folder row does not overwrite an existing data selection.
+   - Workflow navigation still switches pages after adding the data panel.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

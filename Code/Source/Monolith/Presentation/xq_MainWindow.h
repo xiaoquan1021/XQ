@@ -4,9 +4,10 @@
 #include <QMainWindow>
 
 class QListWidget;
-class QmitkStdMultiWidget;
 class QStackedWidget;
 class QTextEdit;
+class QTreeView;
+class QWidget;
 
 namespace xq::core
 {
@@ -16,6 +17,8 @@ class ApplicationContext;
 namespace xq::presentation
 {
 
+class DataHierarchyModel;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -23,15 +26,19 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(xq::core::ApplicationContext& context,
                         QWidget* parent = nullptr);
+    void SetRenderHost(QWidget* renderHost);
 
 private:
     QWidget* CreateWorkflowPage(const QString& title);
     void AddWorkflowPage(const QString& title);
 
     xq::core::ApplicationContext& m_Context;
+    DataHierarchyModel* m_DataHierarchyModel = nullptr;
+    QTreeView* m_DataHierarchyView = nullptr;
     QListWidget* m_Navigation = nullptr;
     QStackedWidget* m_Pages = nullptr;
-    QmitkStdMultiWidget* m_RenderHost = nullptr;
+    QWidget* m_RenderHostContainer = nullptr;
+    QWidget* m_RenderHost = nullptr;
     QTextEdit* m_Diagnostics = nullptr;
 };
 

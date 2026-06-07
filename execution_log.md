@@ -607,3 +607,48 @@
 - Promoted Monolith Data Hierarchy Qt Model Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked data-panel patterns in comparable medical imaging workstations.
+  - 3D Slicer subject hierarchy, MITK Data Manager, SimVascular Data Manager,
+    and OHIF display-set panels all keep a persistent data tree/list visible as
+    workflow context rather than hiding loaded data inside individual tools.
+  - Chosen next slice: bind the new monolith `DataHierarchyModel` into
+    `MainWindow` as a persistent Project/Data tree and route tree selection to
+    `DataSelectionService`.
+- Added next executable phase to `plan.md`: Monolith Project Data Panel
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing MainWindow data panel regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_data_panel`
+    timed out before entering `main()`.
+  - Root cause: `MainWindow` hard-coded `QmitkStdMultiWidget` in the
+    Presentation translation unit, so a UI shell test pulled the heavy MITK
+    render host into process startup before it could exercise the data-panel
+    behavior.
+- Implemented the monolith project data panel foundation:
+  - Moved MITK render host construction from `MainWindow` to `main.cxx`.
+  - Added `MainWindow::SetRenderHost(QWidget*)` and a stable
+    `xqRenderHostContainer` so the application still injects the real MITK
+    render widget while Presentation tests can construct the shell without
+    Qmitk startup.
+  - Added a persistent `xqDataHierarchyView` backed by
+    `DataHierarchyModel` in the left workflow area.
+  - Added stable object names for workflow navigation and page stack.
+  - Routed tree selection of data-entry nodes to
+    `DataSelectionService::SelectHierarchyNode`; folder selection preserves
+    the current data selection.
+  - Updated `test_monolith_scaffold.ps1` to protect render-host injection
+    instead of requiring `MainWindow` to hard-code Qmitk.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_data_panel`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 23/23.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Project Data Panel Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
