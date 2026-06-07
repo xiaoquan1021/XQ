@@ -821,6 +821,46 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Task Diagnostics Bridge Foundation
+
+1. Bridge task execution into application diagnostics.
+   - `ApplicationContext` should listen to `TaskRunner::TaskFinished`.
+   - Successful tasks should post a concise diagnostic containing the task
+     name and success message when one exists.
+   - Failed tasks should post a diagnostic containing the task name and failure
+     message.
+2. Keep diagnostics signal semantics stable.
+   - Empty task messages should still produce a useful task-level diagnostic.
+   - Diagnostics should be stored through existing `PostDiagnostic` so
+     `Diagnostics()` and `DiagnosticPosted` stay the single public channel.
+   - Empty/whitespace diagnostics should continue to be ignored by
+     `PostDiagnostic`.
+3. Avoid duplicate UI-specific logging.
+   - Do not add direct service-to-widget logging in this slice.
+   - `MainWindow` should continue listening only to
+     `ApplicationContext::DiagnosticPosted`.
+4. Add C++ regression tests before implementation:
+   - Import through `ApplicationContext` posts one successful task diagnostic.
+   - Failed duplicate import posts one failed task diagnostic.
+   - ProjectSession save posts a successful save diagnostic even if the task
+     message is empty.
+   - Manual empty diagnostic posting remains ignored.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

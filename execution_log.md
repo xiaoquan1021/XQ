@@ -833,3 +833,38 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Project Save Action Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked diagnostic/task feedback patterns after adding project save.
+  - Comparable workstation shells provide a persistent operation log,
+    notification service, or error/status panel so task results are visible
+    outside the tool that started them.
+  - Chosen next slice: bridge `TaskRunner::TaskFinished` into
+    `ApplicationContext` diagnostics so imports, saves, opens, and future
+    workflow jobs surface through one diagnostic channel.
+- Added next executable phase to `plan.md`: Monolith Task Diagnostics Bridge
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing task-diagnostics bridge regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_task_diagnostics_bridge`
+    failed with `successful import should post one task diagnostic`.
+- Implemented the monolith task diagnostics bridge foundation:
+  - `ApplicationContext` now listens to `TaskRunner::TaskFinished`.
+  - Successful tasks post diagnostics containing task name and message.
+  - Failed tasks post diagnostics containing task name, failure state, and
+    message.
+  - Empty task messages still produce a useful `<task> succeeded.` diagnostic.
+  - All task diagnostics flow through existing `PostDiagnostic`.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_task_diagnostics_bridge`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 29/29.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Task Diagnostics Bridge Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

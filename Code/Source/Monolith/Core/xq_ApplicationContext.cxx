@@ -44,6 +44,23 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
                                                         *m_TaskRunner,
                                                         this))
 {
+    connect(m_TaskRunner,
+            &TaskRunner::TaskFinished,
+            this,
+            [this](const QString& taskName,
+                   bool succeeded,
+                   const QString& message) {
+                const QString state =
+                    succeeded ? QStringLiteral("succeeded")
+                              : QStringLiteral("failed");
+                const QString trimmedMessage = message.trimmed();
+                if (trimmedMessage.isEmpty())
+                    PostDiagnostic(QStringLiteral("%1 %2.")
+                                       .arg(taskName, state));
+                else
+                    PostDiagnostic(QStringLiteral("%1 %2: %3")
+                                       .arg(taskName, state, trimmedMessage));
+            });
 }
 
 ApplicationContext* ApplicationContext::CreateDefault(QObject* parent)
