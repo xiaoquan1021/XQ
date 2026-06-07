@@ -7,6 +7,7 @@
 #include "Core/xq_DataSelectionService.h"
 #include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_ProjectService.h"
+#include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowContextService.h"
 #include "Core/xq_WorkflowRegistry.h"
 #include "Core/xq_WorkflowSelectionService.h"
@@ -377,23 +378,9 @@ void MainWindow::UpdateWorkflowContextStatusPage()
 
 void MainWindow::RunActiveWorkflowAction()
 {
-    const xq::core::WorkflowContextSnapshot snapshot =
-        m_Context.WorkflowContext()->Snapshot();
-    if (!snapshot.HasCompatibleSelection)
-    {
-        m_Context.PostDiagnostic(
-            QStringLiteral("Select compatible data before running %1.")
-                .arg(snapshot.WorkflowTitle));
-        return;
-    }
-
-    const QString displayName =
-        snapshot.SelectedDataDisplayName.trimmed().isEmpty()
-            ? snapshot.SelectedCatalogEntryId
-            : snapshot.SelectedDataDisplayName;
-    m_Context.PostDiagnostic(
-        QStringLiteral("%1 action requested for %2.")
-            .arg(snapshot.WorkflowTitle, displayName));
+    QString message;
+    m_Context.WorkflowActions()->RequestActiveWorkflowAction(&message);
+    m_Context.PostDiagnostic(message);
 }
 
 void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)

@@ -20,6 +20,7 @@ class PreferencesService;
 class ProjectService;
 class ProjectSessionService;
 class TaskRunner;
+class WorkflowActionService;
 class WorkflowContextService;
 class WorkflowSelectionService;
 
@@ -45,6 +46,7 @@ public:
     ProjectService* Projects() const;
     ProjectSessionService* ProjectSession() const;
     TaskRunner* Tasks() const;
+    WorkflowActionService* WorkflowActions() const;
     WorkflowContextService* WorkflowContext() const;
     WorkflowSelectionService* WorkflowSelection() const;
 
@@ -73,6 +75,7 @@ private:
     DataImportService* m_DataImportService = nullptr;
     ProjectSessionService* m_ProjectSessionService = nullptr;
     WorkflowContextService* m_WorkflowContextService = nullptr;
+    WorkflowActionService* m_WorkflowActionService = nullptr;
 };
 
 } // namespace xq::core

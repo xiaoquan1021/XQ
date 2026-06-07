@@ -1,0 +1,53 @@
+#include "xq_WorkflowActionService.h"
+
+#include "xq_WorkflowContextService.h"
+
+namespace xq::core
+{
+
+WorkflowActionService::WorkflowActionService(
+    WorkflowContextService& workflowContext,
+    QObject* parent)
+    : QObject(parent)
+    , m_WorkflowContext(workflowContext)
+{
+}
+
+bool WorkflowActionService::RequestActiveWorkflowAction(
+    QString* message) const
+{
+    const WorkflowContextSnapshot snapshot = m_WorkflowContext.Snapshot();
+    if (!snapshot.HasCompatibleSelection)
+    {
+        SetMessage(message,
+                   QStringLiteral("Select compatible data before running %1.")
+                       .arg(snapshot.WorkflowTitle));
+        return false;
+    }
+
+    if (!snapshot.RequiresSelectedData)
+    {
+        SetMessage(message,
+                   QStringLiteral("%1 action requested.")
+                       .arg(snapshot.WorkflowTitle));
+        return true;
+    }
+
+    const QString displayName =
+        snapshot.SelectedDataDisplayName.trimmed().isEmpty()
+            ? snapshot.SelectedCatalogEntryId
+            : snapshot.SelectedDataDisplayName;
+    SetMessage(message,
+               QStringLiteral("%1 action requested for %2.")
+                   .arg(snapshot.WorkflowTitle, displayName));
+    return true;
+}
+
+void WorkflowActionService::SetMessage(QString* message,
+                                       const QString& value)
+{
+    if (message)
+        *message = value;
+}
+
+} // namespace xq::core

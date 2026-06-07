@@ -1171,3 +1171,41 @@
 - Promoted Monolith Workflow Primary Action Surface Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the primary action surface after buttons and placeholder
+    diagnostics landed.
+  - The UI still owns placeholder message construction, which would make later
+    algorithm migration noisier.
+  - Chosen next slice: introduce a Core `WorkflowActionService` so MainWindow
+    primary action clicks request workflow execution through Core.
+- Added next executable phase to `plan.md`: Monolith Workflow Action Service
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing workflow action service regression test first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling the new workflow-action test with
+    `Cannot open include file: 'Core/xq_WorkflowActionService.h'`, proving
+    the Core action service interface is absent.
+- Implemented the monolith workflow action service foundation:
+  - Added `WorkflowActionService` with
+    `RequestActiveWorkflowAction(QString*)`.
+  - The service consumes `WorkflowContextService` and centralizes compatible,
+    incompatible, and no-data placeholder action messages.
+  - `ApplicationContext` now exposes the service through
+    `WorkflowActions()`.
+  - MainWindow primary action clicks now route through Core while preserving
+    the visible diagnostics contract.
+- Verification for this iteration:
+  - Red/green target tests:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_workflow_(action_service|primary_action_page)"`
+    passed after implementation: 2/2.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 39/39.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Workflow Action Service Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

@@ -1200,6 +1200,52 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Workflow Action Service Foundation
+
+1. Add a Core workflow action service.
+   - Introduce `xq::core::WorkflowActionService`.
+   - The service should consume `WorkflowContextService`.
+   - Expose `RequestActiveWorkflowAction(QString* message = nullptr)`.
+   - Incompatible or missing selected data should return false and provide a
+     useful message containing the active workflow title.
+   - Compatible selected data should return true and provide a placeholder
+     action request message containing workflow title and selected data display
+     name.
+2. Expose workflow actions through `ApplicationContext`.
+   - Add `ApplicationContext::WorkflowActions()`.
+   - Keep this slice placeholder-only; do not call image/path/segmentation
+     algorithms yet.
+3. Route MainWindow primary action clicks through Core.
+   - `RunActiveWorkflowAction()` should call `WorkflowActionService`.
+   - MainWindow may still post the returned message through diagnostics.
+   - Keep existing workflow primary action button behavior and diagnostics
+     stable.
+4. Add C++ regression tests before implementation:
+   - A default `ApplicationContext` exposes workflow action service.
+   - Image preprocessing with no selected data rejects action request with a
+     workflow-specific message.
+   - Image preprocessing with selected image data accepts action request and
+     returns the placeholder action message.
+   - Meshing with selected image data rejects action request.
+   - Meshing with selected model data accepts action request.
+   - MainWindow primary action diagnostic remains unchanged when routed
+     through the Core service.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
