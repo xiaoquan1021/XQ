@@ -280,6 +280,12 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_project_state_notifications
+        xqMonolithCore
+        Qt6::Core
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_selection_context
         xqMonolithCore
         Qt6::Core

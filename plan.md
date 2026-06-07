@@ -702,6 +702,45 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Project State Notification Foundation
+
+1. Add project lifecycle notifications to Core.
+   - `ProjectService` should emit `ProjectChanged` after successful
+     `CreateProject` and successful `OpenProject` overloads.
+   - The signal should include enough data for Presentation to update project
+     title/status without immediately re-querying when possible.
+   - Failed create/open operations must not emit the signal.
+2. Keep save behavior conservative.
+   - `SaveProject` should not emit `ProjectChanged` unless metadata changes in
+     a future phase.
+   - `ProjectSessionService::Open` should emit exactly one project change
+     through the underlying successful `ProjectService::OpenProject` call.
+3. Preserve current metadata semantics.
+   - `CurrentProject()` should still return the active project after create or
+     open.
+   - Failed open should leave the previous current project untouched.
+4. Add C++ regression tests before implementation:
+   - Successful create emits one project change with the new metadata.
+   - Save emits no project change.
+   - Failed create/open emits no project change.
+   - Successful open emits one project change and preserves loaded metadata.
+   - `ProjectSessionService::Open` emits one project change through context.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

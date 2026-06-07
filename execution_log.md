@@ -727,3 +727,40 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Data Panel Actions Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked project/session lifecycle needs after adding the first data-panel
+    command surface.
+  - Comparable workstations update project/scene/window state from lifecycle
+    events instead of polling active project metadata from every UI surface.
+  - Chosen next slice: add `ProjectService` project-change notifications so
+    future monolith Project UI and window chrome can track create/open state
+    reliably.
+- Added next executable phase to `plan.md`: Monolith Project State
+  Notification Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing project-state notification regression test first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `ProjectService::ProjectChanged` did not exist.
+- Implemented the monolith project state notification foundation:
+  - Added `ProjectService::ProjectChanged(const ProjectMetadata&)`.
+  - Successful `CreateProject` and all successful `OpenProject` overloads now
+    emit one project-change signal with current metadata.
+  - Failed create/open operations do not emit and failed open preserves the
+    previous current project.
+  - `SaveProject` remains conservative and emits no project-change signal.
+  - `ProjectSessionService::Open` emits exactly one project change through its
+    successful underlying `ProjectService::OpenProject` call.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_project_state_notifications`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 26/26.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Project State Notification Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

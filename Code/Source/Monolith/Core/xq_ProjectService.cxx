@@ -445,6 +445,7 @@ bool ProjectService::CreateProject(const QString& name,
 
     m_CurrentProject = project;
     SetError(errorMessage, QString());
+    emit ProjectChanged(*m_CurrentProject);
     return true;
 }
 
@@ -503,6 +504,7 @@ bool ProjectService::OpenProject(const QString& projectFilePath,
 
     m_CurrentProject = project;
     SetError(errorMessage, QString());
+    emit ProjectChanged(*m_CurrentProject);
     return true;
 }
 
@@ -525,6 +527,7 @@ bool ProjectService::OpenProject(const QString& projectFilePath,
     dataCatalog.ReplaceWith(parsedCatalog);
     m_CurrentProject = project;
     SetError(errorMessage, QString());
+    emit ProjectChanged(*m_CurrentProject);
     return true;
 }
 
@@ -555,6 +558,7 @@ bool ProjectService::OpenProject(const QString& projectFilePath,
     dataHierarchy.ReplaceWith(parsedHierarchy);
     m_CurrentProject = project;
     SetError(errorMessage, QString());
+    emit ProjectChanged(*m_CurrentProject);
     return true;
 }
 

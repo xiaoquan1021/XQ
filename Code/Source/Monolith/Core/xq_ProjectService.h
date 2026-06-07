@@ -51,6 +51,9 @@ public:
                      DataHierarchyService& dataHierarchy,
                      QString* errorMessage = nullptr);
 
+signals:
+    void ProjectChanged(const xq::core::ProjectMetadata& project);
+
 private:
     static void SetError(QString* errorMessage, const QString& message);
 
