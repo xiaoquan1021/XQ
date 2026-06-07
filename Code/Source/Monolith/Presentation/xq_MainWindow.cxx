@@ -4,6 +4,7 @@
 #include "Core/xq_DataHierarchyService.h"
 #include "Core/xq_DataManagementService.h"
 #include "Core/xq_DataSelectionService.h"
+#include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_ProjectService.h"
 #include "Core/xq_WorkflowRegistry.h"
 #include "xq_DataHierarchyModel.h"
@@ -36,6 +37,18 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     resize(1440, 960);
     statusBar()->setObjectName(QStringLiteral("xqProjectStatusBar"));
     statusBar()->showMessage(QStringLiteral("No project"));
+
+    auto* projectToolbar = new QToolBar(this);
+    projectToolbar->setObjectName(QStringLiteral("xqProjectToolbar"));
+    projectToolbar->setMovable(false);
+    projectToolbar->setFloatable(false);
+
+    m_SaveProjectAction = new QAction(QStringLiteral("Save"), projectToolbar);
+    m_SaveProjectAction->setObjectName(
+        QStringLiteral("xqSaveProjectAction"));
+    m_SaveProjectAction->setEnabled(false);
+    projectToolbar->addAction(m_SaveProjectAction);
+    addToolBar(Qt::TopToolBarArea, projectToolbar);
 
     auto* splitter = new QSplitter(Qt::Horizontal, this);
     auto* workflowPanel = new QWidget(splitter);
@@ -135,6 +148,12 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             [this]() {
                 RemoveSelectedData();
             });
+    connect(m_SaveProjectAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                SaveProject();
+            });
 
     connect(m_Context.DataSelection(),
             &xq::core::DataSelectionService::SelectionChanged,
@@ -151,9 +170,11 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this](const xq::core::ProjectMetadata& project) {
                 UpdateProjectWindowState(project);
+                UpdateProjectActions();
             });
     if (const auto* project = m_Context.Projects()->CurrentProject())
         UpdateProjectWindowState(*project);
+    UpdateProjectActions();
 
     m_Diagnostics = new QTextEdit(this);
     m_Diagnostics->setReadOnly(true);
@@ -188,12 +209,44 @@ void MainWindow::SetRenderHost(QWidget* renderHost)
     layout->addWidget(m_RenderHost);
 }
 
+void MainWindow::SaveProject()
+{
+    if (!m_Context.Projects()->HasActiveProject())
+    {
+        m_Context.PostDiagnostic(QStringLiteral("No active project to save."));
+        UpdateProjectActions();
+        return;
+    }
+
+    QString errorMessage;
+    if (!m_Context.ProjectSession()->Save(&errorMessage))
+    {
+        m_Context.PostDiagnostic(
+            errorMessage.trimmed().isEmpty()
+                ? QStringLiteral("Unable to save project.")
+                : errorMessage);
+        UpdateProjectActions();
+        return;
+    }
+
+    m_Context.PostDiagnostic(QStringLiteral("Project saved."));
+    UpdateProjectActions();
+}
+
 void MainWindow::UpdateProjectWindowState(
     const xq::core::ProjectMetadata& project)
 {
     setWindowTitle(QStringLiteral("XQ - %1").arg(project.Name));
     statusBar()->showMessage(
         QStringLiteral("%1 | %2").arg(project.Name, project.ProjectFilePath));
+}
+
+void MainWindow::UpdateProjectActions()
+{
+    if (!m_SaveProjectAction)
+        return;
+
+    m_SaveProjectAction->setEnabled(m_Context.Projects()->HasActiveProject());
 }
 
 void MainWindow::RemoveSelectedData()

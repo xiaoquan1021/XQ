@@ -798,3 +798,38 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Project Window State Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked project command surfaces after wiring project window state.
+  - Comparable workstation shells expose a central Save Project/Save Scene
+    command once a project or scene is active.
+  - Chosen next slice: add a MainWindow save-current-project action that calls
+    `ProjectSessionService::Save` and writes current catalog/hierarchy state
+    without introducing file dialogs yet.
+- Added next executable phase to `plan.md`: Monolith Project Save Action
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing project-save-action regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_project_save_action`
+    failed with `MainWindow should expose a save project action`.
+- Implemented the monolith project save action foundation:
+  - Added `xqProjectToolbar` and `xqSaveProjectAction`.
+  - Save action starts disabled and enables after successful project
+    create/open through `ProjectChanged`.
+  - Triggering save calls `ProjectSessionService::Save`.
+  - Successful save writes `.xqproj` project, data catalog, and hierarchy
+    metadata.
+  - Forced stale save without an active project posts a diagnostic and
+    disables the action.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_project_save_action`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 28/28.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Project Save Action Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

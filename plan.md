@@ -781,6 +781,46 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Project Save Action Foundation
+
+1. Add a window-level save command for the active monolith project.
+   - Expose a `QAction` with object name `xqSaveProjectAction`.
+   - Place it in a small project toolbar with object name `xqProjectToolbar`.
+   - Keep this slice limited to saving the already-active project; do not add
+     file dialogs or Save As.
+2. Bind action state to Core project lifecycle.
+   - The action should be disabled when no project is active.
+   - Successful project create/open should enable the action through
+     `ProjectChanged`.
+   - Failed open should leave the previous enabled state unchanged.
+3. Execute save through Core services.
+   - Triggering the action should call `ProjectSessionService::Save`.
+   - Successful save should write the `.xqproj` file with current catalog and
+     hierarchy metadata.
+   - Failed save should post a diagnostic and keep action state conservative.
+4. Add C++/Qt regression tests before implementation:
+   - MainWindow exposes `xqSaveProjectAction` and starts disabled.
+   - Creating a project enables the action.
+   - Triggering save after import writes the project file with data catalog
+     and hierarchy metadata.
+   - Forced stale save without an active project posts a diagnostic and
+     disables the action.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

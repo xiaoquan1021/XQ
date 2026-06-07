@@ -34,13 +34,16 @@ private:
     QWidget* CreateWorkflowPage(const QString& title);
     void AddWorkflowPage(const QString& title);
     void RemoveSelectedData();
+    void SaveProject();
     void UpdateProjectWindowState(const xq::core::ProjectMetadata& project);
+    void UpdateProjectActions();
     void SyncTreeSelectionFromCore(const QString& hierarchyNodeId);
     void UpdateDataActions();
 
     xq::core::ApplicationContext& m_Context;
     DataHierarchyModel* m_DataHierarchyModel = nullptr;
     QTreeView* m_DataHierarchyView = nullptr;
+    QAction* m_SaveProjectAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
     QListWidget* m_Navigation = nullptr;
     QStackedWidget* m_Pages = nullptr;
