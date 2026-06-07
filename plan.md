@@ -237,6 +237,37 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Hierarchy Foundation
+
+1. Add a monolith Core `xq::core::DataHierarchyService`.
+   - Keep the first implementation metadata-only and independent from MITK/Qt widgets.
+   - Maintain a stable root node plus ordered child nodes.
+   - Support folder nodes and data-entry nodes that reference `DataCatalogService` entry ids.
+   - Reject duplicate node ids and missing parent ids.
+2. Add `DataHierarchyService` ownership/access through `xq::core::ApplicationContext`.
+   - Expose it through `DataHierarchy()`.
+   - Future Project/Data UI should read from this hierarchy instead of hardcoding a flat data list.
+3. Add C++ regression tests before implementation:
+   - New hierarchy has a stable root.
+   - Folders and data-entry nodes preserve parent/child order.
+   - Duplicate ids fail without changing existing nodes.
+   - Missing parent ids fail with a useful error.
+   - Default `ApplicationContext` exposes a hierarchy service.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation again.

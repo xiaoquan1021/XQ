@@ -12,6 +12,7 @@ namespace xq::core
 {
 
 class DataCatalogService;
+class DataHierarchyService;
 class DataImportService;
 class PreferencesService;
 class ProjectService;
@@ -31,6 +32,7 @@ public:
     mitk::DataStorage::Pointer DataStorage() const;
     mitk::DataNode::Pointer ActiveNode() const;
     DataCatalogService* DataCatalog() const;
+    DataHierarchyService* DataHierarchy() const;
     DataImportService* DataImports() const;
     QStringList Diagnostics() const;
     PreferencesService* Preferences() const;
@@ -52,6 +54,7 @@ private:
     mitk::DataStorage::Pointer m_DataStorage;
     mitk::DataNode::Pointer m_ActiveNode;
     DataCatalogService* m_DataCatalogService = nullptr;
+    DataHierarchyService* m_DataHierarchyService = nullptr;
     QStringList m_Diagnostics;
     PreferencesService* m_PreferencesService = nullptr;
     ProjectService* m_ProjectService = nullptr;

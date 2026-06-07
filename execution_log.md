@@ -276,3 +276,26 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Project Session Service Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Reviewed comparable workstation concepts around post-import organization.
+  - 3D Slicer emphasizes Data module / Subject Hierarchy style organization for scene data.
+  - OHIF hanging protocols and layouts depend on organized display-set state rather than ad hoc flat imports.
+  - MITK Workbench data-manager workflows reinforce the need for stable selection and data-tree state.
+- Added next executable phase to `plan.md`: Monolith Data Hierarchy Foundation.
+- Started the next unattended loop iteration:
+  - Added failing data hierarchy regression test first.
+  - `test_monolith_data_hierarchy` failed because `Core/xq_DataHierarchyService.h` did not exist.
+- Implemented the monolith data hierarchy foundation:
+  - Added `xq::core::DataHierarchyService`, `DataHierarchyNode`, and `DataHierarchyNodeKind`.
+  - The hierarchy starts with a stable root node.
+  - Folder and data-entry nodes preserve parent/child order.
+  - Duplicate node ids and missing parent ids fail without mutating the hierarchy.
+  - `ApplicationContext` now exposes `DataHierarchy()`.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 14/14.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Hierarchy Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
