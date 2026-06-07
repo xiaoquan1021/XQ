@@ -1977,6 +1977,41 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing MITK Image Adapter
+
+1. Add an Infrastructure adapter for MITK/VTK image boundaries.
+   - Extract `vtkImageData*` from a selected `mitk::DataNode` containing a
+     usable `mitk::Image`.
+   - Create a deep-copied `mitk::Image` from algorithm output `vtkImageData`.
+   - Return structured diagnostics instead of UI message boxes.
+2. Preserve adapter layering.
+   - Keep Domain independent from MITK/VTK conversion details.
+   - Keep this adapter in Infrastructure for future workflow action handlers.
+3. Keep this slice as an image conversion boundary only.
+   - Do not mutate MITK `DataStorage`, `DataCatalogService`, or project files.
+   - Do not add UI controls yet.
+   - Do not create result `DataNode`s yet.
+4. Add C++ regression tests before implementation:
+   - Adapter rejects a null input node.
+   - Adapter rejects a node without a usable `mitk::Image`.
+   - Adapter extracts `vtkImageData*` from a valid MITK image node.
+   - Adapter creates a deep-copied MITK image from VTK output.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

@@ -1876,3 +1876,41 @@
 - Promoted Monolith Image Preprocessing Execution Service to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the legacy preprocessing view's image input/output path after
+    the execution service landed.
+  - The legacy view extracts `vtkImageData*` from `mitk::Image` and deep-copies
+    algorithm output back into a new `mitk::Image`.
+  - Chosen next slice: add a monolith MITK/VTK image boundary adapter in
+    Infrastructure.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing MITK
+  Image Adapter.
+- Started the next unattended loop iteration:
+  - Adding failing MITK image adapter regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_mitk_image_adapter` because
+    `Infrastructure/xq_ImagePreprocessingMitkImageAdapter.h` did not exist.
+- Implemented the monolith MITK image adapter:
+  - Added structured extraction of `vtkImageData*` from a selected
+    `mitk::DataNode`.
+  - Added structured creation of a deep-copied `mitk::Image` from algorithm
+    output `vtkImageData`.
+  - Reused legacy diagnostics for unusable selected image nodes.
+  - Preserved layer separation: Domain still does not know MITK/VTK conversion
+    details, and this slice does not mutate DataStorage or catalog state.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_mitk_image_adapter`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 45/45.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing MITK Image Adapter to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

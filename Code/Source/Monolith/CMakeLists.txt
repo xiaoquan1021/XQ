@@ -89,11 +89,13 @@ target_link_libraries(xqMonolithDomain
 set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
     Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.cxx
     Infrastructure/xq_ImagePreprocessingExecutionService.cxx
+    Infrastructure/xq_ImagePreprocessingMitkImageAdapter.cxx
 )
 
 set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
     Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.h
     Infrastructure/xq_ImagePreprocessingExecutionService.h
+    Infrastructure/xq_ImagePreprocessingMitkImageAdapter.h
 )
 
 add_library(xqMonolithInfrastructure STATIC
