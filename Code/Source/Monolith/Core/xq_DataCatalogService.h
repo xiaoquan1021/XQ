@@ -47,6 +47,9 @@ public:
     bool RemoveEntry(const QString& id,
                      QString* errorMessage = nullptr);
 
+signals:
+    void EntriesChanged();
+
 private:
     static QString NormalizedId(const QString& id);
     static void SetError(QString* errorMessage, const QString& message);

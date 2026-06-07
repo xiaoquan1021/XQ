@@ -498,6 +498,50 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Change Notification Foundation
+
+1. Add query-independent change notifications for monolith data services.
+   - `DataCatalogService` should emit a signal when its ordered entries change.
+   - `DataHierarchyService` should emit a signal when its ordered nodes change.
+   - Signals should fire once for successful register/add/rename/remove/replace
+     operations and should not fire for failed operations.
+2. Preserve transaction behavior in higher-level services.
+   - `DataImportService` and `DataManagementService` should still mutate live
+     services only after validation succeeds.
+   - Successful import should emit one catalog change and one hierarchy change
+     for the live services.
+   - Failed import/rename/remove should not emit live catalog or hierarchy
+     changes.
+3. Keep `DataSelectionService` behavior unchanged.
+   - Existing selection-change signals remain the selection-specific event
+     channel.
+   - Data catalog/hierarchy change signals should not duplicate selection
+     events.
+4. Add C++ regression tests before implementation:
+   - Registering catalog data emits one catalog change signal.
+   - Failed duplicate catalog registration emits no catalog change signal.
+   - Adding hierarchy folder/data emits hierarchy change signals.
+   - Import through `ApplicationContext` emits one live catalog change and one
+     live hierarchy change.
+   - Failed duplicate import emits no additional live data change signals.
+   - Rename/remove through `DataManagementService` each emit one catalog change
+     and one hierarchy change.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

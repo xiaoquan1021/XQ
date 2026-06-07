@@ -528,3 +528,42 @@
 - Promoted Monolith Data Management Service Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable data-view update behavior after adding metadata-only
+    data management operations.
+  - OHIF-style display-set services expose added/changed/removed events,
+    MITK-style workbenches observe DataStorage node changes, and
+    Slicer/SimVascular-style data trees are central workflow surfaces.
+  - Chosen next slice: add monolith Core change notifications for catalog and
+    hierarchy services so future Project/Data UI can subscribe to state changes
+    instead of polling.
+- Added next executable phase to `plan.md`: Monolith Data Change Notification
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing data change notification regression test first.
+  - Red test observed: `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    failed because `DataCatalogService::EntriesChanged` and
+    `DataHierarchyService::NodesChanged` did not exist.
+- Implemented the monolith data change notification foundation:
+  - Added `DataCatalogService::EntriesChanged`.
+  - Added `DataHierarchyService::NodesChanged`.
+  - Successful catalog register/rename/remove/replace operations emit one
+    catalog change signal.
+  - Successful hierarchy add/rename/remove/replace operations emit one
+    hierarchy change signal.
+  - Failed data operations do not emit live data change signals.
+  - Higher-level import and data management operations keep their transaction
+    behavior and emit only through the final live service replacement.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_change_notifications`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 21/21.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Change Notification Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

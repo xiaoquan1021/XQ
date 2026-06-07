@@ -31,6 +31,7 @@ const DataCatalogEntry* DataCatalogService::FindById(const QString& id) const
 void DataCatalogService::ReplaceWith(const DataCatalogService& other)
 {
     m_Entries = other.m_Entries;
+    emit EntriesChanged();
 }
 
 bool DataCatalogService::RegisterEntry(const DataCatalogEntry& entry,
@@ -66,6 +67,7 @@ bool DataCatalogService::RegisterEntry(const DataCatalogEntry& entry,
 
     m_Entries.append(normalizedEntry);
     SetError(errorMessage, QString());
+    emit EntriesChanged();
     return true;
 }
 
@@ -93,6 +95,7 @@ bool DataCatalogService::RenameEntry(const QString& id,
         {
             entry.DisplayName = normalizedDisplayName;
             SetError(errorMessage, QString());
+            emit EntriesChanged();
             return true;
         }
     }
@@ -117,6 +120,7 @@ bool DataCatalogService::RemoveEntry(const QString& id,
         {
             m_Entries.removeAt(i);
             SetError(errorMessage, QString());
+            emit EntriesChanged();
             return true;
         }
     }

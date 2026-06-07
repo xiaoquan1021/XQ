@@ -51,6 +51,9 @@ public:
     bool RemoveDataEntriesForCatalogEntry(const QString& dataCatalogEntryId,
                                           QString* errorMessage = nullptr);
 
+signals:
+    void NodesChanged();
+
 private:
     bool AddNode(DataHierarchyNode node, QString* errorMessage);
     static QString NormalizedId(const QString& id);

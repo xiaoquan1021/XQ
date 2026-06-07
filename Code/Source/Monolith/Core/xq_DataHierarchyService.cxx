@@ -62,6 +62,7 @@ QVector<DataHierarchyNode> DataHierarchyService::ChildrenOf(
 void DataHierarchyService::ReplaceWith(const DataHierarchyService& other)
 {
     m_Nodes = other.m_Nodes;
+    emit NodesChanged();
 }
 
 bool DataHierarchyService::AddFolder(const QString& id,
@@ -132,6 +133,7 @@ bool DataHierarchyService::RenameDataEntriesForCatalogEntry(
     }
 
     SetError(errorMessage, QString());
+    emit NodesChanged();
     return true;
 }
 
@@ -167,6 +169,7 @@ bool DataHierarchyService::RemoveDataEntriesForCatalogEntry(
     }
 
     SetError(errorMessage, QString());
+    emit NodesChanged();
     return true;
 }
 
@@ -210,6 +213,7 @@ bool DataHierarchyService::AddNode(DataHierarchyNode node,
 
     m_Nodes.append(node);
     SetError(errorMessage, QString());
+    emit NodesChanged();
     return true;
 }
 
