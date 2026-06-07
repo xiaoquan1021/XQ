@@ -171,4 +171,30 @@ ImagePreprocessingAlgorithmAdapter::RunMorphologyOpenClose(
     return result;
 }
 
+ImagePreprocessingAlgorithmResult
+ImagePreprocessingAlgorithmAdapter::RunResample(
+    vtkImageData* input,
+    const QVariantMap& parameters) const
+{
+    xq::domain::ImagePreprocessingWorkflowService domainService;
+    const auto validation =
+        domainService.ValidateOperationParameters(QStringLiteral("resample"),
+                                                  parameters);
+    if (!validation.Succeeded)
+        return FailedResult(validation.Message);
+
+    const auto imageResult =
+        xq_ImageProcessingUtils::Resample(
+            input,
+            parameters.value(QStringLiteral("spacing-x")).toDouble(),
+            parameters.value(QStringLiteral("spacing-y")).toDouble(),
+            parameters.value(QStringLiteral("spacing-z")).toDouble());
+
+    ImagePreprocessingAlgorithmResult result;
+    result.Succeeded = imageResult.ok;
+    result.Image = imageResult.image;
+    result.Message = QString::fromStdString(imageResult.diagnostic);
+    return result;
+}
+
 } // namespace xq::infrastructure

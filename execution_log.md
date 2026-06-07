@@ -1761,3 +1761,35 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Crop Infrastructure Adapter to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked image preprocessing practices in comparable workstation
+    documentation and the local legacy resample implementation.
+  - Resample is the next useful adapter because it exercises physical spacing
+    parameters and changes both image spacing and output dimensions.
+  - Chosen next slice: add resample execution to the Infrastructure adapter.
+- Added next executable phase to `plan.md`: Monolith Resample Infrastructure
+  Adapter.
+- Started the next unattended loop iteration:
+  - Adding failing resample adapter regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_algorithm_adapter` because
+    `ImagePreprocessingAlgorithmAdapter` had no `RunResample` member.
+- Implemented the monolith resample infrastructure adapter:
+  - Added `RunResample(vtkImageData*, QVariantMap parameters)`.
+  - Reused Domain validation for `resample` parameters.
+  - Delegated valid requests to `xq_ImageProcessingUtils::Resample`.
+  - Preserved layer separation: Domain still does not link legacy algorithm
+    modules.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_algorithm_adapter`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 43/43.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Resample Infrastructure Adapter to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

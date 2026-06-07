@@ -7,6 +7,7 @@
 #include <vtkImageData.h>
 #include <vtkSmartPointer.h>
 
+#include <cmath>
 #include <iostream>
 
 namespace
@@ -19,6 +20,11 @@ int Expect(bool condition, const char* message)
 
     std::cerr << message << '\n';
     return 1;
+}
+
+bool NearlyEqual(double lhs, double rhs)
+{
+    return std::abs(lhs - rhs) < 0.000001;
 }
 
 vtkSmartPointer<vtkImageData> MakeImage()
@@ -125,6 +131,15 @@ QVariantMap CropParameters(int ox, int oy, int oz,
     parameters.insert(QStringLiteral("size-x"), sx);
     parameters.insert(QStringLiteral("size-y"), sy);
     parameters.insert(QStringLiteral("size-z"), sz);
+    return parameters;
+}
+
+QVariantMap ResampleParameters(double sx, double sy, double sz)
+{
+    QVariantMap parameters;
+    parameters.insert(QStringLiteral("spacing-x"), sx);
+    parameters.insert(QStringLiteral("spacing-y"), sy);
+    parameters.insert(QStringLiteral("spacing-z"), sz);
     return parameters;
 }
 
@@ -369,6 +384,61 @@ int main(int argc, char** argv)
                    outputDimensions[1] == 2 &&
                    outputDimensions[2] == 4,
                "crop should return requested output dimensions"))
+        return 1;
+
+    const auto nullResampleResult =
+        adapter.RunResample(nullptr, ResampleParameters(0.5, 1.0, 2.0));
+    if (Expect(!nullResampleResult.Succeeded,
+               "null resample input should fail"))
+        return 1;
+    if (Expect(nullResampleResult.Message ==
+                   QStringLiteral("Resample: input image is null."),
+               "null resample input should use legacy diagnostic"))
+        return 1;
+
+    const auto missingResampleParameterResult =
+        adapter.RunResample(MakeImage(), QVariantMap());
+    if (Expect(!missingResampleParameterResult.Succeeded,
+               "missing resample parameters should fail"))
+        return 1;
+    if (Expect(missingResampleParameterResult.Message ==
+                   QStringLiteral("Image preprocessing parameter is required: spacing-x."),
+               "missing resample parameter should use domain validation"))
+        return 1;
+    if (Expect(missingResampleParameterResult.Image == nullptr,
+               "invalid resample parameters should not produce image"))
+        return 1;
+
+    const auto invalidResampleSpacingResult =
+        adapter.RunResample(MakeImage(), ResampleParameters(0.5, 0.0, 2.0));
+    if (Expect(!invalidResampleSpacingResult.Succeeded,
+               "non-positive resample spacing should fail"))
+        return 1;
+    if (Expect(invalidResampleSpacingResult.Message ==
+                   QStringLiteral("Resample: output spacing must be positive in all axes."),
+               "non-positive resample spacing should use legacy diagnostic"))
+        return 1;
+
+    const auto resampleResult =
+        adapter.RunResample(MakeImage(), ResampleParameters(0.5, 1.0, 2.0));
+    if (Expect(resampleResult.Succeeded,
+               "valid resample request should succeed"))
+        return 1;
+    if (Expect(resampleResult.Image != nullptr,
+               "valid resample request should return image"))
+        return 1;
+    outputDimensions = resampleResult.Image->GetDimensions();
+    if (Expect(outputDimensions[0] == 10 &&
+                   outputDimensions[1] == 5 &&
+                   outputDimensions[2] == 3,
+               "resample should return expected output dimensions"))
+        return 1;
+    const double* outputSpacing = resampleResult.Image->GetSpacing();
+    if (Expect(outputSpacing &&
+                   NearlyEqual(outputSpacing[0], 0.5) &&
+                   NearlyEqual(outputSpacing[1], 1.0) &&
+                   NearlyEqual(outputSpacing[2], 2.0),
+               "resample should return requested output spacing"))
         return 1;
 
     return 0;

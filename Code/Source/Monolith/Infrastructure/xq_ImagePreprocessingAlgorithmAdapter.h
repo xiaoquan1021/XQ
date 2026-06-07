@@ -39,6 +39,10 @@ public:
     ImagePreprocessingAlgorithmResult RunMorphologyOpenClose(
         vtkImageData* input,
         const QVariantMap& parameters) const;
+
+    ImagePreprocessingAlgorithmResult RunResample(
+        vtkImageData* input,
+        const QVariantMap& parameters) const;
 };
 
 } // namespace xq::infrastructure
