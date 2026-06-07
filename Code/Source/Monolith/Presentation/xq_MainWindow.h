@@ -7,6 +7,7 @@
 class QAction;
 class QLabel;
 class QListWidget;
+class QPushButton;
 class QStackedWidget;
 class QTextEdit;
 class QTreeView;
@@ -36,6 +37,7 @@ private:
     QWidget* CreateWorkflowPage(const QString& id, const QString& title);
     void AddWorkflowPage(const QString& id, const QString& title);
     void RemoveSelectedData();
+    void RunActiveWorkflowAction();
     void SaveProject();
     void SyncWorkflowNavigationFromCore(const QString& workflowId);
     void UpdateWorkflowContextStatusPage();
@@ -59,6 +61,7 @@ private:
     QLabel* m_DataDisplayNameLabel = nullptr;
     QLabel* m_DataSourcePathLabel = nullptr;
     QHash<QString, QLabel*> m_WorkflowContextStatusLabels;
+    QHash<QString, QPushButton*> m_WorkflowPrimaryActionButtons;
     QAction* m_SaveProjectAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
     QListWidget* m_Navigation = nullptr;

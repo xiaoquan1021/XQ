@@ -18,6 +18,7 @@
 #include <QItemSelectionModel>
 #include <QLabel>
 #include <QListWidget>
+#include <QPushButton>
 #include <QScopeGuard>
 #include <QSignalBlocker>
 #include <QSplitter>
@@ -28,6 +29,8 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QWidget>
+
+#include <utility>
 
 namespace xq::presentation
 {
@@ -337,6 +340,17 @@ void MainWindow::UpdateWorkflowContextStatusPage()
         m_Context.WorkflowContext()->Snapshot();
     auto* label = m_WorkflowContextStatusLabels.value(snapshot.WorkflowId,
                                                       nullptr);
+    for (auto* actionButton : std::as_const(m_WorkflowPrimaryActionButtons))
+    {
+        if (actionButton)
+            actionButton->setEnabled(false);
+    }
+
+    auto* button = m_WorkflowPrimaryActionButtons.value(snapshot.WorkflowId,
+                                                       nullptr);
+    if (button)
+        button->setEnabled(snapshot.HasCompatibleSelection);
+
     if (!label)
         return;
 
@@ -359,6 +373,27 @@ void MainWindow::UpdateWorkflowContextStatusPage()
             ? snapshot.SelectedCatalogEntryId
             : snapshot.SelectedDataDisplayName;
     label->setText(QStringLiteral("Using %1.").arg(displayName));
+}
+
+void MainWindow::RunActiveWorkflowAction()
+{
+    const xq::core::WorkflowContextSnapshot snapshot =
+        m_Context.WorkflowContext()->Snapshot();
+    if (!snapshot.HasCompatibleSelection)
+    {
+        m_Context.PostDiagnostic(
+            QStringLiteral("Select compatible data before running %1.")
+                .arg(snapshot.WorkflowTitle));
+        return;
+    }
+
+    const QString displayName =
+        snapshot.SelectedDataDisplayName.trimmed().isEmpty()
+            ? snapshot.SelectedCatalogEntryId
+            : snapshot.SelectedDataDisplayName;
+    m_Context.PostDiagnostic(
+        QStringLiteral("%1 action requested for %2.")
+            .arg(snapshot.WorkflowTitle, displayName));
 }
 
 void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)
@@ -539,6 +574,19 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
         statusLabel->setWordWrap(true);
         m_WorkflowContextStatusLabels.insert(id, statusLabel);
         layout->addWidget(statusLabel);
+
+        auto* actionButton = new QPushButton(QStringLiteral("Run"), page);
+        actionButton->setObjectName(
+            QStringLiteral("xqWorkflowPrimaryAction_%1").arg(id));
+        actionButton->setEnabled(false);
+        connect(actionButton,
+                &QPushButton::clicked,
+                this,
+                [this]() {
+                    RunActiveWorkflowAction();
+                });
+        m_WorkflowPrimaryActionButtons.insert(id, actionButton);
+        layout->addWidget(actionButton);
     }
     layout->addStretch(1);
 

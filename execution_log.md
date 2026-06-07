@@ -1134,3 +1134,40 @@
 - Promoted Monolith Workflow Context Status Page Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked workflow page readiness after status labels landed.
+  - Comparable workstation modules pair input-readiness feedback with a stable
+    command surface, so the next migration step can replace placeholder
+    commands with real domain services without changing page routing.
+  - Chosen next slice: add stable primary action buttons to data-dependent
+    workflow pages, bind enablement to `WorkflowContextService`, and route
+    placeholder triggers through diagnostics.
+- Added next executable phase to `plan.md`: Monolith Workflow Primary Action
+  Surface Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing workflow primary action page regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_workflow_primary_action_page`
+    failed with `data-dependent workflow page should expose a primary action button`.
+- Implemented the monolith workflow primary action surface foundation:
+  - Added stable `xqWorkflowPrimaryAction_<workflow-id>` buttons to
+    data-dependent workflow pages.
+  - Button enablement now follows `WorkflowContextService` compatibility for
+    the active workflow.
+  - Inactive workflow buttons are disabled on context refresh to avoid stale
+    enabled states.
+  - Triggering an enabled placeholder action posts a diagnostic containing the
+    workflow title and selected data display name.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_workflow_primary_action_page`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 38/38.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Workflow Primary Action Surface Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

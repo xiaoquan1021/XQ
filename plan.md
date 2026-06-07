@@ -1155,6 +1155,51 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Workflow Primary Action Surface Foundation
+
+1. Add stable primary action buttons to data-dependent workflow pages.
+   - Each data-dependent workflow page should expose a button named
+     `xqWorkflowPrimaryAction_<workflow-id>`.
+   - Cover the same data-dependent workflow ids as the context status page.
+   - Keep `project`, `data`, and `python-api` pages unchanged in this slice.
+2. Bind button state to `WorkflowContextService`.
+   - The active workflow button should be disabled when selected data is
+     missing or incompatible.
+   - The active workflow button should be enabled when selected data is
+     compatible.
+   - Import/selection/rename/workflow changes should refresh button state
+     through the same context binding as the status label.
+3. Add a safe placeholder command surface.
+   - Triggering an enabled primary action should post a diagnostic through
+     `ApplicationContext::PostDiagnostic`.
+   - The diagnostic should include the workflow title and selected data display
+     name.
+   - Do not start migrating actual image/path/segmentation algorithms yet.
+4. Add C++/Qt regression tests before implementation:
+   - Data-dependent workflow pages expose primary action buttons.
+   - Project/data/python-api pages do not expose primary action buttons.
+   - Image preprocessing button starts disabled without selected data.
+   - Importing/selecting image data enables image preprocessing action.
+   - Clicking the enabled image preprocessing action posts a diagnostic with
+     workflow title and selected data display name.
+   - Switching to meshing with image data disables the meshing action.
+   - Importing/selecting model data enables the meshing action.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
