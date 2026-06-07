@@ -1476,6 +1476,44 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing Operation Catalog Foundation
+
+1. Add an image-preprocessing operation catalog to the Domain service.
+   - Introduce `xq::domain::ImagePreprocessingOperationDescriptor`.
+   - Expose a deterministic
+     `ImagePreprocessingWorkflowService::Operations()` list.
+   - Keep descriptors metadata-only in this slice.
+2. Cover the old image-processing utility surface as first catalog entries.
+   - Include operation ids/titles for binary threshold, connected threshold,
+     Gaussian smoothing, morphology open/close, crop, and resample.
+   - Keep marching cubes out of image preprocessing for this slice because it
+     produces surface/model output and belongs closer to modeling.
+3. Add operation lookup.
+   - Add `FindOperation(operationId)` returning a descriptor pointer or null.
+   - Trim operation ids before lookup.
+   - Preserve deterministic operation order for future UI action/tool panels.
+4. Add C++ regression tests before implementation:
+   - Operation list exposes exactly the expected six metadata descriptors.
+   - Operation ids are stable and ordered.
+   - Operation titles are user-facing and non-empty.
+   - `FindOperation` finds trimmed ids.
+   - `FindOperation` returns null for unknown ids.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

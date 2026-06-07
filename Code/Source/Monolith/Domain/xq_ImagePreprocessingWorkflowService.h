@@ -4,6 +4,7 @@
 #include "Core/xq_WorkflowContextService.h"
 
 #include <QString>
+#include <QVector>
 
 namespace xq::domain
 {
@@ -16,9 +17,19 @@ struct ImagePreprocessingWorkflowResult
     QString Message;
 };
 
+struct ImagePreprocessingOperationDescriptor
+{
+    QString Id;
+    QString Title;
+};
+
 class ImagePreprocessingWorkflowService
 {
 public:
+    const QVector<ImagePreprocessingOperationDescriptor>& Operations() const;
+    const ImagePreprocessingOperationDescriptor* FindOperation(
+        const QString& operationId) const;
+
     ImagePreprocessingWorkflowResult Run(
         const xq::core::WorkflowContextSnapshot& snapshot) const;
 };

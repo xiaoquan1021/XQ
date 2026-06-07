@@ -8,6 +8,7 @@
 #include "Domain/xq_WorkflowActionHandlers.h"
 
 #include <QCoreApplication>
+#include <QStringList>
 
 #include <iostream>
 
@@ -62,6 +63,41 @@ int main(int argc, char** argv)
     QCoreApplication app(argc, argv);
 
     xq::domain::ImagePreprocessingWorkflowService service;
+
+    const QStringList expectedOperationIds = {
+        QStringLiteral("binary-threshold"),
+        QStringLiteral("connected-threshold"),
+        QStringLiteral("gaussian-smoothing"),
+        QStringLiteral("morphology-open-close"),
+        QStringLiteral("crop"),
+        QStringLiteral("resample"),
+    };
+    const auto operations = service.Operations();
+    if (Expect(operations.size() == expectedOperationIds.size(),
+               "image preprocessing service should expose six operations"))
+        return 1;
+
+    for (int i = 0; i < expectedOperationIds.size(); ++i)
+    {
+        if (Expect(operations.at(i).Id == expectedOperationIds.at(i),
+                   "image preprocessing operation id order should be stable"))
+            return 1;
+        if (Expect(!operations.at(i).Title.trimmed().isEmpty(),
+                   "image preprocessing operation title should be user-facing"))
+            return 1;
+    }
+
+    const auto* smoothed =
+        service.FindOperation(QStringLiteral(" gaussian-smoothing "));
+    if (Expect(smoothed != nullptr,
+               "image preprocessing operation lookup should trim ids"))
+        return 1;
+    if (Expect(smoothed->Title == QStringLiteral("Gaussian Smoothing"),
+               "image preprocessing lookup should return descriptor data"))
+        return 1;
+    if (Expect(service.FindOperation(QStringLiteral("marching-cubes")) == nullptr,
+               "surface extraction should not be in preprocessing catalog"))
+        return 1;
 
     const auto imageResult = service.Run(
         MakeSnapshot(QStringLiteral("image-preprocessing"),

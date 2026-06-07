@@ -1397,3 +1397,43 @@
 - Promoted Monolith Image Preprocessing Domain Service Foundation to completed
   in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked Slicer Segment Editor-style effect organization and the local
+    `xq_ImageProcessingUtils` operation surface.
+  - The image-preprocessing service now has a workflow entry point but no
+    stable catalog of available preprocessing operations for future UI and
+    execution wiring.
+  - Chosen next slice: expose a metadata-only Domain image-preprocessing
+    operation catalog with stable ids and lookup.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing
+  Operation Catalog Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing image-preprocessing operation catalog regression tests
+    first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_workflow_service` because
+    `ImagePreprocessingWorkflowService` had no `Operations` or
+    `FindOperation` members.
+- Implemented the monolith image-preprocessing operation catalog foundation:
+  - Added `ImagePreprocessingOperationDescriptor`.
+  - Added deterministic `ImagePreprocessingWorkflowService::Operations()`.
+  - Added `FindOperation(operationId)` with trimmed id lookup.
+  - Covered six metadata-only preprocessing operations: binary threshold,
+    connected threshold, Gaussian smoothing, morphology open/close, crop, and
+    resample.
+  - Left marching cubes out of this preprocessing catalog because it produces
+    surface/model output.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_workflow_service`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 42/42.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Operation Catalog Foundation to
+  completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

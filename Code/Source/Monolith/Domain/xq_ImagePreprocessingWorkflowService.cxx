@@ -6,6 +6,26 @@ namespace xq::domain
 namespace
 {
 
+const QVector<ImagePreprocessingOperationDescriptor>& DefaultOperations()
+{
+    static const QVector<ImagePreprocessingOperationDescriptor> operations = {
+        {QStringLiteral("binary-threshold"),
+         QStringLiteral("Binary Threshold")},
+        {QStringLiteral("connected-threshold"),
+         QStringLiteral("Connected Threshold")},
+        {QStringLiteral("gaussian-smoothing"),
+         QStringLiteral("Gaussian Smoothing")},
+        {QStringLiteral("morphology-open-close"),
+         QStringLiteral("Morphology Open/Close")},
+        {QStringLiteral("crop"),
+         QStringLiteral("Crop")},
+        {QStringLiteral("resample"),
+         QStringLiteral("Resample")},
+    };
+
+    return operations;
+}
+
 bool IsImagePreprocessingRole(xq::core::DataWorkflowRole role)
 {
     return role == xq::core::DataWorkflowRole::DICOMSeries ||
@@ -30,6 +50,27 @@ ImagePreprocessingWorkflowResult FailedResult(const QString& message)
 }
 
 } // namespace
+
+const QVector<ImagePreprocessingOperationDescriptor>&
+ImagePreprocessingWorkflowService::Operations() const
+{
+    return DefaultOperations();
+}
+
+const ImagePreprocessingOperationDescriptor*
+ImagePreprocessingWorkflowService::FindOperation(
+    const QString& operationId) const
+{
+    const QString normalizedOperationId = operationId.trimmed();
+    const auto& operations = Operations();
+    for (const auto& operation : operations)
+    {
+        if (operation.Id == normalizedOperationId)
+            return &operation;
+    }
+
+    return nullptr;
+}
 
 ImagePreprocessingWorkflowResult ImagePreprocessingWorkflowService::Run(
     const xq::core::WorkflowContextSnapshot& snapshot) const
