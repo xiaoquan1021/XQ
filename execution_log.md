@@ -1659,3 +1659,41 @@
 - Promoted Monolith Binary Threshold Infrastructure Adapter to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked legacy connected-threshold implementation after binary threshold
+    adapter coverage landed.
+  - Connected threshold is the next useful slice because it exercises the
+    integer point-list parameter schema and seed conversion into the legacy
+    algorithm call.
+  - Chosen next slice: add connected-threshold execution to the Infrastructure
+    adapter.
+- Added next executable phase to `plan.md`: Monolith Connected Threshold
+  Infrastructure Adapter.
+- Started the next unattended loop iteration:
+  - Adding failing connected-threshold adapter regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_algorithm_adapter` because
+    `ImagePreprocessingAlgorithmAdapter` had no `RunConnectedThreshold`
+    member.
+- Implemented the monolith connected-threshold infrastructure adapter:
+  - Added `RunConnectedThreshold(vtkImageData*, QVariantMap parameters)`.
+  - Reused Domain validation for `connected-threshold` parameters.
+  - Converted validated `QVariantList` seed points into
+    `std::vector<std::array<int, 3>>`.
+  - Delegated valid requests to `xq_ImageProcessingUtils::ConnectedThreshold`.
+  - Preserved layer separation: Domain still does not link legacy algorithm
+    modules.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_algorithm_adapter`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 43/43.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Connected Threshold Infrastructure Adapter to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

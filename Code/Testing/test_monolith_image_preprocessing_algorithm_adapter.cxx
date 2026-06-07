@@ -1,6 +1,7 @@
 #include "Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.h"
 
 #include <QCoreApplication>
+#include <QVariantList>
 #include <QVariantMap>
 
 #include <vtkImageData.h>
@@ -56,6 +57,27 @@ QVariantMap BinaryThresholdParameters()
     parameters.insert(QStringLiteral("upper"), 6.0);
     parameters.insert(QStringLiteral("inside-value"), 1.0);
     parameters.insert(QStringLiteral("outside-value"), 0.0);
+    return parameters;
+}
+
+QVariantList Point(int x, int y, int z)
+{
+    QVariantList point;
+    point.append(x);
+    point.append(y);
+    point.append(z);
+    return point;
+}
+
+QVariantMap ConnectedThresholdParameters()
+{
+    QVariantList seeds;
+    seeds.append(QVariant::fromValue(Point(1, 1, 1)));
+
+    QVariantMap parameters;
+    parameters.insert(QStringLiteral("lower"), 3.0);
+    parameters.insert(QStringLiteral("upper"), 6.0);
+    parameters.insert(QStringLiteral("seeds"), seeds);
     return parameters;
 }
 
@@ -156,6 +178,52 @@ int main(int argc, char** argv)
         static_cast<float*>(thresholdResult.Image->GetScalarPointer(0, 0, 0));
     if (Expect(outsideVoxel && *outsideVoxel == 0.0f,
                "binary threshold should write outside value for out-of-range voxel"))
+        return 1;
+
+    const auto nullConnectedThresholdResult =
+        adapter.RunConnectedThreshold(nullptr, ConnectedThresholdParameters());
+    if (Expect(!nullConnectedThresholdResult.Succeeded,
+               "null connected-threshold input should fail"))
+        return 1;
+    if (Expect(nullConnectedThresholdResult.Message ==
+                   QStringLiteral("ConnectedThreshold: input image is null."),
+               "null connected-threshold input should use legacy diagnostic"))
+        return 1;
+
+    const auto missingSeedsResult =
+        adapter.RunConnectedThreshold(MakeImage(), QVariantMap());
+    if (Expect(!missingSeedsResult.Succeeded,
+               "missing connected-threshold seeds should fail"))
+        return 1;
+    if (Expect(missingSeedsResult.Message ==
+                   QStringLiteral("Image preprocessing parameter is required: lower."),
+               "missing connected-threshold parameter should use domain validation"))
+        return 1;
+    if (Expect(missingSeedsResult.Image == nullptr,
+               "invalid connected-threshold parameters should not produce image"))
+        return 1;
+
+    input = MakeImage();
+    inputDimensions = input->GetDimensions();
+    const auto connectedThresholdResult =
+        adapter.RunConnectedThreshold(input, ConnectedThresholdParameters());
+    if (Expect(connectedThresholdResult.Succeeded,
+               "valid connected-threshold request should succeed"))
+        return 1;
+    if (Expect(connectedThresholdResult.Image != nullptr,
+               "valid connected-threshold request should return image"))
+        return 1;
+    outputDimensions = connectedThresholdResult.Image->GetDimensions();
+    if (Expect(outputDimensions[0] == inputDimensions[0] &&
+                   outputDimensions[1] == inputDimensions[1] &&
+                   outputDimensions[2] == inputDimensions[2],
+               "connected threshold should preserve image dimensions"))
+        return 1;
+
+    const auto* connectedSeedVoxel = static_cast<float*>(
+        connectedThresholdResult.Image->GetScalarPointer(1, 1, 1));
+    if (Expect(connectedSeedVoxel && *connectedSeedVoxel == 1.0f,
+               "connected threshold should select the seeded in-range voxel"))
         return 1;
 
     return 0;

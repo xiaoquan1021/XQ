@@ -24,6 +24,10 @@ public:
         vtkImageData* input,
         const QVariantMap& parameters) const;
 
+    ImagePreprocessingAlgorithmResult RunConnectedThreshold(
+        vtkImageData* input,
+        const QVariantMap& parameters) const;
+
     ImagePreprocessingAlgorithmResult RunGaussianSmoothing(
         vtkImageData* input,
         const QVariantMap& parameters) const;
