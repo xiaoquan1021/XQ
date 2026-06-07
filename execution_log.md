@@ -1831,3 +1831,48 @@
 - Promoted Monolith Image Preprocessing Operation Dispatch Adapter to completed
   in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the operation dispatch boundary after all preprocessing operation
+    ids were routed through the Infrastructure adapter.
+  - The next integration gap is a service-level execution boundary that combines
+    Domain workflow/parameter validation with Infrastructure algorithm
+    execution without mutating storage.
+  - Chosen next slice: add a monolith image-preprocessing execution service in
+    Infrastructure.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing
+  Execution Service.
+- Started the next unattended loop iteration:
+  - Adding failing execution service regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_execution_service` because
+    `Infrastructure/xq_ImagePreprocessingExecutionService.h` did not exist.
+- Implemented the monolith image-preprocessing execution service:
+  - Added `ImagePreprocessingExecutionRequest` and
+    `ImagePreprocessingExecutionResult`.
+  - Added `ImagePreprocessingExecutionService::Run`.
+  - Reused Domain workflow and parameter validation before algorithm
+    execution.
+  - Reused the Infrastructure algorithm adapter operation dispatcher for
+    actual VTK image processing.
+  - Preserved layer separation: Domain still does not link legacy algorithm
+    modules, and this slice does not mutate DataStorage or catalog state.
+- Debugging note:
+  - The first target test run segfaulted because the test stored a raw
+    `vtkImageData*` from a temporary `vtkSmartPointer`; the test now keeps the
+    smart pointer alive for the request lifetime.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_execution_service`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 44/44.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Execution Service to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
