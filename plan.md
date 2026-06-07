@@ -378,6 +378,45 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Selection Service Foundation
+
+1. Add a monolith Core `xq::core::DataSelectionService`.
+   - Keep it independent from MITK `DataNode` selection.
+   - Track the selected hierarchy node id and resolved catalog entry id.
+   - Validate hierarchy node ids and catalog entry ids against the live
+     `DataHierarchyService` and `DataCatalogService`.
+   - Emit selection-change signals only when the selected state changes.
+2. Add selection entry points for workflow pages.
+   - Select by hierarchy node id.
+   - Select by catalog entry id, resolving to the first hierarchy data-entry
+     node that references it.
+   - Clear data selection.
+3. Add `DataSelectionService` ownership/access through
+   `xq::core::ApplicationContext`.
+   - Expose it through `DataSelection()`.
+   - Keep existing MITK active-node selection API unchanged.
+4. Add C++ regression tests before implementation:
+   - New data selection starts empty.
+   - Selecting a hierarchy data node resolves the catalog entry id.
+   - Selecting by catalog entry resolves the hierarchy node id.
+   - Selecting the same data twice is a no-op.
+   - Missing ids fail without mutating the current data selection.
+   - Default `ApplicationContext` exposes a data selection service.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation again.

@@ -408,3 +408,39 @@
 - Promoted Monolith Data Import Hierarchy Integration to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable selection behavior after imported data now lands in
+    the project hierarchy.
+  - Slicer/SV/MITK/OHIF-style workstation flows all need a stable current data
+    selection that workflow pages can read without reconstructing tree/catalog
+    relationships themselves.
+  - Chosen next slice: add a monolith `DataSelectionService` that tracks the
+    selected hierarchy node and resolved catalog entry independently from MITK
+    `DataNode` selection.
+- Added next executable phase to `plan.md`: Monolith Data Selection Service
+  Foundation.
+- Started the next unattended loop iteration:
+  - Added failing data selection regression test first.
+  - `test_monolith_data_selection_service` failed because
+    `Core/xq_DataSelectionService.h` did not exist.
+- Implemented the monolith data selection service foundation:
+  - Added `xq::core::DataSelectionService`.
+  - The service tracks selected hierarchy node id and resolved catalog entry id
+    independently from MITK `DataNode` selection.
+  - Selecting a hierarchy data node resolves its catalog entry id.
+  - Selecting a catalog entry resolves the first hierarchy data-entry node that
+    references it.
+  - Missing hierarchy/catalog ids fail without mutating the current selection.
+  - Re-selecting the same data is a no-op and does not emit a duplicate signal.
+  - `ApplicationContext` now owns and exposes `DataSelection()`.
+- Verification for this iteration:
+  - Red test observed: `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    failed because `Core/xq_DataSelectionService.h` was missing.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 18/18.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Selection Service Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

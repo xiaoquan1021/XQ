@@ -3,6 +3,7 @@
 #include "xq_DataCatalogService.h"
 #include "xq_DataHierarchyService.h"
 #include "xq_DataImportService.h"
+#include "xq_DataSelectionService.h"
 #include "xq_PreferencesService.h"
 #include "xq_ProjectService.h"
 #include "xq_ProjectSessionService.h"
@@ -19,6 +20,9 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
     , m_DataStorage(dataStorage)
     , m_DataCatalogService(new DataCatalogService(this))
     , m_DataHierarchyService(new DataHierarchyService(this))
+    , m_DataSelectionService(new DataSelectionService(*m_DataCatalogService,
+                                                      *m_DataHierarchyService,
+                                                      this))
     , m_PreferencesService(new PreferencesService(this))
     , m_ProjectService(new ProjectService(this))
     , m_TaskRunner(new TaskRunner(this))
@@ -62,6 +66,11 @@ DataHierarchyService* ApplicationContext::DataHierarchy() const
 DataImportService* ApplicationContext::DataImports() const
 {
     return m_DataImportService;
+}
+
+DataSelectionService* ApplicationContext::DataSelection() const
+{
+    return m_DataSelectionService;
 }
 
 QStringList ApplicationContext::Diagnostics() const
