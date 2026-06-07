@@ -116,6 +116,15 @@ QHash<int, QByteArray> DataHierarchyModel::roleNames() const
     return roles;
 }
 
+QModelIndex DataHierarchyModel::IndexForNodeId(const QString& nodeId) const
+{
+    const QString normalizedNodeId = nodeId.trimmed();
+    if (normalizedNodeId.isEmpty() || !m_Root)
+        return QModelIndex();
+
+    return IndexForNodeId(m_Root, normalizedNodeId);
+}
+
 void DataHierarchyModel::Rebuild()
 {
     m_Nodes.clear();
@@ -163,6 +172,27 @@ DataHierarchyModel::ModelNode* DataHierarchyModel::NodeForIndex(
         return m_Root;
 
     return static_cast<ModelNode*>(index.internalPointer());
+}
+
+QModelIndex DataHierarchyModel::IndexForNodeId(
+    const ModelNode* parentNode,
+    const QString& nodeId) const
+{
+    if (!parentNode)
+        return QModelIndex();
+
+    for (int row = 0; row < parentNode->Children.size(); ++row)
+    {
+        ModelNode* child = parentNode->Children.at(row);
+        if (child->Id == nodeId)
+            return createIndex(row, 0, child);
+
+        const QModelIndex descendant = IndexForNodeId(child, nodeId);
+        if (descendant.isValid())
+            return descendant;
+    }
+
+    return QModelIndex();
 }
 
 int DataHierarchyModel::RowOfNode(const ModelNode* node) const

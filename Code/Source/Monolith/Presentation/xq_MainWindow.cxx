@@ -11,6 +11,8 @@
 #include <QItemSelectionModel>
 #include <QLabel>
 #include <QListWidget>
+#include <QScopeGuard>
+#include <QSignalBlocker>
 #include <QSplitter>
 #include <QStackedWidget>
 #include <QTextEdit>
@@ -87,6 +89,9 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             &QItemSelectionModel::currentChanged,
             this,
             [this](const QModelIndex& current, const QModelIndex&) {
+                if (m_SyncingSelectionFromCore)
+                    return;
+
                 const QString nodeId =
                     current.data(DataHierarchyModel::NodeIdRole).toString();
                 const auto* node = m_Context.DataHierarchy()->FindNode(nodeId);
@@ -103,6 +108,13 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                 {
                     m_Context.PostDiagnostic(errorMessage);
                 }
+            });
+
+    connect(m_Context.DataSelection(),
+            &xq::core::DataSelectionService::SelectionChanged,
+            this,
+            [this](const QString& hierarchyNodeId, const QString&) {
+                SyncTreeSelectionFromCore(hierarchyNodeId);
             });
 
     m_Diagnostics = new QTextEdit(this);
@@ -136,6 +148,37 @@ void MainWindow::SetRenderHost(QWidget* renderHost)
     m_RenderHost = renderHost;
     m_RenderHost->setParent(m_RenderHostContainer);
     layout->addWidget(m_RenderHost);
+}
+
+void MainWindow::SyncTreeSelectionFromCore(const QString& hierarchyNodeId)
+{
+    if (!m_DataHierarchyView || !m_DataHierarchyModel ||
+        !m_DataHierarchyView->selectionModel())
+    {
+        return;
+    }
+
+    m_SyncingSelectionFromCore = true;
+    const auto resetSyncing = qScopeGuard([this]() {
+        m_SyncingSelectionFromCore = false;
+    });
+
+    QSignalBlocker selectionBlocker(m_DataHierarchyView->selectionModel());
+    if (hierarchyNodeId.trimmed().isEmpty())
+    {
+        m_DataHierarchyView->selectionModel()->clear();
+        m_DataHierarchyView->selectionModel()->clearCurrentIndex();
+        return;
+    }
+
+    const QModelIndex index =
+        m_DataHierarchyModel->IndexForNodeId(hierarchyNodeId);
+    if (!index.isValid())
+        return;
+
+    m_DataHierarchyView->expand(index.parent());
+    m_DataHierarchyView->setCurrentIndex(index);
+    m_DataHierarchyView->scrollTo(index);
 }
 
 QWidget* MainWindow::CreateWorkflowPage(const QString& title)

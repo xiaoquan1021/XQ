@@ -622,6 +622,45 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Panel Selection Synchronization
+
+1. Synchronize Core data selection back into the Project/Data tree.
+   - Listen to `DataSelectionService::SelectionChanged` in `MainWindow`.
+   - When a selected hierarchy node id exists, locate the matching
+     `DataHierarchyModel` index and make it the tree current index.
+   - Expand parent folders as needed so externally selected data is visible.
+2. Handle lifecycle clears conservatively.
+   - Clearing data selection should clear the tree current selection.
+   - Removing a selected entry should leave the tree without a stale current
+     index after the model resets.
+   - Selecting a missing hierarchy node should not crash or mutate the tree.
+3. Keep feedback loops quiet.
+   - Tree-driven selection should continue to call
+     `SelectHierarchyNode` for data-entry rows.
+   - Core-driven UI updates should not re-emit duplicate Core selection
+     changes for the same node.
+4. Add C++/Qt regression tests before implementation:
+   - Importing data auto-selects the imported row in the tree.
+   - Selecting a different catalog entry through `DataSelectionService`
+     updates the tree current row.
+   - Clearing selection clears the tree current index.
+   - Removing the selected data entry clears stale tree selection.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

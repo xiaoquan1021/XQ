@@ -39,11 +39,15 @@ public:
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QHash<int, QByteArray> roleNames() const override;
 
+    QModelIndex IndexForNodeId(const QString& nodeId) const;
+
 private:
     struct ModelNode;
 
     void Rebuild();
     ModelNode* NodeForIndex(const QModelIndex& index) const;
+    QModelIndex IndexForNodeId(const ModelNode* parentNode,
+                               const QString& nodeId) const;
     int RowOfNode(const ModelNode* node) const;
 
     xq::core::DataHierarchyService& m_Hierarchy;

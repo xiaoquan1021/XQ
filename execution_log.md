@@ -652,3 +652,43 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Project Data Panel Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked data panel selection behavior after the first Project/Data tree
+    integration landed.
+  - Comparable workstations keep the visible data tree/list synchronized with
+    application selection state: MITK/Slicer-style data managers show the
+    current data node in the tree, SimVascular keeps selected project data
+    tied to workflow pages, and OHIF display-set panels track active display
+    selection from shared services.
+  - Chosen next slice: synchronize `DataSelectionService::SelectionChanged`
+    back into the monolith tree view so imports, programmatic selection, clear,
+    and remove lifecycle operations are visible in the UI.
+- Added next executable phase to `plan.md`: Monolith Data Panel Selection
+  Synchronization.
+- Started the next unattended loop iteration:
+  - Adding failing data-panel selection synchronization regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_selection_sync`
+    failed with `import should select the imported data row in the tree`.
+- Implemented the monolith data panel selection synchronization:
+  - Added `DataHierarchyModel::IndexForNodeId` for stable tree lookup by
+    hierarchy node id.
+  - `MainWindow` now listens to `DataSelectionService::SelectionChanged`.
+  - Core-driven selection expands the parent folder, sets the tree current
+    index, and scrolls to the selected data row.
+  - Clearing selection clears the tree current index.
+  - Selection-model signals are blocked during Core-driven tree updates to
+    avoid duplicate `DataSelectionService` calls.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_selection_sync`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 24/24.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Panel Selection Synchronization to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

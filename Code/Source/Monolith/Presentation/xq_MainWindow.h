@@ -31,6 +31,7 @@ public:
 private:
     QWidget* CreateWorkflowPage(const QString& title);
     void AddWorkflowPage(const QString& title);
+    void SyncTreeSelectionFromCore(const QString& hierarchyNodeId);
 
     xq::core::ApplicationContext& m_Context;
     DataHierarchyModel* m_DataHierarchyModel = nullptr;
@@ -40,6 +41,7 @@ private:
     QWidget* m_RenderHostContainer = nullptr;
     QWidget* m_RenderHost = nullptr;
     QTextEdit* m_Diagnostics = nullptr;
+    bool m_SyncingSelectionFromCore = false;
 };
 
 } // namespace xq::presentation
