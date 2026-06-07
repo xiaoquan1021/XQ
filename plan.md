@@ -104,7 +104,7 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
-## Next Phase: Monolith Preferences Foundation
+## Completed Phase: Monolith Preferences Foundation
 
 1. Add a monolith Core preferences service for app-level settings.
    - Keep the first implementation in-memory with explicit JSON save/load for deterministic tests.
@@ -116,6 +116,36 @@ The next monolith slice is grounded in these comparable systems:
    - Values roundtrip through set/get.
    - JSON save/load restores all supported value types.
    - Invalid preference files fail with an error.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
+## Completed Phase: Autonomous Research Refresh
+
+1. Search current comparable medical imaging workstation projects and documentation.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Active Phase: Monolith Data Catalog Foundation
+
+1. Add a monolith Core `xq::core::DataCatalogService`.
+   - Keep the first implementation metadata-only and independent from MITK file import.
+   - Track imported data entries with stable id, display name, source path, modality, and workflow role.
+   - Reject empty source paths and duplicate ids.
+   - Support query by id and ordered listing for future project/data-management UI.
+2. Add `DataCatalogService` ownership/access through `xq::core::ApplicationContext`.
+   - Future DICOM/image import, project tree, and workflow pages should register data through this service.
+3. Add C++ regression tests before implementation:
+   - New catalog starts empty.
+   - Registering image/DICOM metadata creates deterministic entries.
+   - Duplicate ids fail without changing existing entries.
+   - Lookup by missing id returns null.
+   - `ApplicationContext` exposes an empty catalog.
 4. Run:
    - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`

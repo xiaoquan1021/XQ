@@ -152,3 +152,30 @@
 - Prepared the next phase in `plan.md`:
   - Promoted Monolith Task Runner Foundation to completed.
   - Added Next Phase: Monolith Preferences Foundation.
+- Committed and pushed XQ iteration:
+  - Commit: `bae1923 Add monolith task runner foundation`.
+  - Remote branch: `feature/windows-monolith-foundation`.
+- Started the next unattended loop iteration:
+  - Promoted Monolith Preferences Foundation to active in `plan.md`.
+  - Selected the next implementation slice: in-memory preferences with explicit JSON save/load, independent from legacy BlueBerry preferences.
+- Added failing PreferencesService regression test first:
+  - `test_monolith_preferences_service` failed because `Core/xq_PreferencesService.h` did not exist.
+- Implemented the monolith preferences foundation:
+  - Added `xq::core::PreferencesService`.
+  - Supports string, boolean, and integer application settings.
+  - Saves and loads explicit JSON independent from legacy BlueBerry preferences.
+  - Invalid JSON and unsupported schema fail with useful errors.
+  - `ApplicationContext` now owns and exposes `PreferencesService` through `Preferences()`.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 8/8.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Preferences Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - GitHub connector initially hit a transport failure, so web search was used as fallback and the GitHub connector was retried with exact official repository queries.
+  - Confirmed official comparable repositories: `Slicer/Slicer` and `OHIF/Viewers`.
+  - Research conclusion: comparable medical imaging workstations converge on a central data catalog/import layer before deeper workflow pages. 3D Slicer emphasizes DICOM/data management, OHIF emphasizes data-source abstraction and DICOMweb, and SimVascular-style workflows depend on image data being cataloged before path, segmentation, modeling, meshing, and simulation steps.
+- Added next executable phase to `plan.md`: Monolith Data Catalog Foundation.

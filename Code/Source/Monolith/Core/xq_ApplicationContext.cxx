@@ -1,5 +1,6 @@
 #include "xq_ApplicationContext.h"
 
+#include "xq_PreferencesService.h"
 #include "xq_ProjectService.h"
 #include "xq_TaskRunner.h"
 
@@ -12,6 +13,7 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
                                        QObject* parent)
     : QObject(parent)
     , m_DataStorage(dataStorage)
+    , m_PreferencesService(new PreferencesService(this))
     , m_ProjectService(new ProjectService(this))
     , m_TaskRunner(new TaskRunner(this))
 {
@@ -35,6 +37,11 @@ mitk::DataNode::Pointer ApplicationContext::ActiveNode() const
 QStringList ApplicationContext::Diagnostics() const
 {
     return m_Diagnostics;
+}
+
+PreferencesService* ApplicationContext::Preferences() const
+{
+    return m_PreferencesService;
 }
 
 ProjectService* ApplicationContext::Projects() const

@@ -11,6 +11,7 @@
 namespace xq::core
 {
 
+class PreferencesService;
 class ProjectService;
 class TaskRunner;
 
@@ -27,6 +28,7 @@ public:
     mitk::DataStorage::Pointer DataStorage() const;
     mitk::DataNode::Pointer ActiveNode() const;
     QStringList Diagnostics() const;
+    PreferencesService* Preferences() const;
     ProjectService* Projects() const;
     TaskRunner* Tasks() const;
 
@@ -44,6 +46,7 @@ private:
     mitk::DataStorage::Pointer m_DataStorage;
     mitk::DataNode::Pointer m_ActiveNode;
     QStringList m_Diagnostics;
+    PreferencesService* m_PreferencesService = nullptr;
     ProjectService* m_ProjectService = nullptr;
     TaskRunner* m_TaskRunner = nullptr;
 };
