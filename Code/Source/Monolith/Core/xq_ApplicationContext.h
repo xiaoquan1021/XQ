@@ -15,6 +15,7 @@ class DataCatalogService;
 class DataHierarchyService;
 class DataImportService;
 class DataManagementService;
+class DataNodeRegistryService;
 class DataSelectionService;
 class PreferencesService;
 class ProjectService;
@@ -40,6 +41,7 @@ public:
     DataHierarchyService* DataHierarchy() const;
     DataImportService* DataImports() const;
     DataManagementService* DataManagement() const;
+    DataNodeRegistryService* DataNodes() const;
     DataSelectionService* DataSelection() const;
     QStringList Diagnostics() const;
     PreferencesService* Preferences() const;
@@ -66,6 +68,7 @@ private:
     DataCatalogService* m_DataCatalogService = nullptr;
     DataHierarchyService* m_DataHierarchyService = nullptr;
     DataSelectionService* m_DataSelectionService = nullptr;
+    DataNodeRegistryService* m_DataNodeRegistryService = nullptr;
     QStringList m_Diagnostics;
     PreferencesService* m_PreferencesService = nullptr;
     ProjectService* m_ProjectService = nullptr;

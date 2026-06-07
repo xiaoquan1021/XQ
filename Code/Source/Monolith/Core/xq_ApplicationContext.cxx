@@ -4,6 +4,7 @@
 #include "xq_DataHierarchyService.h"
 #include "xq_DataImportService.h"
 #include "xq_DataManagementService.h"
+#include "xq_DataNodeRegistryService.h"
 #include "xq_DataSelectionService.h"
 #include "xq_PreferencesService.h"
 #include "xq_ProjectService.h"
@@ -27,6 +28,7 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
     , m_DataSelectionService(new DataSelectionService(*m_DataCatalogService,
                                                       *m_DataHierarchyService,
                                                       this))
+    , m_DataNodeRegistryService(new DataNodeRegistryService(this))
     , m_PreferencesService(new PreferencesService(this))
     , m_ProjectService(new ProjectService(this))
     , m_TaskRunner(new TaskRunner(this))
@@ -109,6 +111,11 @@ DataImportService* ApplicationContext::DataImports() const
 DataManagementService* ApplicationContext::DataManagement() const
 {
     return m_DataManagementService;
+}
+
+DataNodeRegistryService* ApplicationContext::DataNodes() const
+{
+    return m_DataNodeRegistryService;
 }
 
 DataSelectionService* ApplicationContext::DataSelection() const
