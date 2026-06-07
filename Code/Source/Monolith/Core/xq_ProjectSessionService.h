@@ -8,6 +8,7 @@ namespace xq::core
 {
 
 class DataCatalogService;
+class DataHierarchyService;
 class ProjectService;
 class TaskRunner;
 
@@ -18,6 +19,7 @@ class ProjectSessionService : public QObject
 public:
     ProjectSessionService(ProjectService& projectService,
                           DataCatalogService& dataCatalog,
+                          DataHierarchyService& dataHierarchy,
                           TaskRunner& taskRunner,
                           QObject* parent = nullptr);
 
@@ -30,6 +32,7 @@ private:
 
     ProjectService& m_ProjectService;
     DataCatalogService& m_DataCatalog;
+    DataHierarchyService& m_DataHierarchy;
     TaskRunner& m_TaskRunner;
 };
 

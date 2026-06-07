@@ -1,6 +1,7 @@
 #include "xq_ProjectService.h"
 
 #include "xq_DataCatalogService.h"
+#include "xq_DataHierarchyService.h"
 
 #include <QDir>
 #include <QFile>
@@ -68,6 +69,32 @@ bool WorkflowRoleFromString(const QString& value, DataWorkflowRole* role)
     return true;
 }
 
+QString DataHierarchyNodeKindToString(DataHierarchyNodeKind kind)
+{
+    switch (kind)
+    {
+    case DataHierarchyNodeKind::Folder:
+        return QStringLiteral("folder");
+    case DataHierarchyNodeKind::DataEntry:
+        return QStringLiteral("data-entry");
+    }
+
+    return QStringLiteral("folder");
+}
+
+bool DataHierarchyNodeKindFromString(const QString& value,
+                                     DataHierarchyNodeKind* kind)
+{
+    if (value == QStringLiteral("folder"))
+        *kind = DataHierarchyNodeKind::Folder;
+    else if (value == QStringLiteral("data-entry"))
+        *kind = DataHierarchyNodeKind::DataEntry;
+    else
+        return false;
+
+    return true;
+}
+
 QJsonObject DataCatalogEntryToJson(const DataCatalogEntry& entry)
 {
     QJsonObject object;
@@ -80,8 +107,26 @@ QJsonObject DataCatalogEntryToJson(const DataCatalogEntry& entry)
     return object;
 }
 
+QJsonObject DataHierarchyNodeToJson(const DataHierarchyNode& node)
+{
+    QJsonObject object;
+    object.insert(QStringLiteral("id"), node.Id);
+    object.insert(QStringLiteral("parentId"), node.ParentId);
+    object.insert(QStringLiteral("displayName"), node.DisplayName);
+    object.insert(QStringLiteral("kind"),
+                  DataHierarchyNodeKindToString(node.Kind));
+    if (node.Kind == DataHierarchyNodeKind::DataEntry)
+    {
+        object.insert(QStringLiteral("dataCatalogEntryId"),
+                      node.DataCatalogEntryId);
+    }
+
+    return object;
+}
+
 QJsonObject ProjectToJson(const ProjectMetadata& project,
-                          const DataCatalogService* dataCatalog)
+                          const DataCatalogService* dataCatalog,
+                          const DataHierarchyService* dataHierarchy)
 {
     QJsonObject projectObject;
     projectObject.insert(QStringLiteral("name"), project.Name);
@@ -96,6 +141,20 @@ QJsonObject ProjectToJson(const ProjectMetadata& project,
         projectObject.insert(QStringLiteral("dataCatalog"), dataCatalogArray);
     }
 
+    if (dataHierarchy)
+    {
+        QJsonArray dataHierarchyArray;
+        for (const auto& node : dataHierarchy->Nodes())
+        {
+            if (node.Id == dataHierarchy->RootId())
+                continue;
+
+            dataHierarchyArray.append(DataHierarchyNodeToJson(node));
+        }
+        projectObject.insert(QStringLiteral("dataHierarchy"),
+                             dataHierarchyArray);
+    }
+
     QJsonObject root;
     root.insert(QStringLiteral("schemaVersion"), project.SchemaVersion);
     root.insert(QStringLiteral("project"), projectObject);
@@ -104,6 +163,7 @@ QJsonObject ProjectToJson(const ProjectMetadata& project,
 
 bool WriteProjectJson(const ProjectMetadata& project,
                       const DataCatalogService* dataCatalog,
+                      const DataHierarchyService* dataHierarchy,
                       QString* errorMessage)
 {
     const QFileInfo projectFileInfo(project.ProjectFilePath);
@@ -125,8 +185,210 @@ bool WriteProjectJson(const ProjectMetadata& project,
         return false;
     }
 
-    const QJsonDocument document(ProjectToJson(project, dataCatalog));
+    const QJsonDocument document(
+        ProjectToJson(project, dataCatalog, dataHierarchy));
     projectFile.write(document.toJson(QJsonDocument::Indented));
+    if (errorMessage)
+        *errorMessage = QString();
+    return true;
+}
+
+bool ReadProjectJson(const QString& projectFilePath,
+                     ProjectMetadata* project,
+                     QJsonObject* projectObject,
+                     QString* errorMessage)
+{
+    QFile projectFile(projectFilePath);
+    if (!projectFile.open(QIODevice::ReadOnly))
+    {
+        if (errorMessage)
+            *errorMessage = QStringLiteral("Unable to read project file.");
+        return false;
+    }
+
+    QJsonParseError parseError;
+    const QJsonDocument document =
+        QJsonDocument::fromJson(projectFile.readAll(), &parseError);
+    if (parseError.error != QJsonParseError::NoError || !document.isObject())
+    {
+        if (errorMessage)
+            *errorMessage = QStringLiteral("Project file is not valid JSON.");
+        return false;
+    }
+
+    const QJsonObject root = document.object();
+    const QString schemaVersion =
+        root.value(QStringLiteral("schemaVersion")).toString();
+    if (schemaVersion != ProjectService::SupportedSchemaVersion())
+    {
+        if (errorMessage)
+            *errorMessage =
+                QStringLiteral("Unsupported project schema version.");
+        return false;
+    }
+
+    const QJsonObject parsedProjectObject =
+        root.value(QStringLiteral("project")).toObject();
+    const QString name =
+        parsedProjectObject.value(QStringLiteral("name")).toString().trimmed();
+    if (name.isEmpty())
+    {
+        if (errorMessage)
+            *errorMessage = QStringLiteral("Project name is missing.");
+        return false;
+    }
+
+    QString workspaceDirectory =
+        parsedProjectObject.value(QStringLiteral("workspaceDirectory"))
+            .toString();
+    if (workspaceDirectory.trimmed().isEmpty())
+        workspaceDirectory = QString::fromLatin1(kDefaultWorkspaceDirectory);
+    if (QDir::isAbsolutePath(workspaceDirectory))
+    {
+        if (errorMessage)
+            *errorMessage =
+                QStringLiteral("Project workspace directory must be relative.");
+        return false;
+    }
+
+    project->Name = name;
+    project->ProjectFilePath = AbsoluteFilePath(projectFilePath);
+    project->WorkspaceDirectory = workspaceDirectory;
+    project->SchemaVersion = schemaVersion;
+    *projectObject = parsedProjectObject;
+    if (errorMessage)
+        *errorMessage = QString();
+    return true;
+}
+
+bool LoadDataCatalog(const QJsonObject& projectObject,
+                     DataCatalogService& dataCatalog,
+                     QString* errorMessage)
+{
+    const QJsonValue dataCatalogValue =
+        projectObject.value(QStringLiteral("dataCatalog"));
+    if (dataCatalogValue.isArray())
+    {
+        const QJsonArray dataCatalogArray = dataCatalogValue.toArray();
+        for (const auto& item : dataCatalogArray)
+        {
+            if (!item.isObject())
+            {
+                if (errorMessage)
+                    *errorMessage =
+                        QStringLiteral("Invalid data catalog entry.");
+                return false;
+            }
+
+            const QJsonObject itemObject = item.toObject();
+            DataWorkflowRole role = DataWorkflowRole::Unknown;
+            if (!WorkflowRoleFromString(
+                    itemObject.value(QStringLiteral("workflowRole")).toString(),
+                    &role))
+            {
+                if (errorMessage)
+                    *errorMessage =
+                        QStringLiteral("Unsupported data workflow role.");
+                return false;
+            }
+
+            DataCatalogEntry entry;
+            entry.Id = itemObject.value(QStringLiteral("id")).toString();
+            entry.DisplayName =
+                itemObject.value(QStringLiteral("displayName")).toString();
+            entry.SourcePath =
+                itemObject.value(QStringLiteral("sourcePath")).toString();
+            entry.Modality =
+                itemObject.value(QStringLiteral("modality")).toString();
+            entry.WorkflowRole = role;
+
+            if (!dataCatalog.RegisterEntry(entry, errorMessage))
+                return false;
+        }
+    }
+    else if (!dataCatalogValue.isUndefined())
+    {
+        if (errorMessage)
+            *errorMessage =
+                QStringLiteral("Project data catalog must be an array.");
+        return false;
+    }
+
+    if (errorMessage)
+        *errorMessage = QString();
+    return true;
+}
+
+bool LoadDataHierarchy(const QJsonObject& projectObject,
+                       DataHierarchyService& dataHierarchy,
+                       QString* errorMessage)
+{
+    const QJsonValue dataHierarchyValue =
+        projectObject.value(QStringLiteral("dataHierarchy"));
+    if (dataHierarchyValue.isArray())
+    {
+        const QJsonArray dataHierarchyArray = dataHierarchyValue.toArray();
+        for (const auto& item : dataHierarchyArray)
+        {
+            if (!item.isObject())
+            {
+                if (errorMessage)
+                    *errorMessage =
+                        QStringLiteral("Invalid data hierarchy node.");
+                return false;
+            }
+
+            const QJsonObject itemObject = item.toObject();
+            DataHierarchyNodeKind kind = DataHierarchyNodeKind::Folder;
+            if (!DataHierarchyNodeKindFromString(
+                    itemObject.value(QStringLiteral("kind")).toString(),
+                    &kind))
+            {
+                if (errorMessage)
+                    *errorMessage =
+                        QStringLiteral("Unsupported hierarchy node kind.");
+                return false;
+            }
+
+            const QString id = itemObject.value(QStringLiteral("id")).toString();
+            const QString parentId =
+                itemObject.value(QStringLiteral("parentId")).toString();
+            const QString displayName =
+                itemObject.value(QStringLiteral("displayName")).toString();
+            if (kind == DataHierarchyNodeKind::Folder)
+            {
+                if (!dataHierarchy.AddFolder(id,
+                                             parentId,
+                                             displayName,
+                                             errorMessage))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                const QString dataCatalogEntryId =
+                    itemObject.value(QStringLiteral("dataCatalogEntryId"))
+                        .toString();
+                if (!dataHierarchy.AddDataEntry(id,
+                                                parentId,
+                                                dataCatalogEntryId,
+                                                displayName,
+                                                errorMessage))
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    else if (!dataHierarchyValue.isUndefined())
+    {
+        if (errorMessage)
+            *errorMessage =
+                QStringLiteral("Project data hierarchy must be an array.");
+        return false;
+    }
+
     if (errorMessage)
         *errorMessage = QString();
     return true;
@@ -194,7 +456,7 @@ bool ProjectService::SaveProject(QString* errorMessage) const
         return false;
     }
 
-    return WriteProjectJson(*m_CurrentProject, nullptr, errorMessage);
+    return WriteProjectJson(*m_CurrentProject, nullptr, nullptr, errorMessage);
 }
 
 bool ProjectService::SaveProject(const DataCatalogService& dataCatalog,
@@ -206,67 +468,38 @@ bool ProjectService::SaveProject(const DataCatalogService& dataCatalog,
         return false;
     }
 
-    return WriteProjectJson(*m_CurrentProject, &dataCatalog, errorMessage);
+    return WriteProjectJson(*m_CurrentProject,
+                            &dataCatalog,
+                            nullptr,
+                            errorMessage);
+}
+
+bool ProjectService::SaveProject(const DataCatalogService& dataCatalog,
+                                 const DataHierarchyService& dataHierarchy,
+                                 QString* errorMessage) const
+{
+    if (!m_CurrentProject.has_value())
+    {
+        SetError(errorMessage, QStringLiteral("No active project to save."));
+        return false;
+    }
+
+    return WriteProjectJson(*m_CurrentProject,
+                            &dataCatalog,
+                            &dataHierarchy,
+                            errorMessage);
 }
 
 bool ProjectService::OpenProject(const QString& projectFilePath,
                                  QString* errorMessage)
 {
-    QFile projectFile(projectFilePath);
-    if (!projectFile.open(QIODevice::ReadOnly))
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Unable to read project file."));
-        return false;
-    }
-
-    QJsonParseError parseError;
-    const QJsonDocument document =
-        QJsonDocument::fromJson(projectFile.readAll(), &parseError);
-    if (parseError.error != QJsonParseError::NoError || !document.isObject())
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Project file is not valid JSON."));
-        return false;
-    }
-
-    const QJsonObject root = document.object();
-    const QString schemaVersion =
-        root.value(QStringLiteral("schemaVersion")).toString();
-    if (schemaVersion != SupportedSchemaVersion())
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Unsupported project schema version."));
-        return false;
-    }
-
-    const QJsonObject projectObject =
-        root.value(QStringLiteral("project")).toObject();
-    const QString name =
-        projectObject.value(QStringLiteral("name")).toString().trimmed();
-    if (name.isEmpty())
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Project name is missing."));
-        return false;
-    }
-
-    QString workspaceDirectory =
-        projectObject.value(QStringLiteral("workspaceDirectory")).toString();
-    if (workspaceDirectory.trimmed().isEmpty())
-        workspaceDirectory = QString::fromLatin1(kDefaultWorkspaceDirectory);
-    if (QDir::isAbsolutePath(workspaceDirectory))
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Project workspace directory must be relative."));
-        return false;
-    }
-
     ProjectMetadata project;
-    project.Name = name;
-    project.ProjectFilePath = AbsoluteFilePath(projectFilePath);
-    project.WorkspaceDirectory = workspaceDirectory;
-    project.SchemaVersion = schemaVersion;
+    QJsonObject projectObject;
+    if (!ReadProjectJson(projectFilePath,
+                         &project,
+                         &projectObject,
+                         errorMessage))
+        return false;
 
     m_CurrentProject = project;
     SetError(errorMessage, QString());
@@ -277,107 +510,42 @@ bool ProjectService::OpenProject(const QString& projectFilePath,
                                  DataCatalogService& dataCatalog,
                                  QString* errorMessage)
 {
-    QFile projectFile(projectFilePath);
-    if (!projectFile.open(QIODevice::ReadOnly))
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Unable to read project file."));
-        return false;
-    }
-
-    QJsonParseError parseError;
-    const QJsonDocument document =
-        QJsonDocument::fromJson(projectFile.readAll(), &parseError);
-    if (parseError.error != QJsonParseError::NoError || !document.isObject())
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Project file is not valid JSON."));
-        return false;
-    }
-
-    const QJsonObject root = document.object();
-    const QString schemaVersion =
-        root.value(QStringLiteral("schemaVersion")).toString();
-    if (schemaVersion != SupportedSchemaVersion())
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Unsupported project schema version."));
-        return false;
-    }
-
-    const QJsonObject projectObject =
-        root.value(QStringLiteral("project")).toObject();
-    const QString name =
-        projectObject.value(QStringLiteral("name")).toString().trimmed();
-    if (name.isEmpty())
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Project name is missing."));
-        return false;
-    }
-
-    QString workspaceDirectory =
-        projectObject.value(QStringLiteral("workspaceDirectory")).toString();
-    if (workspaceDirectory.trimmed().isEmpty())
-        workspaceDirectory = QString::fromLatin1(kDefaultWorkspaceDirectory);
-    if (QDir::isAbsolutePath(workspaceDirectory))
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Project workspace directory must be relative."));
-        return false;
-    }
-
-    const QJsonValue dataCatalogValue =
-        projectObject.value(QStringLiteral("dataCatalog"));
-    if (dataCatalogValue.isArray())
-    {
-        const QJsonArray dataCatalogArray = dataCatalogValue.toArray();
-        for (const auto& item : dataCatalogArray)
-        {
-            if (!item.isObject())
-            {
-                SetError(errorMessage,
-                         QStringLiteral("Invalid data catalog entry."));
-                return false;
-            }
-
-            const QJsonObject itemObject = item.toObject();
-            DataWorkflowRole role = DataWorkflowRole::Unknown;
-            if (!WorkflowRoleFromString(
-                    itemObject.value(QStringLiteral("workflowRole")).toString(),
-                    &role))
-            {
-                SetError(errorMessage,
-                         QStringLiteral("Unsupported data workflow role."));
-                return false;
-            }
-
-            DataCatalogEntry entry;
-            entry.Id = itemObject.value(QStringLiteral("id")).toString();
-            entry.DisplayName =
-                itemObject.value(QStringLiteral("displayName")).toString();
-            entry.SourcePath =
-                itemObject.value(QStringLiteral("sourcePath")).toString();
-            entry.Modality =
-                itemObject.value(QStringLiteral("modality")).toString();
-            entry.WorkflowRole = role;
-
-            if (!dataCatalog.RegisterEntry(entry, errorMessage))
-                return false;
-        }
-    }
-    else if (!dataCatalogValue.isUndefined())
-    {
-        SetError(errorMessage,
-                 QStringLiteral("Project data catalog must be an array."));
-        return false;
-    }
-
     ProjectMetadata project;
-    project.Name = name;
-    project.ProjectFilePath = AbsoluteFilePath(projectFilePath);
-    project.WorkspaceDirectory = workspaceDirectory;
-    project.SchemaVersion = schemaVersion;
+    QJsonObject projectObject;
+    if (!ReadProjectJson(projectFilePath,
+                         &project,
+                         &projectObject,
+                         errorMessage))
+        return false;
+
+    if (!LoadDataCatalog(projectObject, dataCatalog, errorMessage))
+        return false;
+
+    m_CurrentProject = project;
+    SetError(errorMessage, QString());
+    return true;
+}
+
+bool ProjectService::OpenProject(const QString& projectFilePath,
+                                 DataCatalogService& dataCatalog,
+                                 DataHierarchyService& dataHierarchy,
+                                 QString* errorMessage)
+{
+    ProjectMetadata project;
+    QJsonObject projectObject;
+    if (!ReadProjectJson(projectFilePath,
+                         &project,
+                         &projectObject,
+                         errorMessage))
+    {
+        return false;
+    }
+
+    if (!LoadDataCatalog(projectObject, dataCatalog, errorMessage))
+        return false;
+
+    if (!LoadDataHierarchy(projectObject, dataHierarchy, errorMessage))
+        return false;
 
     m_CurrentProject = project;
     SetError(errorMessage, QString());

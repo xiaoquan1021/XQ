@@ -299,3 +299,39 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Data Hierarchy Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable workstation direction around persisted project trees.
+  - Slicer-style Subject Hierarchy and MITK Data Manager workflows both depend on
+    a stable data tree being part of the project/session state, not just a flat
+    import list.
+  - OHIF display-set/hanging-protocol organization reinforces that downstream
+    workflow views need stable structured data state after project open.
+  - Chosen next slice: persist `DataHierarchyService` inside fresh `.xqproj`
+    schema `2.0` and wire project session save/open through catalog + hierarchy.
+- Added next executable phase to `plan.md`: Monolith Data Hierarchy Persistence
+  Integration.
+- Started the next unattended loop iteration:
+  - Added failing hierarchy persistence regression test first.
+  - `test_monolith_project_hierarchy_persistence` failed because
+    `ProjectService` did not provide catalog + hierarchy save/open overloads.
+- Implemented data hierarchy persistence integration:
+  - Added ordered node snapshots through `DataHierarchyService::Nodes()`.
+  - Added `ProjectService::SaveProject(catalog, hierarchy)` and
+    `ProjectService::OpenProject(path, catalog, hierarchy)`.
+  - Persisted non-root hierarchy nodes under `.xqproj` schema `2.0`
+    `project.dataHierarchy`.
+  - Restored folder and data-entry hierarchy nodes in order.
+  - Rejected unsupported hierarchy node kind values with a useful error.
+  - `ProjectSessionService` now saves/opens the context hierarchy together with
+    the catalog.
+- Verification for this iteration:
+  - Red test observed: `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    failed because the new hierarchy persistence overloads were missing.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 15/15.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Hierarchy Persistence Integration to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

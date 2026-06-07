@@ -27,6 +27,7 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
                                                 this))
     , m_ProjectSessionService(new ProjectSessionService(*m_ProjectService,
                                                         *m_DataCatalogService,
+                                                        *m_DataHierarchyService,
                                                         *m_TaskRunner,
                                                         this))
 {

@@ -25,6 +25,11 @@ QString DataHierarchyService::RootId() const
     return QString::fromLatin1(kRootId);
 }
 
+QVector<DataHierarchyNode> DataHierarchyService::Nodes() const
+{
+    return m_Nodes;
+}
+
 const DataHierarchyNode* DataHierarchyService::FindNode(const QString& id) const
 {
     const QString normalizedId = NormalizedId(id);

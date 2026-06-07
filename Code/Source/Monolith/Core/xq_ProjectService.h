@@ -10,6 +10,7 @@ namespace xq::core
 {
 
 class DataCatalogService;
+class DataHierarchyService;
 
 struct ProjectMetadata
 {
@@ -37,10 +38,17 @@ public:
     bool SaveProject(QString* errorMessage = nullptr) const;
     bool SaveProject(const DataCatalogService& dataCatalog,
                      QString* errorMessage = nullptr) const;
+    bool SaveProject(const DataCatalogService& dataCatalog,
+                     const DataHierarchyService& dataHierarchy,
+                     QString* errorMessage = nullptr) const;
     bool OpenProject(const QString& projectFilePath,
                      QString* errorMessage = nullptr);
     bool OpenProject(const QString& projectFilePath,
                      DataCatalogService& dataCatalog,
+                     QString* errorMessage = nullptr);
+    bool OpenProject(const QString& projectFilePath,
+                     DataCatalogService& dataCatalog,
+                     DataHierarchyService& dataHierarchy,
                      QString* errorMessage = nullptr);
 
 private:

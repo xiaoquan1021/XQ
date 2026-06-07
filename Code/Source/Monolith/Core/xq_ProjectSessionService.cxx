@@ -1,6 +1,7 @@
 #include "xq_ProjectSessionService.h"
 
 #include "xq_DataCatalogService.h"
+#include "xq_DataHierarchyService.h"
 #include "xq_ProjectService.h"
 #include "xq_TaskRunner.h"
 
@@ -9,11 +10,13 @@ namespace xq::core
 
 ProjectSessionService::ProjectSessionService(ProjectService& projectService,
                                              DataCatalogService& dataCatalog,
+                                             DataHierarchyService& dataHierarchy,
                                              TaskRunner& taskRunner,
                                              QObject* parent)
     : QObject(parent)
     , m_ProjectService(projectService)
     , m_DataCatalog(dataCatalog)
+    , m_DataHierarchy(dataHierarchy)
     , m_TaskRunner(taskRunner)
 {
 }
@@ -24,7 +27,9 @@ bool ProjectSessionService::Save(QString* errorMessage)
     const bool succeeded = m_TaskRunner.RunBlocking(
         QStringLiteral("Save Project"),
         [this](QString* message) {
-            return m_ProjectService.SaveProject(m_DataCatalog, message);
+            return m_ProjectService.SaveProject(m_DataCatalog,
+                                                m_DataHierarchy,
+                                                message);
         },
         &taskMessage);
 
@@ -41,6 +46,7 @@ bool ProjectSessionService::Open(const QString& projectFilePath,
         [this, &projectFilePath](QString* message) {
             return m_ProjectService.OpenProject(projectFilePath,
                                                 m_DataCatalog,
+                                                m_DataHierarchy,
                                                 message);
         },
         &taskMessage);

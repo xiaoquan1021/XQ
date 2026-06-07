@@ -31,6 +31,7 @@ public:
     explicit DataHierarchyService(QObject* parent = nullptr);
 
     QString RootId() const;
+    QVector<DataHierarchyNode> Nodes() const;
     const DataHierarchyNode* FindNode(const QString& id) const;
     QVector<DataHierarchyNode> ChildrenOf(const QString& parentId) const;
 
