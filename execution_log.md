@@ -1209,3 +1209,40 @@
 - Promoted Monolith Workflow Action Service Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked workflow action execution after extracting request messages into
+    Core.
+  - Successful placeholder actions still bypass `TaskRunner`, unlike imports,
+    saves, and other Core operations.
+  - Chosen next slice: add a task-running workflow action API so successful
+    workflow clicks participate in task history and the existing task
+    diagnostics bridge.
+- Added next executable phase to `plan.md`: Monolith Workflow Action Task
+  Runner Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing workflow action task-runner regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_workflow_action_service` because
+    `WorkflowActionService` had no `RunActiveWorkflowAction` member.
+- Implemented the monolith workflow action task runner foundation:
+  - Added `WorkflowActionService::RunActiveWorkflowAction`.
+  - Compatible placeholder actions now create a `Run <WorkflowTitle>` task
+    through `TaskRunner`.
+  - Rejected workflow actions keep task history unchanged and return the same
+    rejection message.
+  - MainWindow now calls the task-running API and relies on the existing task
+    diagnostics bridge for successful action diagnostics.
+- Verification for this iteration:
+  - Red/green target tests:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_workflow_(action_service|primary_action_page)"`
+    passed after implementation: 2/2.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 39/39.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Workflow Action Task Runner Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

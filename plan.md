@@ -1246,6 +1246,50 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Workflow Action Task Runner Foundation
+
+1. Route successful workflow placeholder actions through `TaskRunner`.
+   - Extend `WorkflowActionService` with
+     `RunActiveWorkflowAction(QString* message = nullptr)`.
+   - Compatible active workflow actions should create one task named
+     `Run <WorkflowTitle>`.
+   - The task message should remain the placeholder action request message.
+   - Incompatible or missing selected data should return false with the same
+     rejection message and should not create a task.
+2. Bind MainWindow primary action clicks to the task-running API.
+   - Successful primary action clicks should rely on the existing
+     `ApplicationContext` task diagnostics bridge.
+   - Failed primary action requests may still post the returned rejection
+     message directly.
+   - Avoid duplicate diagnostics on successful actions.
+3. Keep this slice placeholder-only.
+   - Do not start image/path/segmentation algorithms yet.
+   - Do not change button object names or enablement behavior.
+4. Add C++/Qt regression tests before implementation:
+   - Running image preprocessing without selected data rejects and leaves
+     task history unchanged.
+   - Running image preprocessing with selected image data succeeds and records
+     one `Run Image Preprocessing` task.
+   - The recorded task message includes selected data display name.
+   - Running meshing with selected image data rejects and does not add a task.
+   - MainWindow primary action click now emits the task-bridge diagnostic and
+     does not require direct UI diagnostic construction.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

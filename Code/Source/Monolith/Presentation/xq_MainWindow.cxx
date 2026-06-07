@@ -379,8 +379,8 @@ void MainWindow::UpdateWorkflowContextStatusPage()
 void MainWindow::RunActiveWorkflowAction()
 {
     QString message;
-    m_Context.WorkflowActions()->RequestActiveWorkflowAction(&message);
-    m_Context.PostDiagnostic(message);
+    if (!m_Context.WorkflowActions()->RunActiveWorkflowAction(&message))
+        m_Context.PostDiagnostic(message);
 }
 
 void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)

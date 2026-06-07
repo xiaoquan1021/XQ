@@ -140,8 +140,8 @@ int main(int argc, char** argv)
     imageAction->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Image Preprocessing action requested for CTA Image.")),
-               "enabled image preprocessing action should post a diagnostic"))
+                   "Run Image Preprocessing succeeded: Image Preprocessing action requested for CTA Image.")),
+               "enabled image preprocessing action should post a task diagnostic"))
     {
         delete context;
         return 1;

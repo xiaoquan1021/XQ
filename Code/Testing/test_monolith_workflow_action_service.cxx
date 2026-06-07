@@ -1,5 +1,6 @@
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataImportService.h"
+#include "Core/xq_TaskRunner.h"
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 
@@ -71,6 +72,25 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(!workflowActions->RunActiveWorkflowAction(&message),
+               "running image preprocessing should reject missing selected data"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(message ==
+                   QStringLiteral("Select compatible data before running Image Preprocessing."),
+               "missing data run rejection should include workflow title"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->Tasks()->History().isEmpty(),
+               "rejected workflow action should not create a task"))
+    {
+        delete context;
+        return 1;
+    }
 
     const auto imageImport =
         context->DataImports()->Import(MakeImport(
@@ -96,6 +116,40 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    const int historyBeforeImageRun = context->Tasks()->History().size();
+    if (Expect(workflowActions->RunActiveWorkflowAction(&message),
+               "running image preprocessing should accept selected image data"))
+    {
+        delete context;
+        return 1;
+    }
+    const auto historyAfterImageRun = context->Tasks()->History();
+    if (Expect(historyAfterImageRun.size() == historyBeforeImageRun + 1,
+               "accepted workflow action should create one task"))
+    {
+        delete context;
+        return 1;
+    }
+    const auto imageTask = historyAfterImageRun.back();
+    if (Expect(imageTask.Name == QStringLiteral("Run Image Preprocessing"),
+               "workflow action task should include workflow title"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(imageTask.Succeeded,
+               "placeholder workflow action task should succeed"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(imageTask.Message ==
+                   QStringLiteral("Image Preprocessing action requested for CTA Image."),
+               "workflow action task should keep request message"))
+    {
+        delete context;
+        return 1;
+    }
 
     if (Expect(context->WorkflowSelection()->SelectWorkflow(
                    QStringLiteral("meshing")),
@@ -113,6 +167,20 @@ int main(int argc, char** argv)
     if (Expect(message ==
                    QStringLiteral("Select compatible data before running Meshing."),
                "incompatible data rejection should include meshing title"))
+    {
+        delete context;
+        return 1;
+    }
+    const int historyBeforeMeshingReject = context->Tasks()->History().size();
+    if (Expect(!workflowActions->RunActiveWorkflowAction(&message),
+               "running meshing should reject selected image data"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->Tasks()->History().size() ==
+                   historyBeforeMeshingReject,
+               "rejected meshing action should not create a task"))
     {
         delete context;
         return 1;
@@ -138,6 +206,27 @@ int main(int argc, char** argv)
     if (Expect(message ==
                    QStringLiteral("Meshing action requested for Aorta Model."),
                "accepted meshing action should include selected model data"))
+    {
+        delete context;
+        return 1;
+    }
+    const int historyBeforeMeshingRun = context->Tasks()->History().size();
+    if (Expect(workflowActions->RunActiveWorkflowAction(&message),
+               "running meshing should accept selected model data"))
+    {
+        delete context;
+        return 1;
+    }
+    const auto historyAfterMeshingRun = context->Tasks()->History();
+    if (Expect(historyAfterMeshingRun.size() == historyBeforeMeshingRun + 1,
+               "accepted meshing action should create one task"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(historyAfterMeshingRun.back().Name ==
+                   QStringLiteral("Run Meshing"),
+               "meshing action task should include workflow title"))
     {
         delete context;
         return 1;

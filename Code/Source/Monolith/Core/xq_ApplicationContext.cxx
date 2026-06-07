@@ -54,6 +54,7 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
           this))
     , m_WorkflowActionService(new WorkflowActionService(
           *m_WorkflowContextService,
+          *m_TaskRunner,
           this))
 {
     connect(m_TaskRunner,
