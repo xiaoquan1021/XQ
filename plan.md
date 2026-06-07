@@ -1595,6 +1595,48 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing Parameter Validation Foundation
+
+1. Add metadata-only parameter validation to the image-preprocessing service.
+   - Introduce `ImagePreprocessingParameterValidationResult`.
+   - Introduce
+     `ImagePreprocessingWorkflowService::ValidateOperationParameters`.
+   - Accept operation id and `QVariantMap` parameter values.
+2. Validate operation and required parameters.
+   - Unknown operation ids fail with the existing operation-not-found message.
+   - Missing required parameters fail with an explicit parameter id.
+   - Known operations with all required parameters succeed.
+3. Validate value categories.
+   - Numeric scalar accepts numeric `QVariant` values.
+   - Integer scalar accepts integer `QVariant` values.
+   - Integer point list accepts a non-empty `QVariantList` of 3-value integer
+     points.
+4. Keep this slice metadata-only.
+   - Do not execute `xq_ImageProcessingUtils`.
+   - Do not mutate MITK `DataStorage`, `DataCatalogService`, or project files.
+5. Add C++ regression tests before implementation:
+   - Valid Gaussian smoothing parameter map succeeds.
+   - Missing sigma fails with an explicit message.
+   - Valid crop integer parameters succeed.
+   - Wrong crop integer type fails.
+   - Valid connected-threshold seed list succeeds.
+   - Unknown operation id fails with the existing operation-not-found message.
+6. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+7. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

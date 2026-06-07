@@ -4,6 +4,7 @@
 #include "Core/xq_WorkflowContextService.h"
 
 #include <QString>
+#include <QVariantMap>
 #include <QVector>
 
 namespace xq::domain
@@ -35,6 +36,12 @@ struct ImagePreprocessingParameterDescriptor
     bool Required = true;
 };
 
+struct ImagePreprocessingParameterValidationResult
+{
+    bool Succeeded = false;
+    QString Message;
+};
+
 struct ImagePreprocessingOperationDescriptor
 {
     QString Id;
@@ -52,6 +59,10 @@ public:
     ImagePreprocessingWorkflowResult RunOperation(
         const xq::core::WorkflowContextSnapshot& snapshot,
         const QString& operationId) const;
+
+    ImagePreprocessingParameterValidationResult ValidateOperationParameters(
+        const QString& operationId,
+        const QVariantMap& parameters) const;
 
     ImagePreprocessingWorkflowResult Run(
         const xq::core::WorkflowContextSnapshot& snapshot) const;

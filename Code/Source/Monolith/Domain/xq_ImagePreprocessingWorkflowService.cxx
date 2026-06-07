@@ -1,5 +1,8 @@
 #include "xq_ImagePreprocessingWorkflowService.h"
 
+#include <QMetaType>
+#include <QVariantList>
+
 namespace xq::domain
 {
 
@@ -117,6 +120,63 @@ ImagePreprocessingWorkflowResult FailedResult(const QString& message)
     return result;
 }
 
+ImagePreprocessingParameterValidationResult FailedValidation(
+    const QString& message)
+{
+    ImagePreprocessingParameterValidationResult result;
+    result.Message = message;
+    return result;
+}
+
+ImagePreprocessingParameterValidationResult SuccessfulValidation()
+{
+    ImagePreprocessingParameterValidationResult result;
+    result.Succeeded = true;
+    return result;
+}
+
+bool IsIntegerValue(const QVariant& value)
+{
+    switch (value.typeId())
+    {
+    case QMetaType::Int:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool IsIntegerPointList(const QVariant& value)
+{
+    if (!value.canConvert<QVariantList>())
+        return false;
+
+    const QVariantList points = value.toList();
+    if (points.isEmpty())
+        return false;
+
+    for (const auto& pointValue : points)
+    {
+        if (!pointValue.canConvert<QVariantList>())
+            return false;
+
+        const QVariantList point = pointValue.toList();
+        if (point.size() != 3)
+            return false;
+
+        for (const auto& coordinate : point)
+        {
+            if (!IsIntegerValue(coordinate))
+                return false;
+        }
+    }
+
+    return true;
+}
+
 } // namespace
 
 const QVector<ImagePreprocessingOperationDescriptor>&
@@ -162,6 +222,60 @@ ImagePreprocessingWorkflowService::RunOperation(
         QStringLiteral("%1 preprocessing operation accepted %2.")
             .arg(result.OperationTitle, result.SelectedDataDisplayName);
     return result;
+}
+
+ImagePreprocessingParameterValidationResult
+ImagePreprocessingWorkflowService::ValidateOperationParameters(
+    const QString& operationId,
+    const QVariantMap& parameters) const
+{
+    const auto* operation = FindOperation(operationId);
+    if (!operation)
+    {
+        return FailedValidation(QStringLiteral(
+            "Image preprocessing operation was not found."));
+    }
+
+    for (const auto& parameter : operation->Parameters)
+    {
+        if (parameter.Required && !parameters.contains(parameter.Id))
+        {
+            return FailedValidation(
+                QStringLiteral("Image preprocessing parameter is required: %1.")
+                    .arg(parameter.Id));
+        }
+
+        const QVariant value = parameters.value(parameter.Id);
+        switch (parameter.Type)
+        {
+        case ImagePreprocessingParameterValueType::NumericScalar:
+            if (!value.canConvert<double>())
+            {
+                return FailedValidation(
+                    QStringLiteral("Image preprocessing parameter must be numeric: %1.")
+                        .arg(parameter.Id));
+            }
+            break;
+        case ImagePreprocessingParameterValueType::IntegerScalar:
+            if (!IsIntegerValue(value))
+            {
+                return FailedValidation(
+                    QStringLiteral("Image preprocessing parameter must be an integer: %1.")
+                        .arg(parameter.Id));
+            }
+            break;
+        case ImagePreprocessingParameterValueType::IntegerPointList:
+            if (!IsIntegerPointList(value))
+            {
+                return FailedValidation(
+                    QStringLiteral("Image preprocessing parameter must be an integer point list: %1.")
+                        .arg(parameter.Id));
+            }
+            break;
+        }
+    }
+
+    return SuccessfulValidation();
 }
 
 ImagePreprocessingWorkflowResult ImagePreprocessingWorkflowService::Run(

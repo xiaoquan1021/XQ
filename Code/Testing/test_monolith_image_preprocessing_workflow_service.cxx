@@ -9,6 +9,8 @@
 
 #include <QCoreApplication>
 #include <QStringList>
+#include <QVariantList>
+#include <QVariantMap>
 
 #include <iostream>
 
@@ -75,6 +77,15 @@ int ExpectParameter(
         return 1;
 
     return 0;
+}
+
+QVariantList Point(int x, int y, int z)
+{
+    QVariantList point;
+    point.append(x);
+    point.append(y);
+    point.append(z);
+    return point;
 }
 
 } // namespace
@@ -216,6 +227,77 @@ int main(int argc, char** argv)
                             xq::domain::ImagePreprocessingParameterValueType::NumericScalar))
             return 1;
     }
+
+    QVariantMap gaussianParameters;
+    gaussianParameters.insert(QStringLiteral("sigma"), 1.25);
+    const auto gaussianValidation =
+        service.ValidateOperationParameters(QStringLiteral("gaussian-smoothing"),
+                                            gaussianParameters);
+    if (Expect(gaussianValidation.Succeeded,
+               "valid Gaussian smoothing parameters should pass"))
+        return 1;
+
+    const auto missingSigmaValidation =
+        service.ValidateOperationParameters(QStringLiteral("gaussian-smoothing"),
+                                            QVariantMap());
+    if (Expect(!missingSigmaValidation.Succeeded,
+               "missing Gaussian sigma should fail validation"))
+        return 1;
+    if (Expect(missingSigmaValidation.Message ==
+                   QStringLiteral("Image preprocessing parameter is required: sigma."),
+               "missing parameter message should include id"))
+        return 1;
+
+    QVariantMap cropParameters;
+    cropParameters.insert(QStringLiteral("origin-x"), 0);
+    cropParameters.insert(QStringLiteral("origin-y"), 1);
+    cropParameters.insert(QStringLiteral("origin-z"), 2);
+    cropParameters.insert(QStringLiteral("size-x"), 10);
+    cropParameters.insert(QStringLiteral("size-y"), 11);
+    cropParameters.insert(QStringLiteral("size-z"), 12);
+    const auto cropValidation =
+        service.ValidateOperationParameters(QStringLiteral("crop"),
+                                            cropParameters);
+    if (Expect(cropValidation.Succeeded,
+               "valid crop integer parameters should pass"))
+        return 1;
+
+    cropParameters.insert(QStringLiteral("origin-x"), 0.5);
+    const auto wrongCropValidation =
+        service.ValidateOperationParameters(QStringLiteral("crop"),
+                                            cropParameters);
+    if (Expect(!wrongCropValidation.Succeeded,
+               "non-integer crop parameter should fail validation"))
+        return 1;
+    if (Expect(wrongCropValidation.Message ==
+                   QStringLiteral("Image preprocessing parameter must be an integer: origin-x."),
+               "integer type rejection should include parameter id"))
+        return 1;
+
+    QVariantList seeds;
+    seeds.append(QVariant::fromValue(Point(1, 2, 3)));
+    seeds.append(QVariant::fromValue(Point(4, 5, 6)));
+    QVariantMap connectedParameters;
+    connectedParameters.insert(QStringLiteral("lower"), 20.0);
+    connectedParameters.insert(QStringLiteral("upper"), 120.0);
+    connectedParameters.insert(QStringLiteral("seeds"), seeds);
+    const auto connectedValidation =
+        service.ValidateOperationParameters(QStringLiteral("connected-threshold"),
+                                            connectedParameters);
+    if (Expect(connectedValidation.Succeeded,
+               "valid connected-threshold seed list should pass"))
+        return 1;
+
+    const auto unknownValidation =
+        service.ValidateOperationParameters(QStringLiteral("missing-operation"),
+                                            gaussianParameters);
+    if (Expect(!unknownValidation.Succeeded,
+               "unknown operation validation should fail"))
+        return 1;
+    if (Expect(unknownValidation.Message ==
+                   QStringLiteral("Image preprocessing operation was not found."),
+               "unknown operation validation should reuse operation message"))
+        return 1;
 
     const auto smoothOperationResult = service.RunOperation(
         MakeSnapshot(QStringLiteral("image-preprocessing"),
