@@ -97,6 +97,35 @@ ImagePreprocessingAlgorithmAdapter::RunConnectedThreshold(
 }
 
 ImagePreprocessingAlgorithmResult
+ImagePreprocessingAlgorithmAdapter::RunCrop(
+    vtkImageData* input,
+    const QVariantMap& parameters) const
+{
+    xq::domain::ImagePreprocessingWorkflowService domainService;
+    const auto validation =
+        domainService.ValidateOperationParameters(QStringLiteral("crop"),
+                                                  parameters);
+    if (!validation.Succeeded)
+        return FailedResult(validation.Message);
+
+    const auto imageResult =
+        xq_ImageProcessingUtils::Crop(
+            input,
+            parameters.value(QStringLiteral("origin-x")).toInt(),
+            parameters.value(QStringLiteral("origin-y")).toInt(),
+            parameters.value(QStringLiteral("origin-z")).toInt(),
+            parameters.value(QStringLiteral("size-x")).toInt(),
+            parameters.value(QStringLiteral("size-y")).toInt(),
+            parameters.value(QStringLiteral("size-z")).toInt());
+
+    ImagePreprocessingAlgorithmResult result;
+    result.Succeeded = imageResult.ok;
+    result.Image = imageResult.image;
+    result.Message = QString::fromStdString(imageResult.diagnostic);
+    return result;
+}
+
+ImagePreprocessingAlgorithmResult
 ImagePreprocessingAlgorithmAdapter::RunGaussianSmoothing(
     vtkImageData* input,
     const QVariantMap& parameters) const

@@ -115,6 +115,19 @@ QVariantMap ConnectedThresholdParameters()
     return parameters;
 }
 
+QVariantMap CropParameters(int ox, int oy, int oz,
+                           int sx, int sy, int sz)
+{
+    QVariantMap parameters;
+    parameters.insert(QStringLiteral("origin-x"), ox);
+    parameters.insert(QStringLiteral("origin-y"), oy);
+    parameters.insert(QStringLiteral("origin-z"), oz);
+    parameters.insert(QStringLiteral("size-x"), sx);
+    parameters.insert(QStringLiteral("size-y"), sy);
+    parameters.insert(QStringLiteral("size-z"), sz);
+    return parameters;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -308,6 +321,54 @@ int main(int argc, char** argv)
                    outputDimensions[1] == inputDimensions[1] &&
                    outputDimensions[2] == inputDimensions[2],
                "morphology should preserve image dimensions"))
+        return 1;
+
+    const auto nullCropResult =
+        adapter.RunCrop(nullptr, CropParameters(1, 1, 1, 3, 2, 4));
+    if (Expect(!nullCropResult.Succeeded,
+               "null crop input should fail"))
+        return 1;
+    if (Expect(nullCropResult.Message ==
+                   QStringLiteral("Crop: input image is null."),
+               "null crop input should use legacy diagnostic"))
+        return 1;
+
+    const auto missingCropParameterResult =
+        adapter.RunCrop(MakeImage(), QVariantMap());
+    if (Expect(!missingCropParameterResult.Succeeded,
+               "missing crop parameters should fail"))
+        return 1;
+    if (Expect(missingCropParameterResult.Message ==
+                   QStringLiteral("Image preprocessing parameter is required: origin-x."),
+               "missing crop parameter should use domain validation"))
+        return 1;
+    if (Expect(missingCropParameterResult.Image == nullptr,
+               "invalid crop parameters should not produce image"))
+        return 1;
+
+    const auto outOfBoundsCropResult =
+        adapter.RunCrop(MakeImage(), CropParameters(4, 4, 4, 2, 2, 2));
+    if (Expect(!outOfBoundsCropResult.Succeeded,
+               "out-of-bounds crop should fail"))
+        return 1;
+    if (Expect(outOfBoundsCropResult.Message ==
+                   QStringLiteral("Crop: requested region [4,4,4] + size [2,2,2] is outside the image dimensions [5,5,5]."),
+               "out-of-bounds crop should use legacy diagnostic"))
+        return 1;
+
+    const auto cropResult =
+        adapter.RunCrop(MakeImage(), CropParameters(1, 1, 0, 3, 2, 4));
+    if (Expect(cropResult.Succeeded,
+               "valid crop request should succeed"))
+        return 1;
+    if (Expect(cropResult.Image != nullptr,
+               "valid crop request should return image"))
+        return 1;
+    outputDimensions = cropResult.Image->GetDimensions();
+    if (Expect(outputDimensions[0] == 3 &&
+                   outputDimensions[1] == 2 &&
+                   outputDimensions[2] == 4,
+               "crop should return requested output dimensions"))
         return 1;
 
     return 0;

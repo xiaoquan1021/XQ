@@ -28,6 +28,10 @@ public:
         vtkImageData* input,
         const QVariantMap& parameters) const;
 
+    ImagePreprocessingAlgorithmResult RunCrop(
+        vtkImageData* input,
+        const QVariantMap& parameters) const;
+
     ImagePreprocessingAlgorithmResult RunGaussianSmoothing(
         vtkImageData* input,
         const QVariantMap& parameters) const;

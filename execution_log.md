@@ -1733,3 +1733,31 @@
 - Promoted Monolith Morphology Infrastructure Adapter to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked legacy crop implementation after morphology coverage landed.
+  - Crop is the next useful adapter because it exercises six integer parameters
+    and returns a VTK image with changed dimensions.
+  - Chosen next slice: add crop execution to the Infrastructure adapter.
+- Added next executable phase to `plan.md`: Monolith Crop Infrastructure
+  Adapter.
+- Started the next unattended loop iteration:
+  - Adding failing crop adapter regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_algorithm_adapter` because
+    `ImagePreprocessingAlgorithmAdapter` had no `RunCrop` member.
+- Implemented the monolith crop infrastructure adapter:
+  - Added `RunCrop(vtkImageData*, QVariantMap parameters)`.
+  - Reused Domain validation for `crop` parameters.
+  - Delegated valid requests to `xq_ImageProcessingUtils::Crop`.
+  - Preserved layer separation: Domain still does not link legacy algorithm
+    modules.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 43/43.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Crop Infrastructure Adapter to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

@@ -1829,6 +1829,41 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Crop Infrastructure Adapter
+
+1. Extend the image-preprocessing algorithm adapter with crop.
+   - Add `RunCrop(vtkImageData*, QVariantMap parameters)`.
+   - Use the domain service to validate `crop` parameters.
+   - Delegate valid requests to `xq_ImageProcessingUtils::Crop`.
+2. Preserve adapter layering.
+   - Keep Domain independent from legacy algorithms.
+   - Keep Infrastructure as the only monolith layer linking to
+     `xqModuleImageProcessing` in this slice.
+3. Keep this slice as algorithm smoke coverage.
+   - Do not mutate MITK `DataStorage`, `DataCatalogService`, or project files.
+   - Do not add UI controls yet.
+4. Add C++ regression tests before implementation:
+   - Adapter rejects null input with the legacy crop diagnostic.
+   - Adapter rejects missing crop parameters through domain validation.
+   - Adapter forwards out-of-bounds crop requests to the legacy diagnostic.
+   - Adapter runs crop on a small VTK image and returns a non-null image with
+     the requested output dimensions.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
