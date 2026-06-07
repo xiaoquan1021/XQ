@@ -28,6 +28,11 @@ const DataCatalogEntry* DataCatalogService::FindById(const QString& id) const
     return nullptr;
 }
 
+void DataCatalogService::ReplaceWith(const DataCatalogService& other)
+{
+    m_Entries = other.m_Entries;
+}
+
 bool DataCatalogService::RegisterEntry(const DataCatalogEntry& entry,
                                        QString* errorMessage)
 {

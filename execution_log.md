@@ -335,3 +335,39 @@
 - Promoted Monolith Data Hierarchy Persistence Integration to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable project/session behavior after hierarchy persistence.
+  - Slicer/MITK/SimVascular-style workstations treat opening a project or scene
+    as switching the active session state, not appending the new project tree to
+    stale data from the previous session.
+  - OHIF hanging protocol/display-state reset concepts reinforce that workflow
+    state should be explicit and replaceable when entering a new context.
+  - Chosen next slice: make monolith project open transactional for catalog and
+    hierarchy state so successful opens replace the live session, while failed
+    opens leave existing session state untouched.
+- Added next executable phase to `plan.md`: Monolith Project Session State
+  Replacement.
+- Started the next unattended loop iteration:
+  - Added failing project session state replacement regression test first.
+  - `test_monolith_project_session_state_replacement` failed because opening a
+    second project appended catalog/hierarchy state instead of replacing it.
+- Implemented project session state replacement:
+  - Added `DataCatalogService::ReplaceWith()`.
+  - Added `DataHierarchyService::ReplaceWith()`.
+  - Updated stateful `ProjectService::OpenProject()` overloads to parse into
+    temporary catalog/hierarchy services first.
+  - Live catalog, hierarchy, and project metadata are committed only after the
+    whole project open validates.
+  - Failed stateful opens leave existing catalog, hierarchy, and project
+    metadata untouched.
+- Verification for this iteration:
+  - Red test observed: `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_project_session_state_replacement`
+    failed with `second open should replace catalog entries`.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 16/16.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Project Session State Replacement to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

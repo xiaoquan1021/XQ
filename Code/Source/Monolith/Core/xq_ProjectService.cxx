@@ -518,9 +518,11 @@ bool ProjectService::OpenProject(const QString& projectFilePath,
                          errorMessage))
         return false;
 
-    if (!LoadDataCatalog(projectObject, dataCatalog, errorMessage))
+    DataCatalogService parsedCatalog;
+    if (!LoadDataCatalog(projectObject, parsedCatalog, errorMessage))
         return false;
 
+    dataCatalog.ReplaceWith(parsedCatalog);
     m_CurrentProject = project;
     SetError(errorMessage, QString());
     return true;
@@ -541,12 +543,16 @@ bool ProjectService::OpenProject(const QString& projectFilePath,
         return false;
     }
 
-    if (!LoadDataCatalog(projectObject, dataCatalog, errorMessage))
+    DataCatalogService parsedCatalog;
+    if (!LoadDataCatalog(projectObject, parsedCatalog, errorMessage))
         return false;
 
-    if (!LoadDataHierarchy(projectObject, dataHierarchy, errorMessage))
+    DataHierarchyService parsedHierarchy;
+    if (!LoadDataHierarchy(projectObject, parsedHierarchy, errorMessage))
         return false;
 
+    dataCatalog.ReplaceWith(parsedCatalog);
+    dataHierarchy.ReplaceWith(parsedHierarchy);
     m_CurrentProject = project;
     SetError(errorMessage, QString());
     return true;

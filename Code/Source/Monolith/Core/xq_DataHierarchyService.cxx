@@ -59,6 +59,11 @@ QVector<DataHierarchyNode> DataHierarchyService::ChildrenOf(
     return children;
 }
 
+void DataHierarchyService::ReplaceWith(const DataHierarchyService& other)
+{
+    m_Nodes = other.m_Nodes;
+}
+
 bool DataHierarchyService::AddFolder(const QString& id,
                                      const QString& parentId,
                                      const QString& displayName,

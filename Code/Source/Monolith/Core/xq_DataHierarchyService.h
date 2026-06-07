@@ -35,6 +35,7 @@ public:
     const DataHierarchyNode* FindNode(const QString& id) const;
     QVector<DataHierarchyNode> ChildrenOf(const QString& parentId) const;
 
+    void ReplaceWith(const DataHierarchyService& other);
     bool AddFolder(const QString& id,
                    const QString& parentId,
                    const QString& displayName,

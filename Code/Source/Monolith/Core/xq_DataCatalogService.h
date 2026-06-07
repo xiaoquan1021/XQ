@@ -38,6 +38,7 @@ public:
     QVector<DataCatalogEntry> Entries() const;
     const DataCatalogEntry* FindById(const QString& id) const;
 
+    void ReplaceWith(const DataCatalogService& other);
     bool RegisterEntry(const DataCatalogEntry& entry,
                        QString* errorMessage = nullptr);
 
