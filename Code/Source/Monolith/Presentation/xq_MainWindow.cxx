@@ -161,6 +161,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this](const QString& hierarchyNodeId, const QString&) {
                 SyncTreeSelectionFromCore(hierarchyNodeId);
+                UpdateDataWorkflowPage();
                 UpdateDataActions();
             });
 
@@ -170,6 +171,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             &xq::core::DataCatalogService::EntriesChanged,
             this,
             [this]() {
+                UpdateDataWorkflowPage();
                 UpdateProjectPageDataCount();
             });
 
@@ -183,11 +185,13 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             });
     if (const auto* project = m_Context.Projects()->CurrentProject())
     {
+        UpdateDataWorkflowPage();
         UpdateProjectPage(project);
         UpdateProjectWindowState(*project);
     }
     else
     {
+        UpdateDataWorkflowPage();
         UpdateProjectPage(nullptr);
     }
     UpdateProjectActions();
@@ -224,6 +228,35 @@ void MainWindow::SetRenderHost(QWidget* renderHost)
     m_RenderHost = renderHost;
     m_RenderHost->setParent(m_RenderHostContainer);
     layout->addWidget(m_RenderHost);
+}
+
+void MainWindow::UpdateDataWorkflowPage()
+{
+    if (!m_DataSelectionLabel || !m_DataCatalogIdLabel ||
+        !m_DataDisplayNameLabel || !m_DataSourcePathLabel)
+    {
+        return;
+    }
+
+    const QString catalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    const auto* entry = m_Context.DataCatalog()->FindById(catalogEntryId);
+    if (!entry)
+    {
+        m_DataSelectionLabel->setText(QStringLiteral("No data selected"));
+        m_DataCatalogIdLabel->clear();
+        m_DataDisplayNameLabel->clear();
+        m_DataSourcePathLabel->clear();
+        return;
+    }
+
+    m_DataSelectionLabel->setText(
+        QStringLiteral("Selected data: %1").arg(entry->DisplayName));
+    m_DataCatalogIdLabel->setText(QStringLiteral("ID: %1").arg(entry->Id));
+    m_DataDisplayNameLabel->setText(
+        QStringLiteral("Name: %1").arg(entry->DisplayName));
+    m_DataSourcePathLabel->setText(
+        QStringLiteral("Source: %1").arg(entry->SourcePath));
 }
 
 void MainWindow::SaveProject()
@@ -398,6 +431,26 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
         layout->addWidget(m_ProjectPathLabel);
         layout->addWidget(m_ProjectSchemaLabel);
         layout->addWidget(m_ProjectDataCountLabel);
+    }
+    else if (id == QStringLiteral("data"))
+    {
+        m_DataSelectionLabel = new QLabel(page);
+        m_DataSelectionLabel->setObjectName(
+            QStringLiteral("xqDataPageSelection"));
+        m_DataCatalogIdLabel = new QLabel(page);
+        m_DataCatalogIdLabel->setObjectName(
+            QStringLiteral("xqDataPageCatalogId"));
+        m_DataDisplayNameLabel = new QLabel(page);
+        m_DataDisplayNameLabel->setObjectName(
+            QStringLiteral("xqDataPageDisplayName"));
+        m_DataSourcePathLabel = new QLabel(page);
+        m_DataSourcePathLabel->setObjectName(
+            QStringLiteral("xqDataPageSourcePath"));
+
+        layout->addWidget(m_DataSelectionLabel);
+        layout->addWidget(m_DataCatalogIdLabel);
+        layout->addWidget(m_DataDisplayNameLabel);
+        layout->addWidget(m_DataSourcePathLabel);
     }
     layout->addStretch(1);
 

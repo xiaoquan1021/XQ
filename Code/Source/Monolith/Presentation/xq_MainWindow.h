@@ -36,6 +36,7 @@ private:
     void AddWorkflowPage(const QString& id, const QString& title);
     void RemoveSelectedData();
     void SaveProject();
+    void UpdateDataWorkflowPage();
     void UpdateProjectPage(const xq::core::ProjectMetadata* project);
     void UpdateProjectPageDataCount();
     void UpdateProjectWindowState(const xq::core::ProjectMetadata& project);
@@ -50,6 +51,10 @@ private:
     QLabel* m_ProjectPathLabel = nullptr;
     QLabel* m_ProjectSchemaLabel = nullptr;
     QLabel* m_ProjectDataCountLabel = nullptr;
+    QLabel* m_DataSelectionLabel = nullptr;
+    QLabel* m_DataCatalogIdLabel = nullptr;
+    QLabel* m_DataDisplayNameLabel = nullptr;
+    QLabel* m_DataSourcePathLabel = nullptr;
     QAction* m_SaveProjectAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
     QListWidget* m_Navigation = nullptr;

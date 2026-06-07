@@ -974,6 +974,46 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Workflow Page Foundation
+
+1. Turn the `data` workflow page into a selected-data overview surface.
+   - Keep the stable page object name `xqWorkflowPage_data`.
+   - Add labels with object names `xqDataPageSelection`,
+     `xqDataPageCatalogId`, `xqDataPageDisplayName`, and
+     `xqDataPageSourcePath`.
+2. Bind the page to Core data state.
+   - A new window with no selected data should show neutral no-selection
+     metadata.
+   - Successful import should update the page through
+     `DataSelectionService::SelectionChanged`.
+   - Rename/remove should update the page through catalog and selection
+     changes.
+   - Missing/stale selection should not crash and should show no selected data.
+3. Keep this slice display-only.
+   - Do not add import dialogs, rename controls, delete controls, or editing
+     fields in this page yet.
+   - Preserve existing data tree, toolbar actions, and workflow navigation.
+4. Add C++/Qt regression tests before implementation:
+   - Data workflow page exposes all selected-data labels.
+   - Importing data updates selected id, display name, and source path labels.
+   - Renaming selected data updates the display name label.
+   - Removing selected data returns the page to no-selection metadata.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

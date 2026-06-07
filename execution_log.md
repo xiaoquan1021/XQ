@@ -977,3 +977,40 @@
 - Promoted Monolith Project Workflow Page Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked selected-data detail patterns after the project workflow page
+    landed.
+  - Comparable workstation Data views keep the currently selected image/model
+    metadata visible near the data tree so workflow pages know what object they
+    act on.
+  - Chosen next slice: make the `data` workflow page show current selected
+    catalog entry id, display name, and source path from Core selection.
+- Added next executable phase to `plan.md`: Monolith Data Workflow Page
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing data workflow page regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_workflow_page`
+    failed with `data page should expose a selection label`.
+- Implemented the monolith data workflow page foundation:
+  - Added stable selected-data labels to `xqWorkflowPage_data`:
+    `xqDataPageSelection`, `xqDataPageCatalogId`,
+    `xqDataPageDisplayName`, and `xqDataPageSourcePath`.
+  - New windows show neutral no-selection metadata.
+  - Successful import updates selected data metadata through
+    `DataSelectionService::SelectionChanged`.
+  - Rename/remove refresh the selected data overview through catalog and
+    selection changes.
+  - Removed or stale selection returns the page to no-selection metadata.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_workflow_page`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 33/33.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Workflow Page Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
