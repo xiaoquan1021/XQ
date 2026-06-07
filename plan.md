@@ -131,7 +131,7 @@ The next monolith slice is grounded in these comparable systems:
 3. Write the next executable phase into this plan.
 4. Immediately return to plan execution.
 
-## Active Phase: Monolith Data Catalog Foundation
+## Completed Phase: Monolith Data Catalog Foundation
 
 1. Add a monolith Core `xq::core::DataCatalogService`.
    - Keep the first implementation metadata-only and independent from MITK file import.
@@ -146,6 +146,29 @@ The next monolith slice is grounded in these comparable systems:
    - Duplicate ids fail without changing existing entries.
    - Lookup by missing id returns null.
    - `ApplicationContext` exposes an empty catalog.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
+## Active Phase: Monolith Project/Data Persistence Integration
+
+1. Extend the fresh `.xqproj` schema `2.0` project service to persist DataCatalog metadata.
+   - Save registered data entries under the project JSON.
+   - Restore catalog entries when opening a project.
+   - Preserve entry order, id, display name, source path, modality, and workflow role.
+   - Reject unsupported workflow role values while opening.
+2. Add a `ProjectService` save/open path that accepts a `DataCatalogService`.
+   - Keep existing metadata-only `SaveProject` and `OpenProject` behavior working.
+   - Avoid coupling `ProjectService` ownership to `ApplicationContext`; pass catalog explicitly for persistence.
+3. Add C++ regression tests before implementation:
+   - Saving a project with a catalog writes all data entries.
+   - Opening a project with saved catalog entries restores them.
+   - Unknown workflow role values fail with an error.
+   - Existing metadata-only project tests still pass.
 4. Run:
    - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
