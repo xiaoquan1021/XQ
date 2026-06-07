@@ -326,6 +326,14 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_main_window_data_actions
+        xqMonolithPresentation
+        xqMonolithCore
+        Qt6::Core
+        Qt6::Widgets
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_main_window_selection_sync
         xqMonolithPresentation
         xqMonolithCore

@@ -661,6 +661,47 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Panel Actions Foundation
+
+1. Add a minimal command surface to the Project/Data tree panel.
+   - Expose a `QAction` with object name `xqRemoveDataAction`.
+   - Place the action in a small toolbar attached to the data tree panel.
+   - Keep the first action set limited to removing the selected data entry.
+2. Bind action state to Core selection.
+   - `xqRemoveDataAction` should be disabled when there is no selected data
+     catalog entry.
+   - The action should become enabled after import or programmatic data
+     selection.
+   - Clearing/removing selection should disable the action again.
+3. Execute removal through Core services.
+   - Triggering the action should call `DataManagementService::RemoveEntry`
+     for the selected catalog entry.
+   - Successful removal should update catalog, hierarchy, selection, tree, and
+     action state through existing service notifications.
+   - Failed removal should post a diagnostic and keep UI state conservative.
+4. Add C++/Qt regression tests before implementation:
+   - MainWindow exposes `xqRemoveDataAction`.
+   - The action is disabled with no selection.
+   - Importing data enables the action.
+   - Triggering the action removes the selected data and disables the action.
+   - Triggering with stale/missing selection posts a diagnostic without
+     crashing.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

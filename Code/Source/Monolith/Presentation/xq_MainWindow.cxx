@@ -2,10 +2,12 @@
 
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataHierarchyService.h"
+#include "Core/xq_DataManagementService.h"
 #include "Core/xq_DataSelectionService.h"
 #include "Core/xq_WorkflowRegistry.h"
 #include "xq_DataHierarchyModel.h"
 
+#include <QAction>
 #include <QDockWidget>
 #include <QFrame>
 #include <QItemSelectionModel>
@@ -16,6 +18,7 @@
 #include <QSplitter>
 #include <QStackedWidget>
 #include <QTextEdit>
+#include <QToolBar>
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -45,6 +48,19 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     m_DataHierarchyView->setHeaderHidden(true);
     m_DataHierarchyView->setMinimumHeight(160);
     m_DataHierarchyView->setModel(m_DataHierarchyModel);
+
+    auto* dataToolbar = new QToolBar(workflowPanel);
+    dataToolbar->setObjectName(QStringLiteral("xqDataPanelToolbar"));
+    dataToolbar->setMovable(false);
+    dataToolbar->setFloatable(false);
+
+    m_RemoveDataAction =
+        new QAction(QStringLiteral("Remove"), dataToolbar);
+    m_RemoveDataAction->setObjectName(QStringLiteral("xqRemoveDataAction"));
+    m_RemoveDataAction->setEnabled(false);
+    dataToolbar->addAction(m_RemoveDataAction);
+
+    workflowLayout->addWidget(dataToolbar, 0);
     workflowLayout->addWidget(m_DataHierarchyView, 0);
 
     auto* workflowSplitter = new QSplitter(Qt::Horizontal, workflowPanel);
@@ -109,13 +125,22 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                     m_Context.PostDiagnostic(errorMessage);
                 }
             });
+    connect(m_RemoveDataAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                RemoveSelectedData();
+            });
 
     connect(m_Context.DataSelection(),
             &xq::core::DataSelectionService::SelectionChanged,
             this,
             [this](const QString& hierarchyNodeId, const QString&) {
                 SyncTreeSelectionFromCore(hierarchyNodeId);
+                UpdateDataActions();
             });
+
+    UpdateDataActions();
 
     m_Diagnostics = new QTextEdit(this);
     m_Diagnostics->setReadOnly(true);
@@ -150,6 +175,32 @@ void MainWindow::SetRenderHost(QWidget* renderHost)
     layout->addWidget(m_RenderHost);
 }
 
+void MainWindow::RemoveSelectedData()
+{
+    const QString selectedCatalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    if (selectedCatalogEntryId.trimmed().isEmpty())
+    {
+        m_Context.PostDiagnostic(QStringLiteral("No data selected."));
+        UpdateDataActions();
+        return;
+    }
+
+    QString errorMessage;
+    if (!m_Context.DataManagement()->RemoveEntry(selectedCatalogEntryId,
+                                                 &errorMessage))
+    {
+        m_Context.PostDiagnostic(errorMessage);
+        UpdateDataActions();
+        return;
+    }
+
+    if (!errorMessage.trimmed().isEmpty())
+        m_Context.PostDiagnostic(errorMessage);
+
+    UpdateDataActions();
+}
+
 void MainWindow::SyncTreeSelectionFromCore(const QString& hierarchyNodeId)
 {
     if (!m_DataHierarchyView || !m_DataHierarchyModel ||
@@ -179,6 +230,15 @@ void MainWindow::SyncTreeSelectionFromCore(const QString& hierarchyNodeId)
     m_DataHierarchyView->expand(index.parent());
     m_DataHierarchyView->setCurrentIndex(index);
     m_DataHierarchyView->scrollTo(index);
+}
+
+void MainWindow::UpdateDataActions()
+{
+    if (!m_RemoveDataAction)
+        return;
+
+    m_RemoveDataAction->setEnabled(
+        !m_Context.DataSelection()->SelectedCatalogEntryId().isEmpty());
 }
 
 QWidget* MainWindow::CreateWorkflowPage(const QString& title)

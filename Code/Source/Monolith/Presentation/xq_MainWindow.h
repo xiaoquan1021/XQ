@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 
+class QAction;
 class QListWidget;
 class QStackedWidget;
 class QTextEdit;
@@ -31,11 +32,14 @@ public:
 private:
     QWidget* CreateWorkflowPage(const QString& title);
     void AddWorkflowPage(const QString& title);
+    void RemoveSelectedData();
     void SyncTreeSelectionFromCore(const QString& hierarchyNodeId);
+    void UpdateDataActions();
 
     xq::core::ApplicationContext& m_Context;
     DataHierarchyModel* m_DataHierarchyModel = nullptr;
     QTreeView* m_DataHierarchyView = nullptr;
+    QAction* m_RemoveDataAction = nullptr;
     QListWidget* m_Navigation = nullptr;
     QStackedWidget* m_Pages = nullptr;
     QWidget* m_RenderHostContainer = nullptr;

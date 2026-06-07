@@ -692,3 +692,38 @@
 - Promoted Monolith Data Panel Selection Synchronization to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked data-panel command patterns after selection synchronization.
+  - Comparable workstations expose common data operations, especially
+    remove/delete, near the project data tree or display-set list rather than
+    burying them in individual workflow pages.
+  - Chosen next slice: add a minimal remove-selected-data action to the
+    monolith data panel, driven by `DataSelectionService` and executed through
+    `DataManagementService`.
+- Added next executable phase to `plan.md`: Monolith Data Panel Actions
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing data-panel action regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_data_actions`
+    failed with `MainWindow should expose a remove data action`.
+- Implemented the monolith data panel actions foundation:
+  - Added `xqDataPanelToolbar` and `xqRemoveDataAction`.
+  - Bound remove action enabled state to `DataSelectionService`.
+  - Triggering remove calls `DataManagementService::RemoveEntry` for the
+    selected catalog entry.
+  - Successful removal updates catalog, hierarchy, selection, tree, action
+    state, and diagnostics through existing services.
+  - Forced stale action trigger posts a diagnostic without crashing.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_data_actions`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 25/25.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Panel Actions Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
