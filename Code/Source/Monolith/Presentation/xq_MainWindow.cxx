@@ -112,7 +112,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     setCentralWidget(splitter);
 
     for (const auto& workflow : xq::core::DefaultWorkflowRegistry())
-        AddWorkflowPage(workflow.Title);
+        AddWorkflowPage(workflow.Id, workflow.Title);
 
     connect(m_Navigation, &QListWidget::currentRowChanged,
             m_Pages, &QStackedWidget::setCurrentIndex);
@@ -316,9 +316,11 @@ void MainWindow::UpdateDataActions()
         !m_Context.DataSelection()->SelectedCatalogEntryId().isEmpty());
 }
 
-QWidget* MainWindow::CreateWorkflowPage(const QString& title)
+QWidget* MainWindow::CreateWorkflowPage(const QString& id,
+                                        const QString& title)
 {
     auto* page = new QFrame(this);
+    page->setObjectName(QStringLiteral("xqWorkflowPage_%1").arg(id));
     page->setFrameShape(QFrame::NoFrame);
 
     auto* layout = new QVBoxLayout(page);
@@ -337,10 +339,11 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& title)
     return page;
 }
 
-void MainWindow::AddWorkflowPage(const QString& title)
+void MainWindow::AddWorkflowPage(const QString& id, const QString& title)
 {
-    m_Navigation->addItem(title);
-    m_Pages->addWidget(CreateWorkflowPage(title));
+    auto* item = new QListWidgetItem(title, m_Navigation);
+    item->setData(Qt::UserRole, id);
+    m_Pages->addWidget(CreateWorkflowPage(id, title));
 }
 
 } // namespace xq::presentation

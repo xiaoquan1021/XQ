@@ -898,6 +898,43 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Workflow Page Identity Foundation
+
+1. Bind workflow registry ids into MainWindow navigation and pages.
+   - Navigation items should store `WorkflowDescriptor::Id` in
+     `Qt::UserRole`.
+   - Workflow pages should use stable object names
+     `xqWorkflowPage_<workflow-id>`.
+   - Workflow pages should keep their existing visible titles.
+2. Preserve navigation behavior.
+   - Page count and navigation count should still match
+     `DefaultWorkflowRegistry()`.
+   - Selecting a navigation row should still switch to the matching page.
+   - The first workflow should still be selected at startup.
+3. Keep this slice structural.
+   - Do not implement workflow-specific page controls yet.
+   - Do not change registry ordering or workflow titles.
+4. Add C++/Qt regression tests before implementation:
+   - Every navigation row stores the expected workflow id.
+   - Every stacked page exposes the expected object name.
+   - Navigation row changes still switch to the expected page.
+   - Startup selection still lands on the first workflow.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

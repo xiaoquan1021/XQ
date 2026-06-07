@@ -31,8 +31,8 @@ public:
     void SetRenderHost(QWidget* renderHost);
 
 private:
-    QWidget* CreateWorkflowPage(const QString& title);
-    void AddWorkflowPage(const QString& title);
+    QWidget* CreateWorkflowPage(const QString& id, const QString& title);
+    void AddWorkflowPage(const QString& id, const QString& title);
     void RemoveSelectedData();
     void SaveProject();
     void UpdateProjectWindowState(const xq::core::ProjectMetadata& project);

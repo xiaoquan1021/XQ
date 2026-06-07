@@ -905,3 +905,37 @@
 - Promoted Monolith Diagnostics Panel Task Log Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked workflow/module navigation patterns after making diagnostics
+    visible.
+  - Comparable workstations expose stable module, view, or workflow identities
+    behind their navigation surfaces so individual pages can be filled in
+    incrementally without losing routing semantics.
+  - Chosen next slice: bind `DefaultWorkflowRegistry()` ids into MainWindow
+    navigation items and stacked page object names.
+- Added next executable phase to `plan.md`: Monolith Workflow Page Identity
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing workflow-page identity regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_workflow_identity`
+    failed with `workflow navigation item should store registry id`.
+- Implemented the monolith workflow page identity foundation:
+  - Navigation items now store `WorkflowDescriptor::Id` in `Qt::UserRole`.
+  - Workflow pages now expose object names
+    `xqWorkflowPage_<workflow-id>`.
+  - Visible workflow titles and registry ordering are preserved.
+  - Navigation row changes continue to switch to the matching stacked page.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_workflow_identity`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 31/31.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Workflow Page Identity Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
