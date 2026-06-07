@@ -567,3 +567,43 @@
 - Promoted Monolith Data Change Notification Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable project/data tree presentation patterns after adding
+    Core data change notifications.
+  - Slicer/MITK/SimVascular-style workstations present a persistent data tree
+    over the loaded project data, while OHIF-style viewers keep UI panels in
+    sync from display-set events.
+  - Chosen next slice: add a Presentation-layer Qt hierarchy model backed by
+    `DataHierarchyService` so the monolith Project/Data pages can bind to the
+    real project tree instead of showing placeholders.
+- Added next executable phase to `plan.md`: Monolith Data Hierarchy Qt Model
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing Qt data hierarchy model regression test first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `Presentation/xq_DataHierarchyModel.h` did not exist.
+- Implemented the monolith data hierarchy Qt model foundation:
+  - Added `xq::presentation::DataHierarchyModel`, a read-only
+    `QAbstractItemModel` backed by `DataHierarchyService`.
+  - The model exposes hierarchy display names through `Qt::DisplayRole` and
+    stable node ids through `NodeIdRole`.
+  - The model preserves parent/child relationships from the Core hierarchy
+    service.
+  - The model subscribes to `DataHierarchyService::NodesChanged` and resets
+    itself after import, rename, and remove operations update the hierarchy.
+  - Added `xqMonolithPresentation` as a reusable Presentation static library
+    and linked `XQMonolith` through it.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_hierarchy_model`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 22/22.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Hierarchy Qt Model Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

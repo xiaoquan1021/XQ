@@ -542,6 +542,46 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Hierarchy Qt Model Foundation
+
+1. Add a Presentation-layer `xq::presentation::DataHierarchyModel`.
+   - Implement a Qt `QAbstractItemModel` backed by
+     `xq::core::DataHierarchyService`.
+   - Expose display names through `Qt::DisplayRole`.
+   - Expose stable hierarchy node ids through a custom role.
+   - Preserve parent/child relationships from `DataHierarchyService`.
+2. Keep the model reactive and UI-safe.
+   - Listen to `DataHierarchyService::NodesChanged`.
+   - Reset the model when the hierarchy changes so Project/Data UI can bind to
+     it without polling.
+   - Keep the first implementation read-only.
+3. Build Presentation code as a testable monolith library.
+   - Add `xqMonolithPresentation` for reusable Presentation components.
+   - Link `XQMonolith` against the Presentation library instead of compiling
+     all Presentation sources only into the executable.
+4. Add C++/Qt regression tests before implementation:
+   - A new model exposes the root's ordered children.
+   - Child rows expose data-entry display names and stable node ids.
+   - Import through `ApplicationContext` refreshes the model after hierarchy
+     changes.
+   - Rename/remove through `DataManagementService` refreshes visible model
+     data and row counts.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
