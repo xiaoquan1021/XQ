@@ -15,6 +15,7 @@ class DataCatalogService;
 class DataImportService;
 class PreferencesService;
 class ProjectService;
+class ProjectSessionService;
 class TaskRunner;
 
 class ApplicationContext : public QObject
@@ -34,6 +35,7 @@ public:
     QStringList Diagnostics() const;
     PreferencesService* Preferences() const;
     ProjectService* Projects() const;
+    ProjectSessionService* ProjectSession() const;
     TaskRunner* Tasks() const;
 
 public slots:
@@ -55,6 +57,7 @@ private:
     ProjectService* m_ProjectService = nullptr;
     TaskRunner* m_TaskRunner = nullptr;
     DataImportService* m_DataImportService = nullptr;
+    ProjectSessionService* m_ProjectSessionService = nullptr;
 };
 
 } // namespace xq::core

@@ -6,6 +6,7 @@ set(XQ_MONOLITH_CORE_SRCS
     Core/xq_DataImportService.cxx
     Core/xq_PreferencesService.cxx
     Core/xq_ProjectService.cxx
+    Core/xq_ProjectSessionService.cxx
     Core/xq_TaskRunner.cxx
     Core/xq_WorkflowRegistry.cxx
 )
@@ -16,6 +17,7 @@ set(XQ_MONOLITH_CORE_HDRS
     Core/xq_DataImportService.h
     Core/xq_PreferencesService.h
     Core/xq_ProjectService.h
+    Core/xq_ProjectSessionService.h
     Core/xq_TaskRunner.h
     Core/xq_WorkflowRegistry.h
 )

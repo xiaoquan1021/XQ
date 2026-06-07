@@ -4,6 +4,7 @@
 #include "xq_DataImportService.h"
 #include "xq_PreferencesService.h"
 #include "xq_ProjectService.h"
+#include "xq_ProjectSessionService.h"
 #include "xq_TaskRunner.h"
 
 #include <mitkStandaloneDataStorage.h>
@@ -22,6 +23,10 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
     , m_DataImportService(new DataImportService(*m_DataCatalogService,
                                                 *m_TaskRunner,
                                                 this))
+    , m_ProjectSessionService(new ProjectSessionService(*m_ProjectService,
+                                                        *m_DataCatalogService,
+                                                        *m_TaskRunner,
+                                                        this))
 {
 }
 
@@ -63,6 +68,11 @@ PreferencesService* ApplicationContext::Preferences() const
 ProjectService* ApplicationContext::Projects() const
 {
     return m_ProjectService;
+}
+
+ProjectSessionService* ApplicationContext::ProjectSession() const
+{
+    return m_ProjectSessionService;
 }
 
 TaskRunner* ApplicationContext::Tasks() const
