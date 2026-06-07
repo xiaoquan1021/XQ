@@ -1437,3 +1437,40 @@
 - Promoted Monolith Image Preprocessing Operation Catalog Foundation to
   completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the operation catalog against Slicer-style effect execution and
+    the next local integration step.
+  - The service now lists available preprocessing operations but cannot yet
+    validate a concrete operation request.
+  - Chosen next slice: add metadata-only operation request execution that
+    validates operation ids and selected data before any old algorithm calls.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing
+  Operation Request Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing image-preprocessing operation request regression tests
+    first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_workflow_service` because
+    `ImagePreprocessingWorkflowService` had no `RunOperation` member and the
+    result type had no operation metadata fields.
+- Implemented the monolith image-preprocessing operation request foundation:
+  - Added operation id and title fields to
+    `ImagePreprocessingWorkflowResult`.
+  - Added `RunOperation(snapshot, operationId)`.
+  - Reused existing snapshot validation before operation success.
+  - Validated operation ids through the operation catalog with trimmed lookup.
+  - Kept `Run(snapshot)` behavior and message stable.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_workflow_service`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 42/42.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Operation Request Foundation to
+  completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

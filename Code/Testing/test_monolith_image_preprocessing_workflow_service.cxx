@@ -99,6 +99,59 @@ int main(int argc, char** argv)
                "surface extraction should not be in preprocessing catalog"))
         return 1;
 
+    const auto smoothOperationResult = service.RunOperation(
+        MakeSnapshot(QStringLiteral("image-preprocessing"),
+                     QStringLiteral("Image Preprocessing"),
+                     QStringLiteral("image-001"),
+                     QStringLiteral("CTA Image"),
+                     xq::core::DataWorkflowRole::Image),
+        QStringLiteral(" gaussian-smoothing "));
+    if (Expect(smoothOperationResult.Succeeded,
+               "known image preprocessing operation should run"))
+        return 1;
+    if (Expect(smoothOperationResult.OperationId ==
+                   QStringLiteral("gaussian-smoothing"),
+               "operation request should expose normalized operation id"))
+        return 1;
+    if (Expect(smoothOperationResult.OperationTitle ==
+                   QStringLiteral("Gaussian Smoothing"),
+               "operation request should expose operation title"))
+        return 1;
+    if (Expect(smoothOperationResult.Message ==
+                   QStringLiteral("Gaussian Smoothing preprocessing operation accepted CTA Image."),
+               "operation request success message should include operation title and data"))
+        return 1;
+
+    const auto missingOperationResult = service.RunOperation(
+        MakeSnapshot(QStringLiteral("image-preprocessing"),
+                     QStringLiteral("Image Preprocessing"),
+                     QStringLiteral("image-001"),
+                     QStringLiteral("CTA Image"),
+                     xq::core::DataWorkflowRole::Image),
+        QStringLiteral("missing-operation"));
+    if (Expect(!missingOperationResult.Succeeded,
+               "unknown image preprocessing operation should fail"))
+        return 1;
+    if (Expect(missingOperationResult.Message ==
+                   QStringLiteral("Image preprocessing operation was not found."),
+               "unknown operation rejection message should be explicit"))
+        return 1;
+
+    const auto incompatibleOperationResult = service.RunOperation(
+        MakeSnapshot(QStringLiteral("image-preprocessing"),
+                     QStringLiteral("Image Preprocessing"),
+                     QStringLiteral("model-001"),
+                     QStringLiteral("Aorta Model"),
+                     xq::core::DataWorkflowRole::Model),
+        QStringLiteral("resample"));
+    if (Expect(!incompatibleOperationResult.Succeeded,
+               "operation request should reject incompatible data"))
+        return 1;
+    if (Expect(incompatibleOperationResult.Message ==
+                   QStringLiteral("Selected data is not compatible with image preprocessing."),
+               "operation request should reuse compatibility rejection"))
+        return 1;
+
     const auto imageResult = service.Run(
         MakeSnapshot(QStringLiteral("image-preprocessing"),
                      QStringLiteral("Image Preprocessing"),

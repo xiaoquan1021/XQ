@@ -14,6 +14,8 @@ struct ImagePreprocessingWorkflowResult
     bool Succeeded = false;
     QString SourceCatalogEntryId;
     QString SelectedDataDisplayName;
+    QString OperationId;
+    QString OperationTitle;
     QString Message;
 };
 
@@ -28,6 +30,10 @@ class ImagePreprocessingWorkflowService
 public:
     const QVector<ImagePreprocessingOperationDescriptor>& Operations() const;
     const ImagePreprocessingOperationDescriptor* FindOperation(
+        const QString& operationId) const;
+
+    ImagePreprocessingWorkflowResult RunOperation(
+        const xq::core::WorkflowContextSnapshot& snapshot,
         const QString& operationId) const;
 
     ImagePreprocessingWorkflowResult Run(

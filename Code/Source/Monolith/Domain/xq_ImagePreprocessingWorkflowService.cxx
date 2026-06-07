@@ -72,6 +72,30 @@ ImagePreprocessingWorkflowService::FindOperation(
     return nullptr;
 }
 
+ImagePreprocessingWorkflowResult
+ImagePreprocessingWorkflowService::RunOperation(
+    const xq::core::WorkflowContextSnapshot& snapshot,
+    const QString& operationId) const
+{
+    auto result = Run(snapshot);
+    if (!result.Succeeded)
+        return result;
+
+    const auto* operation = FindOperation(operationId);
+    if (!operation)
+    {
+        return FailedResult(QStringLiteral(
+            "Image preprocessing operation was not found."));
+    }
+
+    result.OperationId = operation->Id;
+    result.OperationTitle = operation->Title;
+    result.Message =
+        QStringLiteral("%1 preprocessing operation accepted %2.")
+            .arg(result.OperationTitle, result.SelectedDataDisplayName);
+    return result;
+}
+
 ImagePreprocessingWorkflowResult ImagePreprocessingWorkflowService::Run(
     const xq::core::WorkflowContextSnapshot& snapshot) const
 {
