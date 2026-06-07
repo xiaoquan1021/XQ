@@ -1914,3 +1914,42 @@
 - Promoted Monolith Image Preprocessing MITK Image Adapter to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the legacy preprocessing view's result node naming and metadata
+    after the MITK image adapter landed.
+  - The next integration gap is creating a result `mitk::DataNode` without
+    adding it to DataStorage yet.
+  - Chosen next slice: add a monolith image-preprocessing result node factory
+    in Infrastructure.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing Result
+  Node Factory.
+- Started the next unattended loop iteration:
+  - Adding failing result node factory regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_result_node_factory` because
+    `Infrastructure/xq_ImagePreprocessingResultNodeFactory.h` did not exist.
+- Implemented the monolith image-preprocessing result node factory:
+  - Added `ImagePreprocessingResultNodeFactory`.
+  - Created result image `mitk::DataNode`s from execution result images through
+    the MITK image adapter.
+  - Preserved legacy result naming and image-processing metadata.
+  - Marked generated nodes with the shared pipeline metadata helper.
+  - Added `xqModuleCommon` to Infrastructure linkage for pipeline metadata.
+  - Kept this slice node-creation only; it does not add nodes to DataStorage or
+    mutate catalog/project state.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_result_node_factory`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 46/46.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Result Node Factory to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

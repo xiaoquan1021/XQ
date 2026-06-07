@@ -2012,6 +2012,41 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing Result Node Factory
+
+1. Add an Infrastructure factory for preprocessing result nodes.
+   - Create a `mitk::DataNode` from an
+     `ImagePreprocessingExecutionResult` image.
+   - Use the source node name plus an operation suffix for the result name.
+   - Set image-processing metadata properties matching the legacy view.
+2. Preserve adapter layering.
+   - Keep Domain independent from MITK result node creation.
+   - Keep this factory in Infrastructure for future workflow action handlers.
+3. Keep this slice as node creation only.
+   - Do not add the result node to MITK `DataStorage`.
+   - Do not mutate `DataCatalogService` or project files.
+   - Do not add UI controls yet.
+4. Add C++ regression tests before implementation:
+   - Factory rejects execution results without an output image.
+   - Factory creates a named image result node for a valid crop execution.
+   - Factory sets legacy image-processing metadata and generated pipeline
+     properties on the result node.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
