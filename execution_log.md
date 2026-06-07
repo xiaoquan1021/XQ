@@ -868,3 +868,40 @@
 - Promoted Monolith Task Diagnostics Bridge Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked diagnostic-log UI patterns after task diagnostics were bridged
+    into `ApplicationContext`.
+  - Comparable workstation shells expose persistent logs, notification panes,
+    or error/status views that make background operation results inspectable
+    after the initiating command completes.
+  - Chosen next slice: make the monolith diagnostics text log a stable
+    Presentation surface and verify task diagnostics appear there through the
+    existing `DiagnosticPosted` signal.
+- Added next executable phase to `plan.md`: Monolith Diagnostics Panel Task
+  Log Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing diagnostics-panel regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_diagnostics_log`
+    failed with `MainWindow should expose a diagnostics log`.
+- Implemented the monolith diagnostics panel task log foundation:
+  - Added stable object name `xqDiagnosticsLog` to the read-only diagnostics
+    text log.
+  - Existing `ApplicationContext::DiagnosticPosted` binding now has a stable
+    UI surface for tests and future controls.
+  - Manual diagnostics and task diagnostics from import append to the visible
+    log through the same signal.
+  - Empty diagnostics remain absent from the visible log.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_diagnostics_log`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 30/30.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Diagnostics Panel Task Log Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

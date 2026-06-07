@@ -177,6 +177,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     UpdateProjectActions();
 
     m_Diagnostics = new QTextEdit(this);
+    m_Diagnostics->setObjectName(QStringLiteral("xqDiagnosticsLog"));
     m_Diagnostics->setReadOnly(true);
     auto* diagnosticsDock = new QDockWidget(QStringLiteral("Diagnostics"), this);
     diagnosticsDock->setObjectName(QStringLiteral("xqDiagnosticsDock"));
