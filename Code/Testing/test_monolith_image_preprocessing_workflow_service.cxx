@@ -322,6 +322,69 @@ int main(int argc, char** argv)
                "operation request success message should include operation title and data"))
         return 1;
 
+    const auto parameterizedSmoothResult = service.RunOperation(
+        MakeSnapshot(QStringLiteral("image-preprocessing"),
+                     QStringLiteral("Image Preprocessing"),
+                     QStringLiteral("image-002"),
+                     QStringLiteral("Parameterized CTA"),
+                     xq::core::DataWorkflowRole::Image),
+        QStringLiteral(" gaussian-smoothing "),
+        gaussianParameters);
+    if (Expect(parameterizedSmoothResult.Succeeded,
+               "valid parameterized image preprocessing operation should run"))
+        return 1;
+    if (Expect(parameterizedSmoothResult.SourceCatalogEntryId ==
+                   QStringLiteral("image-002"),
+               "parameterized operation should expose source id"))
+        return 1;
+    if (Expect(parameterizedSmoothResult.OperationId ==
+                   QStringLiteral("gaussian-smoothing"),
+               "parameterized operation should expose normalized operation id"))
+        return 1;
+    if (Expect(parameterizedSmoothResult.OperationTitle ==
+                   QStringLiteral("Gaussian Smoothing"),
+               "parameterized operation should expose operation title"))
+        return 1;
+    if (Expect(parameterizedSmoothResult.Message ==
+                   QStringLiteral("Gaussian Smoothing preprocessing operation accepted Parameterized CTA."),
+               "parameterized operation success message should stay stable"))
+        return 1;
+
+    const auto missingSigmaOperationResult = service.RunOperation(
+        MakeSnapshot(QStringLiteral("image-preprocessing"),
+                     QStringLiteral("Image Preprocessing"),
+                     QStringLiteral("image-003"),
+                     QStringLiteral("Missing Sigma CTA"),
+                     xq::core::DataWorkflowRole::Image),
+        QStringLiteral("gaussian-smoothing"),
+        QVariantMap());
+    if (Expect(!missingSigmaOperationResult.Succeeded,
+               "parameterized operation should reject missing required parameters"))
+        return 1;
+    if (Expect(missingSigmaOperationResult.Message ==
+                   QStringLiteral("Image preprocessing parameter is required: sigma."),
+               "parameterized operation should return validator message"))
+        return 1;
+    if (Expect(missingSigmaOperationResult.OperationId.isEmpty(),
+               "failed parameterized operation should not report operation metadata"))
+        return 1;
+
+    const auto missingParameterizedOperationResult = service.RunOperation(
+        MakeSnapshot(QStringLiteral("image-preprocessing"),
+                     QStringLiteral("Image Preprocessing"),
+                     QStringLiteral("image-004"),
+                     QStringLiteral("Missing Operation CTA"),
+                     xq::core::DataWorkflowRole::Image),
+        QStringLiteral("missing-operation"),
+        gaussianParameters);
+    if (Expect(!missingParameterizedOperationResult.Succeeded,
+               "parameterized unknown operation should fail"))
+        return 1;
+    if (Expect(missingParameterizedOperationResult.Message ==
+                   QStringLiteral("Image preprocessing operation was not found."),
+               "parameterized unknown operation should reuse operation message"))
+        return 1;
+
     const auto missingOperationResult = service.RunOperation(
         MakeSnapshot(QStringLiteral("image-preprocessing"),
                      QStringLiteral("Image Preprocessing"),

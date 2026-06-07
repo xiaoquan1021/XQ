@@ -1637,6 +1637,50 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 7. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing Parameterized Operation Request
+
+1. Add parameterized operation request execution to the image-preprocessing
+   service.
+   - Introduce an overload:
+     `RunOperation(snapshot, operationId, QVariantMap parameters)`.
+   - Reuse existing snapshot validation.
+   - Reuse `ValidateOperationParameters` before reporting operation success.
+2. Preserve existing request behavior.
+   - The existing `RunOperation(snapshot, operationId)` overload should remain
+     available for metadata-only requests.
+   - `Run(snapshot)` behavior and message should remain unchanged.
+3. Return deterministic metadata-only results.
+   - Successful parameterized requests should expose source catalog entry id,
+     selected data display name, normalized operation id, operation title, and
+     the same operation success message as the metadata-only overload.
+   - Invalid parameters should fail with the validator message and should not
+     report operation metadata as successful.
+4. Keep this slice metadata-only.
+   - Do not execute `xq_ImageProcessingUtils`.
+   - Do not mutate MITK `DataStorage`, `DataCatalogService`, or project files.
+5. Add C++ regression tests before implementation:
+   - Valid parameterized Gaussian smoothing request succeeds.
+   - Successful parameterized request exposes operation metadata.
+   - Missing required Gaussian sigma fails with the validator message.
+   - Unknown operation ids fail with the existing operation-not-found message.
+   - Existing metadata-only `RunOperation(snapshot, operationId)` remains
+     stable.
+6. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+7. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

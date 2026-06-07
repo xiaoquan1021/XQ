@@ -224,6 +224,23 @@ ImagePreprocessingWorkflowService::RunOperation(
     return result;
 }
 
+ImagePreprocessingWorkflowResult
+ImagePreprocessingWorkflowService::RunOperation(
+    const xq::core::WorkflowContextSnapshot& snapshot,
+    const QString& operationId,
+    const QVariantMap& parameters) const
+{
+    auto result = Run(snapshot);
+    if (!result.Succeeded)
+        return result;
+
+    const auto validation = ValidateOperationParameters(operationId, parameters);
+    if (!validation.Succeeded)
+        return FailedResult(validation.Message);
+
+    return RunOperation(snapshot, operationId);
+}
+
 ImagePreprocessingParameterValidationResult
 ImagePreprocessingWorkflowService::ValidateOperationParameters(
     const QString& operationId,

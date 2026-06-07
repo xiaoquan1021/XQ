@@ -60,6 +60,11 @@ public:
         const xq::core::WorkflowContextSnapshot& snapshot,
         const QString& operationId) const;
 
+    ImagePreprocessingWorkflowResult RunOperation(
+        const xq::core::WorkflowContextSnapshot& snapshot,
+        const QString& operationId,
+        const QVariantMap& parameters) const;
+
     ImagePreprocessingParameterValidationResult ValidateOperationParameters(
         const QString& operationId,
         const QVariantMap& parameters) const;

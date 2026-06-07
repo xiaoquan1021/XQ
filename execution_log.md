@@ -1548,3 +1548,40 @@
 - Promoted Monolith Image Preprocessing Parameter Validation Foundation to
   completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable workflow/tool models around parameterized effects and
+    command requests.
+  - The image-preprocessing service now has parameter schema plus validation,
+    but operation execution requests cannot yet carry those parameters.
+  - Chosen next slice: add metadata-only parameterized operation requests that
+    validate parameters before accepting an operation.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing
+  Parameterized Operation Request.
+- Started the next unattended loop iteration:
+  - Adding failing parameterized image-preprocessing operation request tests
+    first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_workflow_service` because
+    `ImagePreprocessingWorkflowService::RunOperation` did not accept a
+    `QVariantMap` parameter argument.
+- Implemented the monolith image-preprocessing parameterized operation request:
+  - Added `RunOperation(snapshot, operationId, QVariantMap parameters)`.
+  - Reused existing snapshot validation.
+  - Reused `ValidateOperationParameters` before accepting the operation.
+  - Preserved existing metadata-only `RunOperation(snapshot, operationId)`
+    behavior.
+  - Kept this slice metadata-only without old algorithm calls or data mutation.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_workflow_service`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 42/42.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Parameterized Operation Request to
+  completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
