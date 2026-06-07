@@ -86,6 +86,36 @@ target_link_libraries(xqMonolithDomain
         Qt6::Core
 )
 
+set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
+    Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.cxx
+)
+
+set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
+    Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.h
+)
+
+add_library(xqMonolithInfrastructure STATIC
+    ${XQ_MONOLITH_INFRASTRUCTURE_SRCS}
+    ${XQ_MONOLITH_INFRASTRUCTURE_HDRS}
+)
+
+set_target_properties(xqMonolithInfrastructure PROPERTIES
+    AUTOMOC ON
+)
+
+target_include_directories(xqMonolithInfrastructure
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+target_link_libraries(xqMonolithInfrastructure
+    PUBLIC
+        xqMonolithDomain
+        xqModuleImageProcessing
+        Qt6::Core
+)
+
 set(XQ_MONOLITH_PRESENTATION_SRCS
     Presentation/xq_DataHierarchyModel.cxx
     Presentation/xq_MainWindow.cxx

@@ -1585,3 +1585,43 @@
 - Promoted Monolith Image Preprocessing Parameterized Operation Request to
   completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the local legacy image-processing module and monolith layering.
+  - The next useful bridge is not another Domain metadata slice, but an
+    Infrastructure adapter that can call a legacy image-processing algorithm
+    while keeping Domain independent from legacy modules.
+  - Chosen next slice: add `xqMonolithInfrastructure` and a Gaussian smoothing
+    adapter backed by `xq_ImageProcessingUtils::SmoothGaussian`.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing
+  Infrastructure Adapter Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing image-preprocessing infrastructure adapter regression tests
+    first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_algorithm_adapter` with
+    `Cannot open include file: 'Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.h'`.
+- Implemented the monolith image-preprocessing infrastructure adapter
+  foundation:
+  - Added `xqMonolithInfrastructure`.
+  - Added namespace `xq::infrastructure`.
+  - Added `ImagePreprocessingAlgorithmAdapter`.
+  - Linked Infrastructure to `xqMonolithDomain` and legacy
+    `xqModuleImageProcessing`, while leaving Domain independent from legacy
+    algorithm modules.
+  - Added Gaussian smoothing execution through
+    `xq_ImageProcessingUtils::SmoothGaussian`.
+  - Reused Domain parameter validation before invoking the algorithm.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_algorithm_adapter`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 43/43.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Infrastructure Adapter Foundation to
+  completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
