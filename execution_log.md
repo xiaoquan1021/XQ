@@ -487,3 +487,44 @@
 - Promoted Monolith Data Selection Lifecycle Integration to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable project/data tree operations after selection lifecycle
+    integration landed.
+  - Slicer Data/Subject Hierarchy, MITK Data Manager, SimVascular Data Manager,
+    and OHIF display-set flows all treat rename/remove-style data management
+    as core workflow operations rather than ad hoc UI mutations.
+  - Chosen next slice: add a metadata-only monolith data management service
+    that coordinates catalog, hierarchy, selection, and task history for
+    rename/remove operations.
+- Added next executable phase to `plan.md`: Monolith Data Management Service
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing data management regression test first.
+  - Red test observed: `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    failed because `Core/xq_DataManagementService.h` was missing.
+- Implemented the monolith data management service foundation:
+  - Added `xq::core::DataManagementService`.
+  - The service coordinates metadata-only rename/remove operations across
+    `DataCatalogService`, `DataHierarchyService`, `DataSelectionService`, and
+    `TaskRunner`.
+  - Rename operations update catalog and hierarchy display names while
+    preserving the current selection.
+  - Remove operations delete the catalog entry and all hierarchy data nodes
+    that reference it, and clear selection only when the removed entry was
+    selected.
+  - Failed rename/remove operations use temporary catalog/hierarchy services
+    and leave live catalog, hierarchy, and selection state untouched.
+  - `ApplicationContext` now owns and exposes `DataManagement()`.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_management_service`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 20/20.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Management Service Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

@@ -45,6 +45,11 @@ public:
                       const QString& dataCatalogEntryId,
                       const QString& displayName,
                       QString* errorMessage = nullptr);
+    bool RenameDataEntriesForCatalogEntry(const QString& dataCatalogEntryId,
+                                          const QString& displayName,
+                                          QString* errorMessage = nullptr);
+    bool RemoveDataEntriesForCatalogEntry(const QString& dataCatalogEntryId,
+                                          QString* errorMessage = nullptr);
 
 private:
     bool AddNode(DataHierarchyNode node, QString* errorMessage);

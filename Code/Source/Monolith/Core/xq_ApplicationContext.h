@@ -14,6 +14,7 @@ namespace xq::core
 class DataCatalogService;
 class DataHierarchyService;
 class DataImportService;
+class DataManagementService;
 class DataSelectionService;
 class PreferencesService;
 class ProjectService;
@@ -35,6 +36,7 @@ public:
     DataCatalogService* DataCatalog() const;
     DataHierarchyService* DataHierarchy() const;
     DataImportService* DataImports() const;
+    DataManagementService* DataManagement() const;
     DataSelectionService* DataSelection() const;
     QStringList Diagnostics() const;
     PreferencesService* Preferences() const;
@@ -62,6 +64,7 @@ private:
     PreferencesService* m_PreferencesService = nullptr;
     ProjectService* m_ProjectService = nullptr;
     TaskRunner* m_TaskRunner = nullptr;
+    DataManagementService* m_DataManagementService = nullptr;
     DataImportService* m_DataImportService = nullptr;
     ProjectSessionService* m_ProjectSessionService = nullptr;
 };

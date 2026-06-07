@@ -69,6 +69,62 @@ bool DataCatalogService::RegisterEntry(const DataCatalogEntry& entry,
     return true;
 }
 
+bool DataCatalogService::RenameEntry(const QString& id,
+                                     const QString& displayName,
+                                     QString* errorMessage)
+{
+    const QString normalizedId = NormalizedId(id);
+    if (normalizedId.isEmpty())
+    {
+        SetError(errorMessage, QStringLiteral("Data id is required."));
+        return false;
+    }
+
+    const QString normalizedDisplayName = displayName.trimmed();
+    if (normalizedDisplayName.isEmpty())
+    {
+        SetError(errorMessage, QStringLiteral("Data display name is required."));
+        return false;
+    }
+
+    for (auto& entry : m_Entries)
+    {
+        if (entry.Id == normalizedId)
+        {
+            entry.DisplayName = normalizedDisplayName;
+            SetError(errorMessage, QString());
+            return true;
+        }
+    }
+
+    SetError(errorMessage, QStringLiteral("Data entry was not found."));
+    return false;
+}
+
+bool DataCatalogService::RemoveEntry(const QString& id,
+                                     QString* errorMessage)
+{
+    const QString normalizedId = NormalizedId(id);
+    if (normalizedId.isEmpty())
+    {
+        SetError(errorMessage, QStringLiteral("Data id is required."));
+        return false;
+    }
+
+    for (int i = 0; i < m_Entries.size(); ++i)
+    {
+        if (m_Entries.at(i).Id == normalizedId)
+        {
+            m_Entries.removeAt(i);
+            SetError(errorMessage, QString());
+            return true;
+        }
+    }
+
+    SetError(errorMessage, QStringLiteral("Data entry was not found."));
+    return false;
+}
+
 QString DataCatalogService::NormalizedId(const QString& id)
 {
     return id.trimmed();

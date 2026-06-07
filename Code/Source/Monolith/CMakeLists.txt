@@ -5,6 +5,7 @@ set(XQ_MONOLITH_CORE_SRCS
     Core/xq_DataCatalogService.cxx
     Core/xq_DataHierarchyService.cxx
     Core/xq_DataImportService.cxx
+    Core/xq_DataManagementService.cxx
     Core/xq_DataSelectionService.cxx
     Core/xq_PreferencesService.cxx
     Core/xq_ProjectService.cxx
@@ -18,6 +19,7 @@ set(XQ_MONOLITH_CORE_HDRS
     Core/xq_DataCatalogService.h
     Core/xq_DataHierarchyService.h
     Core/xq_DataImportService.h
+    Core/xq_DataManagementService.h
     Core/xq_DataSelectionService.h
     Core/xq_PreferencesService.h
     Core/xq_ProjectService.h

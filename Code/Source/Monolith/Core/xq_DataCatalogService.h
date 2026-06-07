@@ -41,6 +41,11 @@ public:
     void ReplaceWith(const DataCatalogService& other);
     bool RegisterEntry(const DataCatalogEntry& entry,
                        QString* errorMessage = nullptr);
+    bool RenameEntry(const QString& id,
+                     const QString& displayName,
+                     QString* errorMessage = nullptr);
+    bool RemoveEntry(const QString& id,
+                     QString* errorMessage = nullptr);
 
 private:
     static QString NormalizedId(const QString& id);

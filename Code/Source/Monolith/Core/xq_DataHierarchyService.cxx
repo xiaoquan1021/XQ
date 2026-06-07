@@ -92,6 +92,84 @@ bool DataHierarchyService::AddDataEntry(const QString& id,
     return AddNode(node, errorMessage);
 }
 
+bool DataHierarchyService::RenameDataEntriesForCatalogEntry(
+    const QString& dataCatalogEntryId,
+    const QString& displayName,
+    QString* errorMessage)
+{
+    const QString normalizedEntryId = dataCatalogEntryId.trimmed();
+    if (normalizedEntryId.isEmpty())
+    {
+        SetError(errorMessage,
+                 QStringLiteral("Data catalog entry id is required."));
+        return false;
+    }
+
+    const QString normalizedDisplayName = displayName.trimmed();
+    if (normalizedDisplayName.isEmpty())
+    {
+        SetError(errorMessage,
+                 QStringLiteral("Hierarchy display name is required."));
+        return false;
+    }
+
+    bool renamed = false;
+    for (auto& node : m_Nodes)
+    {
+        if (node.Kind == DataHierarchyNodeKind::DataEntry &&
+            node.DataCatalogEntryId == normalizedEntryId)
+        {
+            node.DisplayName = normalizedDisplayName;
+            renamed = true;
+        }
+    }
+
+    if (!renamed)
+    {
+        SetError(errorMessage,
+                 QStringLiteral("Data hierarchy entry was not found."));
+        return false;
+    }
+
+    SetError(errorMessage, QString());
+    return true;
+}
+
+bool DataHierarchyService::RemoveDataEntriesForCatalogEntry(
+    const QString& dataCatalogEntryId,
+    QString* errorMessage)
+{
+    const QString normalizedEntryId = dataCatalogEntryId.trimmed();
+    if (normalizedEntryId.isEmpty())
+    {
+        SetError(errorMessage,
+                 QStringLiteral("Data catalog entry id is required."));
+        return false;
+    }
+
+    bool removed = false;
+    for (int i = m_Nodes.size() - 1; i >= 0; --i)
+    {
+        const auto& node = m_Nodes.at(i);
+        if (node.Kind == DataHierarchyNodeKind::DataEntry &&
+            node.DataCatalogEntryId == normalizedEntryId)
+        {
+            m_Nodes.removeAt(i);
+            removed = true;
+        }
+    }
+
+    if (!removed)
+    {
+        SetError(errorMessage,
+                 QStringLiteral("Data hierarchy entry was not found."));
+        return false;
+    }
+
+    SetError(errorMessage, QString());
+    return true;
+}
+
 bool DataHierarchyService::AddNode(DataHierarchyNode node,
                                    QString* errorMessage)
 {

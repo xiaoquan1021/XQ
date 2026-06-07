@@ -453,6 +453,51 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Management Service Foundation
+
+1. Add a monolith Core `xq::core::DataManagementService`.
+   - Coordinate `DataCatalogService`, `DataHierarchyService`,
+     `DataSelectionService`, and `TaskRunner`.
+   - Keep the first implementation metadata-only and independent from MITK
+     data node deletion.
+   - Support renaming an imported catalog entry and its hierarchy data node.
+   - Support removing an imported catalog entry and all hierarchy data nodes
+     that reference it.
+2. Keep lifecycle behavior conservative.
+   - Successful rename should preserve selection and update visible display
+     names.
+   - Successful remove should clear data selection only when the removed entry
+     was selected.
+   - Failed rename/remove operations must not mutate catalog, hierarchy, or
+     selection.
+3. Add `DataManagementService` ownership/access through
+   `xq::core::ApplicationContext`.
+   - Expose it through `DataManagement()`.
+   - Future Project/Data UI should call this service instead of editing
+     catalog and hierarchy services directly.
+4. Add C++ regression tests before implementation:
+   - Default context exposes the data management service.
+   - Renaming an imported entry updates catalog and hierarchy display names.
+   - Empty rename fails without mutating existing names.
+   - Removing a selected entry removes catalog/hierarchy data nodes and clears
+     selection.
+   - Removing a missing entry fails without mutating existing selection.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
