@@ -1246,3 +1246,37 @@
 - Promoted Monolith Workflow Action Task Runner Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked operation feedback after workflow actions started using
+    `TaskRunner`.
+  - Comparable workstation shells keep an inspectable history/log surface for
+    operation outcomes, not only transient button state.
+  - Chosen next slice: add a stable MainWindow task history table bound to
+    `TaskRunner::History()` and `TaskRunner::TaskFinished`.
+- Added next executable phase to `plan.md`: Monolith Task History Panel
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing task history panel regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_task_history_panel`
+    failed with `MainWindow should expose a task history table`.
+- Implemented the monolith task history panel foundation:
+  - Added `xqTaskHistoryDock` and read-only `xqTaskHistoryTable`.
+  - The table exposes `Task`, `Status`, and `Message` columns.
+  - Existing `TaskRunner::History()` entries are rendered on window creation.
+  - `TaskRunner::TaskFinished` appends one row per finished task.
+  - Import, duplicate import failure, and workflow action task rows now appear
+    in the task history panel.
+  - Diagnostics log behavior remains unchanged.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_task_history_panel`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 40/40.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Task History Panel Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

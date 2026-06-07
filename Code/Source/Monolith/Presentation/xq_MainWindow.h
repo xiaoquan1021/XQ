@@ -9,6 +9,7 @@ class QLabel;
 class QListWidget;
 class QPushButton;
 class QStackedWidget;
+class QTableWidget;
 class QTextEdit;
 class QTreeView;
 class QWidget;
@@ -17,6 +18,7 @@ namespace xq::core
 {
 class ApplicationContext;
 struct ProjectMetadata;
+struct TaskRecord;
 }
 
 namespace xq::presentation
@@ -36,6 +38,7 @@ public:
 private:
     QWidget* CreateWorkflowPage(const QString& id, const QString& title);
     void AddWorkflowPage(const QString& id, const QString& title);
+    void AppendTaskHistoryRow(const xq::core::TaskRecord& task);
     void RemoveSelectedData();
     void RunActiveWorkflowAction();
     void SaveProject();
@@ -69,6 +72,7 @@ private:
     QWidget* m_RenderHostContainer = nullptr;
     QWidget* m_RenderHost = nullptr;
     QTextEdit* m_Diagnostics = nullptr;
+    QTableWidget* m_TaskHistoryTable = nullptr;
     bool m_SyncingSelectionFromCore = false;
 };
 

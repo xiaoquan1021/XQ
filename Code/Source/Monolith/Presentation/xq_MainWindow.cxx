@@ -11,11 +11,13 @@
 #include "Core/xq_WorkflowContextService.h"
 #include "Core/xq_WorkflowRegistry.h"
 #include "Core/xq_WorkflowSelectionService.h"
+#include "Core/xq_TaskRunner.h"
 #include "xq_DataHierarchyModel.h"
 
 #include <QAction>
 #include <QDockWidget>
 #include <QFrame>
+#include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QLabel>
 #include <QListWidget>
@@ -25,6 +27,8 @@
 #include <QSplitter>
 #include <QStackedWidget>
 #include <QStatusBar>
+#include <QTableWidget>
+#include <QTableWidgetItem>
 #include <QTextEdit>
 #include <QToolBar>
 #include <QTreeView>
@@ -240,6 +244,39 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this, [this](const QString& message) {
                 m_Diagnostics->append(message);
             });
+
+    m_TaskHistoryTable = new QTableWidget(this);
+    m_TaskHistoryTable->setObjectName(QStringLiteral("xqTaskHistoryTable"));
+    m_TaskHistoryTable->setColumnCount(3);
+    m_TaskHistoryTable->setHorizontalHeaderLabels(
+        {QStringLiteral("Task"),
+         QStringLiteral("Status"),
+         QStringLiteral("Message")});
+    m_TaskHistoryTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_TaskHistoryTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_TaskHistoryTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_TaskHistoryTable->horizontalHeader()->setStretchLastSection(true);
+
+    auto* taskHistoryDock =
+        new QDockWidget(QStringLiteral("Task History"), this);
+    taskHistoryDock->setObjectName(QStringLiteral("xqTaskHistoryDock"));
+    taskHistoryDock->setWidget(m_TaskHistoryTable);
+    addDockWidget(Qt::BottomDockWidgetArea, taskHistoryDock);
+
+    for (const auto& task : m_Context.Tasks()->History())
+        AppendTaskHistoryRow(task);
+    connect(m_Context.Tasks(),
+            &xq::core::TaskRunner::TaskFinished,
+            this,
+            [this](const QString& taskName,
+                   bool succeeded,
+                   const QString& message) {
+                xq::core::TaskRecord task;
+                task.Name = taskName;
+                task.Succeeded = succeeded;
+                task.Message = message;
+                AppendTaskHistoryRow(task);
+            });
 }
 
 void MainWindow::SetRenderHost(QWidget* renderHost)
@@ -260,6 +297,23 @@ void MainWindow::SetRenderHost(QWidget* renderHost)
     m_RenderHost = renderHost;
     m_RenderHost->setParent(m_RenderHostContainer);
     layout->addWidget(m_RenderHost);
+}
+
+void MainWindow::AppendTaskHistoryRow(const xq::core::TaskRecord& task)
+{
+    if (!m_TaskHistoryTable)
+        return;
+
+    const int row = m_TaskHistoryTable->rowCount();
+    m_TaskHistoryTable->insertRow(row);
+    m_TaskHistoryTable->setItem(row, 0, new QTableWidgetItem(task.Name));
+    m_TaskHistoryTable->setItem(
+        row,
+        1,
+        new QTableWidgetItem(task.Succeeded ? QStringLiteral("Succeeded")
+                                            : QStringLiteral("Failed")));
+    m_TaskHistoryTable->setItem(row, 2, new QTableWidgetItem(task.Message));
+    m_TaskHistoryTable->scrollToBottom();
 }
 
 void MainWindow::UpdateDataWorkflowPage()

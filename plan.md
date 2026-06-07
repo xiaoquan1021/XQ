@@ -1290,6 +1290,52 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Task History Panel Foundation
+
+1. Add a stable task history Presentation surface.
+   - MainWindow should expose a table named `xqTaskHistoryTable`.
+   - The table should live in a dock named `xqTaskHistoryDock`.
+   - Columns should be `Task`, `Status`, and `Message`.
+   - The table should be read-only and row-selectable.
+2. Bind the table to `TaskRunner`.
+   - A new window should render any existing `TaskRunner::History()` entries.
+   - `TaskRunner::TaskFinished` should append one row per finished task.
+   - Successful tasks should show status `Succeeded`.
+   - Failed tasks should show status `Failed`.
+   - Message text should match the task record message.
+3. Cover both existing and new workflow operations.
+   - Importing data should append an import task row.
+   - A failed duplicate import should append a failed task row.
+   - Running a compatible workflow primary action should append a workflow
+     action task row.
+4. Keep this slice display-only.
+   - Do not add filtering, export, or clear-history controls yet.
+   - Do not alter `TaskRunner` history semantics.
+   - Keep diagnostics log behavior unchanged.
+5. Add C++/Qt regression tests before implementation:
+   - MainWindow exposes read-only `xqTaskHistoryTable` with the expected
+     headers.
+   - Importing data appends a succeeded import row.
+   - Duplicate import appends a failed import row.
+   - Running workflow primary action appends a succeeded `Run <WorkflowTitle>`
+     row.
+   - Diagnostics log still receives the task bridge diagnostic.
+6. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+7. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
