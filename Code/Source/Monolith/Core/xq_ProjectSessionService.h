@@ -9,6 +9,7 @@ namespace xq::core
 
 class DataCatalogService;
 class DataHierarchyService;
+class DataSelectionService;
 class ProjectService;
 class TaskRunner;
 
@@ -22,6 +23,12 @@ public:
                           DataHierarchyService& dataHierarchy,
                           TaskRunner& taskRunner,
                           QObject* parent = nullptr);
+    ProjectSessionService(ProjectService& projectService,
+                          DataCatalogService& dataCatalog,
+                          DataHierarchyService& dataHierarchy,
+                          DataSelectionService& dataSelection,
+                          TaskRunner& taskRunner,
+                          QObject* parent = nullptr);
 
     bool Save(QString* errorMessage = nullptr);
     bool Open(const QString& projectFilePath,
@@ -33,6 +40,7 @@ private:
     ProjectService& m_ProjectService;
     DataCatalogService& m_DataCatalog;
     DataHierarchyService& m_DataHierarchy;
+    DataSelectionService* m_DataSelection = nullptr;
     TaskRunner& m_TaskRunner;
 };
 

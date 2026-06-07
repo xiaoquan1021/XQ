@@ -2,6 +2,7 @@
 
 #include "xq_DataCatalogService.h"
 #include "xq_DataHierarchyService.h"
+#include "xq_DataSelectionService.h"
 #include "xq_ProjectService.h"
 #include "xq_TaskRunner.h"
 
@@ -17,6 +18,21 @@ ProjectSessionService::ProjectSessionService(ProjectService& projectService,
     , m_ProjectService(projectService)
     , m_DataCatalog(dataCatalog)
     , m_DataHierarchy(dataHierarchy)
+    , m_TaskRunner(taskRunner)
+{
+}
+
+ProjectSessionService::ProjectSessionService(ProjectService& projectService,
+                                             DataCatalogService& dataCatalog,
+                                             DataHierarchyService& dataHierarchy,
+                                             DataSelectionService& dataSelection,
+                                             TaskRunner& taskRunner,
+                                             QObject* parent)
+    : QObject(parent)
+    , m_ProjectService(projectService)
+    , m_DataCatalog(dataCatalog)
+    , m_DataHierarchy(dataHierarchy)
+    , m_DataSelection(&dataSelection)
     , m_TaskRunner(taskRunner)
 {
 }
@@ -52,6 +68,8 @@ bool ProjectSessionService::Open(const QString& projectFilePath,
         &taskMessage);
 
     SetError(errorMessage, taskMessage);
+    if (succeeded && m_DataSelection)
+        m_DataSelection->Clear();
     return succeeded;
 }
 

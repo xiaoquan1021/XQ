@@ -10,6 +10,7 @@ namespace xq::core
 {
 
 class DataHierarchyService;
+class DataSelectionService;
 class TaskRunner;
 
 struct DataImportRequest
@@ -40,6 +41,11 @@ public:
                       DataHierarchyService& dataHierarchy,
                       TaskRunner& taskRunner,
                       QObject* parent = nullptr);
+    DataImportService(DataCatalogService& dataCatalog,
+                      DataHierarchyService& dataHierarchy,
+                      DataSelectionService& dataSelection,
+                      TaskRunner& taskRunner,
+                      QObject* parent = nullptr);
 
     DataImportResult Import(const DataImportRequest& request,
                             QString* errorMessage = nullptr);
@@ -60,6 +66,7 @@ private:
 
     DataCatalogService& m_DataCatalog;
     DataHierarchyService* m_DataHierarchy = nullptr;
+    DataSelectionService* m_DataSelection = nullptr;
     TaskRunner& m_TaskRunner;
 };
 

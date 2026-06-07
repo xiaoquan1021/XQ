@@ -28,11 +28,13 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
     , m_TaskRunner(new TaskRunner(this))
     , m_DataImportService(new DataImportService(*m_DataCatalogService,
                                                 *m_DataHierarchyService,
+                                                *m_DataSelectionService,
                                                 *m_TaskRunner,
                                                 this))
     , m_ProjectSessionService(new ProjectSessionService(*m_ProjectService,
                                                         *m_DataCatalogService,
                                                         *m_DataHierarchyService,
+                                                        *m_DataSelectionService,
                                                         *m_TaskRunner,
                                                         this))
 {

@@ -444,3 +444,46 @@
 - Promoted Monolith Data Selection Service Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable workstation lifecycle behavior after adding
+    metadata-only data selection.
+  - Slicer, MITK Workbench, SimVascular, and OHIF-style workstations all keep a
+    clear current data/display selection so workflow pages can act on the
+    newly loaded item without rediscovering tree/catalog relationships.
+  - Opening a different project or scene is treated as a session switch; stale
+    selected data from the previous session should not survive a successful
+    state replacement.
+  - Chosen next slice: wire `DataSelectionService` into successful imports and
+    successful project opens while keeping failed lifecycle operations
+    conservative.
+- Added next executable phase to `plan.md`: Monolith Data Selection Lifecycle
+  Integration.
+- Started the next unattended loop iteration:
+  - Adding failing data selection lifecycle regression test first.
+  - Red test observed: `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_selection_lifecycle`
+    failed with `successful import should select the imported catalog entry`.
+- Implemented data selection lifecycle integration:
+  - Added optional `DataSelectionService` lifecycle wiring to
+    `DataImportService`.
+  - `ApplicationContext` imports now auto-select the newly imported catalog
+    entry and its resolved hierarchy node after the catalog/hierarchy commit
+    succeeds.
+  - Added optional `DataSelectionService` lifecycle wiring to
+    `ProjectSessionService`.
+  - Successful project opens now clear stale data selection after replacement
+    state loads; failed opens leave the previous selection untouched.
+  - Existing narrow importer/session constructors remain available for tests
+    that do not need selection lifecycle behavior.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_selection_lifecycle`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 19/19.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Selection Lifecycle Integration to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

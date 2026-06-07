@@ -417,9 +417,46 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
-## Active Phase: Autonomous Research Refresh
+## Completed Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Selection Lifecycle Integration
+
+1. Integrate `DataSelectionService` with import and project-open lifecycle
+   operations.
+   - Successful imports through `ApplicationContext::DataImports()` should
+     select the newly imported catalog entry and hierarchy data node.
+   - Successful project opens through `ApplicationContext::ProjectSession()`
+     should clear stale data selection because the live catalog/hierarchy state
+     has been replaced.
+   - Failed imports and failed project opens must not mutate the current data
+     selection.
+2. Keep service-level construction flexible.
+   - Existing catalog-only and catalog+hierarchy `DataImportService`
+     construction must keep working for narrow unit tests.
+   - Project session construction should allow selection lifecycle wiring only
+     when the application context provides a `DataSelectionService`.
+3. Add C++ regression tests before implementation:
+   - Import through the default context auto-selects the new entry.
+   - Failed duplicate import leaves the previous data selection unchanged.
+   - Successful project open clears stale data selection.
+   - Failed project open leaves the previous data selection unchanged.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
 2. Extract the next high-value monolith migration slice.
 3. Write the next executable phase into this plan.
 4. Immediately return to plan execution.

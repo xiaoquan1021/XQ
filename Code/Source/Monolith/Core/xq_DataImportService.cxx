@@ -1,6 +1,7 @@
 #include "xq_DataImportService.h"
 
 #include "xq_DataHierarchyService.h"
+#include "xq_DataSelectionService.h"
 #include "xq_TaskRunner.h"
 
 #include <QFileInfo>
@@ -53,6 +54,19 @@ DataImportService::DataImportService(DataCatalogService& dataCatalog,
     : QObject(parent)
     , m_DataCatalog(dataCatalog)
     , m_DataHierarchy(&dataHierarchy)
+    , m_TaskRunner(taskRunner)
+{
+}
+
+DataImportService::DataImportService(DataCatalogService& dataCatalog,
+                                     DataHierarchyService& dataHierarchy,
+                                     DataSelectionService& dataSelection,
+                                     TaskRunner& taskRunner,
+                                     QObject* parent)
+    : QObject(parent)
+    , m_DataCatalog(dataCatalog)
+    , m_DataHierarchy(&dataHierarchy)
+    , m_DataSelection(&dataSelection)
     , m_TaskRunner(taskRunner)
 {
 }
@@ -144,6 +158,12 @@ DataImportResult DataImportService::Import(const DataImportRequest& request,
     result.Succeeded = taskSucceeded;
     result.EntryId = taskSucceeded ? entry.Id : QString();
     result.Message = taskMessage;
+    if (taskSucceeded && m_DataSelection)
+    {
+        QString selectionMessage;
+        if (!m_DataSelection->SelectCatalogEntry(entry.Id, &selectionMessage))
+            result.Message = selectionMessage;
+    }
     SetError(errorMessage, result.Message);
     return result;
 }
