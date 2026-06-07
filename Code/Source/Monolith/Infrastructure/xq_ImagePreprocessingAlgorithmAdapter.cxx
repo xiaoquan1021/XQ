@@ -44,6 +44,38 @@ std::vector<std::array<int, 3>> SeedsFromParameters(
 } // namespace
 
 ImagePreprocessingAlgorithmResult
+ImagePreprocessingAlgorithmAdapter::RunOperation(
+    const QString& operationId,
+    vtkImageData* input,
+    const QVariantMap& parameters) const
+{
+    const QString normalizedOperationId = operationId.trimmed();
+    xq::domain::ImagePreprocessingWorkflowService domainService;
+    if (!domainService.FindOperation(normalizedOperationId))
+    {
+        return FailedResult(QStringLiteral(
+            "Image preprocessing operation was not found."));
+    }
+
+    if (normalizedOperationId == QStringLiteral("binary-threshold"))
+        return RunBinaryThreshold(input, parameters);
+    if (normalizedOperationId == QStringLiteral("connected-threshold"))
+        return RunConnectedThreshold(input, parameters);
+    if (normalizedOperationId == QStringLiteral("crop"))
+        return RunCrop(input, parameters);
+    if (normalizedOperationId == QStringLiteral("gaussian-smoothing"))
+        return RunGaussianSmoothing(input, parameters);
+    if (normalizedOperationId == QStringLiteral("morphology-open-close"))
+        return RunMorphologyOpenClose(input, parameters);
+    if (normalizedOperationId == QStringLiteral("resample"))
+        return RunResample(input, parameters);
+
+    return FailedResult(
+        QStringLiteral("Image preprocessing operation is not implemented: %1.")
+            .arg(normalizedOperationId));
+}
+
+ImagePreprocessingAlgorithmResult
 ImagePreprocessingAlgorithmAdapter::RunBinaryThreshold(
     vtkImageData* input,
     const QVariantMap& parameters) const

@@ -441,5 +441,77 @@ int main(int argc, char** argv)
                "resample should return requested output spacing"))
         return 1;
 
+    const auto unknownDispatchResult =
+        adapter.RunOperation(QStringLiteral("missing-operation"),
+                             MakeImage(),
+                             QVariantMap());
+    if (Expect(!unknownDispatchResult.Succeeded,
+               "unknown operation dispatch should fail"))
+        return 1;
+    if (Expect(unknownDispatchResult.Message ==
+                   QStringLiteral("Image preprocessing operation was not found."),
+               "unknown operation dispatch should use domain diagnostic"))
+        return 1;
+
+    const auto dispatchedGaussianResult =
+        adapter.RunOperation(QStringLiteral("gaussian-smoothing"),
+                             MakeImage(),
+                             GaussianParameters(0.75));
+    if (Expect(dispatchedGaussianResult.Succeeded,
+               "dispatch should run Gaussian smoothing"))
+        return 1;
+
+    const auto dispatchedBinaryThresholdResult =
+        adapter.RunOperation(QStringLiteral("binary-threshold"),
+                             MakeImage(),
+                             BinaryThresholdParameters());
+    if (Expect(dispatchedBinaryThresholdResult.Succeeded,
+               "dispatch should run binary threshold"))
+        return 1;
+
+    const auto dispatchedConnectedThresholdResult =
+        adapter.RunOperation(QStringLiteral("connected-threshold"),
+                             MakeImage(),
+                             ConnectedThresholdParameters());
+    if (Expect(dispatchedConnectedThresholdResult.Succeeded,
+               "dispatch should run connected threshold"))
+        return 1;
+
+    const auto dispatchedMorphologyResult =
+        adapter.RunOperation(QStringLiteral("morphology-open-close"),
+                             MakeBinaryImage(),
+                             MorphologyParameters(1));
+    if (Expect(dispatchedMorphologyResult.Succeeded,
+               "dispatch should run morphology open/close"))
+        return 1;
+
+    const auto dispatchedCropResult =
+        adapter.RunOperation(QStringLiteral("crop"),
+                             MakeImage(),
+                             CropParameters(1, 1, 0, 3, 2, 4));
+    if (Expect(dispatchedCropResult.Succeeded,
+               "dispatch should run crop"))
+        return 1;
+    outputDimensions = dispatchedCropResult.Image->GetDimensions();
+    if (Expect(outputDimensions[0] == 3 &&
+                   outputDimensions[1] == 2 &&
+                   outputDimensions[2] == 4,
+               "crop dispatch should preserve crop output dimensions"))
+        return 1;
+
+    const auto dispatchedResampleResult =
+        adapter.RunOperation(QStringLiteral("resample"),
+                             MakeImage(),
+                             ResampleParameters(0.5, 1.0, 2.0));
+    if (Expect(dispatchedResampleResult.Succeeded,
+               "dispatch should run resample"))
+        return 1;
+    outputDimensions = dispatchedResampleResult.Image->GetDimensions();
+    if (Expect(outputDimensions[0] == 10 &&
+                   outputDimensions[1] == 5 &&
+                   outputDimensions[2] == 3,
+               "resample dispatch should preserve resample output dimensions"))
+        return 1;
+
     return 0;
 }

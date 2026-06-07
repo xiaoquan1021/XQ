@@ -1793,3 +1793,41 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Resample Infrastructure Adapter to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the completed preprocessing adapter coverage after resample
+    landed.
+  - All six Domain preprocessing operation ids now have per-operation
+    Infrastructure adapter methods, but there is no unified operation-id
+    execution entry point yet.
+  - Chosen next slice: add operation dispatch to the Infrastructure adapter so
+    future UI and task services do not duplicate algorithm switches.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing
+  Operation Dispatch Adapter.
+- Started the next unattended loop iteration:
+  - Adding failing operation dispatch regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_algorithm_adapter` because
+    `ImagePreprocessingAlgorithmAdapter` had no `RunOperation` member.
+- Implemented the monolith image-preprocessing operation dispatch adapter:
+  - Added `RunOperation(QString operationId, vtkImageData*, QVariantMap
+    parameters)`.
+  - Reused the Domain operation catalog to reject unknown operation ids with
+    the existing operation-not-found diagnostic.
+  - Routed all six current Domain preprocessing operation ids to their
+    existing Infrastructure adapter implementations.
+  - Preserved layer separation: Domain still does not link legacy algorithm
+    modules.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_algorithm_adapter`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 43/43.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Operation Dispatch Adapter to completed
+  in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

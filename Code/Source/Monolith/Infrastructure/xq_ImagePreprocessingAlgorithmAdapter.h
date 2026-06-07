@@ -20,6 +20,11 @@ struct ImagePreprocessingAlgorithmResult
 class ImagePreprocessingAlgorithmAdapter
 {
 public:
+    ImagePreprocessingAlgorithmResult RunOperation(
+        const QString& operationId,
+        vtkImageData* input,
+        const QVariantMap& parameters) const;
+
     ImagePreprocessingAlgorithmResult RunBinaryThreshold(
         vtkImageData* input,
         const QVariantMap& parameters) const;
