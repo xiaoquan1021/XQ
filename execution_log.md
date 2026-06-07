@@ -2171,3 +2171,42 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Data Node Registry Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the image-preprocessing handler now that Core can bind catalog
+    entry ids to MITK `DataNode`s.
+  - The next integration gap is using those bindings during workflow action
+    execution so catalog selection can drive processing without relying on a
+    transient active node.
+  - Chosen next slice: make the image-preprocessing workflow action handler
+    resolve selected source nodes from `DataNodeRegistryService`, with active
+    node as a fallback.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing
+  Handler DataNode Registry Integration.
+- Started the next unattended loop iteration:
+  - Adding failing handler registry-resolution regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` compiled the
+    updated test successfully.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_workflow_action_handler`
+    failed because the handler still required `ApplicationContext::ActiveNode()`
+    and did not resolve the selected catalog entry through
+    `DataNodeRegistryService`.
+- Implemented image-preprocessing handler data-node registry integration:
+  - The workflow action handler now first resolves the selected source node via
+    `ApplicationContext::DataNodes()->FindNode(snapshot.SelectedCatalogEntryId)`.
+  - Active node fallback remains available for existing manual/test workflows.
+  - The existing missing-node diagnostic is preserved when neither source is
+    available.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_workflow_action_handler`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 51/51.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Handler DataNode Registry Integration
+  to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

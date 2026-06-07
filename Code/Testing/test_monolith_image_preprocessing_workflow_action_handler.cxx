@@ -4,6 +4,7 @@
 #include "Core/xq_DataCatalogService.h"
 #include "Core/xq_DataHierarchyService.h"
 #include "Core/xq_DataImportService.h"
+#include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_TaskRunner.h"
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowSelectionService.h"
@@ -212,6 +213,50 @@ int main(int argc, char** argv)
         if (Expect(context->DataCatalog()->FindById(
                        QStringLiteral("image-001-crop")) == nullptr,
                    "failed crop handler should not register result catalog"))
+            return 1;
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareImageWorkflow(*context),
+                   "registry crop fixture should prepare workflow"))
+            return 1;
+
+        auto sourceNode = MakeSourceNode();
+        context->DataStorage()->Add(sourceNode);
+
+        QString message;
+        if (Expect(context->DataNodes()->BindNode(QStringLiteral("image-001"),
+                                                  sourceNode,
+                                                  &message),
+                   "registry crop fixture should bind selected data node"))
+            return 1;
+        if (Expect(xq::infrastructure::
+                       RegisterImagePreprocessingWorkflowActionHandler(
+                           *context,
+                           CropOptions(),
+                           &message),
+                   "registry crop fixture should install handler"))
+            return 1;
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "crop handler should resolve source node from registry"))
+            return 1;
+        if (Expect(message ==
+                       QStringLiteral("Registered preprocessing result catalog entry."),
+                   "registry crop handler should report application commit success"))
+            return 1;
+
+        auto child = FindChild(context->DataStorage(), sourceNode, "CTA_cropped");
+        if (Expect(child.IsNotNull(),
+                   "registry crop handler should add named result node"))
+            return 1;
+        const auto* entry = context->DataCatalog()->FindById(
+            QStringLiteral("image-001-crop"));
+        if (Expect(entry != nullptr,
+                   "registry crop handler should register generated catalog entry"))
             return 1;
     }
 

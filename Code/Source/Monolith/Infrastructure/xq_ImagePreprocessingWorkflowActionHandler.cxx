@@ -3,6 +3,7 @@
 #include "xq_ImagePreprocessingApplicationCommitService.h"
 
 #include "Core/xq_ApplicationContext.h"
+#include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_WorkflowActionService.h"
 
 namespace xq::infrastructure
@@ -31,6 +32,20 @@ QString ResultSuffix(const ImagePreprocessingWorkflowActionOptions& options)
     return suffix.isEmpty() ? options.OperationId.trimmed() : suffix;
 }
 
+mitk::DataNode::Pointer ResolveSourceNode(
+    xq::core::ApplicationContext& context,
+    const xq::core::WorkflowContextSnapshot& snapshot)
+{
+    if (auto* dataNodes = context.DataNodes())
+    {
+        auto node = dataNodes->FindNode(snapshot.SelectedCatalogEntryId);
+        if (node.IsNotNull())
+            return node;
+    }
+
+    return context.ActiveNode();
+}
+
 } // namespace
 
 bool RegisterImagePreprocessingWorkflowActionHandler(
@@ -51,7 +66,7 @@ bool RegisterImagePreprocessingWorkflowActionHandler(
         [&context, options, operationId](
             const xq::core::WorkflowContextSnapshot& snapshot,
             QString* taskMessage) {
-            const auto sourceNode = context.ActiveNode();
+            const auto sourceNode = ResolveSourceNode(context, snapshot);
             if (sourceNode.IsNull())
             {
                 SetMessage(taskMessage,

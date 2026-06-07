@@ -2241,6 +2241,42 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing Handler DataNode Registry Integration
+
+1. Update the Infrastructure image-preprocessing workflow action handler to
+   resolve source MITK nodes through Core catalog-node bindings.
+   - Prefer `ApplicationContext::DataNodes()` lookup using
+     `WorkflowContextSnapshot::SelectedCatalogEntryId`.
+   - Fall back to `ApplicationContext::ActiveNode()` for current manual/test
+     workflows.
+   - Preserve the existing missing-node diagnostic when neither source is
+     available.
+2. Preserve handler boundaries.
+   - Do not add UI controls yet.
+   - Do not change Domain validation or preprocessing algorithm services.
+   - Do not persist node pointers.
+3. Add C++ regression tests before implementation:
+   - A registered crop handler succeeds when the selected catalog id is bound
+     to a MITK `DataNode` in `DataNodeRegistryService`, even without an active
+     node.
+   - Existing active-node fallback behavior still succeeds.
+   - Missing registry and active node still fails.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
