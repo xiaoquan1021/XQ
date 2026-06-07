@@ -1351,3 +1351,49 @@
 - Promoted Monolith Domain Workflow Handler Registrar Foundation to completed
   in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable workstation docs:
+    3D Slicer Segment Editor keeps image/segmentation operations as selectable
+    effects, MITK viewer examples center DataStorage-backed data/render
+    integration, OHIF modes compose workflow-specific extensions and commands,
+    and SimVascular keeps the vascular pipeline staged from image data toward
+    path/model/mesh/simulation.
+  - Rechecked local old image-processing utilities:
+    `xq_ImageProcessingUtils` already contains thresholding, connected
+    thresholding, smoothing, morphology, crop, resample, and marching-cubes
+    primitives.
+  - Chosen next slice: introduce a metadata-only Domain image-preprocessing
+    workflow service and route the registrar's image-preprocessing handler
+    through it before moving old algorithms.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing Domain
+  Service Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing image-preprocessing domain service regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_workflow_service` with
+    `Cannot open include file: 'Domain/xq_ImagePreprocessingWorkflowService.h'`.
+- Implemented the monolith image-preprocessing domain service foundation:
+  - Added `ImagePreprocessingWorkflowService` with typed result fields for
+    success, source catalog entry id, selected data display name, and message.
+  - Added validation for the `image-preprocessing` workflow id.
+  - Added validation for selected image-preprocessing-compatible data roles:
+    `DICOMSeries` and `Image`.
+  - Preserved the existing successful task message:
+    `Image Preprocessing domain workflow accepted <data>.`
+  - Routed the registrar's `image-preprocessing` handler through the new
+    domain service while leaving other data-dependent workflows on the generic
+    domain placeholder.
+- Verification for this iteration:
+  - Red/green target tests:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(image_preprocessing_workflow_service|domain_workflow_action_handlers)"`
+    passed after implementation: 2/2.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 42/42.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Domain Service Foundation to completed
+  in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

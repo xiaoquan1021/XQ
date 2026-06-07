@@ -56,10 +56,12 @@ target_link_libraries(xqMonolithCore
 )
 
 set(XQ_MONOLITH_DOMAIN_SRCS
+    Domain/xq_ImagePreprocessingWorkflowService.cxx
     Domain/xq_WorkflowActionHandlers.cxx
 )
 
 set(XQ_MONOLITH_DOMAIN_HDRS
+    Domain/xq_ImagePreprocessingWorkflowService.h
     Domain/xq_WorkflowActionHandlers.h
 )
 

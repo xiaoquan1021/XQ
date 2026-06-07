@@ -1,9 +1,13 @@
 #include "xq_WorkflowActionHandlers.h"
 
+#include "xq_ImagePreprocessingWorkflowService.h"
+
 #include "Core/xq_WorkflowActionService.h"
 
 #include <QString>
 #include <QStringList>
+
+#include <memory>
 
 namespace xq::domain
 {
@@ -36,6 +40,19 @@ CreateDefaultHandler()
     };
 }
 
+xq::core::WorkflowActionService::WorkflowActionHandler
+CreateImagePreprocessingHandler()
+{
+    auto service = std::make_shared<ImagePreprocessingWorkflowService>();
+    return [service](const xq::core::WorkflowContextSnapshot& snapshot,
+                     QString* message) {
+        const auto result = service->Run(snapshot);
+        if (message)
+            *message = result.Message;
+        return result.Succeeded;
+    };
+}
+
 } // namespace
 
 int RegisterDefaultWorkflowActionHandlers(
@@ -54,8 +71,17 @@ int RegisterDefaultWorkflowActionHandlers(
     };
 
     int registered = 0;
+    if (actions.RegisterHandler(QStringLiteral("image-preprocessing"),
+                                CreateImagePreprocessingHandler()))
+    {
+        ++registered;
+    }
+
     for (const auto& workflowId : dataDependentWorkflowIds)
     {
+        if (workflowId == QStringLiteral("image-preprocessing"))
+            continue;
+
         if (actions.RegisterHandler(workflowId, CreateDefaultHandler()))
             ++registered;
     }

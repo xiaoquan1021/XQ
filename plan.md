@@ -1430,6 +1430,52 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 7. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing Domain Service Foundation
+
+1. Add a domain image-preprocessing workflow service.
+   - Introduce `xq::domain::ImagePreprocessingWorkflowService`.
+   - Keep the first implementation metadata-only and independent from
+     Presentation widgets.
+   - Accept `WorkflowContextSnapshot` input from Core.
+   - Validate that the active workflow is `image-preprocessing`.
+   - Validate that the selected data role is image-preprocessing compatible
+     (`DICOMSeries` or `Image`).
+2. Add service result/request behavior.
+   - Return a typed result with success flag, source catalog entry id, selected
+     data display name, and message.
+   - Preserve the current domain handler task message for successful image
+     preprocessing:
+     `Image Preprocessing domain workflow accepted <data>.`
+   - Reject missing or incompatible selected data with explicit messages.
+3. Wire the domain registrar through the service.
+   - The `image-preprocessing` handler registered by
+     `RegisterDefaultWorkflowActionHandlers` should delegate to
+     `ImagePreprocessingWorkflowService`.
+   - Other data-dependent workflow handlers may keep the generic domain
+     placeholder for this slice.
+4. Add C++ regression tests before implementation:
+   - Direct service execution succeeds for selected image data.
+   - Direct service execution succeeds for selected DICOM-series data.
+   - Direct service execution rejects the wrong workflow id.
+   - Direct service execution rejects incompatible selected data roles.
+   - Registrar image-preprocessing dispatch still records the existing domain
+     handler task message.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
