@@ -1062,3 +1062,39 @@
 - Promoted Monolith Workflow Selection Context Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked data-context patterns after adding Core workflow selection.
+  - Comparable workstation shells keep the active module/workflow connected to
+    the currently selected data object or display set, so tools can decide
+    whether the current input is actionable before exposing deeper controls.
+  - Chosen next slice: add a Core workflow data context service that combines
+    active workflow selection with current data selection and catalog workflow
+    roles.
+- Added next executable phase to `plan.md`: Monolith Workflow Data Context
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing workflow data context regression test first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling the new workflow-context test with
+    `Cannot open include file: 'Core/xq_WorkflowContextService.h'`, proving
+    the new context service interface is absent.
+- Implemented the monolith workflow data context foundation:
+  - Added `WorkflowContextService` and `WorkflowContextSnapshot`.
+  - The service combines active workflow selection, selected catalog entry,
+    and catalog workflow role metadata.
+  - Added conservative accepted data roles for image preprocessing, path,
+    segmentation, modeling, meshing, simulation, and no-data workflows.
+  - `ContextChanged()` now emits only when the derived snapshot changes.
+  - `ApplicationContext` now exposes the service through
+    `WorkflowContext()`.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 36/36.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Workflow Data Context Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

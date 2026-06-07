@@ -20,6 +20,7 @@ class PreferencesService;
 class ProjectService;
 class ProjectSessionService;
 class TaskRunner;
+class WorkflowContextService;
 class WorkflowSelectionService;
 
 class ApplicationContext : public QObject
@@ -44,6 +45,7 @@ public:
     ProjectService* Projects() const;
     ProjectSessionService* ProjectSession() const;
     TaskRunner* Tasks() const;
+    WorkflowContextService* WorkflowContext() const;
     WorkflowSelectionService* WorkflowSelection() const;
 
 public slots:
@@ -70,6 +72,7 @@ private:
     DataManagementService* m_DataManagementService = nullptr;
     DataImportService* m_DataImportService = nullptr;
     ProjectSessionService* m_ProjectSessionService = nullptr;
+    WorkflowContextService* m_WorkflowContextService = nullptr;
 };
 
 } // namespace xq::core

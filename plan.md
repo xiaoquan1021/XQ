@@ -1058,6 +1058,56 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Workflow Data Context Foundation
+
+1. Add a Core workflow data context service.
+   - Introduce `xq::core::WorkflowContextService`.
+   - The service should combine `WorkflowSelectionService`,
+     `DataSelectionService`, and `DataCatalogService`.
+   - Expose a value snapshot with active workflow id/title, whether selected
+     data is required, selected catalog entry id/display name/role, and
+     whether the current selection is compatible with the active workflow.
+   - Emit `ContextChanged()` only when the snapshot actually changes.
+2. Define conservative workflow-to-data role requirements.
+   - `project`, `data`, and `python-api` should not require selected data.
+   - `image-preprocessing` should accept DICOM series and image data.
+   - `path`, `segmentation-2d`, and `segmentation-3d` should accept image
+     data.
+   - `modeling` should accept segmentation and model data.
+   - `meshing` should accept model and mesh data.
+   - `flow-simulation`, `rom-simulation`, and `multiphysics` should accept
+     mesh and simulation result data.
+3. Expose workflow context through `ApplicationContext`.
+   - Add `ApplicationContext::WorkflowContext()`.
+   - Keep this slice Core-only; do not add page controls yet.
+   - Future workflow pages should be able to consume this service instead of
+     duplicating workflow/data eligibility logic.
+4. Add C++ regression tests before implementation:
+   - A default `ApplicationContext` exposes workflow context service.
+   - Default snapshot is the first workflow and does not require selected data.
+   - Selecting `image-preprocessing` with no selected data requires data and is
+     not compatible.
+   - Importing/selecting image data makes image preprocessing compatible.
+   - Switching to `meshing` with image data is incompatible.
+   - Selecting model data makes meshing compatible.
+   - Workflow changes, selection changes, and relevant catalog changes emit
+     context changes exactly once per snapshot mutation.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
