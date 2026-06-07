@@ -935,6 +935,45 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Project Workflow Page Foundation
+
+1. Turn the `project` workflow page into a real project overview surface.
+   - Keep the stable page object name `xqWorkflowPage_project`.
+   - Add stable labels for project name, project file path, schema version,
+     and data item count.
+   - Use object names `xqProjectPageName`, `xqProjectPagePath`,
+     `xqProjectPageSchema`, and `xqProjectPageDataCount`.
+2. Bind the page to Core state.
+   - A new window with no project should show neutral no-project metadata.
+   - Successful project create/open should update the page through
+     `ProjectChanged`.
+   - Data imports/removes should update the data item count through
+     `DataCatalogService::EntriesChanged`.
+   - Failed open should leave the last successful project metadata unchanged.
+3. Keep this slice display-only.
+   - Do not add file dialogs, create/open buttons, or editable fields yet.
+   - Preserve existing workflow navigation and toolbar behavior.
+4. Add C++/Qt regression tests before implementation:
+   - Project workflow page exposes all overview labels.
+   - Creating a project updates name/path/schema labels.
+   - Importing/removing data updates the data count label.
+   - Failed open leaves project page metadata unchanged.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

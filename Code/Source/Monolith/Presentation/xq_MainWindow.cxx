@@ -1,6 +1,7 @@
 #include "xq_MainWindow.h"
 
 #include "Core/xq_ApplicationContext.h"
+#include "Core/xq_DataCatalogService.h"
 #include "Core/xq_DataHierarchyService.h"
 #include "Core/xq_DataManagementService.h"
 #include "Core/xq_DataSelectionService.h"
@@ -165,15 +166,30 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
 
     UpdateDataActions();
 
+    connect(m_Context.DataCatalog(),
+            &xq::core::DataCatalogService::EntriesChanged,
+            this,
+            [this]() {
+                UpdateProjectPageDataCount();
+            });
+
     connect(m_Context.Projects(),
             &xq::core::ProjectService::ProjectChanged,
             this,
             [this](const xq::core::ProjectMetadata& project) {
+                UpdateProjectPage(&project);
                 UpdateProjectWindowState(project);
                 UpdateProjectActions();
             });
     if (const auto* project = m_Context.Projects()->CurrentProject())
+    {
+        UpdateProjectPage(project);
         UpdateProjectWindowState(*project);
+    }
+    else
+    {
+        UpdateProjectPage(nullptr);
+    }
     UpdateProjectActions();
 
     m_Diagnostics = new QTextEdit(this);
@@ -232,6 +248,37 @@ void MainWindow::SaveProject()
 
     m_Context.PostDiagnostic(QStringLiteral("Project saved."));
     UpdateProjectActions();
+}
+
+void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)
+{
+    if (!m_ProjectNameLabel || !m_ProjectPathLabel || !m_ProjectSchemaLabel)
+        return;
+
+    if (!project)
+    {
+        m_ProjectNameLabel->setText(QStringLiteral("No project"));
+        m_ProjectPathLabel->clear();
+        m_ProjectSchemaLabel->setText(QStringLiteral("Schema: -"));
+        UpdateProjectPageDataCount();
+        return;
+    }
+
+    m_ProjectNameLabel->setText(project->Name);
+    m_ProjectPathLabel->setText(project->ProjectFilePath);
+    m_ProjectSchemaLabel->setText(
+        QStringLiteral("Schema: %1").arg(project->SchemaVersion));
+    UpdateProjectPageDataCount();
+}
+
+void MainWindow::UpdateProjectPageDataCount()
+{
+    if (!m_ProjectDataCountLabel)
+        return;
+
+    m_ProjectDataCountLabel->setText(
+        QStringLiteral("Data items: %1")
+            .arg(m_Context.DataCatalog()->Entries().size()));
 }
 
 void MainWindow::UpdateProjectWindowState(
@@ -334,6 +381,24 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
     heading->setFont(headingFont);
 
     layout->addWidget(heading);
+    if (id == QStringLiteral("project"))
+    {
+        m_ProjectNameLabel = new QLabel(page);
+        m_ProjectNameLabel->setObjectName(QStringLiteral("xqProjectPageName"));
+        m_ProjectPathLabel = new QLabel(page);
+        m_ProjectPathLabel->setObjectName(QStringLiteral("xqProjectPagePath"));
+        m_ProjectSchemaLabel = new QLabel(page);
+        m_ProjectSchemaLabel->setObjectName(
+            QStringLiteral("xqProjectPageSchema"));
+        m_ProjectDataCountLabel = new QLabel(page);
+        m_ProjectDataCountLabel->setObjectName(
+            QStringLiteral("xqProjectPageDataCount"));
+
+        layout->addWidget(m_ProjectNameLabel);
+        layout->addWidget(m_ProjectPathLabel);
+        layout->addWidget(m_ProjectSchemaLabel);
+        layout->addWidget(m_ProjectDataCountLabel);
+    }
     layout->addStretch(1);
 
     return page;

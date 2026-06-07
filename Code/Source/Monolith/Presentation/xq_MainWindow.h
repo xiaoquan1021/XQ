@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 class QAction;
+class QLabel;
 class QListWidget;
 class QStackedWidget;
 class QTextEdit;
@@ -35,6 +36,8 @@ private:
     void AddWorkflowPage(const QString& id, const QString& title);
     void RemoveSelectedData();
     void SaveProject();
+    void UpdateProjectPage(const xq::core::ProjectMetadata* project);
+    void UpdateProjectPageDataCount();
     void UpdateProjectWindowState(const xq::core::ProjectMetadata& project);
     void UpdateProjectActions();
     void SyncTreeSelectionFromCore(const QString& hierarchyNodeId);
@@ -43,6 +46,10 @@ private:
     xq::core::ApplicationContext& m_Context;
     DataHierarchyModel* m_DataHierarchyModel = nullptr;
     QTreeView* m_DataHierarchyView = nullptr;
+    QLabel* m_ProjectNameLabel = nullptr;
+    QLabel* m_ProjectPathLabel = nullptr;
+    QLabel* m_ProjectSchemaLabel = nullptr;
+    QLabel* m_ProjectDataCountLabel = nullptr;
     QAction* m_SaveProjectAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
     QListWidget* m_Navigation = nullptr;

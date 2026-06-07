@@ -939,3 +939,41 @@
 - Promoted Monolith Workflow Page Identity Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked workflow page composition after binding workflow ids to
+    navigation/page surfaces.
+  - Comparable workstation project/workflow shells expose an active project or
+    scene overview as a stable surface before deeper tool-specific controls
+    are added.
+  - Chosen next slice: make the `project` workflow page display current project
+    metadata and data count from Core services.
+- Added next executable phase to `plan.md`: Monolith Project Workflow Page
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing project workflow page regression test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_project_workflow_page`
+    failed with `project page should expose a project name label`.
+- Implemented the monolith project workflow page foundation:
+  - Added stable project overview labels to `xqWorkflowPage_project`:
+    `xqProjectPageName`, `xqProjectPagePath`, `xqProjectPageSchema`, and
+    `xqProjectPageDataCount`.
+  - New windows show neutral no-project metadata.
+  - Successful project create/open updates project page metadata through
+    `ProjectChanged`.
+  - Data import/remove updates the data item count through
+    `DataCatalogService::EntriesChanged`.
+  - Failed open leaves the last successful project page metadata unchanged.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_project_workflow_page`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 32/32.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Project Workflow Page Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
