@@ -195,3 +195,24 @@
 - Prepared the next unattended loop phase in `plan.md`:
   - Promoted Monolith Data Catalog Foundation to completed.
   - Added Active Phase: Monolith Project/Data Persistence Integration.
+- Committed and pushed XQ iteration:
+  - Commit: `e1dcf6e Add monolith data catalog foundation`.
+  - Remote branch: `feature/windows-monolith-foundation`.
+- Started the next unattended loop iteration:
+  - Added failing project/data persistence regression test first.
+  - `test_monolith_project_data_persistence` failed because `ProjectService` did not provide DataCatalog save/open overloads.
+- Implemented project/data persistence integration:
+  - Added `ProjectService::SaveProject(const DataCatalogService&, ...)`.
+  - Added `ProjectService::OpenProject(..., DataCatalogService&, ...)`.
+  - Persisted catalog entries under `.xqproj` schema `2.0` project JSON.
+  - Restored catalog entry order and workflow role metadata.
+  - Unknown workflow role values fail with an error.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 10/10.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Prepared the next unattended loop phase in `plan.md`:
+  - Promoted Monolith Project/Data Persistence Integration to completed.
+  - Added Active Phase: Monolith Data Import Service Foundation.

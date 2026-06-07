@@ -303,6 +303,12 @@ if(TARGET xqMonolithCore)
         Qt6::Core
         MitkCore
     )
+
+    xq_add_registered_test(test_monolith_project_data_persistence
+        xqMonolithCore
+        Qt6::Core
+        MitkCore
+    )
 endif()
 
 xq_add_registered_test(test_seg3d_to_model

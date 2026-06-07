@@ -9,6 +9,8 @@
 namespace xq::core
 {
 
+class DataCatalogService;
+
 struct ProjectMetadata
 {
     QString Name;
@@ -33,7 +35,12 @@ public:
                        const QString& projectFilePath,
                        QString* errorMessage = nullptr);
     bool SaveProject(QString* errorMessage = nullptr) const;
+    bool SaveProject(const DataCatalogService& dataCatalog,
+                     QString* errorMessage = nullptr) const;
     bool OpenProject(const QString& projectFilePath,
+                     QString* errorMessage = nullptr);
+    bool OpenProject(const QString& projectFilePath,
+                     DataCatalogService& dataCatalog,
                      QString* errorMessage = nullptr);
 
 private:

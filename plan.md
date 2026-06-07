@@ -154,7 +154,7 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
-## Active Phase: Monolith Project/Data Persistence Integration
+## Completed Phase: Monolith Project/Data Persistence Integration
 
 1. Extend the fresh `.xqproj` schema `2.0` project service to persist DataCatalog metadata.
    - Save registered data entries under the project JSON.
@@ -176,3 +176,24 @@ The next monolith slice is grounded in these comparable systems:
    - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
+
+## Active Phase: Monolith Data Import Service Foundation
+
+1. Add a monolith Core `xq::core::DataImportService`.
+   - Keep the first implementation metadata-only; do not perform MITK/DICOM decoding yet.
+   - Accept import requests with source path, display name, modality, and workflow role.
+   - Generate deterministic catalog ids when the caller does not provide one.
+   - Register successful imports in `DataCatalogService`.
+   - Run imports through `TaskRunner` so diagnostics/history can observe future long-running work.
+2. Add C++ regression tests before implementation:
+   - Importing an image request registers a catalog entry and task history.
+   - Caller-provided ids are preserved.
+   - Missing source path fails and does not register data.
+   - Duplicate ids fail through catalog validation.
+3. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+4. Commit and push the verified XQ iteration.
