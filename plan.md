@@ -1014,6 +1014,50 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Workflow Selection Context Foundation
+
+1. Add a Core workflow selection service.
+   - Introduce `xq::core::WorkflowSelectionService`.
+   - Default selected workflow id should be the first
+     `DefaultWorkflowRegistry()` entry.
+   - `SelectWorkflow(id)` should succeed only for known workflow ids.
+   - Valid changes should emit `WorkflowChanged(id)` exactly once.
+   - Re-selecting the current workflow should be a no-op with no signal.
+   - Missing or invalid ids should fail without mutating current state.
+2. Expose workflow selection through `ApplicationContext`.
+   - Add `ApplicationContext::WorkflowSelection()`.
+   - Keep registry ownership and ordering unchanged.
+   - Do not add workflow-specific domain services in this slice.
+3. Bind MainWindow navigation to Core workflow selection.
+   - Startup navigation/page state should match the Core selected workflow id.
+   - Selecting a navigation row should call
+     `WorkflowSelectionService::SelectWorkflow`.
+   - Programmatic Core workflow selection should update navigation and stacked
+     page state when the id is known.
+   - Invalid programmatic selections should leave UI state unchanged.
+4. Add C++/Qt regression tests before implementation:
+   - A default `ApplicationContext` exposes workflow selection service.
+   - Default selected workflow id is the first registry id.
+   - Selecting a valid workflow changes id and emits one signal.
+   - Invalid workflow id fails with no mutation and no signal.
+   - MainWindow navigation changes update Core selected workflow id.
+   - Programmatic Core workflow selection updates navigation/page state.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

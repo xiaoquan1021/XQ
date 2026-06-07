@@ -9,6 +9,7 @@
 #include "xq_ProjectService.h"
 #include "xq_ProjectSessionService.h"
 #include "xq_TaskRunner.h"
+#include "xq_WorkflowSelectionService.h"
 
 #include <mitkStandaloneDataStorage.h>
 
@@ -27,6 +28,7 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
     , m_PreferencesService(new PreferencesService(this))
     , m_ProjectService(new ProjectService(this))
     , m_TaskRunner(new TaskRunner(this))
+    , m_WorkflowSelectionService(new WorkflowSelectionService(this))
     , m_DataManagementService(new DataManagementService(*m_DataCatalogService,
                                                         *m_DataHierarchyService,
                                                         *m_DataSelectionService,
@@ -126,6 +128,11 @@ ProjectSessionService* ApplicationContext::ProjectSession() const
 TaskRunner* ApplicationContext::Tasks() const
 {
     return m_TaskRunner;
+}
+
+WorkflowSelectionService* ApplicationContext::WorkflowSelection() const
+{
+    return m_WorkflowSelectionService;
 }
 
 void ApplicationContext::SetActiveNode(mitk::DataNode::Pointer node)

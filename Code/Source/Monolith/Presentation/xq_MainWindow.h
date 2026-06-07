@@ -36,6 +36,7 @@ private:
     void AddWorkflowPage(const QString& id, const QString& title);
     void RemoveSelectedData();
     void SaveProject();
+    void SyncWorkflowNavigationFromCore(const QString& workflowId);
     void UpdateDataWorkflowPage();
     void UpdateProjectPage(const xq::core::ProjectMetadata* project);
     void UpdateProjectPageDataCount();

@@ -20,6 +20,7 @@ class PreferencesService;
 class ProjectService;
 class ProjectSessionService;
 class TaskRunner;
+class WorkflowSelectionService;
 
 class ApplicationContext : public QObject
 {
@@ -43,6 +44,7 @@ public:
     ProjectService* Projects() const;
     ProjectSessionService* ProjectSession() const;
     TaskRunner* Tasks() const;
+    WorkflowSelectionService* WorkflowSelection() const;
 
 public slots:
     void SetActiveNode(mitk::DataNode::Pointer node);
@@ -64,6 +66,7 @@ private:
     PreferencesService* m_PreferencesService = nullptr;
     ProjectService* m_ProjectService = nullptr;
     TaskRunner* m_TaskRunner = nullptr;
+    WorkflowSelectionService* m_WorkflowSelectionService = nullptr;
     DataManagementService* m_DataManagementService = nullptr;
     DataImportService* m_DataImportService = nullptr;
     ProjectSessionService* m_ProjectSessionService = nullptr;

@@ -8,6 +8,7 @@
 #include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_ProjectService.h"
 #include "Core/xq_WorkflowRegistry.h"
+#include "Core/xq_WorkflowSelectionService.h"
 #include "xq_DataHierarchyModel.h"
 
 #include <QAction>
@@ -116,8 +117,27 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         AddWorkflowPage(workflow.Id, workflow.Title);
 
     connect(m_Navigation, &QListWidget::currentRowChanged,
-            m_Pages, &QStackedWidget::setCurrentIndex);
-    m_Navigation->setCurrentRow(0);
+            this,
+            [this](int row) {
+                if (row < 0)
+                    return;
+
+                m_Pages->setCurrentIndex(row);
+                auto* item = m_Navigation->item(row);
+                if (!item)
+                    return;
+
+                m_Context.WorkflowSelection()->SelectWorkflow(
+                    item->data(Qt::UserRole).toString());
+            });
+    connect(m_Context.WorkflowSelection(),
+            &xq::core::WorkflowSelectionService::WorkflowChanged,
+            this,
+            [this](const QString& workflowId) {
+                SyncWorkflowNavigationFromCore(workflowId);
+            });
+    SyncWorkflowNavigationFromCore(
+        m_Context.WorkflowSelection()->SelectedWorkflowId());
 
     connect(m_DataHierarchyView->selectionModel(),
             &QItemSelectionModel::currentChanged,
@@ -281,6 +301,26 @@ void MainWindow::SaveProject()
 
     m_Context.PostDiagnostic(QStringLiteral("Project saved."));
     UpdateProjectActions();
+}
+
+void MainWindow::SyncWorkflowNavigationFromCore(const QString& workflowId)
+{
+    if (!m_Navigation || !m_Pages)
+        return;
+
+    for (int row = 0; row < m_Navigation->count(); ++row)
+    {
+        auto* item = m_Navigation->item(row);
+        if (!item)
+            continue;
+
+        if (item->data(Qt::UserRole).toString() != workflowId)
+            continue;
+
+        m_Navigation->setCurrentRow(row);
+        m_Pages->setCurrentIndex(row);
+        return;
+    }
 }
 
 void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)

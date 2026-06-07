@@ -12,6 +12,7 @@ set(XQ_MONOLITH_CORE_SRCS
     Core/xq_ProjectSessionService.cxx
     Core/xq_TaskRunner.cxx
     Core/xq_WorkflowRegistry.cxx
+    Core/xq_WorkflowSelectionService.cxx
 )
 
 set(XQ_MONOLITH_CORE_HDRS
@@ -26,6 +27,7 @@ set(XQ_MONOLITH_CORE_HDRS
     Core/xq_ProjectSessionService.h
     Core/xq_TaskRunner.h
     Core/xq_WorkflowRegistry.h
+    Core/xq_WorkflowSelectionService.h
 )
 
 add_library(xqMonolithCore STATIC

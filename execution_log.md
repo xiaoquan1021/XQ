@@ -1014,3 +1014,51 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Data Workflow Page Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked module/workflow context patterns in comparable workstation
+    shells after adding concrete project and data workflow pages.
+  - 3D Slicer organizes tools around a selected module in the module panel,
+    MITK Workbench uses active views/perspectives to coordinate the workbench,
+    and OHIF modes compose services/extensions around the active viewer
+    workflow.
+  - Chosen next slice: add a Core workflow selection service and bind
+    MainWindow navigation/page state to it, so future workflow pages can
+    consume one application-level active workflow context.
+- Added next executable phase to `plan.md`: Monolith Workflow Selection
+  Context Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing workflow-selection service and MainWindow navigation
+    regression tests first.
+- Red test observed:
+  - Initial direct `cmake --build` attempt showed the shell does not expose
+    bare `cmake`; this was not accepted as RED.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling the new workflow-selection tests with
+    `Cannot open include file: 'Core/xq_WorkflowSelectionService.h'`, proving
+    the new service interface is absent.
+- Implemented the monolith workflow selection context foundation:
+  - Added `WorkflowSelectionService` with registry-backed workflow id
+    validation.
+  - Default selection now starts at the first `DefaultWorkflowRegistry()` id.
+  - Valid changes update selected id and emit `WorkflowChanged` once.
+  - Re-selecting the same valid workflow is a no-op with no signal.
+  - Invalid or empty workflow ids fail without mutation or signal.
+  - `ApplicationContext` now exposes the service through
+    `WorkflowSelection()`.
+  - MainWindow navigation changes update Core selected workflow id, and
+    programmatic Core workflow selection updates navigation/page state.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 test -ExternalsRoot ..\Externals` passed:
+    35/35.
+  - PowerShell test loop initially reused stale `$LASTEXITCODE`; root cause
+    was that repository `.ps1` tests signal failure through `throw`, so the
+    loop was rerun with exception handling.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 35/35.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Workflow Selection Context Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
