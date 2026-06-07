@@ -89,6 +89,7 @@ target_link_libraries(xqMonolithDomain
 )
 
 set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
+    Infrastructure/xq_DataNodeImportService.cxx
     Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.cxx
     Infrastructure/xq_ImagePreprocessingApplicationCommitService.cxx
     Infrastructure/xq_ImagePreprocessingCatalogCommitService.cxx
@@ -100,6 +101,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
 )
 
 set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
+    Infrastructure/xq_DataNodeImportService.h
     Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.h
     Infrastructure/xq_ImagePreprocessingApplicationCommitService.h
     Infrastructure/xq_ImagePreprocessingCatalogCommitService.h

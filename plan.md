@@ -2309,6 +2309,45 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Node Import Service Foundation
+
+1. Add an Infrastructure `DataNodeImportService` for already-created MITK data
+   nodes.
+   - Accept `mitk::DataStorage`, Core `DataImportService`,
+     `DataNodeRegistryService`, a `DataImportRequest`, and a MITK
+     `DataNode`.
+   - Run metadata import through the existing Core service.
+   - Add the node to `DataStorage` and bind the imported catalog id to the node
+     in `DataNodeRegistryService`.
+2. Keep this slice as a node-import bridge only.
+   - Do not decode files from disk yet.
+   - Do not add UI import dialogs yet.
+   - Do not change project persistence.
+3. Preserve failure behavior.
+   - Reject missing storage, import service, registry, and node.
+   - Failed metadata imports must not mutate `DataStorage` or node registry.
+4. Add C++ regression tests before implementation:
+   - Service rejects missing dependencies with clear diagnostics.
+   - Failed metadata import does not add storage nodes or registry bindings.
+   - Valid import adds the node to `DataStorage`, registers catalog/hierarchy
+     metadata, selects the imported entry through Core import behavior, and
+     binds the catalog id to the node.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

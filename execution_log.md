@@ -2250,3 +2250,45 @@
 - Promoted Monolith Data Management DataNode Registry Cleanup to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the import path after data-node registry cleanup landed.
+  - `DataImportService` is intentionally metadata-only; now that Core has
+    registry lifecycle, the next gap is a bridge for already-created MITK nodes
+    that imports metadata, adds the node to `DataStorage`, and binds the node to
+    the imported catalog id.
+  - Chosen next slice: add an Infrastructure `DataNodeImportService` without
+    file decoding or UI dialogs.
+- Added next executable phase to `plan.md`: Monolith Data Node Import Service
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing data-node import service regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_data_node_import_service` because
+    `Infrastructure/xq_DataNodeImportService.h` did not exist.
+- Implemented the monolith data-node import service foundation:
+  - Added Infrastructure `DataNodeImportService`.
+  - The service composes Core `DataImportService`,
+    `DataNodeRegistryService`, and MITK `DataStorage` for already-created
+    MITK nodes.
+  - Missing storage, Core import service, registry, and node inputs are rejected
+    with explicit diagnostics.
+  - Failed metadata imports do not mutate `DataStorage` or registry bindings.
+  - Valid imports add the node to `DataStorage`, register metadata/hierarchy
+    through Core import behavior, select the imported entry, and bind the
+    catalog id to the node.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_node_import_service`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 52/52.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Node Import Service Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
