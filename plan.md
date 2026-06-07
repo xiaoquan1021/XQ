@@ -1381,6 +1381,55 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Domain Workflow Handler Registrar Foundation
+
+1. Add a monolith Domain library.
+   - Introduce `xqMonolithDomain`.
+   - Keep the library dependent on `xqMonolithCore`, not Presentation.
+   - Add namespace `xq::domain`.
+2. Add default workflow action handler registration.
+   - Introduce `xq::domain::RegisterDefaultWorkflowActionHandlers`.
+   - Register handlers for data-dependent workflow ids:
+     `image-preprocessing`, `path`, `segmentation-2d`, `segmentation-3d`,
+     `modeling`, `meshing`, `flow-simulation`, `rom-simulation`, and
+     `multiphysics`.
+   - Do not register `project`, `data`, or `python-api` handlers in this
+     slice.
+   - Handler messages should contain the workflow title and selected data
+     display name.
+3. Wire monolith app bootstrap.
+   - `main.cxx` should register default domain handlers after creating
+     `ApplicationContext`.
+   - Keep tests that instantiate `ApplicationContext::CreateDefault` without
+     domain registration stable.
+4. Keep this slice as dispatcher plumbing.
+   - Do not call old algorithm utilities yet.
+   - Do not alter MainWindow primary action button object names or state.
+5. Add C++ regression tests before implementation:
+   - Default domain handler registration returns the number of registered
+     handlers.
+   - Data-dependent workflow ids report handlers after registration.
+   - `project`, `data`, and `python-api` do not report handlers.
+   - Running image preprocessing after registration invokes the domain handler
+     and stores the domain handler message in task history.
+   - A workflow without domain registration preserves placeholder behavior in
+     a plain `ApplicationContext`.
+6. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+7. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

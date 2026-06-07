@@ -1,4 +1,5 @@
 #include "Core/xq_ApplicationContext.h"
+#include "Domain/xq_WorkflowActionHandlers.h"
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
@@ -20,6 +21,8 @@ int main(int argc, char* argv[])
 
     std::unique_ptr<xq::core::ApplicationContext> context(
         xq::core::ApplicationContext::CreateDefault());
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *context->WorkflowActions());
 
     xq::presentation::MainWindow window(*context);
 

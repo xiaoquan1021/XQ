@@ -55,6 +55,35 @@ target_link_libraries(xqMonolithCore
         Qt6::Core
 )
 
+set(XQ_MONOLITH_DOMAIN_SRCS
+    Domain/xq_WorkflowActionHandlers.cxx
+)
+
+set(XQ_MONOLITH_DOMAIN_HDRS
+    Domain/xq_WorkflowActionHandlers.h
+)
+
+add_library(xqMonolithDomain STATIC
+    ${XQ_MONOLITH_DOMAIN_SRCS}
+    ${XQ_MONOLITH_DOMAIN_HDRS}
+)
+
+set_target_properties(xqMonolithDomain PROPERTIES
+    AUTOMOC ON
+)
+
+target_include_directories(xqMonolithDomain
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+target_link_libraries(xqMonolithDomain
+    PUBLIC
+        xqMonolithCore
+        Qt6::Core
+)
+
 set(XQ_MONOLITH_PRESENTATION_SRCS
     Presentation/xq_DataHierarchyModel.cxx
     Presentation/xq_MainWindow.cxx
@@ -107,6 +136,7 @@ target_include_directories(XQMonolith
 
 target_link_libraries(XQMonolith
     PRIVATE
+        xqMonolithDomain
         xqMonolithPresentation
         MitkQtWidgets
         Qt6::Widgets

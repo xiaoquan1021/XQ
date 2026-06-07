@@ -422,6 +422,13 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_domain_workflow_action_handlers
+        xqMonolithDomain
+        xqMonolithCore
+        Qt6::Core
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_workflow_context_status_page
         xqMonolithPresentation
         xqMonolithCore

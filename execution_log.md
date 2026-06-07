@@ -1315,3 +1315,39 @@
 - Promoted Monolith Workflow Action Handler Dispatcher Foundation to completed
   in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked monolith layering after adding handler dispatch in Core.
+  - The next architectural gap is a Domain-level registration point so real
+    workflow services can attach without editing Presentation.
+  - Chosen next slice: add `xqMonolithDomain` and default workflow action
+    handler registration for data-dependent workflows.
+- Added next executable phase to `plan.md`: Monolith Domain Workflow Handler
+  Registrar Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing domain workflow handler registrar regression test first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_domain_workflow_action_handlers` with
+    `Cannot open include file: 'Domain/xq_WorkflowActionHandlers.h'`.
+- Implemented the monolith domain workflow handler registrar foundation:
+  - Added `xqMonolithDomain` as a static library depending on
+    `xqMonolithCore`.
+  - Added `xq::domain::RegisterDefaultWorkflowActionHandlers`.
+  - Registered default handlers for image preprocessing, path, 2D/3D
+    segmentation, modeling, meshing, flow, ROM, and multiphysics workflows.
+  - Left project, data, and Python API workflows without domain handlers in
+    this slice.
+  - Wired `XQMonolith` bootstrap to register default domain handlers after
+    creating `ApplicationContext`.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_domain_workflow_action_handlers`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 41/41.
+- Promoted Monolith Domain Workflow Handler Registrar Foundation to completed
+  in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
