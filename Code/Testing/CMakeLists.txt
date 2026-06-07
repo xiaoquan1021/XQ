@@ -469,6 +469,15 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_image_preprocessing_storage_commit_service
+        xqMonolithInfrastructure
+        xqMonolithDomain
+        xqMonolithCore
+        xqModuleCommon
+        Qt6::Core
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_workflow_context_status_page
         xqMonolithPresentation
         xqMonolithCore

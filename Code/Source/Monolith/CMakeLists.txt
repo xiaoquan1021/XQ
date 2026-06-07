@@ -91,6 +91,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
     Infrastructure/xq_ImagePreprocessingExecutionService.cxx
     Infrastructure/xq_ImagePreprocessingMitkImageAdapter.cxx
     Infrastructure/xq_ImagePreprocessingResultNodeFactory.cxx
+    Infrastructure/xq_ImagePreprocessingStorageCommitService.cxx
 )
 
 set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
@@ -98,6 +99,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
     Infrastructure/xq_ImagePreprocessingExecutionService.h
     Infrastructure/xq_ImagePreprocessingMitkImageAdapter.h
     Infrastructure/xq_ImagePreprocessingResultNodeFactory.h
+    Infrastructure/xq_ImagePreprocessingStorageCommitService.h
 )
 
 add_library(xqMonolithInfrastructure STATIC

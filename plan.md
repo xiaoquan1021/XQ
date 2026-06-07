@@ -2047,6 +2047,44 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing Storage Commit Service
+
+1. Add an Infrastructure service that commits preprocessing results to
+   `mitk::DataStorage`.
+   - Accept `mitk::DataStorage`, source `mitk::DataNode`, workflow snapshot,
+     operation id, parameters, and result suffix.
+   - Extract the source VTK image through the MITK image adapter.
+   - Execute the operation through the execution service.
+   - Create the result node through the result node factory.
+   - Add the result node under the source node in `DataStorage`.
+2. Preserve adapter layering.
+   - Keep Domain independent from storage mutation.
+   - Keep this storage commit path in Infrastructure.
+3. Keep this slice as storage mutation only.
+   - Do not mutate `DataCatalogService` or project files.
+   - Do not add UI controls yet.
+   - Do not register the service into `ApplicationContext` yet.
+4. Add C++ regression tests before implementation:
+   - Service rejects a missing `DataStorage`.
+   - Service rejects an unusable source image node through the MITK adapter.
+   - Service executes a valid crop request, creates a result image node, and
+     adds it under the source node in `DataStorage`.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
