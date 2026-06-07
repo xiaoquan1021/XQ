@@ -119,4 +119,27 @@ ImagePreprocessingAlgorithmAdapter::RunGaussianSmoothing(
     return result;
 }
 
+ImagePreprocessingAlgorithmResult
+ImagePreprocessingAlgorithmAdapter::RunMorphologyOpenClose(
+    vtkImageData* input,
+    const QVariantMap& parameters) const
+{
+    xq::domain::ImagePreprocessingWorkflowService domainService;
+    const auto validation =
+        domainService.ValidateOperationParameters(
+            QStringLiteral("morphology-open-close"), parameters);
+    if (!validation.Succeeded)
+        return FailedResult(validation.Message);
+
+    const auto imageResult =
+        xq_ImageProcessingUtils::MorphologicalOpenClose(
+            input, parameters.value(QStringLiteral("radius")).toInt());
+
+    ImagePreprocessingAlgorithmResult result;
+    result.Succeeded = imageResult.ok;
+    result.Image = imageResult.image;
+    result.Message = QString::fromStdString(imageResult.diagnostic);
+    return result;
+}
+
 } // namespace xq::infrastructure

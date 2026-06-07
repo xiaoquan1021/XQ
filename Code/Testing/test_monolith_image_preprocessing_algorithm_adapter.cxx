@@ -43,6 +43,33 @@ vtkSmartPointer<vtkImageData> MakeImage()
     return image;
 }
 
+vtkSmartPointer<vtkImageData> MakeBinaryImage()
+{
+    auto image = vtkSmartPointer<vtkImageData>::New();
+    image->SetDimensions(5, 5, 5);
+    image->AllocateScalars(VTK_FLOAT, 1);
+
+    for (int z = 0; z < 5; ++z)
+    {
+        for (int y = 0; y < 5; ++y)
+        {
+            for (int x = 0; x < 5; ++x)
+            {
+                auto* voxel =
+                    static_cast<float*>(image->GetScalarPointer(x, y, z));
+                *voxel =
+                    (x >= 1 && x <= 3 &&
+                     y >= 1 && y <= 3 &&
+                     z >= 1 && z <= 3)
+                        ? 1.0f
+                        : 0.0f;
+            }
+        }
+    }
+
+    return image;
+}
+
 QVariantMap GaussianParameters(double sigma)
 {
     QVariantMap parameters;
@@ -57,6 +84,13 @@ QVariantMap BinaryThresholdParameters()
     parameters.insert(QStringLiteral("upper"), 6.0);
     parameters.insert(QStringLiteral("inside-value"), 1.0);
     parameters.insert(QStringLiteral("outside-value"), 0.0);
+    return parameters;
+}
+
+QVariantMap MorphologyParameters(int radius)
+{
+    QVariantMap parameters;
+    parameters.insert(QStringLiteral("radius"), radius);
     return parameters;
 }
 
@@ -224,6 +258,56 @@ int main(int argc, char** argv)
         connectedThresholdResult.Image->GetScalarPointer(1, 1, 1));
     if (Expect(connectedSeedVoxel && *connectedSeedVoxel == 1.0f,
                "connected threshold should select the seeded in-range voxel"))
+        return 1;
+
+    const auto nullMorphologyResult =
+        adapter.RunMorphologyOpenClose(nullptr, MorphologyParameters(1));
+    if (Expect(!nullMorphologyResult.Succeeded,
+               "null morphology input should fail"))
+        return 1;
+    if (Expect(nullMorphologyResult.Message ==
+                   QStringLiteral("MorphologicalOpenClose: input image is null."),
+               "null morphology input should use legacy diagnostic"))
+        return 1;
+
+    const auto missingMorphologyRadiusResult =
+        adapter.RunMorphologyOpenClose(MakeBinaryImage(), QVariantMap());
+    if (Expect(!missingMorphologyRadiusResult.Succeeded,
+               "missing morphology radius should fail"))
+        return 1;
+    if (Expect(missingMorphologyRadiusResult.Message ==
+                   QStringLiteral("Image preprocessing parameter is required: radius."),
+               "missing morphology radius should use domain validation"))
+        return 1;
+    if (Expect(missingMorphologyRadiusResult.Image == nullptr,
+               "invalid morphology parameters should not produce image"))
+        return 1;
+
+    const auto invalidMorphologyRadiusResult =
+        adapter.RunMorphologyOpenClose(MakeBinaryImage(), MorphologyParameters(0));
+    if (Expect(!invalidMorphologyRadiusResult.Succeeded,
+               "invalid morphology radius should fail"))
+        return 1;
+    if (Expect(invalidMorphologyRadiusResult.Message ==
+                   QStringLiteral("MorphologicalOpenClose: radius must be >= 1."),
+               "invalid morphology radius should use legacy diagnostic"))
+        return 1;
+
+    input = MakeBinaryImage();
+    inputDimensions = input->GetDimensions();
+    const auto morphologyResult =
+        adapter.RunMorphologyOpenClose(input, MorphologyParameters(1));
+    if (Expect(morphologyResult.Succeeded,
+               "valid morphology request should succeed"))
+        return 1;
+    if (Expect(morphologyResult.Image != nullptr,
+               "valid morphology request should return image"))
+        return 1;
+    outputDimensions = morphologyResult.Image->GetDimensions();
+    if (Expect(outputDimensions[0] == inputDimensions[0] &&
+                   outputDimensions[1] == inputDimensions[1] &&
+                   outputDimensions[2] == inputDimensions[2],
+               "morphology should preserve image dimensions"))
         return 1;
 
     return 0;

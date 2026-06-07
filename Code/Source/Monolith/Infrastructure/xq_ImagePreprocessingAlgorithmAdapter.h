@@ -31,6 +31,10 @@ public:
     ImagePreprocessingAlgorithmResult RunGaussianSmoothing(
         vtkImageData* input,
         const QVariantMap& parameters) const;
+
+    ImagePreprocessingAlgorithmResult RunMorphologyOpenClose(
+        vtkImageData* input,
+        const QVariantMap& parameters) const;
 };
 
 } // namespace xq::infrastructure

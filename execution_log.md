@@ -1697,3 +1697,39 @@
 - Promoted Monolith Connected Threshold Infrastructure Adapter to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable preprocessing tools and legacy
+    `MorphologicalOpenClose` after connected-threshold seed conversion landed.
+  - Morphology open/close is the next low-risk adapter because it exercises the
+    integer radius schema and returns a VTK image without data-store mutation.
+  - Chosen next slice: add morphology open/close execution to the Infrastructure
+    adapter.
+- Added next executable phase to `plan.md`: Monolith Morphology
+  Infrastructure Adapter.
+- Started the next unattended loop iteration:
+  - Adding failing morphology adapter regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_algorithm_adapter` because
+    `ImagePreprocessingAlgorithmAdapter` had no `RunMorphologyOpenClose`
+    member.
+- Implemented the monolith morphology infrastructure adapter:
+  - Added `RunMorphologyOpenClose(vtkImageData*, QVariantMap parameters)`.
+  - Reused Domain validation for `morphology-open-close` parameters.
+  - Delegated valid requests to
+    `xq_ImageProcessingUtils::MorphologicalOpenClose`.
+  - Preserved layer separation: Domain still does not link legacy algorithm
+    modules.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_algorithm_adapter`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 43/43.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Morphology Infrastructure Adapter to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
