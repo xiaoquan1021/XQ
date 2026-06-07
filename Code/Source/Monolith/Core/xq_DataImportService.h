@@ -9,6 +9,7 @@
 namespace xq::core
 {
 
+class DataHierarchyService;
 class TaskRunner;
 
 struct DataImportRequest
@@ -35,16 +36,30 @@ public:
     DataImportService(DataCatalogService& dataCatalog,
                       TaskRunner& taskRunner,
                       QObject* parent = nullptr);
+    DataImportService(DataCatalogService& dataCatalog,
+                      DataHierarchyService& dataHierarchy,
+                      TaskRunner& taskRunner,
+                      QObject* parent = nullptr);
 
     DataImportResult Import(const DataImportRequest& request,
                             QString* errorMessage = nullptr);
 
 private:
+    bool AddHierarchyEntry(DataHierarchyService& dataHierarchy,
+                           const DataCatalogEntry& entry,
+                           QString* errorMessage);
+    bool ValidateHierarchyTarget(const DataHierarchyService& dataHierarchy,
+                                 const DataCatalogEntry& entry,
+                                 QString* errorMessage) const;
+    static QString HierarchyDataNodeId(const QString& catalogEntryId);
+    static QString RoleFolderDisplayName(DataWorkflowRole role);
+    static QString RoleFolderId(DataWorkflowRole role);
     static QString GenerateId(const DataImportRequest& request);
     static QString NormalizedToken(QString value);
     static void SetError(QString* errorMessage, const QString& message);
 
     DataCatalogService& m_DataCatalog;
+    DataHierarchyService* m_DataHierarchy = nullptr;
     TaskRunner& m_TaskRunner;
 };
 

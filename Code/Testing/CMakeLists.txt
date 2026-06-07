@@ -322,6 +322,12 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_data_import_hierarchy
+        xqMonolithCore
+        Qt6::Core
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_project_session_service
         xqMonolithCore
         Qt6::Core

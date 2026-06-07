@@ -371,3 +371,40 @@
 - Promoted Monolith Project Session State Replacement to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked comparable data-import/data-tree behavior after transactional
+    project open landed.
+  - Slicer-style data loading places loaded data into a subject/data hierarchy,
+    MITK Workbench centers imported data in Data Manager, and SimVascular
+    workflows organize imported images before downstream paths, segmentations,
+    models, meshes, and simulations.
+  - Chosen next slice: wire metadata-only monolith data imports into
+    `DataHierarchyService` so imported entries appear in the project tree as
+    deterministic role folders and data-entry nodes.
+- Added next executable phase to `plan.md`: Monolith Data Import Hierarchy
+  Integration.
+- Started the next unattended loop iteration:
+  - Added failing data import hierarchy regression test first.
+  - `test_monolith_data_import_hierarchy` failed because context imports did not
+    create a role folder or data-entry node in `DataHierarchyService`.
+- Implemented data import hierarchy integration:
+  - Added a `DataImportService` constructor that accepts `DataHierarchyService`.
+  - `ApplicationContext` now wires the importer to the context hierarchy.
+  - Context imports create deterministic role folders such as `images` and
+    deterministic data nodes such as `data-image-001`.
+  - Multiple imports reuse the role folder and preserve data-node order.
+  - Import with hierarchy now uses temporary catalog/hierarchy services and
+    commits both only after the whole import validates.
+  - The existing catalog-only importer constructor remains available and its
+    tests continue to pass.
+- Verification for this iteration:
+  - Red test observed: `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_import_hierarchy`
+    failed with `context image import should create one role folder`.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 17/17.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Import Hierarchy Integration to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

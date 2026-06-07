@@ -339,6 +339,45 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Import Hierarchy Integration
+
+1. Integrate `DataImportService` with `DataHierarchyService`.
+   - Successful imports register catalog metadata and create project-tree
+     hierarchy nodes in one workflow operation.
+   - Keep existing catalog-only `DataImportService` construction working for
+     narrow unit tests.
+   - `ApplicationContext` should wire the importer to the context hierarchy.
+2. Add deterministic hierarchy placement for imported entries.
+   - Create or reuse a root-level role folder for the imported workflow role.
+   - Add a data-entry node under that role folder referencing the catalog entry
+     id.
+   - Use stable folder/node ids so project persistence roundtrips are
+     deterministic.
+3. Keep failure behavior conservative.
+   - Missing source paths and duplicate catalog ids must not mutate hierarchy.
+   - Duplicate hierarchy node ids must fail before catalog mutation when the
+     importer owns a hierarchy service.
+4. Add C++ regression tests before implementation:
+   - Import through `ApplicationContext` creates a role folder and data-entry
+     hierarchy node.
+   - Multiple image imports reuse the image folder and preserve data-node order.
+   - Duplicate imports fail without adding hierarchy nodes.
+   - Existing catalog-only importer tests keep passing.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation again.

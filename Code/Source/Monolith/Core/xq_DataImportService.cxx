@@ -1,5 +1,6 @@
 #include "xq_DataImportService.h"
 
+#include "xq_DataHierarchyService.h"
 #include "xq_TaskRunner.h"
 
 #include <QFileInfo>
@@ -45,6 +46,17 @@ DataImportService::DataImportService(DataCatalogService& dataCatalog,
 {
 }
 
+DataImportService::DataImportService(DataCatalogService& dataCatalog,
+                                     DataHierarchyService& dataHierarchy,
+                                     TaskRunner& taskRunner,
+                                     QObject* parent)
+    : QObject(parent)
+    , m_DataCatalog(dataCatalog)
+    , m_DataHierarchy(&dataHierarchy)
+    , m_TaskRunner(taskRunner)
+{
+}
+
 DataImportResult DataImportService::Import(const DataImportRequest& request,
                                            QString* errorMessage)
 {
@@ -76,14 +88,56 @@ DataImportResult DataImportService::Import(const DataImportRequest& request,
     const bool taskSucceeded = m_TaskRunner.RunBlocking(
         taskName,
         [this, &entry](QString* message) {
+            if (m_DataHierarchy)
+            {
+                QString hierarchyTargetError;
+                if (!ValidateHierarchyTarget(*m_DataHierarchy,
+                                             entry,
+                                             &hierarchyTargetError))
+                {
+                    if (message)
+                        *message = hierarchyTargetError;
+                    return false;
+                }
+            }
+
+            DataCatalogService parsedCatalog;
+            parsedCatalog.ReplaceWith(m_DataCatalog);
             QString catalogError;
             const bool registered =
-                m_DataCatalog.RegisterEntry(entry, &catalogError);
+                parsedCatalog.RegisterEntry(entry, &catalogError);
+            if (!registered)
+            {
+                if (message)
+                    *message = catalogError;
+                return false;
+            }
+
+            if (!m_DataHierarchy)
+            {
+                m_DataCatalog.ReplaceWith(parsedCatalog);
+                if (message)
+                    *message = QStringLiteral("Imported data catalog entry.");
+                return true;
+            }
+
+            DataHierarchyService parsedHierarchy;
+            parsedHierarchy.ReplaceWith(*m_DataHierarchy);
+            QString hierarchyError;
+            const bool hierarchyAdded =
+                AddHierarchyEntry(parsedHierarchy, entry, &hierarchyError);
+            if (!hierarchyAdded)
+            {
+                if (message)
+                    *message = hierarchyError;
+                return false;
+            }
+
+            m_DataCatalog.ReplaceWith(parsedCatalog);
+            m_DataHierarchy->ReplaceWith(parsedHierarchy);
             if (message)
-                *message = registered
-                               ? QStringLiteral("Imported data catalog entry.")
-                               : catalogError;
-            return registered;
+                *message = QStringLiteral("Imported data catalog entry.");
+            return true;
         },
         &taskMessage);
 
@@ -92,6 +146,105 @@ DataImportResult DataImportService::Import(const DataImportRequest& request,
     result.Message = taskMessage;
     SetError(errorMessage, result.Message);
     return result;
+}
+
+bool DataImportService::AddHierarchyEntry(DataHierarchyService& dataHierarchy,
+                                          const DataCatalogEntry& entry,
+                                          QString* errorMessage)
+{
+    const QString folderId = RoleFolderId(entry.WorkflowRole);
+    if (dataHierarchy.FindNode(folderId) == nullptr)
+    {
+        if (!dataHierarchy.AddFolder(folderId,
+                                     dataHierarchy.RootId(),
+                                     RoleFolderDisplayName(entry.WorkflowRole),
+                                     errorMessage))
+        {
+            return false;
+        }
+    }
+
+    return dataHierarchy.AddDataEntry(HierarchyDataNodeId(entry.Id),
+                                      folderId,
+                                      entry.Id,
+                                      entry.DisplayName,
+                                      errorMessage);
+}
+
+bool DataImportService::ValidateHierarchyTarget(
+    const DataHierarchyService& dataHierarchy,
+    const DataCatalogEntry& entry,
+    QString* errorMessage) const
+{
+    const QString folderId = RoleFolderId(entry.WorkflowRole);
+    const auto* existingFolder = dataHierarchy.FindNode(folderId);
+    if (existingFolder && existingFolder->Kind != DataHierarchyNodeKind::Folder)
+    {
+        SetError(errorMessage,
+                 QStringLiteral("Hierarchy import target is not a folder."));
+        return false;
+    }
+
+    if (dataHierarchy.FindNode(HierarchyDataNodeId(entry.Id)) != nullptr)
+    {
+        SetError(errorMessage,
+                 QStringLiteral("Duplicate hierarchy node id."));
+        return false;
+    }
+
+    SetError(errorMessage, QString());
+    return true;
+}
+
+QString DataImportService::HierarchyDataNodeId(const QString& catalogEntryId)
+{
+    return QStringLiteral("data-%1").arg(catalogEntryId.trimmed());
+}
+
+QString DataImportService::RoleFolderDisplayName(DataWorkflowRole role)
+{
+    switch (role)
+    {
+    case DataWorkflowRole::DICOMSeries:
+        return QStringLiteral("DICOM");
+    case DataWorkflowRole::Image:
+        return QStringLiteral("Images");
+    case DataWorkflowRole::Segmentation:
+        return QStringLiteral("Segmentations");
+    case DataWorkflowRole::Model:
+        return QStringLiteral("Models");
+    case DataWorkflowRole::Mesh:
+        return QStringLiteral("Meshes");
+    case DataWorkflowRole::SimulationResult:
+        return QStringLiteral("Simulation Results");
+    case DataWorkflowRole::Unknown:
+        break;
+    }
+
+    return QStringLiteral("Data");
+}
+
+QString DataImportService::RoleFolderId(DataWorkflowRole role)
+{
+    switch (role)
+    {
+    case DataWorkflowRole::DICOMSeries:
+        return QStringLiteral("dicom");
+    case DataWorkflowRole::Image:
+        return QStringLiteral("images");
+    case DataWorkflowRole::Segmentation:
+        return QStringLiteral("segmentations");
+    case DataWorkflowRole::Model:
+        return QStringLiteral("models");
+    case DataWorkflowRole::Mesh:
+        return QStringLiteral("meshes");
+    case DataWorkflowRole::SimulationResult:
+        return QStringLiteral("simulation-results");
+    case DataWorkflowRole::Unknown:
+        break;
+    }
+
+    return QStringLiteral("data");
 }
 
 QString DataImportService::GenerateId(const DataImportRequest& request)
