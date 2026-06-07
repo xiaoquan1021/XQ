@@ -3,6 +3,7 @@ project(XQ_Monolith)
 set(XQ_MONOLITH_CORE_SRCS
     Core/xq_ApplicationContext.cxx
     Core/xq_DataCatalogService.cxx
+    Core/xq_DataImportService.cxx
     Core/xq_PreferencesService.cxx
     Core/xq_ProjectService.cxx
     Core/xq_TaskRunner.cxx
@@ -12,6 +13,7 @@ set(XQ_MONOLITH_CORE_SRCS
 set(XQ_MONOLITH_CORE_HDRS
     Core/xq_ApplicationContext.h
     Core/xq_DataCatalogService.h
+    Core/xq_DataImportService.h
     Core/xq_PreferencesService.h
     Core/xq_ProjectService.h
     Core/xq_TaskRunner.h

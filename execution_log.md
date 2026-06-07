@@ -216,3 +216,24 @@
 - Prepared the next unattended loop phase in `plan.md`:
   - Promoted Monolith Project/Data Persistence Integration to completed.
   - Added Active Phase: Monolith Data Import Service Foundation.
+- Committed and pushed XQ iteration:
+  - Commit: `276884f Persist monolith data catalog in projects`.
+  - Remote branch: `feature/windows-monolith-foundation`.
+- Started the next unattended loop iteration:
+  - Added failing data import regression test first.
+  - `test_monolith_data_import_service` failed because `Core/xq_DataImportService.h` did not exist.
+- Implemented the monolith data import service foundation:
+  - Added `xq::core::DataImportService`, `DataImportRequest`, and `DataImportResult`.
+  - Imports are metadata-only and do not decode MITK/DICOM data yet.
+  - Successful imports register entries in `DataCatalogService`.
+  - Import operations run through `TaskRunner`, creating task history.
+  - Missing source paths and duplicate ids fail without registering catalog data.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120` passed: 11/11.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Prepared the next unattended loop phase in `plan.md`:
+  - Promoted Monolith Data Import Service Foundation to completed.
+  - Added Active Phase: Monolith Data Import Context Integration.

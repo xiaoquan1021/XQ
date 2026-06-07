@@ -177,7 +177,7 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
-## Active Phase: Monolith Data Import Service Foundation
+## Completed Phase: Monolith Data Import Service Foundation
 
 1. Add a monolith Core `xq::core::DataImportService`.
    - Keep the first implementation metadata-only; do not perform MITK/DICOM decoding yet.
@@ -190,6 +190,24 @@ The next monolith slice is grounded in these comparable systems:
    - Caller-provided ids are preserved.
    - Missing source path fails and does not register data.
    - Duplicate ids fail through catalog validation.
+3. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+4. Commit and push the verified XQ iteration.
+
+## Active Phase: Monolith Data Import Context Integration
+
+1. Add `DataImportService` ownership/access through `xq::core::ApplicationContext`.
+   - Construct it from the existing `DataCatalogService` and `TaskRunner`.
+   - Expose it through `DataImports()`.
+   - Ensure it starts usable from a default context without caller wiring.
+2. Add C++ regression tests before implementation:
+   - `ApplicationContext::DataImports()` is non-null.
+   - Import through the context importer registers data in the context catalog.
+   - Import through the context importer records task history in the context task runner.
 3. Run:
    - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
