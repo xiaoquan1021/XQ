@@ -1993,3 +1993,44 @@
 - Promoted Monolith Image Preprocessing Storage Commit Service to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked monolith data catalog and hierarchy registration semantics after
+    the storage commit service landed.
+  - Generated preprocessing outputs need a non-empty virtual source path to be
+    registered in `DataCatalogService` and displayed through
+    `DataHierarchyService`.
+  - Chosen next slice: add an image-preprocessing catalog commit service in
+    Infrastructure.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing
+  Catalog Commit Service.
+- Started the next unattended loop iteration:
+  - Adding failing catalog commit service regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_catalog_commit_service`
+    because `Infrastructure/xq_ImagePreprocessingCatalogCommitService.h` did
+    not exist.
+- Implemented the monolith image-preprocessing catalog commit service:
+  - Added `ImagePreprocessingCatalogCommitRequest` and
+    `ImagePreprocessingCatalogCommitResult`.
+  - Registered successful generated preprocessing outputs in
+    `DataCatalogService` with a stable virtual source path.
+  - Ensured the Images hierarchy folder exists and added a data hierarchy node
+    for the generated catalog entry.
+  - Preserved storage failure diagnostics and kept this slice independent from
+    MITK `DataStorage` mutation, project writes, and UI wiring.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_catalog_commit_service`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 48/48.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Catalog Commit Service to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

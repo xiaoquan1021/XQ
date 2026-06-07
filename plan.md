@@ -2085,6 +2085,43 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing Catalog Commit Service
+
+1. Add an Infrastructure service that registers committed preprocessing
+   outputs in monolith catalog state.
+   - Accept `DataCatalogService`, `DataHierarchyService`, result catalog id,
+     and a successful storage commit result.
+   - Register a generated image catalog entry using a stable virtual source path
+     such as `xq://generated/image-preprocessing/<entry-id>`.
+   - Add the generated entry under the Images hierarchy folder.
+2. Preserve adapter layering.
+   - Keep Domain independent from catalog/hierarchy mutation.
+   - Keep this image-preprocessing-specific catalog commit in Infrastructure.
+3. Keep this slice as catalog/hierarchy mutation only.
+   - Do not mutate MITK `DataStorage`.
+   - Do not write project files.
+   - Do not add UI controls yet.
+4. Add C++ regression tests before implementation:
+   - Service rejects missing catalog and hierarchy services.
+   - Service rejects failed storage commit results.
+   - Service registers a successful generated image entry with display name,
+     virtual source path, role, and hierarchy node.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
