@@ -2164,6 +2164,45 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Image Preprocessing Workflow Action Handler
+
+1. Add an Infrastructure workflow action handler registrar for image
+   preprocessing.
+   - Accept `ApplicationContext` plus configurable operation id, parameters,
+     and result suffix.
+   - Register an `image-preprocessing` handler in `WorkflowActionService`.
+   - Use the active MITK node, current workflow snapshot, monolith
+     `DataStorage`, `DataCatalogService`, and `DataHierarchyService` to call
+     `ImagePreprocessingApplicationCommitService`.
+   - Generate deterministic result catalog ids from selected catalog id and
+     operation id, such as `<source-id>-<operation-id>`.
+2. Preserve UI boundaries.
+   - Do not replace the monolith `main.cxx` default registrar yet.
+   - Do not add Presentation operation controls yet.
+   - Keep this registrar available for future UI wiring and tests.
+3. Add C++ regression tests before implementation:
+   - Registrar rejects missing operation ids.
+   - Registered handler fails through `WorkflowActionService` when no active
+     MITK source node is available.
+   - Registered handler executes a valid crop request through
+     `WorkflowActionService`, records task history, adds the result node under
+     the source node, and registers catalog/hierarchy metadata.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

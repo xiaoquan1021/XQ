@@ -2083,3 +2083,53 @@
 - Promoted Monolith Image Preprocessing Application Commit Service to completed
   in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the command/action boundaries after the application commit
+    service landed.
+  - 3D Slicer keeps loaded data in a scene of nodes and lets modules operate on
+    selected scene nodes; OHIF registers commands and services through managers
+    so UI triggers stay separated from implementation services.
+  - The next integration gap is an explicit action handler bridge between
+    `WorkflowActionService` and the completed preprocessing application commit
+    pipeline.
+  - Chosen next slice: add an Infrastructure workflow action handler registrar
+    with configurable operation parameters for future Presentation wiring.
+- Added next executable phase to `plan.md`: Monolith Image Preprocessing
+  Workflow Action Handler.
+- Started the next unattended loop iteration:
+  - Adding failing workflow action handler regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_image_preprocessing_workflow_action_handler`
+    because `Infrastructure/xq_ImagePreprocessingWorkflowActionHandler.h` did
+    not exist.
+- Implemented the monolith image-preprocessing workflow action handler:
+  - Added `ImagePreprocessingWorkflowActionOptions`.
+  - Added `RegisterImagePreprocessingWorkflowActionHandler()` to install a
+    configurable `image-preprocessing` handler in `WorkflowActionService`.
+  - The handler uses `ApplicationContext` active MITK node, workflow snapshot,
+    `DataStorage`, `DataCatalogService`, and `DataHierarchyService` to call
+    `ImagePreprocessingApplicationCommitService`.
+  - Generated result catalog ids now follow `<source-id>-<operation-id>`.
+- Debugging note:
+  - The first target test run failed on the missing-active-node case.
+  - Root cause: `WorkflowActionService::RunActiveWorkflowAction()` ran
+    registered handlers through `TaskRunner` but always returned `true` after
+    handler execution, even when the task failed.
+  - Fixed the Core service to return the actual `TaskRunner::RunBlocking()`
+    result for registered handlers.
+- Verification for this iteration:
+  - Red/green target test:
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_workflow_action_handler`
+    passed after implementation: 1/1.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 50/50.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Image Preprocessing Workflow Action Handler to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

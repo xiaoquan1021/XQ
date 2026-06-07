@@ -92,13 +92,12 @@ bool WorkflowActionService::RunActiveWorkflowAction(QString* message)
         m_Handlers.value(snapshot.WorkflowId);
     if (handler)
     {
-        m_TaskRunner.RunBlocking(
+        return m_TaskRunner.RunBlocking(
             taskName,
             [handler, snapshot](QString* taskMessage) {
                 return handler(snapshot, taskMessage);
             },
             message);
-        return true;
     }
 
     return m_TaskRunner.RunBlocking(
