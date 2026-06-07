@@ -198,7 +198,7 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 4. Commit and push the verified XQ iteration.
 
-## Active Phase: Monolith Data Import Context Integration
+## Completed Phase: Monolith Data Import Context Integration
 
 1. Add `DataImportService` ownership/access through `xq::core::ApplicationContext`.
    - Construct it from the existing `DataCatalogService` and `TaskRunner`.
@@ -215,3 +215,24 @@ The next monolith slice is grounded in these comparable systems:
    - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
    - `git diff --check`
 4. Commit and push the verified XQ iteration.
+
+## Active Phase: Monolith Project Session Service Foundation
+
+1. Add a monolith Core `xq::core::ProjectSessionService`.
+   - Coordinate `ProjectService`, `DataCatalogService`, and `TaskRunner`.
+   - Provide one application-level save/open entry point for `.xqproj` schema `2.0` with catalog persistence.
+   - Run save/open operations through `TaskRunner`.
+2. Add `ProjectSessionService` ownership/access through `xq::core::ApplicationContext`.
+   - Expose it through `ProjectSession()`.
+   - Future UI should call this service instead of manually wiring project and catalog services.
+3. Add C++ regression tests before implementation:
+   - Saving through the session persists context catalog entries.
+   - Opening through the session restores project metadata and catalog entries.
+   - Save/open operations record task history.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.

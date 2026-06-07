@@ -1,6 +1,7 @@
 #include "xq_ApplicationContext.h"
 
 #include "xq_DataCatalogService.h"
+#include "xq_DataImportService.h"
 #include "xq_PreferencesService.h"
 #include "xq_ProjectService.h"
 #include "xq_TaskRunner.h"
@@ -18,6 +19,9 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
     , m_PreferencesService(new PreferencesService(this))
     , m_ProjectService(new ProjectService(this))
     , m_TaskRunner(new TaskRunner(this))
+    , m_DataImportService(new DataImportService(*m_DataCatalogService,
+                                                *m_TaskRunner,
+                                                this))
 {
 }
 
@@ -39,6 +43,11 @@ mitk::DataNode::Pointer ApplicationContext::ActiveNode() const
 DataCatalogService* ApplicationContext::DataCatalog() const
 {
     return m_DataCatalogService;
+}
+
+DataImportService* ApplicationContext::DataImports() const
+{
+    return m_DataImportService;
 }
 
 QStringList ApplicationContext::Diagnostics() const
