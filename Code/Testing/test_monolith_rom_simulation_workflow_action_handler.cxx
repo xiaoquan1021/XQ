@@ -135,6 +135,19 @@ bool PrepareRomWorkflow(xq::core::ApplicationContext& context)
     return importResult.Succeeded;
 }
 
+bool PrepareRomWorkflow(xq::core::ApplicationContext& context,
+                        const QString& operationId)
+{
+    if (!PrepareRomWorkflow(context))
+        return false;
+
+    QString message;
+    return context.WorkflowOperations()->SelectOperation(
+        QStringLiteral("rom-simulation"),
+        operationId,
+        &message);
+}
+
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
 {
 public:
@@ -323,6 +336,81 @@ int main(int argc, char** argv)
                            context->DataStorage().GetPointer(),
                    "ROM handler should refresh rendering after success"))
         {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareRomWorkflow(*context,
+                                      QStringLiteral("run-rom-solver")),
+                   "unsupported ROM solver fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicRomSimulationWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "unsupported ROM solver fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported ROM solver should fail"))
+        {
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "ROM Solver is not wired to a native ROM Simulation runtime yet."),
+                   "unsupported ROM solver diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareRomWorkflow(
+                       *context,
+                       QStringLiteral("calibrate-boundary-conditions")),
+                   "unsupported ROM calibration fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicRomSimulationWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "unsupported ROM calibration fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported ROM calibration should fail"))
+        {
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "Calibrate Boundary Conditions is not wired to a native ROM Simulation runtime yet."),
+                   "unsupported ROM calibration diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
             return 1;
         }
     }

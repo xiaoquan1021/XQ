@@ -489,6 +489,20 @@ int main(int argc, char** argv)
                               "Active mesh or simulation prep node is required for ROM network build."),
                "configured ROM action should require a MITK mesh or simulation prep node"))
         return 1;
+    if (Expect(romContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("rom-simulation"),
+                   QStringLiteral("calibrate-boundary-conditions"),
+                   &message),
+               "configured ROM workflow should select boundary calibration"))
+        return 1;
+    if (Expect(!romContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured ROM calibration should use unsupported-operation guard"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Calibrate Boundary Conditions is not wired to a native ROM Simulation runtime yet."),
+               "configured ROM calibration should report unsupported operation"))
+        return 1;
 
     auto multiphysicsContext =
         std::unique_ptr<xq::core::ApplicationContext>(

@@ -3,6 +3,7 @@
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
+#include "Infrastructure/xq_RomSimulationWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
@@ -82,6 +83,9 @@ int main(int argc, char** argv)
     xq::domain::RegisterDefaultWorkflowActionHandlers(
         *context->WorkflowActions(),
         context->WorkflowOperations());
+    xq::infrastructure::RegisterDynamicRomSimulationWorkflowActionHandler(
+        *context,
+        nullptr);
     xq::presentation::MainWindow window(*context);
 
     auto* flowSelector =
@@ -284,8 +288,8 @@ int main(int argc, char** argv)
     romButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run ROM Simulation succeeded: ROM Solver rom simulation operation accepted ROM Mesh.")),
-               "ROM Simulation action should report selected operation"))
+                   "Run ROM Simulation failed: ROM Solver is not wired to a native ROM Simulation runtime yet.")),
+               "ROM Simulation action should report unsupported operation"))
     {
         delete context;
         return 1;

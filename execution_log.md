@@ -3164,6 +3164,50 @@
 - Promoted Meshing Unsupported Operation Guard to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: ROM Unsupported Operation Guard
+
+- Completed autonomous research refresh:
+  - Rechecked the simulation side after Flow validation. Flow simulation now
+    has concrete Infrastructure behavior for configure, steady solve, and
+    result review.
+  - `rom-simulation/build-1d-network` already creates a generated
+    `xq_MitkROMJob`, but `rom-simulation/run-rom-solver` and
+    `rom-simulation/calibrate-boundary-conditions` still report successful
+    placeholder execution in the configured monolith.
+  - Chosen next slice: keep `build-1d-network` real and guard unsupported ROM
+    operations with deterministic failure diagnostics.
+- Red tests observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding the new ROM guard tests.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(rom_simulation_workflow_action_handler|simulation_operation_pages|application_import_wiring)"`
+    failed: 0/3, because unsupported ROM operations still returned
+    placeholder success.
+- Implemented ROM unsupported-operation guard:
+  - `rom-simulation/build-1d-network` continues to create a generated
+    `xq_MitkROMJob`.
+  - `rom-simulation/run-rom-solver` and
+    `rom-simulation/calibrate-boundary-conditions` now return failure with
+    diagnostics naming the selected operation and ROM Simulation workflow.
+  - The Simulation operation page test now registers the Infrastructure ROM
+    handler so UI diagnostics cover production composition instead of Domain
+    placeholder behavior.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(rom_simulation_workflow_action_handler|simulation_operation_pages|application_import_wiring)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted ROM Unsupported Operation Guard to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Python API Availability Infrastructure Action Handler
 
 - Continued the requested unattended loop after the Python API phase was made
