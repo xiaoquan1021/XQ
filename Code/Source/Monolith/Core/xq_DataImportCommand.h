@@ -1,15 +1,12 @@
-#ifndef XQ_PRESENTATION_DATAIMPORTCOMMAND_H
-#define XQ_PRESENTATION_DATAIMPORTCOMMAND_H
+#ifndef XQ_CORE_DATAIMPORTCOMMAND_H
+#define XQ_CORE_DATAIMPORTCOMMAND_H
 
 #include <QString>
 
 namespace xq::core
 {
-class ApplicationContext;
-}
 
-namespace xq::presentation
-{
+class ApplicationContext;
 
 struct DataImportCommandResult
 {
@@ -24,9 +21,9 @@ public:
     virtual ~DataImportCommand() = default;
 
     virtual DataImportCommandResult RunImport(
-        xq::core::ApplicationContext& context) = 0;
+        ApplicationContext& context) = 0;
 };
 
-} // namespace xq::presentation
+} // namespace xq::core
 
-#endif // XQ_PRESENTATION_DATAIMPORTCOMMAND_H
+#endif // XQ_CORE_DATAIMPORTCOMMAND_H

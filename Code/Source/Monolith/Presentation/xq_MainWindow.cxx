@@ -2,6 +2,7 @@
 
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataCatalogService.h"
+#include "Core/xq_DataImportCommand.h"
 #include "Core/xq_DataHierarchyService.h"
 #include "Core/xq_DataManagementService.h"
 #include "Core/xq_DataSelectionService.h"
@@ -12,7 +13,6 @@
 #include "Core/xq_WorkflowRegistry.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Core/xq_TaskRunner.h"
-#include "xq_DataImportCommand.h"
 #include "xq_DataHierarchyModel.h"
 
 #include <QAction>
@@ -292,7 +292,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             });
 }
 
-void MainWindow::SetDataImportCommand(DataImportCommand* command)
+void MainWindow::SetDataImportCommand(xq::core::DataImportCommand* command)
 {
     m_DataImportCommand = command;
 }

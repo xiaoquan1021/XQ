@@ -17,6 +17,7 @@ class QWidget;
 namespace xq::core
 {
 class ApplicationContext;
+class DataImportCommand;
 struct ProjectMetadata;
 struct TaskRecord;
 }
@@ -24,7 +25,6 @@ struct TaskRecord;
 namespace xq::presentation
 {
 
-class DataImportCommand;
 class DataHierarchyModel;
 
 class MainWindow : public QMainWindow
@@ -34,7 +34,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(xq::core::ApplicationContext& context,
                         QWidget* parent = nullptr);
-    void SetDataImportCommand(DataImportCommand* command);
+    void SetDataImportCommand(xq::core::DataImportCommand* command);
     void SetRenderHost(QWidget* renderHost);
 
 private:
@@ -71,7 +71,7 @@ private:
     QAction* m_SaveProjectAction = nullptr;
     QAction* m_ImportDataAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
-    DataImportCommand* m_DataImportCommand = nullptr;
+    xq::core::DataImportCommand* m_DataImportCommand = nullptr;
     QListWidget* m_Navigation = nullptr;
     QStackedWidget* m_Pages = nullptr;
     QWidget* m_RenderHostContainer = nullptr;

@@ -2430,6 +2430,47 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith MITK File Data Import Command
+
+1. Add an Infrastructure command that implements the Presentation
+   `DataImportCommand` interface.
+   - Use an injectable path provider instead of opening a real `QFileDialog`
+     in this slice.
+   - Use `MitkFileImportService` and injectable `MitkFileReader` for file
+     loading.
+   - Build a single-file `DataImportRequest` from the chosen path, using the
+     file name for display-name fallback.
+2. Preserve command behavior.
+   - Missing path provider returns a clear failure message and no mutations.
+   - User cancellation returns a non-mutating "cancelled" message.
+   - Reader/import failures propagate the underlying diagnostic.
+   - Successful import registers catalog/hierarchy/selection/storage/node
+     bindings through `MitkFileImportService`.
+3. Keep scope narrow.
+   - Do not wire a real file dialog into `MainWindow` yet.
+   - Do not add DICOM directory, multiple object, or project persistence
+     behavior in this slice.
+4. Add C++ regression tests before implementation:
+   - Missing provider and cancelled provider do not mutate state.
+   - Reader failure propagates the service diagnostic and does not mutate state.
+   - Successful command invokes the provider, imports the selected file, selects
+     the catalog entry, and leaves MITK storage/node registry bound.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

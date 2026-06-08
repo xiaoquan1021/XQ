@@ -2372,3 +2372,45 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Data Import Action Shell to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the new Presentation import action shell and the existing
+    `MitkFileImportService`.
+  - The next gap is a command object that adapts a chosen file path into the
+    service without coupling `MainWindow` tests to system file dialogs.
+  - Chosen next slice: add an Infrastructure `MitkFileDataImportCommand` with
+    injectable path provider and reader.
+- Added next executable phase to `plan.md`: Monolith MITK File Data Import
+  Command.
+- Started the next unattended loop iteration:
+  - Adding failing command-level regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_mitk_file_data_import_command` because
+    `Infrastructure/xq_MitkFileDataImportCommand.h` did not exist.
+- Implemented the monolith MITK file data import command:
+  - Moved the data import command port to Core as `DataImportCommand` and
+    `DataImportCommandResult`, keeping Presentation and Infrastructure pointed
+    inward at Core.
+  - Added `FileImportPathProvider` for testable path selection.
+  - Added `MitkFileDataImportCommand`, implementing the Core
+    `DataImportCommand`.
+  - The command converts a selected file path into a single-image
+    `DataImportRequest`, delegates to `MitkFileImportService`, and returns the
+    command-level result.
+  - Missing provider, cancellation, reader failure, and successful import are
+    covered without opening a real file dialog.
+- Red/green target verification:
+  - After implementation, the target build passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_mitk_file_data_import_command`
+    passed: 1/1.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 55/55.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith MITK File Data Import Command to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

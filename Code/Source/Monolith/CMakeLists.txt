@@ -21,6 +21,7 @@ set(XQ_MONOLITH_CORE_SRCS
 set(XQ_MONOLITH_CORE_HDRS
     Core/xq_ApplicationContext.h
     Core/xq_DataCatalogService.h
+    Core/xq_DataImportCommand.h
     Core/xq_DataHierarchyService.h
     Core/xq_DataImportService.h
     Core/xq_DataManagementService.h
@@ -90,6 +91,7 @@ target_link_libraries(xqMonolithDomain
 
 set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
     Infrastructure/xq_DataNodeImportService.cxx
+    Infrastructure/xq_MitkFileDataImportCommand.cxx
     Infrastructure/xq_MitkFileImportService.cxx
     Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.cxx
     Infrastructure/xq_ImagePreprocessingApplicationCommitService.cxx
@@ -103,6 +105,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
 
 set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
     Infrastructure/xq_DataNodeImportService.h
+    Infrastructure/xq_MitkFileDataImportCommand.h
     Infrastructure/xq_MitkFileImportService.h
     Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.h
     Infrastructure/xq_ImagePreprocessingApplicationCommitService.h
@@ -143,7 +146,6 @@ set(XQ_MONOLITH_PRESENTATION_SRCS
 )
 
 set(XQ_MONOLITH_PRESENTATION_HDRS
-    Presentation/xq_DataImportCommand.h
     Presentation/xq_DataHierarchyModel.h
     Presentation/xq_MainWindow.h
 )

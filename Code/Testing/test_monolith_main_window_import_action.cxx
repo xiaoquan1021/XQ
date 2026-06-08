@@ -1,8 +1,8 @@
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataCatalogService.h"
+#include "Core/xq_DataImportCommand.h"
 #include "Core/xq_DataImportService.h"
 #include "Core/xq_DataSelectionService.h"
-#include "Presentation/xq_DataImportCommand.h"
 #include "Presentation/xq_DataHierarchyModel.h"
 #include "Presentation/xq_MainWindow.h"
 
@@ -26,7 +26,7 @@ int Expect(bool condition, const char* message)
     return 1;
 }
 
-class TestDataImportCommand : public xq::presentation::DataImportCommand
+class TestDataImportCommand : public xq::core::DataImportCommand
 {
 public:
     explicit TestDataImportCommand(xq::core::ApplicationContext& context)
@@ -34,7 +34,7 @@ public:
     {
     }
 
-    xq::presentation::DataImportCommandResult RunImport(
+    xq::core::DataImportCommandResult RunImport(
         xq::core::ApplicationContext& context) override
     {
         ++Invocations;
@@ -52,7 +52,7 @@ public:
         QString message;
         const auto result = context.DataImports()->Import(request, &message);
 
-        xq::presentation::DataImportCommandResult commandResult;
+        xq::core::DataImportCommandResult commandResult;
         commandResult.Succeeded = result.Succeeded;
         commandResult.CatalogEntryId = result.EntryId;
         commandResult.Message = message;
