@@ -4,6 +4,8 @@
 #include <QHash>
 #include <QObject>
 #include <QString>
+#include <QVariant>
+#include <QVariantMap>
 #include <QVector>
 
 namespace xq::core
@@ -41,6 +43,8 @@ public:
 
     QVector<WorkflowOperationDescriptor> OperationsForWorkflow(
         const QString& workflowId) const;
+    QVariantMap ParameterValues(const QString& workflowId,
+                                const QString& operationId) const;
     QString SelectedOperationId(const QString& workflowId) const;
 
     bool RegisterOperations(
@@ -50,18 +54,35 @@ public:
     bool SelectOperation(const QString& workflowId,
                          const QString& operationId,
                          QString* message = nullptr);
+    bool SetParameterValue(const QString& workflowId,
+                           const QString& operationId,
+                           const QString& parameterId,
+                           const QVariant& value,
+                           QString* message = nullptr);
 
 signals:
     void SelectedOperationChanged(const QString& workflowId,
                                   const QString& operationId);
+    void ParameterValueChanged(const QString& workflowId,
+                               const QString& operationId,
+                               const QString& parameterId,
+                               const QVariant& value);
 
 private:
     static void SetMessage(QString* message, const QString& value);
 
     bool ContainsOperation(const QString& workflowId,
                            const QString& operationId) const;
+    bool ContainsParameter(const QString& workflowId,
+                           const QString& operationId,
+                           const QString& parameterId) const;
+    static QVariant DefaultValueForParameter(
+        const WorkflowOperationParameterDescriptor& parameter);
+    static QString ParameterValueKey(const QString& workflowId,
+                                     const QString& operationId);
 
     QHash<QString, QVector<WorkflowOperationDescriptor>> m_Operations;
+    QHash<QString, QVariantMap> m_ParameterValues;
     QHash<QString, QString> m_SelectedOperationIds;
 };
 

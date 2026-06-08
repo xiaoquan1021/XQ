@@ -201,6 +201,19 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto* sigmaEditor = FindNumericParameter(window, QStringLiteral("sigma"));
+    sigmaEditor->setValue(1.25);
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()
+                   ->ParameterValues(QStringLiteral("image-preprocessing"),
+                                     QStringLiteral("gaussian-smoothing"))
+                   .value(QStringLiteral("sigma"))
+                   .toDouble() == 1.25,
+               "editing sigma should update Core operation parameter state"))
+    {
+        delete context;
+        return 1;
+    }
     if (Expect(FindNumericParameter(window, QStringLiteral("lower")) == nullptr,
                "switching operations should remove previous parameter controls"))
     {

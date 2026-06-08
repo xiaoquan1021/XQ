@@ -55,7 +55,11 @@ CreateImagePreprocessingHandler(xq::core::WorkflowOperationService* operations)
             if (!operationId.trimmed().isEmpty())
             {
                 const auto operationResult =
-                    service->RunOperation(snapshot, operationId);
+                    service->RunOperation(
+                        snapshot,
+                        operationId,
+                        operations->ParameterValues(snapshot.WorkflowId,
+                                                    operationId));
                 if (message)
                     *message = operationResult.Message;
                 return operationResult.Succeeded;

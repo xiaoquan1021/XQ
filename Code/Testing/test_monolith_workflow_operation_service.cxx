@@ -2,6 +2,7 @@
 #include "Core/xq_WorkflowOperationService.h"
 
 #include <QCoreApplication>
+#include <QVariant>
 
 #include <iostream>
 
@@ -93,6 +94,13 @@ int main(int argc, char** argv)
                    QStringLiteral("binary-threshold"),
                "first registered operation should become default selection"))
         return 1;
+    if (Expect(service.ParameterValues(
+                   QStringLiteral("image-preprocessing"),
+                   QStringLiteral("gaussian-smoothing"))
+                   .value(QStringLiteral("sigma"))
+                   .toDouble() == 0.0,
+               "registered numeric parameters should get default values"))
+        return 1;
 
     int selectionChanges = 0;
     QString lastWorkflowId;
@@ -121,6 +129,51 @@ int main(int argc, char** argv)
                    lastWorkflowId == QStringLiteral("image-preprocessing") &&
                    lastOperationId == QStringLiteral("gaussian-smoothing"),
                "operation selection should emit normalized ids"))
+        return 1;
+
+    int parameterChanges = 0;
+    QString lastParameterId;
+    QVariant lastParameterValue;
+    QObject::connect(&service,
+                     &xq::core::WorkflowOperationService::ParameterValueChanged,
+                     [&parameterChanges,
+                      &lastParameterId,
+                      &lastParameterValue](const QString&,
+                                           const QString&,
+                                           const QString& parameterId,
+                                           const QVariant& value) {
+                         ++parameterChanges;
+                         lastParameterId = parameterId;
+                         lastParameterValue = value;
+                     });
+    if (Expect(service.SetParameterValue(QStringLiteral(" image-preprocessing "),
+                                         QStringLiteral(" gaussian-smoothing "),
+                                         QStringLiteral(" sigma "),
+                                         1.25,
+                                         &message),
+               "registered numeric parameter should accept values"))
+        return 1;
+    const auto parameterValues =
+        service.ParameterValues(QStringLiteral("image-preprocessing"),
+                                QStringLiteral("gaussian-smoothing"));
+    if (Expect(parameterValues.value(QStringLiteral("sigma")).toDouble() == 1.25,
+               "parameter value lookup should return stored value"))
+        return 1;
+    if (Expect(parameterChanges == 1 &&
+                   lastParameterId == QStringLiteral("sigma") &&
+                   lastParameterValue.toDouble() == 1.25,
+               "parameter value changes should emit normalized ids and value"))
+        return 1;
+
+    if (Expect(!service.SetParameterValue(QStringLiteral("image-preprocessing"),
+                                          QStringLiteral("gaussian-smoothing"),
+                                          QStringLiteral("missing"),
+                                          2.0,
+                                          &message),
+               "unknown parameter values should be rejected"))
+        return 1;
+    if (Expect(message == QStringLiteral("Workflow operation parameter was not found."),
+               "unknown parameter rejection should use explicit message"))
         return 1;
 
     if (Expect(service.SelectOperation(QStringLiteral("image-preprocessing"),

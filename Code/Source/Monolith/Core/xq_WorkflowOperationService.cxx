@@ -4,6 +4,7 @@
 
 #include <QHash>
 #include <QSet>
+#include <QVariantList>
 
 namespace xq::core
 {
@@ -18,6 +19,14 @@ WorkflowOperationService::OperationsForWorkflow(
     const QString& workflowId) const
 {
     return m_Operations.value(workflowId.trimmed());
+}
+
+QVariantMap WorkflowOperationService::ParameterValues(
+    const QString& workflowId,
+    const QString& operationId) const
+{
+    return m_ParameterValues.value(
+        ParameterValueKey(workflowId.trimmed(), operationId.trimmed()));
 }
 
 QString WorkflowOperationService::SelectedOperationId(
@@ -108,6 +117,18 @@ bool WorkflowOperationService::RegisterOperations(
     }
 
     m_Operations.insert(normalizedWorkflowId, normalizedOperations);
+    for (const auto& operation : normalizedOperations)
+    {
+        const QString valueKey =
+            ParameterValueKey(normalizedWorkflowId, operation.Id);
+        QVariantMap values = m_ParameterValues.value(valueKey);
+        for (const auto& parameter : operation.Parameters)
+        {
+            if (!values.contains(parameter.Id))
+                values.insert(parameter.Id, DefaultValueForParameter(parameter));
+        }
+        m_ParameterValues.insert(valueKey, values);
+    }
     if (nextSelection.isEmpty())
         m_SelectedOperationIds.remove(normalizedWorkflowId);
     else
@@ -151,6 +172,57 @@ bool WorkflowOperationService::SelectOperation(const QString& workflowId,
     return true;
 }
 
+bool WorkflowOperationService::SetParameterValue(const QString& workflowId,
+                                                 const QString& operationId,
+                                                 const QString& parameterId,
+                                                 const QVariant& value,
+                                                 QString* message)
+{
+    const QString normalizedWorkflowId = workflowId.trimmed();
+    if (!FindWorkflowById(normalizedWorkflowId))
+    {
+        SetMessage(message, QStringLiteral("Workflow was not found."));
+        return false;
+    }
+
+    const QString normalizedOperationId = operationId.trimmed();
+    if (!ContainsOperation(normalizedWorkflowId, normalizedOperationId))
+    {
+        SetMessage(message,
+                   QStringLiteral("Workflow operation was not found."));
+        return false;
+    }
+
+    const QString normalizedParameterId = parameterId.trimmed();
+    if (!ContainsParameter(normalizedWorkflowId,
+                           normalizedOperationId,
+                           normalizedParameterId))
+    {
+        SetMessage(
+            message,
+            QStringLiteral("Workflow operation parameter was not found."));
+        return false;
+    }
+
+    const QString valueKey =
+        ParameterValueKey(normalizedWorkflowId, normalizedOperationId);
+    QVariantMap values = m_ParameterValues.value(valueKey);
+    if (values.value(normalizedParameterId) == value)
+    {
+        SetMessage(message, QString());
+        return true;
+    }
+
+    values.insert(normalizedParameterId, value);
+    m_ParameterValues.insert(valueKey, values);
+    SetMessage(message, QString());
+    emit ParameterValueChanged(normalizedWorkflowId,
+                               normalizedOperationId,
+                               normalizedParameterId,
+                               value);
+    return true;
+}
+
 void WorkflowOperationService::SetMessage(QString* message,
                                           const QString& value)
 {
@@ -170,6 +242,49 @@ bool WorkflowOperationService::ContainsOperation(
     }
 
     return false;
+}
+
+bool WorkflowOperationService::ContainsParameter(
+    const QString& workflowId,
+    const QString& operationId,
+    const QString& parameterId) const
+{
+    const auto operations = OperationsForWorkflow(workflowId);
+    for (const auto& operation : operations)
+    {
+        if (operation.Id != operationId)
+            continue;
+
+        for (const auto& parameter : operation.Parameters)
+        {
+            if (parameter.Id == parameterId)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+QVariant WorkflowOperationService::DefaultValueForParameter(
+    const WorkflowOperationParameterDescriptor& parameter)
+{
+    switch (parameter.Type)
+    {
+    case WorkflowOperationParameterValueType::NumericScalar:
+        return 0.0;
+    case WorkflowOperationParameterValueType::IntegerScalar:
+        return 0;
+    case WorkflowOperationParameterValueType::IntegerPointList:
+        return QVariantList();
+    }
+
+    return {};
+}
+
+QString WorkflowOperationService::ParameterValueKey(const QString& workflowId,
+                                                    const QString& operationId)
+{
+    return QStringLiteral("%1/%2").arg(workflowId, operationId);
 }
 
 } // namespace xq::core

@@ -582,6 +582,11 @@ void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
     for (const auto& parameter : selectedOperation->Parameters)
     {
         QWidget* editor = nullptr;
+        const QVariantMap values =
+            m_Context.WorkflowOperations()->ParameterValues(
+                workflowId,
+                selectedOperation->Id);
+        const QVariant value = values.value(parameter.Id);
         switch (parameter.Type)
         {
         case xq::core::WorkflowOperationParameterValueType::NumericScalar:
@@ -592,6 +597,23 @@ void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
                     .arg(parameter.Id));
             spinBox->setDecimals(3);
             spinBox->setRange(-1000000.0, 1000000.0);
+            spinBox->setValue(value.toDouble());
+            connect(spinBox,
+                    qOverload<double>(&QDoubleSpinBox::valueChanged),
+                    this,
+                    [this, workflowId, operationId = selectedOperation->Id,
+                     parameterId = parameter.Id](double newValue) {
+                        QString message;
+                        if (!m_Context.WorkflowOperations()->SetParameterValue(
+                                workflowId,
+                                operationId,
+                                parameterId,
+                                newValue,
+                                &message))
+                        {
+                            m_Context.PostDiagnostic(message);
+                        }
+                    });
             editor = spinBox;
             break;
         }
@@ -602,6 +624,23 @@ void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
                 QStringLiteral("xqImagePreprocessingParameter_%1")
                     .arg(parameter.Id));
             spinBox->setRange(-1000000, 1000000);
+            spinBox->setValue(value.toInt());
+            connect(spinBox,
+                    qOverload<int>(&QSpinBox::valueChanged),
+                    this,
+                    [this, workflowId, operationId = selectedOperation->Id,
+                     parameterId = parameter.Id](int newValue) {
+                        QString message;
+                        if (!m_Context.WorkflowOperations()->SetParameterValue(
+                                workflowId,
+                                operationId,
+                                parameterId,
+                                newValue,
+                                &message))
+                        {
+                            m_Context.PostDiagnostic(message);
+                        }
+                    });
             editor = spinBox;
             break;
         }

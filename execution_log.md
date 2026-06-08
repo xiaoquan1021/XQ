@@ -2612,6 +2612,49 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Image Preprocessing Parameter Panel to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the new parameter panel against Slicer-style effect parameter
+    state and the existing Domain parameterized `RunOperation()` path.
+  - The panel now displays controls, but edited values are not stored in Core
+    and the default Image Preprocessing action does not consume them.
+  - Chosen next slice: add Core parameter value state and pass selected
+    Image Preprocessing parameters into the domain action.
+- Added next executable phase to `plan.md`: Image Preprocessing Parameter
+  State.
+- Started the next unattended loop iteration:
+  - Adding failing Core parameter-value and Image Preprocessing parameter
+    state tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    extending the operation-service and operation-page tests.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_workflow_operation_service` and
+    `test_monolith_image_preprocessing_operation_page` because
+    `WorkflowOperationService` did not expose `ParameterValues`,
+    `SetParameterValue`, or `ParameterValueChanged`.
+- Implemented Image Preprocessing parameter state:
+  - `WorkflowOperationService` now initializes and stores per-operation
+    parameter values.
+  - Added parameter value lookup, mutation, unknown-parameter rejection, and
+    change notifications.
+  - Image Preprocessing parameter editors load stored values and update Core
+    state on edit.
+  - The Domain default Image Preprocessing handler now passes selected
+    operation parameter values into the parameterized `RunOperation()` path.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workflow_operation_service|image_preprocessing_operation_page|domain_workflow_action_handlers|image_preprocessing_workflow_service)"`
+    passed: 4/4.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 59/59.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Image Preprocessing Parameter State to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
   - Related compatibility tests
     `test_monolith_workflow_action_service`,
     `test_monolith_domain_workflow_action_handlers`,
