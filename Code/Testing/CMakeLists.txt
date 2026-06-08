@@ -317,6 +317,13 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_mitk_file_import_service
+        xqMonolithInfrastructure
+        xqMonolithCore
+        Qt6::Core
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_data_management_service
         xqMonolithCore
         Qt6::Core

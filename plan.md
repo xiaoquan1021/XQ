@@ -2348,6 +2348,49 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith MITK File Import Service Foundation
+
+1. Add an Infrastructure `MitkFileImportService` that imports one local file
+   into the monolith data model.
+   - Use MITK file loading as the production reader.
+   - Wrap the loaded `mitk::BaseData` in a `mitk::DataNode`.
+   - Reuse `DataNodeImportService` to add the node to `DataStorage`, register
+     Core metadata and hierarchy, select the imported entry, and bind the
+     catalog id to the node registry.
+2. Keep this slice as a service boundary only.
+   - Do not add Qt file dialogs or data workflow buttons yet.
+   - Do not implement DICOM directory or multi-object import yet.
+   - Do not change project persistence.
+3. Preserve failure behavior.
+   - Reject missing storage, import service, registry, source path, reader
+     failures, empty reader output, and multi-object reader output.
+   - Reader and metadata failures must not mutate `DataStorage`, Core catalog,
+     hierarchy, selection, or node registry.
+4. Add C++ regression tests before implementation:
+   - Service rejects missing dependencies and source path with clear
+     diagnostics.
+   - Reader failures and empty loads do not mutate application state.
+   - Duplicate metadata import after a successful reader load does not add a
+     storage node or registry binding.
+   - Valid import names the node, adds it to `DataStorage`, registers Core
+     metadata/hierarchy, selects the imported entry, and binds the catalog id
+     to the MITK node.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

@@ -2292,3 +2292,47 @@
 - Promoted Monolith Data Node Import Service Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the monolith import chain after `DataNodeImportService` landed.
+  - MITK's local-file import API exposes `mitk::IOUtil::Load(path)` and
+    `mitk::IOUtil::Load(path, DataStorage&)`; comparable medical imaging
+    workstations keep file loading as the scene/data-tree entrypoint before
+    workflow-specific tools operate on selected data.
+  - Chosen next slice: add a small Infrastructure `MitkFileImportService` that
+    loads one local file into a MITK data object, wraps it in a `DataNode`, and
+    reuses `DataNodeImportService` to enter Core catalog/hierarchy/selection
+    and the MITK node registry.
+- Added next executable phase to `plan.md`: Monolith MITK File Import Service
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing file import service regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_mitk_file_import_service` because
+    `Infrastructure/xq_MitkFileImportService.h` did not exist.
+- Implemented the monolith MITK file import service foundation:
+  - Added `MitkFileReader` and production `MitkIOFileReader`, with the default
+    reader calling `mitk::IOUtil::Load(path)` and converting MITK/std
+    exceptions to diagnostics.
+  - Added `MitkFileImportService`, which validates dependencies/source path,
+    accepts exactly one loaded MITK data object, wraps it in a `DataNode`, and
+    reuses `DataNodeImportService` to commit storage, Core metadata/hierarchy,
+    selection, and node-registry binding.
+  - Reader failures, empty/multi-object reads, and metadata import failures do
+    not mutate `DataStorage` or rebind registry entries.
+- Red/green target verification:
+  - After implementation, the target build passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_mitk_file_import_service`
+    passed: 1/1.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 53/53.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith MITK File Import Service Foundation to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
