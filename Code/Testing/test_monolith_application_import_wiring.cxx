@@ -62,6 +62,17 @@ xq::core::DataImportRequest MakePathImport()
     return request;
 }
 
+xq::core::DataImportRequest MakeSegmentationImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("seg-001");
+    request.SourcePath = QStringLiteral("C:/studies/seg-001.xqseg");
+    request.DisplayName = QStringLiteral("Main Segmentation");
+    request.Modality = QStringLiteral("Segmentation");
+    request.WorkflowRole = xq::core::DataWorkflowRole::Segmentation;
+    return request;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -217,6 +228,44 @@ int main(int argc, char** argv)
     if (Expect(message == QStringLiteral(
                               "Active path node is required for 2D segmentation."),
                "configured segmentation action should require a path node"))
+        return 1;
+
+    auto modelingContext =
+        std::unique_ptr<xq::core::ApplicationContext>(
+            xq::core::ApplicationContext::CreateDefault());
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *modelingContext->WorkflowActions(),
+        modelingContext->WorkflowOperations());
+    CancelPathProvider modelingProvider;
+    auto modelingWindow =
+        xq::CreateConfiguredMainWindow(*modelingContext,
+                                       &modelingProvider);
+
+    if (Expect(modelingContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("modeling")),
+               "configured modeling workflow should be selectable"))
+        return 1;
+    if (Expect(modelingContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("modeling"),
+                   QStringLiteral("build-solid-model"),
+                   &message),
+               "configured modeling workflow should select build solid model"))
+        return 1;
+
+    const auto modelingImportResult =
+        modelingContext->DataImports()->Import(MakeSegmentationImport(),
+                                               &message);
+    if (Expect(modelingImportResult.Succeeded,
+               "configured modeling segmentation import should succeed"))
+        return 1;
+
+    if (Expect(!modelingContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured modeling action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active segmentation node is required for modeling."),
+               "configured modeling action should require a segmentation node"))
         return 1;
 
     return 0;

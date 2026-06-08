@@ -2865,6 +2865,54 @@
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run: Modeling Infrastructure Action Handler
+
+- Completed autonomous research refresh:
+  - Rechecked the now-connected Image -> Path -> 2D Segmentation chain against
+    the existing model pipeline contract.
+  - XQ already has `xq_ModelPipelineService::CreateModel` and regression
+    coverage for loft-ready ProfileGroup inputs, but monolith Modeling still
+    reports operation-aware placeholder acceptance.
+  - Chosen next slice: route `build-solid-model` through the existing Model
+    pipeline and commit the generated Model into monolith
+    catalog/hierarchy/selection/rendering state.
+- Added next executable phase to `plan.md`: Modeling Infrastructure Action
+  Handler.
+- Started the next unattended loop iteration:
+  - Adding failing Modeling workflow action handler and composition-root tests
+    first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding the Modeling handler test target.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `Infrastructure/xq_ModelingWorkflowActionHandler.h` did not exist.
+- Implemented Modeling infrastructure action handler:
+  - Added `RegisterDynamicModelingWorkflowActionHandler()` for
+    `modeling` `build-solid-model`.
+  - The handler resolves the selected Segmentation/ContourGroup node, calls
+    `xq_ModelPipelineService::CreateModel`, registers the generated Model
+    catalog/hierarchy/node binding, selects the result, and refreshes
+    rendering.
+  - Unsupported Modeling operations remain on the operation-aware placeholder
+    path for this slice.
+  - `CreateConfiguredMainWindow()` now registers the dynamic Modeling handler
+    after Domain handler registration.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(modeling_workflow_action_handler|application_import_wiring|domain_workflow_action_handlers|modeling_meshing_operation_pages|workflow_context_service)"`
+    passed: 5/5.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 68/68.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Modeling Infrastructure Action Handler to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Final Update: Legacy BlueBerry Include Isolation
 
 - Implemented default monolith include isolation:

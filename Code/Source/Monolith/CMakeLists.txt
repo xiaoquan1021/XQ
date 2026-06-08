@@ -107,6 +107,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
     Infrastructure/xq_ImagePreprocessingWorkflowActionHandler.cxx
     Infrastructure/xq_PathWorkflowActionHandler.cxx
     Infrastructure/xq_SegmentationWorkflowActionHandler.cxx
+    Infrastructure/xq_ModelingWorkflowActionHandler.cxx
 )
 
 set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
@@ -124,6 +125,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
     Infrastructure/xq_ImagePreprocessingWorkflowActionHandler.h
     Infrastructure/xq_PathWorkflowActionHandler.h
     Infrastructure/xq_SegmentationWorkflowActionHandler.h
+    Infrastructure/xq_ModelingWorkflowActionHandler.h
 )
 
 add_library(xqMonolithInfrastructure STATIC
@@ -148,6 +150,7 @@ target_link_libraries(xqMonolithInfrastructure
         xqModuleImageProcessing
         xqModulePath
         xqModuleSegmentation
+        xqModuleModelCommon
         Qt6::Core
 )
 
