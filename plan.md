@@ -2509,6 +2509,43 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 7. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Import Render Refresh
+
+1. Add a Core render-refresh port.
+   - Provide a small interface that can refresh views for the current
+     `mitk::DataStorage`.
+   - Keep command tests independent from the global MITK rendering manager.
+2. Add a MITK Infrastructure implementation.
+   - Use `mitk::RenderingManager::InitializeViewsByBoundingObjects()`.
+   - Call `mitk::RenderingManager::RequestUpdateAll()` after initialization.
+3. Integrate render refresh into file import command.
+   - Successful `MitkFileDataImportCommand` imports call the optional refresh
+     service.
+   - Cancelled and failed imports do not refresh.
+4. Wire production composition.
+   - Create the MITK render refresh service in `CreateConfiguredMainWindow()`.
+   - Pass it to the import command along with the file path provider.
+5. Add C++ regression tests before implementation:
+   - Successful import calls the refresh service exactly once with the
+     application `DataStorage`.
+   - Missing provider, cancellation, and reader failure do not refresh.
+   - Composition root owns a refresh service and keeps import wiring intact.
+6. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+7. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

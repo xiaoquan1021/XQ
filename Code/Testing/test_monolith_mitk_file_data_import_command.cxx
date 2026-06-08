@@ -4,6 +4,7 @@
 #include "Core/xq_DataCatalogService.h"
 #include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_DataSelectionService.h"
+#include "Core/xq_RenderRefreshService.h"
 
 #include <QCoreApplication>
 
@@ -63,6 +64,19 @@ public:
     }
 };
 
+class FakeRenderRefreshService : public xq::core::RenderRefreshService
+{
+public:
+    int Invocations = 0;
+    mitk::DataStorage::Pointer LastStorage;
+
+    void RefreshDataStorage(mitk::DataStorage::Pointer dataStorage) override
+    {
+        ++Invocations;
+        LastStorage = dataStorage;
+    }
+};
+
 int Expect(bool condition, const char* message)
 {
     if (condition)
@@ -93,8 +107,10 @@ int main(int argc, char** argv)
         std::unique_ptr<xq::core::ApplicationContext> context(
             xq::core::ApplicationContext::CreateDefault());
         FakeReader reader;
+        FakeRenderRefreshService refresh;
         xq::infrastructure::MitkFileDataImportCommand command(nullptr,
-                                                              &reader);
+                                                              &reader,
+                                                              &refresh);
 
         const auto result = command.RunImport(*context);
         if (Expect(!result.Succeeded,
@@ -113,6 +129,9 @@ int main(int argc, char** argv)
         if (Expect(StorageNodeCount(context->DataStorage()) == 0,
                    "missing provider should not mutate storage"))
             return 1;
+        if (Expect(refresh.Invocations == 0,
+                   "missing provider should not refresh render views"))
+            return 1;
     }
 
     {
@@ -120,8 +139,10 @@ int main(int argc, char** argv)
             xq::core::ApplicationContext::CreateDefault());
         FakePathProvider provider;
         FakeReader reader;
+        FakeRenderRefreshService refresh;
         xq::infrastructure::MitkFileDataImportCommand command(&provider,
-                                                              &reader);
+                                                              &reader,
+                                                              &refresh);
 
         const auto result = command.RunImport(*context);
         if (Expect(!result.Succeeded,
@@ -139,6 +160,9 @@ int main(int argc, char** argv)
         if (Expect(context->DataCatalog()->Entries().isEmpty(),
                    "cancelled provider should not mutate catalog"))
             return 1;
+        if (Expect(refresh.Invocations == 0,
+                   "cancelled provider should not refresh render views"))
+            return 1;
     }
 
     {
@@ -148,8 +172,10 @@ int main(int argc, char** argv)
         provider.NextPath = QStringLiteral("C:/studies/cta-a.nii.gz");
         FakeReader reader;
         reader.NextResult.Message = QStringLiteral("Reader failed.");
+        FakeRenderRefreshService refresh;
         xq::infrastructure::MitkFileDataImportCommand command(&provider,
-                                                              &reader);
+                                                              &reader,
+                                                              &refresh);
 
         const auto result = command.RunImport(*context);
         if (Expect(!result.Succeeded,
@@ -167,6 +193,9 @@ int main(int argc, char** argv)
         if (Expect(StorageNodeCount(context->DataStorage()) == 0,
                    "reader failure should not mutate storage"))
             return 1;
+        if (Expect(refresh.Invocations == 0,
+                   "reader failure should not refresh render views"))
+            return 1;
     }
 
     {
@@ -177,8 +206,10 @@ int main(int argc, char** argv)
         FakeReader reader;
         reader.NextResult.Succeeded = true;
         reader.NextResult.Data.push_back(MakeData());
+        FakeRenderRefreshService refresh;
         xq::infrastructure::MitkFileDataImportCommand command(&provider,
-                                                              &reader);
+                                                              &reader,
+                                                              &refresh);
 
         const auto result = command.RunImport(*context);
         if (Expect(result.Succeeded,
@@ -212,6 +243,13 @@ int main(int argc, char** argv)
             return 1;
         if (Expect(reader.LastPath == provider.NextPath,
                    "valid import should read selected path"))
+            return 1;
+        if (Expect(refresh.Invocations == 1,
+                   "valid import should refresh render views once"))
+            return 1;
+        if (Expect(refresh.LastStorage.GetPointer() ==
+                       context->DataStorage().GetPointer(),
+                   "valid import should refresh the application DataStorage"))
             return 1;
     }
 

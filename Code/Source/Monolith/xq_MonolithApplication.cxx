@@ -2,6 +2,7 @@
 
 #include "Core/xq_DataImportCommand.h"
 #include "Infrastructure/xq_MitkFileDataImportCommand.h"
+#include "Infrastructure/xq_MitkRenderRefreshService.h"
 #include "Presentation/xq_MainWindow.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
 
@@ -22,9 +23,13 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
         pathProvider = configured->OwnedPathProvider.get();
     }
 
+    configured->RenderRefresh =
+        std::make_unique<xq::infrastructure::MitkRenderRefreshService>();
     configured->ImportCommand =
         std::make_unique<xq::infrastructure::MitkFileDataImportCommand>(
-            pathProvider);
+            pathProvider,
+            nullptr,
+            configured->RenderRefresh.get());
     configured->Window =
         std::make_unique<xq::presentation::MainWindow>(context);
     configured->Window->SetDataImportCommand(

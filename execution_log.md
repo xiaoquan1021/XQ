@@ -2454,3 +2454,43 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Qt File Import Wiring to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked MITK render-view refresh patterns in the existing legacy modules
+    and MITK sources.
+  - Existing XQ code calls `mitk::RenderingManager::RequestUpdateAll()` after
+    data mutations, and MITK examples initialize views from DataStorage bounds
+    after load/add-data operations.
+  - The next gap is render refresh after the new monolith file import path adds
+    nodes to `DataStorage`.
+- Added next executable phase to `plan.md`: Monolith Import Render Refresh.
+- Started the next unattended loop iteration:
+  - Adding failing render-refresh regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_mitk_file_data_import_command` because
+    `Core/xq_RenderRefreshService.h` did not exist.
+  - The same build failed while compiling
+    `test_monolith_application_import_wiring` because
+    `ConfiguredMainWindow` did not expose a `RenderRefresh` service.
+- Implemented monolith import render refresh:
+  - Added Core `RenderRefreshService`.
+  - Added Infrastructure `MitkRenderRefreshService`, which initializes MITK
+    views from the current `DataStorage` bounds and requests a global render
+    update.
+  - `MitkFileDataImportCommand` now accepts an optional refresh service and
+    calls it only after successful imports.
+  - `CreateConfiguredMainWindow()` owns and injects the MITK render refresh
+    service into the import command.
+- Red/green target verification:
+  - After implementation, the target build passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(mitk_file_data_import_command|application_import_wiring)"`
+    passed: 2/2.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 57/57.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Import Render Refresh to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

@@ -59,9 +59,11 @@ xq::core::DataImportRequest BuildImportRequest(const QString& sourcePath)
 
 MitkFileDataImportCommand::MitkFileDataImportCommand(
     const xq::core::FileImportPathProvider* pathProvider,
-    const MitkFileReader* reader)
+    const MitkFileReader* reader,
+    xq::core::RenderRefreshService* renderRefresh)
     : m_PathProvider(pathProvider)
     , m_Reader(reader)
+    , m_RenderRefresh(renderRefresh)
 {
 }
 
@@ -93,6 +95,9 @@ xq::core::DataImportCommandResult MitkFileDataImportCommand::RunImport(
 
     MitkFileImportService service;
     const auto result = service.Import(request);
+    if (result.Succeeded && m_RenderRefresh)
+        m_RenderRefresh->RefreshDataStorage(context.DataStorage());
+
     return CommandResult(result.Succeeded,
                          result.CatalogEntryId,
                          result.Message);

@@ -12,6 +12,7 @@ class FileImportPathProvider;
 namespace xq::infrastructure
 {
 class MitkFileDataImportCommand;
+class MitkRenderRefreshService;
 }
 
 namespace xq::presentation
@@ -29,6 +30,8 @@ struct ConfiguredMainWindow
 
     std::unique_ptr<xq::presentation::QtFileImportPathProvider>
         OwnedPathProvider;
+    std::unique_ptr<xq::infrastructure::MitkRenderRefreshService>
+        RenderRefresh;
     std::unique_ptr<xq::infrastructure::MitkFileDataImportCommand>
         ImportCommand;
     std::unique_ptr<xq::presentation::MainWindow> Window;

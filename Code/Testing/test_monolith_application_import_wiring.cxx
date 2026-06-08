@@ -47,6 +47,10 @@ int main(int argc, char** argv)
         xq::CreateConfiguredMainWindow(*context, &provider);
     auto* window = configuredWindow->Window.get();
 
+    if (Expect(configuredWindow->RenderRefresh != nullptr,
+               "configured monolith window should own a render refresh service"))
+        return 1;
+
     auto* importAction =
         window->findChild<QAction*>(QStringLiteral("xqImportDataAction"));
     if (Expect(importAction != nullptr,
