@@ -598,6 +598,15 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_path_operation_page
+        xqMonolithPresentation
+        xqMonolithDomain
+        xqMonolithCore
+        Qt6::Core
+        Qt6::Widgets
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_task_history_panel
         xqMonolithPresentation
         xqMonolithCore

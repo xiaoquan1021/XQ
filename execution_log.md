@@ -2775,6 +2775,46 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Segmentation Operation Action Routing to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the vascular workflow sequence after segmentation operation
+    routing. SimVascular-style workflows depend on explicit path planning
+    before segmentation/modeling, and Slicer-style workflows use editable curve
+    objects as the path boundary.
+  - The monolith Path page still has only generic placeholder behavior.
+  - Chosen next slice: add Path operation descriptors, controls, and
+    operation-aware Domain action routing.
+- Added next executable phase to `plan.md`: Path Operation Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing Domain/UI tests for Path operations and selected action
+    messages first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding `test_monolith_path_operation_page`.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|path_operation_page)"`
+    failed because Path operations were not registered and the Path page had
+    no operation selector.
+- Implemented Path Operation Foundation:
+  - Domain workflow registration now registers Path operations: Create
+    Centerline, Edit Control Points, and Smooth Path.
+  - The Path page now reuses the generic operation selector and parameter
+    panel.
+  - Path action routing reports the selected operation title while preserving
+    generic placeholder behavior when no operation service is supplied.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|path_operation_page|segmentation_operation_page)"`
+    passed: 3/3.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 62/62.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Path Operation Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 ## Current verified checkpoint
 

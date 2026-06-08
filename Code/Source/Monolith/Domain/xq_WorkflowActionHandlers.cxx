@@ -117,6 +117,32 @@ CreateSegmentationHandler(xq::core::WorkflowOperationService* operations)
     };
 }
 
+xq::core::WorkflowActionService::WorkflowActionHandler
+CreatePathHandler(xq::core::WorkflowOperationService* operations)
+{
+    if (!operations)
+        return CreateDefaultHandler();
+
+    return [operations](const xq::core::WorkflowContextSnapshot& snapshot,
+                        QString* message) {
+        const QString operationId =
+            operations->SelectedOperationId(snapshot.WorkflowId);
+        const QString operationTitle =
+            OperationTitle(operations, snapshot.WorkflowId, operationId);
+        if (operationTitle.trimmed().isEmpty())
+        {
+            return CreateDefaultHandler()(snapshot, message);
+        }
+
+        if (message)
+        {
+            *message = QStringLiteral("%1 path operation accepted %2.")
+                           .arg(operationTitle, SelectedDataLabel(snapshot));
+        }
+        return true;
+    };
+}
+
 QVector<xq::core::WorkflowOperationDescriptor>
 ImagePreprocessingOperations()
 {
@@ -210,6 +236,31 @@ QVector<xq::core::WorkflowOperationDescriptor> Segmentation2DOperations()
     };
 }
 
+QVector<xq::core::WorkflowOperationDescriptor> PathOperations()
+{
+    using Type = xq::core::WorkflowOperationParameterValueType;
+    return {
+        Operation(QStringLiteral("create-centerline"),
+                  QStringLiteral("Create Centerline"),
+                  {Parameter(QStringLiteral("control-point-count"),
+                             QStringLiteral("Control Point Count"),
+                             Type::IntegerScalar)}),
+        Operation(QStringLiteral("edit-control-points"),
+                  QStringLiteral("Edit Control Points"),
+                  {Parameter(QStringLiteral("snap-distance"),
+                             QStringLiteral("Snap Distance"),
+                             Type::NumericScalar)}),
+        Operation(QStringLiteral("smooth-path"),
+                  QStringLiteral("Smooth Path"),
+                  {Parameter(QStringLiteral("smoothing-factor"),
+                             QStringLiteral("Smoothing Factor"),
+                             Type::NumericScalar),
+                   Parameter(QStringLiteral("iteration-count"),
+                             QStringLiteral("Iteration Count"),
+                             Type::IntegerScalar)}),
+    };
+}
+
 QVector<xq::core::WorkflowOperationDescriptor> Segmentation3DOperations()
 {
     using Type = xq::core::WorkflowOperationParameterValueType;
@@ -264,6 +315,8 @@ int RegisterDefaultWorkflowActionHandlers(
     {
         operations->RegisterOperations(QStringLiteral("image-preprocessing"),
                                        ImagePreprocessingOperations());
+        operations->RegisterOperations(QStringLiteral("path"),
+                                       PathOperations());
         operations->RegisterOperations(QStringLiteral("segmentation-2d"),
                                        Segmentation2DOperations());
         operations->RegisterOperations(QStringLiteral("segmentation-3d"),
@@ -272,6 +325,12 @@ int RegisterDefaultWorkflowActionHandlers(
 
     if (actions.RegisterHandler(QStringLiteral("image-preprocessing"),
                                 CreateImagePreprocessingHandler(operations)))
+    {
+        ++registered;
+    }
+
+    if (actions.RegisterHandler(QStringLiteral("path"),
+                                CreatePathHandler(operations)))
     {
         ++registered;
     }
@@ -291,6 +350,7 @@ int RegisterDefaultWorkflowActionHandlers(
     for (const auto& workflowId : dataDependentWorkflowIds)
     {
         if (workflowId == QStringLiteral("image-preprocessing") ||
+            workflowId == QStringLiteral("path") ||
             workflowId == QStringLiteral("segmentation-2d") ||
             workflowId == QStringLiteral("segmentation-3d"))
             continue;

@@ -2831,6 +2831,42 @@ The next monolith slice is grounded in these comparable systems:
 3. Write the next executable phase into this plan.
 4. Immediately return to plan execution.
 
+## Completed Phase: Path Operation Foundation
+
+1. Add Domain-level operation descriptors for the Path workflow.
+   - Create Centerline.
+   - Edit Control Points.
+   - Smooth Path.
+   - Include initial parameter descriptors using the existing generic
+     workflow-operation parameter types.
+2. Register Path operations through `WorkflowOperationService`.
+   - Keep existing Image Preprocessing and Segmentation registration working.
+   - Keep Path action execution as Domain-level placeholder acceptance in this
+     slice.
+3. Surface Path operations on the existing Path workflow page.
+   - Path page should get an operation selector and parameter panel.
+   - Primary action text should include the selected Path operation.
+   - Running Path should report the selected Path operation title.
+4. Add C++ regression tests before implementation:
+   - Domain registration exposes Path operation descriptors.
+   - Path page exposes ordered operations and smoothing parameters.
+   - Path Run posts diagnostics/task history with the selected operation title.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
 ## Completed Phase: Segmentation Operation Action Routing
 
 1. Route 2D/3D Segmentation workflow actions through selected operation state.

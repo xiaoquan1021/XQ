@@ -156,6 +156,24 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    const auto pathOperations =
+        operationContext->WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("path"));
+    if (Expect(pathOperations.size() == 3,
+               "Path should register workflow operations"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(pathOperations.at(2).Id == QStringLiteral("smooth-path") &&
+                   pathOperations.at(2).Parameters.size() == 2,
+               "Smooth Path should expose smoothing parameters"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
     if (Expect(segmentation2dOperations.at(0).Id ==
                        QStringLiteral("threshold-contour") &&
                    segmentation2dOperations.at(0).Parameters.size() == 2,
@@ -198,6 +216,41 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(operationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("path")),
+               "Path workflow should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("path"),
+                   QStringLiteral("smooth-path"),
+                   &errorMessage),
+               "Path operation should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &actionMessage),
+               "Path handler should run selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(actionMessage ==
+                   QStringLiteral("Smooth Path path operation accepted Seg CTA."),
+               "Path handler should report selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+
     if (Expect(operationContext->WorkflowSelection()->SelectWorkflow(
                    QStringLiteral("segmentation-2d")),
                "2D segmentation workflow should be selectable"))
