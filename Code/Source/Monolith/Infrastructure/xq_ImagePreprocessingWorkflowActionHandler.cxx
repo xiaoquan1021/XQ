@@ -3,7 +3,9 @@
 #include "xq_ImagePreprocessingApplicationCommitService.h"
 
 #include "Core/xq_ApplicationContext.h"
+#include "Core/xq_DataSelectionService.h"
 #include "Core/xq_DataNodeRegistryService.h"
+#include "Core/xq_RenderRefreshService.h"
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowOperationService.h"
 
@@ -47,11 +49,42 @@ mitk::DataNode::Pointer ResolveSourceNode(
     return context.ActiveNode();
 }
 
+void ActivateResult(xq::core::ApplicationContext& context,
+                    const ImagePreprocessingApplicationCommitResult& result,
+                    xq::core::RenderRefreshService* renderRefresh)
+{
+    if (!result.Succeeded)
+        return;
+
+    if (!result.CatalogEntryId.trimmed().isEmpty())
+    {
+        QString selectionMessage;
+        context.DataSelection()->SelectCatalogEntry(result.CatalogEntryId,
+                                                    &selectionMessage);
+    }
+
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+}
+
 } // namespace
 
 bool RegisterImagePreprocessingWorkflowActionHandler(
     xq::core::ApplicationContext& context,
     const ImagePreprocessingWorkflowActionOptions& options,
+    QString* message)
+{
+    return RegisterImagePreprocessingWorkflowActionHandler(
+        context,
+        options,
+        nullptr,
+        message);
+}
+
+bool RegisterImagePreprocessingWorkflowActionHandler(
+    xq::core::ApplicationContext& context,
+    const ImagePreprocessingWorkflowActionOptions& options,
+    xq::core::RenderRefreshService* renderRefresh,
     QString* message)
 {
     const QString operationId = options.OperationId.trimmed();
@@ -64,7 +97,7 @@ bool RegisterImagePreprocessingWorkflowActionHandler(
     }
 
     const auto handler =
-        [&context, options, operationId](
+        [&context, options, operationId, renderRefresh](
             const xq::core::WorkflowContextSnapshot& snapshot,
             QString* taskMessage) {
             const auto sourceNode = ResolveSourceNode(context, snapshot);
@@ -90,6 +123,7 @@ bool RegisterImagePreprocessingWorkflowActionHandler(
 
             ImagePreprocessingApplicationCommitService service;
             const auto result = service.Run(request);
+            ActivateResult(context, result, renderRefresh);
             SetMessage(taskMessage, result.Message);
             return result.Succeeded;
         };
@@ -104,9 +138,21 @@ bool RegisterDynamicImagePreprocessingWorkflowActionHandler(
     xq::core::ApplicationContext& context,
     QString* message)
 {
+    return RegisterDynamicImagePreprocessingWorkflowActionHandler(
+        context,
+        nullptr,
+        message);
+}
+
+bool RegisterDynamicImagePreprocessingWorkflowActionHandler(
+    xq::core::ApplicationContext& context,
+    xq::core::RenderRefreshService* renderRefresh,
+    QString* message)
+{
     const auto handler =
-        [&context](const xq::core::WorkflowContextSnapshot& snapshot,
-                   QString* taskMessage) {
+        [&context, renderRefresh](
+            const xq::core::WorkflowContextSnapshot& snapshot,
+            QString* taskMessage) {
             auto* operations = context.WorkflowOperations();
             const QString operationId =
                 operations->SelectedOperationId(snapshot.WorkflowId);
@@ -142,6 +188,7 @@ bool RegisterDynamicImagePreprocessingWorkflowActionHandler(
 
             ImagePreprocessingApplicationCommitService service;
             const auto result = service.Run(request);
+            ActivateResult(context, result, renderRefresh);
             SetMessage(taskMessage, result.Message);
             return result.Succeeded;
         };

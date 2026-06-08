@@ -32,7 +32,8 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
             nullptr,
             configured->RenderRefresh.get());
     xq::infrastructure::RegisterDynamicImagePreprocessingWorkflowActionHandler(
-        context);
+        context,
+        configured->RenderRefresh.get());
     configured->Window =
         std::make_unique<xq::presentation::MainWindow>(context);
     configured->Window->SetDataImportCommand(

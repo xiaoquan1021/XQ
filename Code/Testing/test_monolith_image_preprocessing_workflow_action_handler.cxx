@@ -5,6 +5,8 @@
 #include "Core/xq_DataHierarchyService.h"
 #include "Core/xq_DataImportService.h"
 #include "Core/xq_DataNodeRegistryService.h"
+#include "Core/xq_DataSelectionService.h"
+#include "Core/xq_RenderRefreshService.h"
 #include "Core/xq_TaskRunner.h"
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowSelectionService.h"
@@ -145,6 +147,19 @@ mitk::DataNode::Pointer FindChild(mitk::DataStorage::Pointer storage,
     return nullptr;
 }
 
+class FakeRenderRefreshService : public xq::core::RenderRefreshService
+{
+public:
+    int Calls = 0;
+    mitk::DataStorage::Pointer LastDataStorage;
+
+    void RefreshDataStorage(mitk::DataStorage::Pointer dataStorage) override
+    {
+        ++Calls;
+        LastDataStorage = dataStorage;
+    }
+};
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -272,10 +287,12 @@ int main(int argc, char** argv)
         context->SetActiveNode(sourceNode);
 
         QString message;
+        FakeRenderRefreshService refresh;
         if (Expect(xq::infrastructure::
                        RegisterImagePreprocessingWorkflowActionHandler(
                            *context,
                            CropOptions(),
+                           &refresh,
                            &message),
                    "valid crop fixture should install handler"))
             return 1;
@@ -319,6 +336,15 @@ int main(int argc, char** argv)
                        hierarchyNode->DataCatalogEntryId ==
                            QStringLiteral("image-001-crop"),
                    "crop handler should register generated hierarchy entry"))
+            return 1;
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("image-001-crop"),
+                   "successful crop handler should select generated data"))
+            return 1;
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "successful crop handler should refresh rendering once"))
             return 1;
     }
 

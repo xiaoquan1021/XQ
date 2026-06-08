@@ -2789,6 +2789,40 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Image Preprocessing Result Activation
+
+1. Extend Image Preprocessing Infrastructure workflow action registration with
+   post-commit result activation.
+   - Select the generated catalog entry after a successful preprocessing
+     commit.
+   - Refresh MITK rendering once after a successful preprocessing commit.
+   - Do not select or refresh when preprocessing fails.
+2. Keep both fixed-operation and dynamic-operation registrations aligned.
+   - Fixed-operation tests should cover selection and refresh.
+   - Dynamic production registration should use the same helper path.
+3. Wire production composition to reuse the existing render-refresh service.
+   - `CreateConfiguredMainWindow()` should pass the render refresh service to
+     dynamic Image Preprocessing registration.
+4. Add C++ regression tests before implementation:
+   - Successful crop handler selects `image-001-crop`.
+   - Successful crop handler refreshes the application DataStorage exactly
+     once.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

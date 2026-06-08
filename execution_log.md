@@ -2603,6 +2603,18 @@
     passed.
   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workflow_operation_service|image_preprocessing_operation_page)"`
     passed: 2/2.
+
+## Current verified checkpoint
+
+- Image Preprocessing Result Activation is complete and promoted in `plan.md`.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 59/59.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Started Active Phase: Autonomous Research Refresh.
 - Verification for this iteration:
   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
@@ -2699,11 +2711,43 @@
 - Promoted Image Preprocessing Infrastructure Wiring to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked Image Preprocessing success behavior after infrastructure wiring.
+  - Successful preprocessing commits add result data, but the handler does not
+    yet activate the new result selection or refresh MITK rendering.
+  - Chosen next slice: select generated preprocessing data and refresh
+    rendering after successful preprocessing commits.
+- Added next executable phase to `plan.md`: Image Preprocessing Result
+  Activation.
+- Started the next unattended loop iteration:
+  - Adding failing fixed-operation handler test for result selection and render
+    refresh first.
   - Related compatibility tests
     `test_monolith_workflow_action_service`,
     `test_monolith_domain_workflow_action_handlers`,
     `test_monolith_image_preprocessing_workflow_service`, and
     `test_monolith_workflow_primary_action_page` passed: 4/4.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    extending the fixed-operation handler test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `RegisterImagePreprocessingWorkflowActionHandler()` did not accept the
+    render-refresh service and the first implementation temporarily broke
+    existing `QString* message` call sites.
+- Implemented Image Preprocessing result activation:
+  - Successful Infrastructure preprocessing commits now select the generated
+    catalog entry.
+  - Successful commits call the optional render-refresh service once with the
+    application `DataStorage`.
+  - Failed commits still return before selection or refresh.
+  - Fixed-operation and dynamic-operation registrations share the same
+    activation helper, and source-compatible `QString* message` overloads keep
+    existing call sites working.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(image_preprocessing_workflow_action_handler|application_import_wiring)"`
+    passed: 2/2.
 - Verification for this iteration:
   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
