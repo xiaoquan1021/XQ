@@ -3047,6 +3047,42 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 4. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Workflow Operation Parameter UI Restore
+
+1. Keep all monolith workflow operation parameter panels synchronized after
+   project open restores workflow operation state.
+   - If the restored selected operation is unchanged but parameter values
+     changed, the visible parameter editors should refresh.
+   - Apply this to generic workflow pages such as Path, Modeling, Meshing,
+     Flow, ROM, MultiPhysics, and Python API, not only Image Preprocessing.
+2. Extend the Path workflow page C++ regression test before implementation.
+   - Save a project whose default Path operation `create-centerline` has
+     `control-point-count` changed from the default value.
+   - Open that project through an existing `MainWindow`.
+   - The existing Path parameter editor should show the restored integer value
+     even though the selected operation id did not change.
+3. Implement the minimal Presentation refresh hook.
+   - `MainWindow` should listen to `WorkflowOperationService` parameter value
+     changes.
+   - Refresh operation controls or the affected parameter panel without
+     changing Core state.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

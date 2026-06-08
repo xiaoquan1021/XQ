@@ -50,6 +50,9 @@ private:
     void SyncWorkflowNavigationFromCore(const QString& workflowId);
     void UpdateWorkflowContextStatusPage();
     void UpdateWorkflowOperationControls();
+    void UpdateWorkflowParameterEditorValue(const QString& workflowId,
+                                            const QString& parameterId,
+                                            const QVariant& value);
     void RebuildWorkflowParameterPanel(const QString& workflowId);
     void UpdateDataWorkflowPage();
     void UpdateProjectPage(const xq::core::ProjectMetadata* project);

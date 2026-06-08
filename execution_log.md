@@ -2752,6 +2752,54 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run: Workflow Operation Parameter UI Restore
+
+- Completed autonomous research refresh:
+  - Rechecked comparable workstation direction:
+    3D Slicer's Segment Editor keeps tool parameters visible in the active
+    workflow, SimVascular's vascular pipeline depends on stable project state
+    across image/path/segmentation/model/mesh/simulation stages, and MITK
+    Workbench centers workflows around Data Manager plus active tool panels.
+  - Current XQ monolith pages now expose operation controls across all
+    first-version workflows, but `MainWindow` only refreshes those controls
+    when the selected operation changes.
+  - Chosen next slice: refresh generic operation parameter panels when project
+    open restores parameter values without changing the selected operation id.
+- Added next executable phase to `plan.md`: Workflow Operation Parameter UI
+  Restore.
+- Started the next unattended loop iteration:
+  - Adding a failing Path page restore test first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` initially
+    exposed missing ProjectService/ProjectSessionService includes in the new
+    test, which were added so the test compiled.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_path_operation_page`
+    then failed with
+    `project open should refresh unchanged Path operation parameters`.
+- Implemented Workflow Operation Parameter UI Restore:
+  - `MainWindow` now listens to `WorkflowOperationService::ParameterValueChanged`.
+  - Restored parameter values update the existing visible spinbox editor with
+    `QSignalBlocker` instead of rebuilding the whole panel during editor
+    signals.
+  - A first synchronous panel-rebuild attempt caused a target-test segfault by
+    deleting the active editor; the final implementation updates editor values
+    in place.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_path_operation_page`
+    passed: 1/1.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Workflow Operation Parameter UI Restore to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Run Script Monolith Fallback
 
 - Red test observed:

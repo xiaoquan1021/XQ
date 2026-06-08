@@ -196,6 +196,17 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             [this](const QString&, const QString&) {
                 UpdateWorkflowOperationControls();
             });
+    connect(m_Context.WorkflowOperations(),
+            &xq::core::WorkflowOperationService::ParameterValueChanged,
+            this,
+            [this](const QString& workflowId,
+                   const QString&,
+                   const QString& parameterId,
+                   const QVariant& value) {
+                UpdateWorkflowParameterEditorValue(workflowId,
+                                                   parameterId,
+                                                   value);
+            });
     SyncWorkflowNavigationFromCore(
         m_Context.WorkflowSelection()->SelectedWorkflowId());
     UpdateWorkflowContextStatusPage();
@@ -690,6 +701,36 @@ void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
         }
 
         formLayout->addRow(parameter.Title, editor);
+    }
+}
+
+void MainWindow::UpdateWorkflowParameterEditorValue(const QString& workflowId,
+                                                    const QString& parameterId,
+                                                    const QVariant& value)
+{
+    auto* panel = m_WorkflowParameterPanels.value(workflowId, nullptr);
+    if (!panel)
+        return;
+
+    QString objectName =
+        QStringLiteral("xqWorkflowParameter_%1").arg(parameterId);
+    if (workflowId == QStringLiteral("image-preprocessing"))
+    {
+        objectName = QStringLiteral("xqImagePreprocessingParameter_%1")
+                         .arg(parameterId);
+    }
+
+    if (auto* doubleEditor = panel->findChild<QDoubleSpinBox*>(objectName))
+    {
+        QSignalBlocker blocker(doubleEditor);
+        doubleEditor->setValue(value.toDouble());
+        return;
+    }
+
+    if (auto* integerEditor = panel->findChild<QSpinBox*>(objectName))
+    {
+        QSignalBlocker blocker(integerEditor);
+        integerEditor->setValue(value.toInt());
     }
 }
 

@@ -1,5 +1,7 @@
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataImportService.h"
+#include "Core/xq_ProjectService.h"
+#include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
@@ -8,8 +10,10 @@
 #include <QApplication>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QDir>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QTemporaryDir>
 
 #include <iostream>
 
@@ -114,6 +118,59 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    auto* controlPointCount =
+        FindIntegerParameter(window, QStringLiteral("control-point-count"));
+    if (Expect(controlPointCount != nullptr,
+               "Create Centerline control point count editor should be visible"))
+    {
+        delete context;
+        return 1;
+    }
+    controlPointCount->setValue(7);
+    app.processEvents();
+
+    QTemporaryDir tempDir;
+    if (Expect(tempDir.isValid(), "temporary directory should be available"))
+    {
+        delete context;
+        return 1;
+    }
+    const QString projectPath =
+        QDir(tempDir.path()).filePath(QStringLiteral("PathOperationUi.xqproj"));
+    QString errorMessage;
+    if (Expect(context->Projects()->CreateProject(
+                   QStringLiteral("PathOperationUi"),
+                   projectPath,
+                   &errorMessage),
+               "Path operation UI project should be created"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->ProjectSession()->Save(&errorMessage),
+               "Path operation UI project should save parameter state"))
+    {
+        delete context;
+        return 1;
+    }
+    controlPointCount->setValue(2);
+    app.processEvents();
+    if (Expect(context->ProjectSession()->Open(projectPath, &errorMessage),
+               "Path operation UI project should reopen with persisted parameter state"))
+    {
+        delete context;
+        return 1;
+    }
+    app.processEvents();
+    controlPointCount =
+        FindIntegerParameter(window, QStringLiteral("control-point-count"));
+    if (Expect(controlPointCount != nullptr && controlPointCount->value() == 7,
+               "project open should refresh unchanged Path operation parameters"))
+    {
+        delete context;
+        return 1;
+    }
+
     selector->setCurrentIndex(
         selector->findData(QStringLiteral("smooth-path")));
     app.processEvents();
@@ -143,7 +200,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    QString errorMessage;
     const auto importResult =
         context->DataImports()->Import(MakeImageImport(), &errorMessage);
     if (Expect(importResult.Succeeded,
