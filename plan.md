@@ -2751,6 +2751,44 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 7. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Image Preprocessing Infrastructure Wiring
+
+1. Promote Image Preprocessing from Domain placeholder action to Infrastructure
+   execution in the monolith composition root.
+   - Keep Domain registration responsible for workflow operation metadata.
+   - Register an Infrastructure Image Preprocessing handler after Domain
+     registration so the production action path uses MITK-backed commit logic.
+2. Add a dynamic Infrastructure registration path.
+   - Resolve the selected operation from `WorkflowOperationService`.
+   - Resolve parameter values from `WorkflowOperationService`.
+   - Resolve the source MITK node from `DataNodeRegistryService` or active
+     node.
+   - Preserve the clear missing-node diagnostic when no source node exists.
+3. Keep existing fixed-operation Infrastructure tests working.
+   - Do not remove `RegisterImagePreprocessingWorkflowActionHandler(options)`.
+   - The new dynamic registration should share the same application commit
+     behavior.
+4. Add C++ regression tests before implementation:
+   - Composition root overrides the Domain placeholder handler.
+   - Running Image Preprocessing with selected image metadata but no MITK source
+     node fails with `Active image node is required for image preprocessing.`
+     and records a failed task.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

@@ -1,6 +1,11 @@
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataCatalogService.h"
 #include "Core/xq_DataImportCommand.h"
+#include "Core/xq_DataImportService.h"
+#include "Core/xq_TaskRunner.h"
+#include "Core/xq_WorkflowActionService.h"
+#include "Core/xq_WorkflowSelectionService.h"
+#include "Domain/xq_WorkflowActionHandlers.h"
 #include "Presentation/xq_MainWindow.h"
 #include "xq_MonolithApplication.h"
 
@@ -33,6 +38,17 @@ public:
         return {};
     }
 };
+
+xq::core::DataImportRequest MakeImageImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("image-001");
+    request.SourcePath = QStringLiteral("C:/studies/image-001.nii");
+    request.DisplayName = QStringLiteral("CTA Image");
+    request.Modality = QStringLiteral("CT");
+    request.WorkflowRole = xq::core::DataWorkflowRole::Image;
+    return request;
+}
 
 } // namespace
 
@@ -82,6 +98,45 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(context->DataCatalog()->Entries().isEmpty(),
                "cancelled real file dialog path should not mutate catalog"))
+        return 1;
+
+    auto preprocessingContext =
+        std::unique_ptr<xq::core::ApplicationContext>(
+            xq::core::ApplicationContext::CreateDefault());
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *preprocessingContext->WorkflowActions(),
+        preprocessingContext->WorkflowOperations());
+    CancelPathProvider preprocessingProvider;
+    auto preprocessingWindow =
+        xq::CreateConfiguredMainWindow(*preprocessingContext,
+                                       &preprocessingProvider);
+
+    if (Expect(preprocessingContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("image-preprocessing")),
+               "configured preprocessing workflow should be selectable"))
+        return 1;
+
+    QString message;
+    const auto importResult =
+        preprocessingContext->DataImports()->Import(MakeImageImport(),
+                                                    &message);
+    if (Expect(importResult.Succeeded,
+               "configured preprocessing image import should succeed"))
+        return 1;
+
+    if (Expect(!preprocessingContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured preprocessing action should require a MITK source node"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active image node is required for image preprocessing."),
+               "configured preprocessing action should use infrastructure diagnostic"))
+        return 1;
+    const auto history = preprocessingContext->Tasks()->History();
+    if (Expect(!history.empty() &&
+                   !history.back().Succeeded &&
+                   history.back().Message == message,
+               "configured preprocessing action failure should be recorded"))
         return 1;
 
     return 0;

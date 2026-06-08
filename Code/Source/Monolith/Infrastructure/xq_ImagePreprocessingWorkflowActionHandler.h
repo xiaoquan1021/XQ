@@ -24,6 +24,10 @@ bool RegisterImagePreprocessingWorkflowActionHandler(
     const ImagePreprocessingWorkflowActionOptions& options,
     QString* message = nullptr);
 
+bool RegisterDynamicImagePreprocessingWorkflowActionHandler(
+    xq::core::ApplicationContext& context,
+    QString* message = nullptr);
+
 } // namespace xq::infrastructure
 
 #endif // XQ_INFRASTRUCTURE_IMAGEPREPROCESSINGWORKFLOWACTIONHANDLER_H

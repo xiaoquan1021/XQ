@@ -2655,6 +2655,50 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Image Preprocessing Parameter State to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked production composition after parameter state landed.
+  - `main.cxx` registers Domain workflow handlers and the composition root
+    currently configures import/render services, but Image Preprocessing still
+    runs through the Domain placeholder path instead of the existing
+    MITK-backed Infrastructure commit handler.
+  - Chosen next slice: wire dynamic Image Preprocessing Infrastructure handler
+    registration in the monolith composition root.
+- Added next executable phase to `plan.md`: Image Preprocessing Infrastructure
+  Wiring.
+- Started the next unattended loop iteration:
+  - Adding failing composition-root regression test first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    extending the composition-root test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_application_import_wiring`
+    failed because the configured Image Preprocessing action still succeeded
+    through the Domain placeholder instead of requiring a MITK source node.
+- Implemented Image Preprocessing infrastructure wiring:
+  - Added dynamic Infrastructure workflow-action registration for Image
+    Preprocessing.
+  - The dynamic handler resolves the selected operation and parameter values
+    from `WorkflowOperationService`.
+  - It resolves the MITK source node from the data-node registry or active
+    node and uses the existing application commit service.
+  - `CreateConfiguredMainWindow()` registers the dynamic Infrastructure
+    handler after Domain workflow registration, overriding the placeholder for
+    production composition.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(application_import_wiring|image_preprocessing_workflow_action_handler)"`
+    passed: 2/2.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 59/59.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Image Preprocessing Infrastructure Wiring to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
   - Related compatibility tests
     `test_monolith_workflow_action_service`,
     `test_monolith_domain_workflow_action_handlers`,

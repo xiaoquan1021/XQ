@@ -3,6 +3,7 @@
 #include "Core/xq_DataImportCommand.h"
 #include "Infrastructure/xq_MitkFileDataImportCommand.h"
 #include "Infrastructure/xq_MitkRenderRefreshService.h"
+#include "Infrastructure/xq_ImagePreprocessingWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
 
@@ -30,6 +31,8 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
             pathProvider,
             nullptr,
             configured->RenderRefresh.get());
+    xq::infrastructure::RegisterDynamicImagePreprocessingWorkflowActionHandler(
+        context);
     configured->Window =
         std::make_unique<xq::presentation::MainWindow>(context);
     configured->Window->SetDataImportCommand(
