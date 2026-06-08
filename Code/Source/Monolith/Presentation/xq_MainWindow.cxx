@@ -41,6 +41,34 @@
 namespace xq::presentation
 {
 
+namespace
+{
+
+QString RoleDisplayName(xq::core::DataWorkflowRole role)
+{
+    switch (role)
+    {
+    case xq::core::DataWorkflowRole::DICOMSeries:
+        return QStringLiteral("DICOM Series");
+    case xq::core::DataWorkflowRole::Image:
+        return QStringLiteral("Image");
+    case xq::core::DataWorkflowRole::Segmentation:
+        return QStringLiteral("Segmentation");
+    case xq::core::DataWorkflowRole::Model:
+        return QStringLiteral("Model");
+    case xq::core::DataWorkflowRole::Mesh:
+        return QStringLiteral("Mesh");
+    case xq::core::DataWorkflowRole::SimulationResult:
+        return QStringLiteral("Simulation Result");
+    case xq::core::DataWorkflowRole::Unknown:
+        break;
+    }
+
+    return QStringLiteral("Unknown");
+}
+
+} // namespace
+
 MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     : QMainWindow(parent)
     , m_Context(context)
@@ -337,7 +365,8 @@ void MainWindow::AppendTaskHistoryRow(const xq::core::TaskRecord& task)
 void MainWindow::UpdateDataWorkflowPage()
 {
     if (!m_DataSelectionLabel || !m_DataCatalogIdLabel ||
-        !m_DataDisplayNameLabel || !m_DataSourcePathLabel)
+        !m_DataDisplayNameLabel || !m_DataSourcePathLabel ||
+        !m_DataWorkflowRoleLabel)
     {
         return;
     }
@@ -351,6 +380,7 @@ void MainWindow::UpdateDataWorkflowPage()
         m_DataCatalogIdLabel->clear();
         m_DataDisplayNameLabel->clear();
         m_DataSourcePathLabel->clear();
+        m_DataWorkflowRoleLabel->clear();
         return;
     }
 
@@ -361,6 +391,8 @@ void MainWindow::UpdateDataWorkflowPage()
         QStringLiteral("Name: %1").arg(entry->DisplayName));
     m_DataSourcePathLabel->setText(
         QStringLiteral("Source: %1").arg(entry->SourcePath));
+    m_DataWorkflowRoleLabel->setText(
+        QStringLiteral("Role: %1").arg(RoleDisplayName(entry->WorkflowRole)));
 }
 
 void MainWindow::SaveProject()
@@ -636,11 +668,15 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
         m_DataSourcePathLabel = new QLabel(page);
         m_DataSourcePathLabel->setObjectName(
             QStringLiteral("xqDataPageSourcePath"));
+        m_DataWorkflowRoleLabel = new QLabel(page);
+        m_DataWorkflowRoleLabel->setObjectName(
+            QStringLiteral("xqDataPageWorkflowRole"));
 
         layout->addWidget(m_DataSelectionLabel);
         layout->addWidget(m_DataCatalogIdLabel);
         layout->addWidget(m_DataDisplayNameLabel);
         layout->addWidget(m_DataSourcePathLabel);
+        layout->addWidget(m_DataWorkflowRoleLabel);
     }
     else if (!xq::core::WorkflowContextService::AcceptedDataRolesForWorkflow(
                   id).isEmpty())

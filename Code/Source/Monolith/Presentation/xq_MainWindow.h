@@ -66,6 +66,7 @@ private:
     QLabel* m_DataCatalogIdLabel = nullptr;
     QLabel* m_DataDisplayNameLabel = nullptr;
     QLabel* m_DataSourcePathLabel = nullptr;
+    QLabel* m_DataWorkflowRoleLabel = nullptr;
     QHash<QString, QLabel*> m_WorkflowContextStatusLabels;
     QHash<QString, QPushButton*> m_WorkflowPrimaryActionButtons;
     QAction* m_SaveProjectAction = nullptr;

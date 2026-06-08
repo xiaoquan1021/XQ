@@ -2584,6 +2584,38 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Page Role Display
+
+1. Surface imported data workflow role on the monolith Data page.
+   - Add a role label with object name `xqDataPageWorkflowRole`.
+   - Clear the role label when no data is selected.
+   - Render user-facing labels for Image, Segmentation, Model, Mesh,
+     Simulation Result, DICOM Series, and Unknown.
+2. Preserve existing Data page behavior.
+   - Selection, catalog id, display name, and source path labels keep their
+     current text.
+   - Rename/remove still refresh and clear labels correctly.
+3. Add C++ regression tests before implementation:
+   - Data page exposes the workflow-role label.
+   - Image import shows `Role: Image`.
+   - Model import shows `Role: Model`.
+   - Removing the selected entry clears role text with the rest of metadata.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

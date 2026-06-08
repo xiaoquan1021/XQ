@@ -33,6 +33,19 @@ xq::core::DataImportRequest MakeImageImport(const QString& id,
     return request;
 }
 
+xq::core::DataImportRequest MakeImport(const QString& id,
+                                       const QString& displayName,
+                                       xq::core::DataWorkflowRole role)
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = id;
+    request.SourcePath = QStringLiteral("C:/studies/") + id;
+    request.DisplayName = displayName;
+    request.Modality = QStringLiteral("CT");
+    request.WorkflowRole = role;
+    return request;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -58,6 +71,8 @@ int main(int argc, char** argv)
         dataPage->findChild<QLabel*>(QStringLiteral("xqDataPageDisplayName"));
     auto* sourcePathLabel =
         dataPage->findChild<QLabel*>(QStringLiteral("xqDataPageSourcePath"));
+    auto* workflowRoleLabel =
+        dataPage->findChild<QLabel*>(QStringLiteral("xqDataPageWorkflowRole"));
 
     if (Expect(selectionLabel != nullptr,
                "data page should expose a selection label"))
@@ -83,6 +98,12 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(workflowRoleLabel != nullptr,
+               "data page should expose a workflow role label"))
+    {
+        delete context;
+        return 1;
+    }
 
     if (Expect(selectionLabel->text() == QStringLiteral("No data selected"),
                "data page should start without selected data"))
@@ -92,7 +113,8 @@ int main(int argc, char** argv)
     }
     if (Expect(catalogIdLabel->text().isEmpty() &&
                    displayNameLabel->text().isEmpty() &&
-                   sourcePathLabel->text().isEmpty(),
+                   sourcePathLabel->text().isEmpty() &&
+                   workflowRoleLabel->text().isEmpty(),
                "data page should clear metadata without selection"))
     {
         delete context;
@@ -138,6 +160,12 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(workflowRoleLabel->text() == QStringLiteral("Role: Image"),
+               "data import should update workflow role text"))
+    {
+        delete context;
+        return 1;
+    }
 
     if (Expect(context->DataManagement()->RenameEntry(
                    QStringLiteral("image-001"),
@@ -178,8 +206,29 @@ int main(int argc, char** argv)
     }
     if (Expect(catalogIdLabel->text().isEmpty() &&
                    displayNameLabel->text().isEmpty() &&
-                   sourcePathLabel->text().isEmpty(),
+                   sourcePathLabel->text().isEmpty() &&
+                   workflowRoleLabel->text().isEmpty(),
                "data remove should clear metadata labels"))
+    {
+        delete context;
+        return 1;
+    }
+
+    const auto modelImport =
+        context->DataImports()->Import(MakeImport(
+                                           QStringLiteral("model-001"),
+                                           QStringLiteral("Aorta Model"),
+                                           xq::core::DataWorkflowRole::Model),
+                                       &errorMessage);
+    if (Expect(modelImport.Succeeded, "model import should succeed"))
+    {
+        delete context;
+        return 1;
+    }
+    app.processEvents();
+
+    if (Expect(workflowRoleLabel->text() == QStringLiteral("Role: Model"),
+               "model import should update workflow role text"))
     {
         delete context;
         return 1;

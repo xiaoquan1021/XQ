@@ -2534,3 +2534,38 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith File Import Role Inference to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked Data page visibility after file role inference landed.
+  - The Data page still shows selection, id, name, and source path, but not the
+    inferred workflow role, making imported model/mesh/result files less
+    transparent to users.
+  - Chosen next slice: surface workflow role on the monolith Data page.
+- Added next executable phase to `plan.md`: Monolith Data Page Role Display.
+- Started the next unattended loop iteration:
+  - Adding failing Data page role label regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed after
+    compiling the updated test.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_workflow_page`
+    failed because the Data page did not expose
+    `xqDataPageWorkflowRole`.
+- Implemented monolith Data page role display:
+  - Added a Presentation workflow-role label on the Data page.
+  - Added user-facing role names for DICOM Series, Image, Segmentation,
+    Model, Mesh, Simulation Result, and Unknown.
+  - The role label updates with the selected catalog entry and clears with the
+    rest of the metadata when selection is removed.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_data_workflow_page`
+    passed: 1/1.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 57/57.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Page Role Display to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
