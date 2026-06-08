@@ -4,6 +4,7 @@
 
 #include <QHash>
 #include <QSet>
+#include <QStringList>
 #include <QVariantList>
 
 namespace xq::core
@@ -33,6 +34,71 @@ QString WorkflowOperationService::SelectedOperationId(
     const QString& workflowId) const
 {
     return m_SelectedOperationIds.value(workflowId.trimmed());
+}
+
+QVector<WorkflowOperationState> WorkflowOperationService::State() const
+{
+    QVector<WorkflowOperationState> states;
+    QStringList workflowIds = m_Operations.keys();
+    workflowIds.sort();
+    for (const auto& workflowId : workflowIds)
+    {
+        WorkflowOperationState state;
+        state.WorkflowId = workflowId;
+        state.SelectedOperationId = m_SelectedOperationIds.value(workflowId);
+        for (const auto& operation : m_Operations.value(workflowId))
+        {
+            const QString valueKey = ParameterValueKey(workflowId,
+                                                       operation.Id);
+            state.ParameterValuesByOperationId.insert(
+                operation.Id,
+                m_ParameterValues.value(valueKey));
+        }
+        states.push_back(state);
+    }
+
+    return states;
+}
+
+bool WorkflowOperationService::ApplyState(
+    const QVector<WorkflowOperationState>& states,
+    QString* message)
+{
+    for (const auto& state : states)
+    {
+        const QString workflowId = state.WorkflowId.trimmed();
+        if (!state.SelectedOperationId.trimmed().isEmpty() &&
+            !SelectOperation(workflowId,
+                             state.SelectedOperationId,
+                             message))
+        {
+            return false;
+        }
+
+        QStringList operationIds = state.ParameterValuesByOperationId.keys();
+        operationIds.sort();
+        for (const auto& operationId : operationIds)
+        {
+            const QVariantMap values =
+                state.ParameterValuesByOperationId.value(operationId);
+            QStringList parameterIds = values.keys();
+            parameterIds.sort();
+            for (const auto& parameterId : parameterIds)
+            {
+                if (!SetParameterValue(workflowId,
+                                       operationId,
+                                       parameterId,
+                                       values.value(parameterId),
+                                       message))
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    SetMessage(message, QString());
+    return true;
 }
 
 bool WorkflowOperationService::RegisterOperations(
@@ -138,6 +204,39 @@ bool WorkflowOperationService::RegisterOperations(
     if (previousSelection != nextSelection)
         emit SelectedOperationChanged(normalizedWorkflowId, nextSelection);
     return true;
+}
+
+void WorkflowOperationService::ReplaceStateWith(
+    const WorkflowOperationService& other)
+{
+    m_SelectedOperationIds = other.m_SelectedOperationIds;
+    m_ParameterValues = other.m_ParameterValues;
+
+    for (const auto& workflowId : m_Operations.keys())
+    {
+        for (const auto& operation : m_Operations.value(workflowId))
+        {
+            const QString valueKey = ParameterValueKey(workflowId,
+                                                       operation.Id);
+            if (!m_ParameterValues.contains(valueKey))
+            {
+                QVariantMap values;
+                for (const auto& parameter : operation.Parameters)
+                    values.insert(parameter.Id,
+                                  DefaultValueForParameter(parameter));
+                m_ParameterValues.insert(valueKey, values);
+            }
+        }
+
+        if (!m_SelectedOperationIds.contains(workflowId) &&
+            !m_Operations.value(workflowId).isEmpty())
+        {
+            m_SelectedOperationIds.insert(workflowId,
+                                          m_Operations.value(workflowId)
+                                              .front()
+                                              .Id);
+        }
+    }
 }
 
 bool WorkflowOperationService::SelectOperation(const QString& workflowId,

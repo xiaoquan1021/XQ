@@ -11,6 +11,7 @@ namespace xq::core
 
 class DataCatalogService;
 class DataHierarchyService;
+class WorkflowOperationService;
 
 struct ProjectMetadata
 {
@@ -41,6 +42,10 @@ public:
     bool SaveProject(const DataCatalogService& dataCatalog,
                      const DataHierarchyService& dataHierarchy,
                      QString* errorMessage = nullptr) const;
+    bool SaveProject(const DataCatalogService& dataCatalog,
+                     const DataHierarchyService& dataHierarchy,
+                     const WorkflowOperationService& workflowOperations,
+                     QString* errorMessage = nullptr) const;
     bool OpenProject(const QString& projectFilePath,
                      QString* errorMessage = nullptr);
     bool OpenProject(const QString& projectFilePath,
@@ -49,6 +54,11 @@ public:
     bool OpenProject(const QString& projectFilePath,
                      DataCatalogService& dataCatalog,
                      DataHierarchyService& dataHierarchy,
+                     QString* errorMessage = nullptr);
+    bool OpenProject(const QString& projectFilePath,
+                     DataCatalogService& dataCatalog,
+                     DataHierarchyService& dataHierarchy,
+                     WorkflowOperationService& workflowOperations,
                      QString* errorMessage = nullptr);
 
 signals:

@@ -5,6 +5,7 @@
 #include "xq_DataSelectionService.h"
 #include "xq_ProjectService.h"
 #include "xq_TaskRunner.h"
+#include "xq_WorkflowOperationService.h"
 
 namespace xq::core
 {
@@ -37,12 +38,38 @@ ProjectSessionService::ProjectSessionService(ProjectService& projectService,
 {
 }
 
+ProjectSessionService::ProjectSessionService(
+    ProjectService& projectService,
+    DataCatalogService& dataCatalog,
+    DataHierarchyService& dataHierarchy,
+    DataSelectionService& dataSelection,
+    WorkflowOperationService& workflowOperations,
+    TaskRunner& taskRunner,
+    QObject* parent)
+    : QObject(parent)
+    , m_ProjectService(projectService)
+    , m_DataCatalog(dataCatalog)
+    , m_DataHierarchy(dataHierarchy)
+    , m_DataSelection(&dataSelection)
+    , m_WorkflowOperations(&workflowOperations)
+    , m_TaskRunner(taskRunner)
+{
+}
+
 bool ProjectSessionService::Save(QString* errorMessage)
 {
     QString taskMessage;
     const bool succeeded = m_TaskRunner.RunBlocking(
         QStringLiteral("Save Project"),
         [this](QString* message) {
+            if (m_WorkflowOperations)
+            {
+                return m_ProjectService.SaveProject(m_DataCatalog,
+                                                    m_DataHierarchy,
+                                                    *m_WorkflowOperations,
+                                                    message);
+            }
+
             return m_ProjectService.SaveProject(m_DataCatalog,
                                                 m_DataHierarchy,
                                                 message);
@@ -60,6 +87,15 @@ bool ProjectSessionService::Open(const QString& projectFilePath,
     const bool succeeded = m_TaskRunner.RunBlocking(
         QStringLiteral("Open Project"),
         [this, &projectFilePath](QString* message) {
+            if (m_WorkflowOperations)
+            {
+                return m_ProjectService.OpenProject(projectFilePath,
+                                                    m_DataCatalog,
+                                                    m_DataHierarchy,
+                                                    *m_WorkflowOperations,
+                                                    message);
+            }
+
             return m_ProjectService.OpenProject(projectFilePath,
                                                 m_DataCatalog,
                                                 m_DataHierarchy,

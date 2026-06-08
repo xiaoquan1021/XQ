@@ -34,6 +34,13 @@ struct WorkflowOperationDescriptor
     QVector<WorkflowOperationParameterDescriptor> Parameters;
 };
 
+struct WorkflowOperationState
+{
+    QString WorkflowId;
+    QString SelectedOperationId;
+    QHash<QString, QVariantMap> ParameterValuesByOperationId;
+};
+
 class WorkflowOperationService : public QObject
 {
     Q_OBJECT
@@ -46,11 +53,15 @@ public:
     QVariantMap ParameterValues(const QString& workflowId,
                                 const QString& operationId) const;
     QString SelectedOperationId(const QString& workflowId) const;
+    QVector<WorkflowOperationState> State() const;
 
+    bool ApplyState(const QVector<WorkflowOperationState>& states,
+                    QString* message = nullptr);
     bool RegisterOperations(
         const QString& workflowId,
         const QVector<WorkflowOperationDescriptor>& operations,
         QString* message = nullptr);
+    void ReplaceStateWith(const WorkflowOperationService& other);
     bool SelectOperation(const QString& workflowId,
                          const QString& operationId,
                          QString* message = nullptr);

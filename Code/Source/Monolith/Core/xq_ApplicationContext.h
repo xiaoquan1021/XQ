@@ -78,9 +78,9 @@ private:
     WorkflowSelectionService* m_WorkflowSelectionService = nullptr;
     DataManagementService* m_DataManagementService = nullptr;
     DataImportService* m_DataImportService = nullptr;
+    WorkflowOperationService* m_WorkflowOperationService = nullptr;
     ProjectSessionService* m_ProjectSessionService = nullptr;
     WorkflowContextService* m_WorkflowContextService = nullptr;
-    WorkflowOperationService* m_WorkflowOperationService = nullptr;
     WorkflowActionService* m_WorkflowActionService = nullptr;
 };
 

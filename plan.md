@@ -2830,3 +2830,46 @@ The next monolith slice is grounded in these comparable systems:
 2. Extract the next high-value monolith migration slice.
 3. Write the next executable phase into this plan.
 4. Immediately return to plan execution.
+
+## Completed Phase: Image Preprocessing Operation State Persistence
+
+1. Persist monolith workflow operation state in the fresh `.xqproj` schema.
+   - Save selected operations per workflow.
+   - Save parameter values per workflow operation.
+   - Keep the first implementation scoped to the existing
+     `WorkflowOperationService`; do not change schema version `2.0`.
+2. Restore operation state on project open.
+   - Apply selected operation ids after operation descriptors are registered.
+   - Apply parameter values only for known workflow/operation/parameter ids.
+   - Reject unknown persisted operation or parameter ids with a useful error.
+   - Failed opens must not mutate project metadata, catalog, hierarchy, or
+     workflow operation state.
+3. Extend project/session wiring.
+   - Add `ProjectService` save/open overloads that accept
+     `WorkflowOperationService`.
+   - Update `ProjectSessionService` and `ApplicationContext` wiring so
+     save/open roundtrips workflow operation state alongside catalog and
+     hierarchy.
+4. Add C++ regression tests before implementation:
+   - Saving a project writes the selected Image Preprocessing operation and
+     edited sigma value.
+   - Opening a project restores the selected operation and parameter value.
+   - Unknown persisted parameter ids fail without mutating existing workflow
+     operation state.
+   - Project session save/open restores operation state through
+     `ApplicationContext`.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.

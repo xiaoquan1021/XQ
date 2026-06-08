@@ -45,10 +45,12 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
                                                 *m_DataSelectionService,
                                                 *m_TaskRunner,
                                                 this))
+    , m_WorkflowOperationService(new WorkflowOperationService(this))
     , m_ProjectSessionService(new ProjectSessionService(*m_ProjectService,
                                                         *m_DataCatalogService,
                                                         *m_DataHierarchyService,
                                                         *m_DataSelectionService,
+                                                        *m_WorkflowOperationService,
                                                         *m_TaskRunner,
                                                         this))
     , m_WorkflowContextService(new WorkflowContextService(
@@ -56,7 +58,6 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
           *m_DataSelectionService,
           *m_DataCatalogService,
           this))
-    , m_WorkflowOperationService(new WorkflowOperationService(this))
     , m_WorkflowActionService(new WorkflowActionService(
           *m_WorkflowContextService,
           *m_TaskRunner,

@@ -175,6 +175,56 @@
 - Promoted Monolith Preferences Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 - Completed autonomous research refresh:
+  - Rechecked comparable workstation direction: MITK/Slicer/SimVascular-style
+    flows keep processing state tied to project scene/data-tree context.
+  - After Image Preprocessing result activation, the next missing continuity
+    point is project persistence for selected preprocessing operation and
+    edited parameters.
+  - Chosen next slice: save/open `WorkflowOperationService` state for Image
+    Preprocessing through the fresh `.xqproj` schema.
+- Added next executable phase to `plan.md`: Image Preprocessing Operation
+  State Persistence.
+- Started the next unattended loop iteration:
+  - Adding failing project/session persistence tests for workflow operation
+    state first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding `test_monolith_project_workflow_operation_persistence`.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `ProjectService::SaveProject()` and `OpenProject()` did not accept
+    `WorkflowOperationService`.
+- Implemented Image Preprocessing operation-state persistence:
+  - `WorkflowOperationService` now exposes state snapshots, validated state
+    application, and state replacement while preserving registered descriptors.
+  - Project JSON writes `workflowOperations` with selected operations and
+    parameter values.
+  - Project open restores operation state transactionally after catalog and
+    hierarchy parse succeeds.
+  - `ProjectSessionService` and `ApplicationContext` now wire project save/open
+    through the context `WorkflowOperationService`.
+- Debugging note:
+  - The first implementation segfaulted in ProjectSession tests because
+    `ApplicationContext` declared `m_WorkflowOperationService` after
+    `m_ProjectSessionService`, so C++ initialized it too late despite the
+    initializer-list order.
+  - Reordered the member declarations so ProjectSession receives an initialized
+    operation service.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(project_workflow_operation_persistence|project_session_service|project_session_state_replacement|workflow_operation_service)"`
+    passed: 4/4.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 60/60.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Image Preprocessing Operation State Persistence to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
   - GitHub connector initially hit a transport failure, so web search was used as fallback and the GitHub connector was retried with exact official repository queries.
   - Confirmed official comparable repositories: `Slicer/Slicer` and `OHIF/Viewers`.
   - Research conclusion: comparable medical imaging workstations converge on a central data catalog/import layer before deeper workflow pages. 3D Slicer emphasizes DICOM/data management, OHIF emphasizes data-source abstraction and DICOMweb, and SimVascular-style workflows depend on image data being cataloged before path, segmentation, modeling, meshing, and simulation steps.

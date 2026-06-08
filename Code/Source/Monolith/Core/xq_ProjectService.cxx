@@ -2,6 +2,7 @@
 
 #include "xq_DataCatalogService.h"
 #include "xq_DataHierarchyService.h"
+#include "xq_WorkflowOperationService.h"
 
 #include <QDir>
 #include <QFile>
@@ -9,6 +10,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QStringList>
 
 namespace xq::core
 {
@@ -124,9 +126,53 @@ QJsonObject DataHierarchyNodeToJson(const DataHierarchyNode& node)
     return object;
 }
 
+QJsonObject VariantMapToJson(const QVariantMap& values)
+{
+    QJsonObject object;
+    for (auto it = values.cbegin(); it != values.cend(); ++it)
+        object.insert(it.key(), QJsonValue::fromVariant(it.value()));
+    return object;
+}
+
+QJsonObject WorkflowOperationStateToJson(
+    const WorkflowOperationState& state)
+{
+    QJsonObject object;
+    object.insert(QStringLiteral("workflowId"), state.WorkflowId);
+    object.insert(QStringLiteral("selectedOperationId"),
+                  state.SelectedOperationId);
+
+    QJsonArray operationsArray;
+    QStringList operationIds = state.ParameterValuesByOperationId.keys();
+    operationIds.sort();
+    for (const auto& operationId : operationIds)
+    {
+        QJsonObject operationObject;
+        operationObject.insert(QStringLiteral("operationId"), operationId);
+        operationObject.insert(
+            QStringLiteral("parameters"),
+            VariantMapToJson(
+                state.ParameterValuesByOperationId.value(operationId)));
+        operationsArray.append(operationObject);
+    }
+    object.insert(QStringLiteral("operations"), operationsArray);
+
+    if (!state.SelectedOperationId.isEmpty() &&
+        state.ParameterValuesByOperationId.contains(state.SelectedOperationId))
+    {
+        object.insert(
+            QStringLiteral("parameters"),
+            VariantMapToJson(state.ParameterValuesByOperationId.value(
+                state.SelectedOperationId)));
+    }
+
+    return object;
+}
+
 QJsonObject ProjectToJson(const ProjectMetadata& project,
                           const DataCatalogService* dataCatalog,
-                          const DataHierarchyService* dataHierarchy)
+                          const DataHierarchyService* dataHierarchy,
+                          const WorkflowOperationService* workflowOperations)
 {
     QJsonObject projectObject;
     projectObject.insert(QStringLiteral("name"), project.Name);
@@ -155,6 +201,15 @@ QJsonObject ProjectToJson(const ProjectMetadata& project,
                              dataHierarchyArray);
     }
 
+    if (workflowOperations)
+    {
+        QJsonArray workflowOperationsArray;
+        for (const auto& state : workflowOperations->State())
+            workflowOperationsArray.append(WorkflowOperationStateToJson(state));
+        projectObject.insert(QStringLiteral("workflowOperations"),
+                             workflowOperationsArray);
+    }
+
     QJsonObject root;
     root.insert(QStringLiteral("schemaVersion"), project.SchemaVersion);
     root.insert(QStringLiteral("project"), projectObject);
@@ -164,6 +219,7 @@ QJsonObject ProjectToJson(const ProjectMetadata& project,
 bool WriteProjectJson(const ProjectMetadata& project,
                       const DataCatalogService* dataCatalog,
                       const DataHierarchyService* dataHierarchy,
+                      const WorkflowOperationService* workflowOperations,
                       QString* errorMessage)
 {
     const QFileInfo projectFileInfo(project.ProjectFilePath);
@@ -186,7 +242,10 @@ bool WriteProjectJson(const ProjectMetadata& project,
     }
 
     const QJsonDocument document(
-        ProjectToJson(project, dataCatalog, dataHierarchy));
+        ProjectToJson(project,
+                      dataCatalog,
+                      dataHierarchy,
+                      workflowOperations));
     projectFile.write(document.toJson(QJsonDocument::Indented));
     if (errorMessage)
         *errorMessage = QString();
@@ -394,6 +453,102 @@ bool LoadDataHierarchy(const QJsonObject& projectObject,
     return true;
 }
 
+bool LoadWorkflowOperations(const QJsonObject& projectObject,
+                            WorkflowOperationService& workflowOperations,
+                            QString* errorMessage)
+{
+    const QJsonValue workflowOperationsValue =
+        projectObject.value(QStringLiteral("workflowOperations"));
+    QVector<WorkflowOperationState> states;
+    if (workflowOperationsValue.isArray())
+    {
+        const QJsonArray workflowOperationsArray =
+            workflowOperationsValue.toArray();
+        for (const auto& item : workflowOperationsArray)
+        {
+            if (!item.isObject())
+            {
+                if (errorMessage)
+                    *errorMessage =
+                        QStringLiteral("Invalid workflow operation state.");
+                return false;
+            }
+
+            const QJsonObject itemObject = item.toObject();
+            WorkflowOperationState state;
+            state.WorkflowId =
+                itemObject.value(QStringLiteral("workflowId")).toString();
+            state.SelectedOperationId =
+                itemObject.value(QStringLiteral("selectedOperationId"))
+                    .toString();
+
+            const QJsonValue operationsValue =
+                itemObject.value(QStringLiteral("operations"));
+            if (operationsValue.isArray())
+            {
+                const QJsonArray operationsArray = operationsValue.toArray();
+                for (const auto& operationItem : operationsArray)
+                {
+                    if (!operationItem.isObject())
+                    {
+                        if (errorMessage)
+                            *errorMessage =
+                                QStringLiteral("Invalid workflow operation state.");
+                        return false;
+                    }
+
+                    const QJsonObject operationObject =
+                        operationItem.toObject();
+                    const QString operationId =
+                        operationObject.value(QStringLiteral("operationId"))
+                            .toString();
+                    state.ParameterValuesByOperationId.insert(
+                        operationId,
+                        operationObject.value(QStringLiteral("parameters"))
+                            .toObject()
+                            .toVariantMap());
+                }
+            }
+            else if (!operationsValue.isUndefined())
+            {
+                if (errorMessage)
+                    *errorMessage =
+                        QStringLiteral("Workflow operations must be an array.");
+                return false;
+            }
+
+            const QJsonValue parametersValue =
+                itemObject.value(QStringLiteral("parameters"));
+            if (parametersValue.isObject() &&
+                !state.SelectedOperationId.trimmed().isEmpty())
+            {
+                state.ParameterValuesByOperationId.insert(
+                    state.SelectedOperationId,
+                    parametersValue.toObject().toVariantMap());
+            }
+            else if (!parametersValue.isUndefined() &&
+                     !parametersValue.isObject())
+            {
+                if (errorMessage)
+                    *errorMessage =
+                        QStringLiteral("Workflow operation parameters must be an object.");
+                return false;
+            }
+
+            states.push_back(state);
+        }
+    }
+    else if (!workflowOperationsValue.isUndefined())
+    {
+        if (errorMessage)
+            *errorMessage =
+                QStringLiteral("Project workflow operations must be an array.");
+        return false;
+    }
+
+    return workflowOperations.ApplyState(states, errorMessage);
+}
+
 } // namespace
 
 ProjectService::ProjectService(QObject* parent)
@@ -457,7 +612,11 @@ bool ProjectService::SaveProject(QString* errorMessage) const
         return false;
     }
 
-    return WriteProjectJson(*m_CurrentProject, nullptr, nullptr, errorMessage);
+    return WriteProjectJson(*m_CurrentProject,
+                            nullptr,
+                            nullptr,
+                            nullptr,
+                            errorMessage);
 }
 
 bool ProjectService::SaveProject(const DataCatalogService& dataCatalog,
@@ -471,6 +630,7 @@ bool ProjectService::SaveProject(const DataCatalogService& dataCatalog,
 
     return WriteProjectJson(*m_CurrentProject,
                             &dataCatalog,
+                            nullptr,
                             nullptr,
                             errorMessage);
 }
@@ -488,6 +648,26 @@ bool ProjectService::SaveProject(const DataCatalogService& dataCatalog,
     return WriteProjectJson(*m_CurrentProject,
                             &dataCatalog,
                             &dataHierarchy,
+                            nullptr,
+                            errorMessage);
+}
+
+bool ProjectService::SaveProject(
+    const DataCatalogService& dataCatalog,
+    const DataHierarchyService& dataHierarchy,
+    const WorkflowOperationService& workflowOperations,
+    QString* errorMessage) const
+{
+    if (!m_CurrentProject.has_value())
+    {
+        SetError(errorMessage, QStringLiteral("No active project to save."));
+        return false;
+    }
+
+    return WriteProjectJson(*m_CurrentProject,
+                            &dataCatalog,
+                            &dataHierarchy,
+                            &workflowOperations,
                             errorMessage);
 }
 
@@ -556,6 +736,54 @@ bool ProjectService::OpenProject(const QString& projectFilePath,
 
     dataCatalog.ReplaceWith(parsedCatalog);
     dataHierarchy.ReplaceWith(parsedHierarchy);
+    m_CurrentProject = project;
+    SetError(errorMessage, QString());
+    emit ProjectChanged(*m_CurrentProject);
+    return true;
+}
+
+bool ProjectService::OpenProject(
+    const QString& projectFilePath,
+    DataCatalogService& dataCatalog,
+    DataHierarchyService& dataHierarchy,
+    WorkflowOperationService& workflowOperations,
+    QString* errorMessage)
+{
+    ProjectMetadata project;
+    QJsonObject projectObject;
+    if (!ReadProjectJson(projectFilePath,
+                         &project,
+                         &projectObject,
+                         errorMessage))
+    {
+        return false;
+    }
+
+    DataCatalogService parsedCatalog;
+    if (!LoadDataCatalog(projectObject, parsedCatalog, errorMessage))
+        return false;
+
+    DataHierarchyService parsedHierarchy;
+    if (!LoadDataHierarchy(projectObject, parsedHierarchy, errorMessage))
+        return false;
+
+    WorkflowOperationService parsedWorkflowOperations;
+    for (const auto& state : workflowOperations.State())
+    {
+        parsedWorkflowOperations.RegisterOperations(
+            state.WorkflowId,
+            workflowOperations.OperationsForWorkflow(state.WorkflowId));
+    }
+    if (!LoadWorkflowOperations(projectObject,
+                                parsedWorkflowOperations,
+                                errorMessage))
+    {
+        return false;
+    }
+
+    dataCatalog.ReplaceWith(parsedCatalog);
+    dataHierarchy.ReplaceWith(parsedHierarchy);
+    workflowOperations.ReplaceStateWith(parsedWorkflowOperations);
     m_CurrentProject = project;
     SetError(errorMessage, QString());
     emit ProjectChanged(*m_CurrentProject);

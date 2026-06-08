@@ -663,6 +663,12 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_project_workflow_operation_persistence
+        xqMonolithCore
+        Qt6::Core
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_project_session_state_replacement
         xqMonolithCore
         Qt6::Core

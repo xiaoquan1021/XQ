@@ -12,6 +12,7 @@ class DataHierarchyService;
 class DataSelectionService;
 class ProjectService;
 class TaskRunner;
+class WorkflowOperationService;
 
 class ProjectSessionService : public QObject
 {
@@ -29,6 +30,13 @@ public:
                           DataSelectionService& dataSelection,
                           TaskRunner& taskRunner,
                           QObject* parent = nullptr);
+    ProjectSessionService(ProjectService& projectService,
+                          DataCatalogService& dataCatalog,
+                          DataHierarchyService& dataHierarchy,
+                          DataSelectionService& dataSelection,
+                          WorkflowOperationService& workflowOperations,
+                          TaskRunner& taskRunner,
+                          QObject* parent = nullptr);
 
     bool Save(QString* errorMessage = nullptr);
     bool Open(const QString& projectFilePath,
@@ -41,6 +49,7 @@ private:
     DataCatalogService& m_DataCatalog;
     DataHierarchyService& m_DataHierarchy;
     DataSelectionService* m_DataSelection = nullptr;
+    WorkflowOperationService* m_WorkflowOperations = nullptr;
     TaskRunner& m_TaskRunner;
 };
 
