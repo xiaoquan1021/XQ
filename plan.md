@@ -2858,6 +2858,46 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Simulation Operation Foundation
+
+1. Add Domain-level operation descriptors for simulation workflows.
+   - Flow Simulation: Configure CFD Job, Run Steady Flow, Review Results.
+   - ROM Simulation: Build 1D Network, Run ROM Solver, Calibrate Boundary
+     Conditions.
+   - MultiPhysics: Configure Coupling, Run Coupled Solve, Review Coupled
+     Results.
+   - Include initial parameter descriptors using the existing generic
+     workflow-operation parameter types.
+2. Register Flow/ROM/MultiPhysics operations through
+   `WorkflowOperationService`.
+   - Keep Path, Segmentation, Modeling, and Meshing registration working.
+   - Keep execution as Domain-level placeholder acceptance in this slice.
+3. Surface Flow/ROM/MultiPhysics operations on their existing workflow pages.
+   - All three pages should get operation selectors and parameter panels.
+   - Primary action text should include the selected operation.
+   - Running each workflow should report the selected operation title.
+4. Add C++ regression tests before implementation:
+   - Domain registration exposes Flow/ROM/MultiPhysics operation descriptors.
+   - Flow page exposes ordered operations and steady-flow parameters.
+   - ROM page exposes ordered operations and ROM solver parameters.
+   - MultiPhysics page exposes ordered operations and coupling parameters.
+   - Run actions post diagnostics/task history with selected operation titles.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

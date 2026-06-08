@@ -146,6 +146,27 @@ CreateMeshingHandler(xq::core::WorkflowOperationService* operations)
     return CreateOperationAwareHandler(operations, QStringLiteral("meshing"));
 }
 
+xq::core::WorkflowActionService::WorkflowActionHandler
+CreateFlowSimulationHandler(xq::core::WorkflowOperationService* operations)
+{
+    return CreateOperationAwareHandler(operations,
+                                       QStringLiteral("flow simulation"));
+}
+
+xq::core::WorkflowActionService::WorkflowActionHandler
+CreateRomSimulationHandler(xq::core::WorkflowOperationService* operations)
+{
+    return CreateOperationAwareHandler(operations,
+                                       QStringLiteral("rom simulation"));
+}
+
+xq::core::WorkflowActionService::WorkflowActionHandler
+CreateMultiPhysicsHandler(xq::core::WorkflowOperationService* operations)
+{
+    return CreateOperationAwareHandler(operations,
+                                       QStringLiteral("multiphysics"));
+}
+
 QVector<xq::core::WorkflowOperationDescriptor>
 ImagePreprocessingOperations()
 {
@@ -317,6 +338,93 @@ QVector<xq::core::WorkflowOperationDescriptor> MeshingOperations()
     };
 }
 
+QVector<xq::core::WorkflowOperationDescriptor> FlowSimulationOperations()
+{
+    using Type = xq::core::WorkflowOperationParameterValueType;
+    return {
+        Operation(QStringLiteral("configure-cfd-job"),
+                  QStringLiteral("Configure CFD Job"),
+                  {Parameter(QStringLiteral("inlet-count"),
+                             QStringLiteral("Inlet Count"),
+                             Type::IntegerScalar),
+                   Parameter(QStringLiteral("outlet-count"),
+                             QStringLiteral("Outlet Count"),
+                             Type::IntegerScalar)}),
+        Operation(QStringLiteral("run-steady-flow"),
+                  QStringLiteral("Steady Flow Solve"),
+                  {Parameter(QStringLiteral("convergence-tolerance"),
+                             QStringLiteral("Convergence Tolerance"),
+                             Type::NumericScalar),
+                   Parameter(QStringLiteral("max-iterations"),
+                             QStringLiteral("Max Iterations"),
+                             Type::IntegerScalar)}),
+        Operation(QStringLiteral("review-flow-results"),
+                  QStringLiteral("Review Results"),
+                  {Parameter(QStringLiteral("sample-count"),
+                             QStringLiteral("Sample Count"),
+                             Type::IntegerScalar)}),
+    };
+}
+
+QVector<xq::core::WorkflowOperationDescriptor> RomSimulationOperations()
+{
+    using Type = xq::core::WorkflowOperationParameterValueType;
+    return {
+        Operation(QStringLiteral("build-1d-network"),
+                  QStringLiteral("Build 1D Network"),
+                  {Parameter(QStringLiteral("branch-count"),
+                             QStringLiteral("Branch Count"),
+                             Type::IntegerScalar),
+                   Parameter(QStringLiteral("outlet-count"),
+                             QStringLiteral("Outlet Count"),
+                             Type::IntegerScalar)}),
+        Operation(QStringLiteral("run-rom-solver"),
+                  QStringLiteral("ROM Solver"),
+                  {Parameter(QStringLiteral("rom-time-step"),
+                             QStringLiteral("Time Step"),
+                             Type::NumericScalar),
+                   Parameter(QStringLiteral("cardiac-cycles"),
+                             QStringLiteral("Cardiac Cycles"),
+                             Type::IntegerScalar)}),
+        Operation(QStringLiteral("calibrate-boundary-conditions"),
+                  QStringLiteral("Calibrate Boundary Conditions"),
+                  {Parameter(QStringLiteral("target-flow-rate"),
+                             QStringLiteral("Target Flow Rate"),
+                             Type::NumericScalar),
+                   Parameter(QStringLiteral("resistance-scale"),
+                             QStringLiteral("Resistance Scale"),
+                             Type::NumericScalar)}),
+    };
+}
+
+QVector<xq::core::WorkflowOperationDescriptor> MultiPhysicsOperations()
+{
+    using Type = xq::core::WorkflowOperationParameterValueType;
+    return {
+        Operation(QStringLiteral("configure-coupling"),
+                  QStringLiteral("Configure Coupling"),
+                  {Parameter(QStringLiteral("coupling-iterations"),
+                             QStringLiteral("Coupling Iterations"),
+                             Type::IntegerScalar),
+                   Parameter(QStringLiteral("relaxation-factor"),
+                             QStringLiteral("Relaxation Factor"),
+                             Type::NumericScalar)}),
+        Operation(QStringLiteral("run-coupled-solve"),
+                  QStringLiteral("Coupled Solve"),
+                  {Parameter(QStringLiteral("coupled-time-step"),
+                             QStringLiteral("Time Step"),
+                             Type::NumericScalar),
+                   Parameter(QStringLiteral("nonlinear-iterations"),
+                             QStringLiteral("Nonlinear Iterations"),
+                             Type::IntegerScalar)}),
+        Operation(QStringLiteral("review-coupled-results"),
+                  QStringLiteral("Review Coupled Results"),
+                  {Parameter(QStringLiteral("sample-count"),
+                             QStringLiteral("Sample Count"),
+                             Type::IntegerScalar)}),
+    };
+}
+
 QVector<xq::core::WorkflowOperationDescriptor> Segmentation3DOperations()
 {
     using Type = xq::core::WorkflowOperationParameterValueType;
@@ -381,6 +489,12 @@ int RegisterDefaultWorkflowActionHandlers(
                                        ModelingOperations());
         operations->RegisterOperations(QStringLiteral("meshing"),
                                        MeshingOperations());
+        operations->RegisterOperations(QStringLiteral("flow-simulation"),
+                                       FlowSimulationOperations());
+        operations->RegisterOperations(QStringLiteral("rom-simulation"),
+                                       RomSimulationOperations());
+        operations->RegisterOperations(QStringLiteral("multiphysics"),
+                                       MultiPhysicsOperations());
     }
 
     if (actions.RegisterHandler(QStringLiteral("image-preprocessing"),
@@ -419,6 +533,24 @@ int RegisterDefaultWorkflowActionHandlers(
         ++registered;
     }
 
+    if (actions.RegisterHandler(QStringLiteral("flow-simulation"),
+                                CreateFlowSimulationHandler(operations)))
+    {
+        ++registered;
+    }
+
+    if (actions.RegisterHandler(QStringLiteral("rom-simulation"),
+                                CreateRomSimulationHandler(operations)))
+    {
+        ++registered;
+    }
+
+    if (actions.RegisterHandler(QStringLiteral("multiphysics"),
+                                CreateMultiPhysicsHandler(operations)))
+    {
+        ++registered;
+    }
+
     for (const auto& workflowId : dataDependentWorkflowIds)
     {
         if (workflowId == QStringLiteral("image-preprocessing") ||
@@ -426,7 +558,10 @@ int RegisterDefaultWorkflowActionHandlers(
             workflowId == QStringLiteral("segmentation-2d") ||
             workflowId == QStringLiteral("segmentation-3d") ||
             workflowId == QStringLiteral("modeling") ||
-            workflowId == QStringLiteral("meshing"))
+            workflowId == QStringLiteral("meshing") ||
+            workflowId == QStringLiteral("flow-simulation") ||
+            workflowId == QStringLiteral("rom-simulation") ||
+            workflowId == QStringLiteral("multiphysics"))
             continue;
 
         if (actions.RegisterHandler(workflowId, CreateDefaultHandler()))

@@ -2732,6 +2732,49 @@
   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workflow_operation_service|image_preprocessing_operation_page)"`
     passed: 2/2.
 
+- Completed autonomous research refresh:
+  - Rechecked the first-version vascular workflow coverage after
+    Modeling/Meshing operation controls landed.
+  - Flow Simulation, ROM Simulation, and MultiPhysics are still generic
+    placeholders, but the Core context already accepts Mesh and
+    SimulationResult data for all three workflows.
+  - Chosen next slice: add Flow/ROM/MultiPhysics operation descriptors,
+    controls, and operation-aware Domain action routing.
+- Added next executable phase to `plan.md`: Simulation Operation Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing Domain/UI tests for Flow/ROM/MultiPhysics operations first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding `test_monolith_simulation_operation_pages`.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|simulation_operation_pages)"`
+    failed because Flow/ROM/MultiPhysics operations were not registered and
+    their pages had no selectors.
+- Implemented Simulation Operation Foundation:
+  - Domain workflow registration now registers Flow Simulation operations:
+    Configure CFD Job, Steady Flow Solve, and Review Results.
+  - Domain workflow registration now registers ROM Simulation operations:
+    Build 1D Network, ROM Solver, and Calibrate Boundary Conditions.
+  - Domain workflow registration now registers MultiPhysics operations:
+    Configure Coupling, Coupled Solve, and Review Coupled Results.
+  - Flow/ROM/MultiPhysics pages reuse the generic operation selector and
+    parameter panel.
+  - Operation-aware Domain action routing now covers Flow/ROM/MultiPhysics.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|simulation_operation_pages)"`
+    passed: 2/2.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 64/64.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Simulation Operation Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current verified checkpoint
 
 - Modeling/Meshing Operation Foundation is complete and promoted in `plan.md`.

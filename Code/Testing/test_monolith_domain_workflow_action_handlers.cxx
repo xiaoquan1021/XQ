@@ -212,6 +212,63 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    const auto flowOperations =
+        operationContext->WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("flow-simulation"));
+    if (Expect(flowOperations.size() == 3,
+               "Flow Simulation should register workflow operations"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(flowOperations.at(1).Id ==
+                       QStringLiteral("run-steady-flow") &&
+                   flowOperations.at(1).Parameters.size() == 2,
+               "Steady Flow Solve should expose flow parameters"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    const auto romOperations =
+        operationContext->WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("rom-simulation"));
+    if (Expect(romOperations.size() == 3,
+               "ROM Simulation should register workflow operations"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(romOperations.at(1).Id ==
+                       QStringLiteral("run-rom-solver") &&
+                   romOperations.at(1).Parameters.size() == 2,
+               "ROM Solver should expose solver parameters"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    const auto multiphysicsOperations =
+        operationContext->WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("multiphysics"));
+    if (Expect(multiphysicsOperations.size() == 3,
+               "MultiPhysics should register workflow operations"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(multiphysicsOperations.at(1).Id ==
+                       QStringLiteral("run-coupled-solve") &&
+                   multiphysicsOperations.at(1).Parameters.size() == 2,
+               "Coupled Solve should expose multiphysics parameters"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
     if (Expect(segmentation2dOperations.at(0).Id ==
                        QStringLiteral("threshold-contour") &&
                    segmentation2dOperations.at(0).Parameters.size() == 2,
@@ -379,6 +436,148 @@ int main(int argc, char** argv)
     if (Expect(actionMessage ==
                    QStringLiteral("Generate Volume Mesh meshing operation accepted Aorta Model."),
                "Meshing handler should report selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+
+    const auto flowMesh =
+        operationContext->DataImports()->Import(MakeImport(
+                                                    QStringLiteral("flow-mesh"),
+                                                    QStringLiteral("Aorta Mesh"),
+                                                    xq::core::DataWorkflowRole::Mesh),
+                                                &errorMessage);
+    if (Expect(flowMesh.Succeeded, "flow mesh import should succeed"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("flow-simulation")),
+               "Flow Simulation workflow should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("flow-simulation"),
+                   QStringLiteral("run-steady-flow"),
+                   &errorMessage),
+               "Flow Simulation operation should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &actionMessage),
+               "Flow Simulation handler should run selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(actionMessage ==
+                   QStringLiteral("Steady Flow Solve flow simulation operation accepted Aorta Mesh."),
+               "Flow Simulation handler should report selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+
+    const auto romMesh =
+        operationContext->DataImports()->Import(MakeImport(
+                                                    QStringLiteral("rom-mesh"),
+                                                    QStringLiteral("ROM Mesh"),
+                                                    xq::core::DataWorkflowRole::Mesh),
+                                                &errorMessage);
+    if (Expect(romMesh.Succeeded, "ROM mesh import should succeed"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("rom-simulation")),
+               "ROM Simulation workflow should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("rom-simulation"),
+                   QStringLiteral("run-rom-solver"),
+                   &errorMessage),
+               "ROM Simulation operation should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &actionMessage),
+               "ROM Simulation handler should run selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(actionMessage ==
+                   QStringLiteral("ROM Solver rom simulation operation accepted ROM Mesh."),
+               "ROM Simulation handler should report selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+
+    const auto multiphysicsMesh =
+        operationContext->DataImports()->Import(MakeImport(
+                                                    QStringLiteral("multiphysics-mesh"),
+                                                    QStringLiteral("Coupled Mesh"),
+                                                    xq::core::DataWorkflowRole::Mesh),
+                                                &errorMessage);
+    if (Expect(multiphysicsMesh.Succeeded,
+               "MultiPhysics mesh import should succeed"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("multiphysics")),
+               "MultiPhysics workflow should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("multiphysics"),
+                   QStringLiteral("run-coupled-solve"),
+                   &errorMessage),
+               "MultiPhysics operation should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &actionMessage),
+               "MultiPhysics handler should run selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(actionMessage ==
+                   QStringLiteral("Coupled Solve multiphysics operation accepted Coupled Mesh."),
+               "MultiPhysics handler should report selected operation"))
     {
         delete operationContext;
         delete context;
