@@ -592,9 +592,18 @@ void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
         case xq::core::WorkflowOperationParameterValueType::NumericScalar:
         {
             auto* spinBox = new QDoubleSpinBox(panel);
-            spinBox->setObjectName(
-                QStringLiteral("xqImagePreprocessingParameter_%1")
-                    .arg(parameter.Id));
+            if (workflowId == QStringLiteral("image-preprocessing"))
+            {
+                spinBox->setObjectName(
+                    QStringLiteral("xqImagePreprocessingParameter_%1")
+                        .arg(parameter.Id));
+            }
+            else
+            {
+                spinBox->setObjectName(
+                    QStringLiteral("xqWorkflowParameter_%1")
+                        .arg(parameter.Id));
+            }
             spinBox->setDecimals(3);
             spinBox->setRange(-1000000.0, 1000000.0);
             spinBox->setValue(value.toDouble());
@@ -620,9 +629,18 @@ void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
         case xq::core::WorkflowOperationParameterValueType::IntegerScalar:
         {
             auto* spinBox = new QSpinBox(panel);
-            spinBox->setObjectName(
-                QStringLiteral("xqImagePreprocessingParameter_%1")
-                    .arg(parameter.Id));
+            if (workflowId == QStringLiteral("image-preprocessing"))
+            {
+                spinBox->setObjectName(
+                    QStringLiteral("xqImagePreprocessingParameter_%1")
+                        .arg(parameter.Id));
+            }
+            else
+            {
+                spinBox->setObjectName(
+                    QStringLiteral("xqWorkflowParameter_%1")
+                        .arg(parameter.Id));
+            }
             spinBox->setRange(-1000000, 1000000);
             spinBox->setValue(value.toInt());
             connect(spinBox,
@@ -648,9 +666,18 @@ void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
         {
             auto* label =
                 new QLabel(QStringLiteral("Point editor pending"), panel);
-            label->setObjectName(
-                QStringLiteral("xqImagePreprocessingParameter_%1")
-                    .arg(parameter.Id));
+            if (workflowId == QStringLiteral("image-preprocessing"))
+            {
+                label->setObjectName(
+                    QStringLiteral("xqImagePreprocessingParameter_%1")
+                        .arg(parameter.Id));
+            }
+            else
+            {
+                label->setObjectName(
+                    QStringLiteral("xqWorkflowParameter_%1")
+                        .arg(parameter.Id));
+            }
             editor = label;
             break;
         }

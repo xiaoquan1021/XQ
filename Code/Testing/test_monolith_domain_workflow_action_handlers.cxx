@@ -2,6 +2,7 @@
 #include "Core/xq_DataImportService.h"
 #include "Core/xq_TaskRunner.h"
 #include "Core/xq_WorkflowActionService.h"
+#include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
 
@@ -140,6 +141,50 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+
+    auto* operationContext = xq::core::ApplicationContext::CreateDefault();
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *operationContext->WorkflowActions(),
+        operationContext->WorkflowOperations());
+    const auto segmentation2dOperations =
+        operationContext->WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("segmentation-2d"));
+    if (Expect(segmentation2dOperations.size() == 3,
+               "2D segmentation should register workflow operations"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation2dOperations.at(0).Id ==
+                       QStringLiteral("threshold-contour") &&
+                   segmentation2dOperations.at(0).Parameters.size() == 2,
+               "2D threshold contour should expose threshold parameters"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    const auto segmentation3dOperations =
+        operationContext->WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("segmentation-3d"));
+    if (Expect(segmentation3dOperations.size() == 3,
+               "3D segmentation should register workflow operations"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation3dOperations.at(1).Id ==
+                       QStringLiteral("region-growing") &&
+                   segmentation3dOperations.at(1).Parameters.size() == 3,
+               "3D region growing should expose seed and threshold parameters"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    delete operationContext;
 
     auto* plainContext = xq::core::ApplicationContext::CreateDefault();
     if (Expect(plainContext->WorkflowSelection()->SelectWorkflow(

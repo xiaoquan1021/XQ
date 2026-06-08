@@ -1,0 +1,188 @@
+#include "Core/xq_ApplicationContext.h"
+#include "Core/xq_WorkflowOperationService.h"
+#include "Core/xq_WorkflowSelectionService.h"
+#include "Domain/xq_WorkflowActionHandlers.h"
+#include "Presentation/xq_MainWindow.h"
+
+#include <QApplication>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QPushButton>
+#include <QSpinBox>
+
+#include <iostream>
+
+namespace
+{
+
+int Expect(bool condition, const char* message)
+{
+    if (condition)
+        return 0;
+
+    std::cerr << message << '\n';
+    return 1;
+}
+
+QComboBox* FindSelector(xq::presentation::MainWindow& window,
+                        const QString& workflowId)
+{
+    return window.findChild<QComboBox*>(
+        QStringLiteral("xqWorkflowOperationSelector_%1").arg(workflowId));
+}
+
+QPushButton* FindActionButton(xq::presentation::MainWindow& window,
+                              const QString& workflowId)
+{
+    return window.findChild<QPushButton*>(
+        QStringLiteral("xqWorkflowPrimaryAction_%1").arg(workflowId));
+}
+
+QDoubleSpinBox* FindNumericParameter(xq::presentation::MainWindow& window,
+                                     const QString& parameterId)
+{
+    return window.findChild<QDoubleSpinBox*>(
+        QStringLiteral("xqWorkflowParameter_%1").arg(parameterId));
+}
+
+QSpinBox* FindIntegerParameter(xq::presentation::MainWindow& window,
+                               const QString& parameterId)
+{
+    return window.findChild<QSpinBox*>(
+        QStringLiteral("xqWorkflowParameter_%1").arg(parameterId));
+}
+
+} // namespace
+
+int main(int argc, char** argv)
+{
+    QApplication app(argc, argv);
+
+    auto* context = xq::core::ApplicationContext::CreateDefault();
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *context->WorkflowActions(),
+        context->WorkflowOperations());
+    xq::presentation::MainWindow window(*context);
+
+    auto* segmentation2dSelector =
+        FindSelector(window, QStringLiteral("segmentation-2d"));
+    if (Expect(segmentation2dSelector != nullptr,
+               "2D segmentation page should expose an operation selector"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation2dSelector->count() == 3,
+               "2D segmentation selector should expose domain operations"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation2dSelector->itemData(0).toString() ==
+                       QStringLiteral("threshold-contour") &&
+                   segmentation2dSelector->itemText(0) ==
+                       QStringLiteral("Threshold Contour"),
+               "2D segmentation selector should preserve operation order"))
+    {
+        delete context;
+        return 1;
+    }
+    auto* segmentation2dButton =
+        FindActionButton(window, QStringLiteral("segmentation-2d"));
+    if (Expect(segmentation2dButton != nullptr &&
+                   segmentation2dButton->text() ==
+                       QStringLiteral("Run Threshold Contour"),
+               "2D segmentation action should include selected operation"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindNumericParameter(window,
+                                    QStringLiteral("threshold-lower")) !=
+                       nullptr &&
+                   FindNumericParameter(window,
+                                        QStringLiteral("threshold-upper")) !=
+                       nullptr,
+               "2D threshold contour should expose threshold controls"))
+    {
+        delete context;
+        return 1;
+    }
+
+    segmentation2dSelector->setCurrentIndex(
+        segmentation2dSelector->findData(QStringLiteral("loft-profiles")));
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("segmentation-2d")) ==
+                   QStringLiteral("loft-profiles"),
+               "2D segmentation selector should update Core state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation2dButton->text() ==
+                   QStringLiteral("Run Loft Profiles"),
+               "2D segmentation action should update after selector change"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindIntegerParameter(window,
+                                    QStringLiteral("sample-count")) != nullptr,
+               "2D loft profiles should expose sample count control"))
+    {
+        delete context;
+        return 1;
+    }
+
+    auto* segmentation3dSelector =
+        FindSelector(window, QStringLiteral("segmentation-3d"));
+    if (Expect(segmentation3dSelector != nullptr,
+               "3D segmentation page should expose an operation selector"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation3dSelector->count() == 3,
+               "3D segmentation selector should expose domain operations"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation3dSelector->itemData(1).toString() ==
+                       QStringLiteral("region-growing") &&
+                   segmentation3dSelector->itemText(1) ==
+                       QStringLiteral("Region Growing"),
+               "3D segmentation selector should preserve operation order"))
+    {
+        delete context;
+        return 1;
+    }
+
+    segmentation3dSelector->setCurrentIndex(
+        segmentation3dSelector->findData(QStringLiteral("region-growing")));
+    app.processEvents();
+    auto* segmentation3dButton =
+        FindActionButton(window, QStringLiteral("segmentation-3d"));
+    if (Expect(segmentation3dButton != nullptr &&
+                   segmentation3dButton->text() ==
+                       QStringLiteral("Run Region Growing"),
+               "3D segmentation action should include selected operation"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindIntegerParameter(window, QStringLiteral("seed-x")) !=
+                       nullptr &&
+                   FindNumericParameter(window,
+                                        QStringLiteral("threshold-upper")) !=
+                       nullptr,
+               "3D region growing should expose seed and threshold controls"))
+    {
+        delete context;
+        return 1;
+    }
+
+    delete context;
+    return 0;
+}

@@ -116,6 +116,87 @@ ImagePreprocessingOperations()
     return operations;
 }
 
+xq::core::WorkflowOperationParameterDescriptor Parameter(
+    const QString& id,
+    const QString& title,
+    xq::core::WorkflowOperationParameterValueType type)
+{
+    xq::core::WorkflowOperationParameterDescriptor parameter;
+    parameter.Id = id;
+    parameter.Title = title;
+    parameter.Type = type;
+    parameter.Required = true;
+    return parameter;
+}
+
+xq::core::WorkflowOperationDescriptor Operation(
+    const QString& id,
+    const QString& title,
+    const QVector<xq::core::WorkflowOperationParameterDescriptor>& parameters)
+{
+    xq::core::WorkflowOperationDescriptor operation;
+    operation.Id = id;
+    operation.Title = title;
+    operation.Parameters = parameters;
+    return operation;
+}
+
+QVector<xq::core::WorkflowOperationDescriptor> Segmentation2DOperations()
+{
+    using Type = xq::core::WorkflowOperationParameterValueType;
+    return {
+        Operation(QStringLiteral("threshold-contour"),
+                  QStringLiteral("Threshold Contour"),
+                  {Parameter(QStringLiteral("threshold-lower"),
+                             QStringLiteral("Lower Threshold"),
+                             Type::NumericScalar),
+                   Parameter(QStringLiteral("threshold-upper"),
+                             QStringLiteral("Upper Threshold"),
+                             Type::NumericScalar)}),
+        Operation(QStringLiteral("manual-contour"),
+                  QStringLiteral("Manual Contour"),
+                  {Parameter(QStringLiteral("smoothing"),
+                             QStringLiteral("Smoothing"),
+                             Type::NumericScalar)}),
+        Operation(QStringLiteral("loft-profiles"),
+                  QStringLiteral("Loft Profiles"),
+                  {Parameter(QStringLiteral("sample-count"),
+                             QStringLiteral("Sample Count"),
+                             Type::IntegerScalar)}),
+    };
+}
+
+QVector<xq::core::WorkflowOperationDescriptor> Segmentation3DOperations()
+{
+    using Type = xq::core::WorkflowOperationParameterValueType;
+    return {
+        Operation(QStringLiteral("threshold-region"),
+                  QStringLiteral("Threshold Region"),
+                  {Parameter(QStringLiteral("threshold-lower"),
+                             QStringLiteral("Lower Threshold"),
+                             Type::NumericScalar),
+                   Parameter(QStringLiteral("threshold-upper"),
+                             QStringLiteral("Upper Threshold"),
+                             Type::NumericScalar)}),
+        Operation(QStringLiteral("region-growing"),
+                  QStringLiteral("Region Growing"),
+                  {Parameter(QStringLiteral("seed-x"),
+                             QStringLiteral("Seed X"),
+                             Type::IntegerScalar),
+                   Parameter(QStringLiteral("seed-y"),
+                             QStringLiteral("Seed Y"),
+                             Type::IntegerScalar),
+                   Parameter(QStringLiteral("threshold-upper"),
+                             QStringLiteral("Upper Threshold"),
+                             Type::NumericScalar)}),
+        Operation(QStringLiteral("surface-preview"),
+                  QStringLiteral("Surface Preview"),
+                  {Parameter(QStringLiteral("smoothing-iterations"),
+                             QStringLiteral("Smoothing Iterations"),
+                             Type::IntegerScalar)}),
+    };
+}
+
 } // namespace
 
 int RegisterDefaultWorkflowActionHandlers(
@@ -139,6 +220,10 @@ int RegisterDefaultWorkflowActionHandlers(
     {
         operations->RegisterOperations(QStringLiteral("image-preprocessing"),
                                        ImagePreprocessingOperations());
+        operations->RegisterOperations(QStringLiteral("segmentation-2d"),
+                                       Segmentation2DOperations());
+        operations->RegisterOperations(QStringLiteral("segmentation-3d"),
+                                       Segmentation3DOperations());
     }
 
     if (actions.RegisterHandler(QStringLiteral("image-preprocessing"),

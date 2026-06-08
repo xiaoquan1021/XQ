@@ -263,6 +263,46 @@
 - Promoted Image Preprocessing UI State Restore to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 - Completed autonomous research refresh:
+  - Image Preprocessing now has operation metadata, parameter state,
+    MITK-backed execution, result activation, project persistence, and UI
+    restore.
+  - The next first-version workflow still only has generic placeholder
+    controls: 2D/3D Segmentation.
+  - Chosen next slice: add segmentation operation descriptors and reuse the
+    monolith operation selector/parameter panel infrastructure.
+- Added next executable phase to `plan.md`: Segmentation Operation Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing Domain/UI tests for segmentation operation registration and
+    controls first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding segmentation operation tests.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|segmentation_operation_page)"`
+    failed because segmentation workflows did not register operations and
+    pages did not expose selectors.
+- Implemented Segmentation Operation Foundation:
+  - Domain workflow registration now registers 2D Segmentation operations:
+    Threshold Contour, Manual Contour, and Loft Profiles.
+  - Domain workflow registration now registers 3D Segmentation operations:
+    Threshold Region, Region Growing, and Surface Preview.
+  - Generic workflow parameter controls now use workflow-neutral object names
+    while preserving Image Preprocessing's existing object names.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|segmentation_operation_page|image_preprocessing_operation_page)"`
+    passed: 3/3.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 61/61.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Segmentation Operation Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
   - GitHub connector initially hit a transport failure, so web search was used as fallback and the GitHub connector was retried with exact official repository queries.
   - Confirmed official comparable repositories: `Slicer/Slicer` and `OHIF/Viewers`.
   - Research conclusion: comparable medical imaging workstations converge on a central data catalog/import layer before deeper workflow pages. 3D Slicer emphasizes DICOM/data management, OHIF emphasizes data-source abstraction and DICOMweb, and SimVascular-style workflows depend on image data being cataloged before path, segmentation, modeling, meshing, and simulation steps.
