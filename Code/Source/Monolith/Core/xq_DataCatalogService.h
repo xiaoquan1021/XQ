@@ -18,7 +18,8 @@ enum class DataWorkflowRole
     Model,
     Mesh,
     SimulationPrep,
-    SimulationResult
+    SimulationResult,
+    ROMSimulation
 };
 
 struct DataCatalogEntry

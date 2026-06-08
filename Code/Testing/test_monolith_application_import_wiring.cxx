@@ -395,5 +395,40 @@ int main(int argc, char** argv)
                "configured flow review action should require a simulation result node"))
         return 1;
 
+    auto romContext =
+        std::unique_ptr<xq::core::ApplicationContext>(
+            xq::core::ApplicationContext::CreateDefault());
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *romContext->WorkflowActions(),
+        romContext->WorkflowOperations());
+    CancelPathProvider romProvider;
+    auto romWindow =
+        xq::CreateConfiguredMainWindow(*romContext,
+                                       &romProvider);
+
+    if (Expect(romContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("rom-simulation")),
+               "configured ROM workflow should be selectable"))
+        return 1;
+    if (Expect(romContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("rom-simulation"),
+                   QStringLiteral("build-1d-network"),
+                   &message),
+               "configured ROM workflow should select network build"))
+        return 1;
+    const auto romImportResult =
+        romContext->DataImports()->Import(MakeMeshImport(), &message);
+    if (Expect(romImportResult.Succeeded,
+               "configured ROM mesh import should succeed"))
+        return 1;
+    if (Expect(!romContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured ROM action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active mesh or simulation prep node is required for ROM network build."),
+               "configured ROM action should require a MITK mesh or simulation prep node"))
+        return 1;
+
     return 0;
 }

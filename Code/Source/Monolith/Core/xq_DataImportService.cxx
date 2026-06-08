@@ -33,6 +33,8 @@ QString WorkflowRoleToken(DataWorkflowRole role)
         return QStringLiteral("simulation");
     case DataWorkflowRole::SimulationResult:
         return QStringLiteral("result");
+    case DataWorkflowRole::ROMSimulation:
+        return QStringLiteral("rom");
     case DataWorkflowRole::Unknown:
         break;
     }
@@ -245,6 +247,8 @@ QString DataImportService::RoleFolderDisplayName(DataWorkflowRole role)
         return QStringLiteral("Simulations");
     case DataWorkflowRole::SimulationResult:
         return QStringLiteral("Simulation Results");
+    case DataWorkflowRole::ROMSimulation:
+        return QStringLiteral("ROM Simulations");
     case DataWorkflowRole::Unknown:
         break;
     }
@@ -272,6 +276,8 @@ QString DataImportService::RoleFolderId(DataWorkflowRole role)
         return QStringLiteral("simulations");
     case DataWorkflowRole::SimulationResult:
         return QStringLiteral("simulation-results");
+    case DataWorkflowRole::ROMSimulation:
+        return QStringLiteral("rom-simulations");
     case DataWorkflowRole::Unknown:
         break;
     }

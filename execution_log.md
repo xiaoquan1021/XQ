@@ -158,6 +158,52 @@
 - Promoted Flow Results Review Infrastructure Action Handler to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Pushed XQ commit:
+  - `08bd316 Wire flow result review action`.
+- Continued immediately into the next autonomous research refresh:
+  - Rechecked available ROM/MultiPhysics modules after Flow run/review landed.
+  - ROM already has `xq_ROMJob`, `xq_MitkROMJob`, and XML persistence support.
+  - The smallest next monolith slice is therefore ROM job/network
+    configuration, not solver execution.
+  - Chosen next slice: ROM Build Network Infrastructure Action Handler.
+- Promoted the research refresh to completed in `plan.md`.
+- Started Active Phase: ROM Build Network Infrastructure Action Handler.
+- Starting RED tests first:
+  - `build-1d-network` should reject selections that do not resolve to a Mesh
+    or SimulationPrep MITK node.
+  - A valid Mesh selection should create and register an `xq_MitkROMJob`.
+  - Production composition should validate `build-1d-network` through an
+    Infrastructure handler, not the Domain placeholder.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `Infrastructure/xq_RomSimulationWorkflowActionHandler.h` did not exist.
+- Implemented ROM build-network infrastructure action:
+  - Added `RegisterDynamicRomSimulationWorkflowActionHandler()` and wired it
+    into the monolith composition root after Domain registration.
+  - `build-1d-network` now requires a selected Mesh or SimulationPrep MITK
+    node and resolves upstream mesh provenance for SimulationPrep inputs.
+  - The handler creates a validated `xq_ROMJob` wrapped in
+    `xq_MitkROMJob`, marks it as `ROMSimulation`, stores source mesh/status
+    metadata, registers catalog/hierarchy/data-node bindings, selects the new
+    entry, and refreshes rendering.
+  - Added `DataWorkflowRole::ROMSimulation` roundtrip/display/import/context
+    support so generated ROM jobs persist and remain compatible selections.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(rom_simulation_workflow_action_handler|application_import_wiring)"`
+    passed: 2/2.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 71/71.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted ROM Build Network Infrastructure Action Handler to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 - Continued the requested unattended loop after the user enabled full access mode.
 - Reviewed `plan.md`, `execution_log.md`, and the monolith scaffold:

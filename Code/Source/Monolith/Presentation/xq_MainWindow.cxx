@@ -71,6 +71,8 @@ QString RoleDisplayName(xq::core::DataWorkflowRole role)
         return QStringLiteral("Simulation Prep");
     case xq::core::DataWorkflowRole::SimulationResult:
         return QStringLiteral("Simulation Result");
+    case xq::core::DataWorkflowRole::ROMSimulation:
+        return QStringLiteral("ROM Simulation");
     case xq::core::DataWorkflowRole::Unknown:
         break;
     }

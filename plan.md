@@ -3489,6 +3489,43 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: ROM Build Network Infrastructure Action Handler
+
+1. Promote the ROM Simulation `build-1d-network` operation from placeholder
+   acceptance to a real Infrastructure action handler.
+   - Require the selected data to resolve to a Mesh or SimulationPrep node.
+   - Resolve upstream SimulationPrep where available for cap-role and solver
+     metadata; otherwise use Mesh provenance.
+   - Create an `xq_MitkROMJob` with a validated `xq_ROMJob`.
+   - Persist source mesh/simulation metadata and selected operation
+     parameters on the generated node.
+   - Register the generated ROM job in `DataCatalogService`,
+     `DataHierarchyService`, and `DataNodeRegistryService`.
+   - Select the generated ROM job and refresh MITK rendering after success.
+2. Keep `run-rom-solver`, `calibrate-boundary-conditions`, and MultiPhysics on
+   the existing operation-aware placeholder path for this slice.
+3. Add C++ regression tests before implementation:
+   - `build-1d-network` rejects missing Mesh/SimulationPrep MITK nodes.
+   - A valid Mesh selection creates and registers an `xq_MitkROMJob` node.
+   - The configured monolith composition root uses Infrastructure validation
+     for `build-1d-network`.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
