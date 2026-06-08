@@ -3162,6 +3162,43 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Workflow Operation Rich Parameter Persistence
+
+1. Extend project workflow-operation persistence coverage for rich parameter
+   values.
+   - Option parameters should save/open as stable option id strings.
+   - Integer point-list parameters should save/open as arrays of integer
+     triplets.
+   - Invalid persisted option values should fail without mutating existing
+     operation state.
+2. Add regression tests before implementation:
+   - A Flow Simulation `solver-profile` option value roundtrips through
+     `ProjectService`.
+   - An Image Preprocessing `seeds` point list roundtrips through
+     `ProjectService`.
+   - A fixture with an unknown option id is rejected and leaves existing
+     operation state unchanged.
+3. Implement only if the tests expose a persistence gap.
+   - Prefer using existing `WorkflowOperationService::SetParameterValue`
+     validation during open.
+   - Keep schema version `2.0`.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

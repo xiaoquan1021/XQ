@@ -263,6 +263,43 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Workflow Point List Parameter Editor to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+
+## Current Run: Workflow Operation Rich Parameter Persistence
+
+- Completed autonomous research refresh:
+  - After option parameters and point-list editing landed, the next risk is
+    `.xqproj` roundtrip fidelity for non-scalar workflow operation parameters.
+  - Current persistence uses JSON variants and should already handle strings
+    and arrays, but option ids and point triplets were not explicitly covered.
+  - Chosen next slice: add project persistence coverage for Flow Simulation
+    option parameters and Image Preprocessing seed point lists.
+- Added next executable phase to `plan.md`: Workflow Operation Rich Parameter
+  Persistence.
+- Started the next unattended loop iteration:
+  - Adding failing-or-confirming persistence tests first.
+- Target verification:
+  - Extended `test_monolith_project_workflow_operation_persistence` to cover
+    Flow Simulation option ids, Image Preprocessing seed point-list arrays,
+    and invalid persisted option ids.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed after the
+    test addition.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_project_workflow_operation_persistence`
+    passed: 1/1.
+- Implementation note:
+  - No production code change was required in this slice because existing JSON
+    variant persistence and `WorkflowOperationService::SetParameterValue()`
+    validation already preserve these richer parameter values.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Workflow Operation Rich Parameter Persistence to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 - Final verification for this iteration:
   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
