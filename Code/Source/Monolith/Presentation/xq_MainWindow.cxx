@@ -12,6 +12,7 @@
 #include "Core/xq_WorkflowRegistry.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Core/xq_TaskRunner.h"
+#include "xq_DataImportCommand.h"
 #include "xq_DataHierarchyModel.h"
 
 #include <QAction>
@@ -81,6 +82,11 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     dataToolbar->setObjectName(QStringLiteral("xqDataPanelToolbar"));
     dataToolbar->setMovable(false);
     dataToolbar->setFloatable(false);
+
+    m_ImportDataAction =
+        new QAction(QStringLiteral("Import"), dataToolbar);
+    m_ImportDataAction->setObjectName(QStringLiteral("xqImportDataAction"));
+    dataToolbar->addAction(m_ImportDataAction);
 
     m_RemoveDataAction =
         new QAction(QStringLiteral("Remove"), dataToolbar);
@@ -185,6 +191,12 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             [this]() {
                 RemoveSelectedData();
             });
+    connect(m_ImportDataAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                ImportData();
+            });
     connect(m_SaveProjectAction,
             &QAction::triggered,
             this,
@@ -208,6 +220,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this]() {
                 UpdateDataWorkflowPage();
+                UpdateDataActions();
                 UpdateProjectPageDataCount();
             });
 
@@ -277,6 +290,11 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                 task.Message = message;
                 AppendTaskHistoryRow(task);
             });
+}
+
+void MainWindow::SetDataImportCommand(DataImportCommand* command)
+{
+    m_DataImportCommand = command;
 }
 
 void MainWindow::SetRenderHost(QWidget* renderHost)
@@ -482,6 +500,24 @@ void MainWindow::UpdateProjectActions()
         return;
 
     m_SaveProjectAction->setEnabled(m_Context.Projects()->HasActiveProject());
+}
+
+void MainWindow::ImportData()
+{
+    if (!m_DataImportCommand)
+    {
+        m_Context.PostDiagnostic(
+            QStringLiteral("No data import command is configured."));
+        return;
+    }
+
+    const auto result = m_DataImportCommand->RunImport(m_Context);
+    if (!result.Message.trimmed().isEmpty())
+        m_Context.PostDiagnostic(result.Message);
+
+    UpdateDataWorkflowPage();
+    UpdateProjectPageDataCount();
+    UpdateDataActions();
 }
 
 void MainWindow::RemoveSelectedData()

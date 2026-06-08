@@ -2336,3 +2336,39 @@
 - Promoted Monolith MITK File Import Service Foundation to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the monolith import path after `MitkFileImportService` landed.
+  - Comparable medical imaging workstations expose loading/importing as a main
+    data-scene action before workflow-specific tools operate on selected data.
+  - Chosen next slice: add a Presentation-safe data import toolbar action with
+    an injectable command boundary, leaving real `QFileDialog`, DICOM, and
+    multi-file behavior for later slices.
+- Added next executable phase to `plan.md`: Monolith Data Import Action Shell.
+- Started the next unattended loop iteration:
+  - Adding failing MainWindow import action regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_main_window_import_action` because
+    `Presentation/xq_DataImportCommand.h` did not exist.
+- Implemented the monolith data import action shell:
+  - Added Presentation `DataImportCommand` and `DataImportCommandResult`.
+  - Added `MainWindow::SetDataImportCommand()` for testable command injection.
+  - Added enabled data toolbar action `xqImportDataAction`.
+  - Missing import command posts a clear diagnostic and does not mutate state.
+  - Configured commands run through the window context and refresh data page,
+    project data count, and data action enablement after returning.
+- Red/green target verification:
+  - After implementation, the target build passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_main_window_import_action`
+    passed: 1/1.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 54/54.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Data Import Action Shell to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

@@ -24,6 +24,7 @@ struct TaskRecord;
 namespace xq::presentation
 {
 
+class DataImportCommand;
 class DataHierarchyModel;
 
 class MainWindow : public QMainWindow
@@ -33,12 +34,14 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(xq::core::ApplicationContext& context,
                         QWidget* parent = nullptr);
+    void SetDataImportCommand(DataImportCommand* command);
     void SetRenderHost(QWidget* renderHost);
 
 private:
     QWidget* CreateWorkflowPage(const QString& id, const QString& title);
     void AddWorkflowPage(const QString& id, const QString& title);
     void AppendTaskHistoryRow(const xq::core::TaskRecord& task);
+    void ImportData();
     void RemoveSelectedData();
     void RunActiveWorkflowAction();
     void SaveProject();
@@ -66,7 +69,9 @@ private:
     QHash<QString, QLabel*> m_WorkflowContextStatusLabels;
     QHash<QString, QPushButton*> m_WorkflowPrimaryActionButtons;
     QAction* m_SaveProjectAction = nullptr;
+    QAction* m_ImportDataAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
+    DataImportCommand* m_DataImportCommand = nullptr;
     QListWidget* m_Navigation = nullptr;
     QStackedWidget* m_Pages = nullptr;
     QWidget* m_RenderHostContainer = nullptr;

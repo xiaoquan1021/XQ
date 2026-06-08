@@ -143,6 +143,7 @@ set(XQ_MONOLITH_PRESENTATION_SRCS
 )
 
 set(XQ_MONOLITH_PRESENTATION_HDRS
+    Presentation/xq_DataImportCommand.h
     Presentation/xq_DataHierarchyModel.h
     Presentation/xq_MainWindow.h
 )

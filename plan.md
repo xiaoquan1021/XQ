@@ -2391,6 +2391,45 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Data Import Action Shell
+
+1. Add a Presentation-level import command boundary for the monolith data
+   toolbar.
+   - Expose a small `DataImportCommand` interface that can be injected into
+     `MainWindow`.
+   - Keep this slice independent from real file dialogs and DICOM directories.
+   - Default to a clear diagnostic when no import command is configured.
+2. Add a data toolbar import action.
+   - Object name: `xqImportDataAction`.
+   - Enabled by default.
+   - Triggering it must call the injected command if one is configured.
+3. Preserve UI refresh behavior.
+   - Successful imports refresh the data workflow page, tree state, project
+     data count, and data actions through existing services/signals.
+   - Failed or missing commands must not mutate data catalog, hierarchy,
+     selection, or MITK storage.
+4. Add C++ regression tests before implementation:
+   - MainWindow exposes an enabled import action.
+   - Triggering the action without a command posts a diagnostic and does not
+     mutate data state.
+   - Triggering the action with a test command imports data, selects it, and
+     refreshes visible data UI/actions.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
