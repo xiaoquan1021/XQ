@@ -2913,6 +2913,56 @@
 - Promoted Modeling Infrastructure Action Handler to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run: Meshing Infrastructure Action Handler
+
+- Completed autonomous research refresh:
+  - Rechecked the connected Image -> Path -> 2D Segmentation -> Modeling chain
+    against the existing mesh pipeline contract.
+  - XQ already has `xq_MeshPipelineService::CreateVolumeMesh`, including the
+    current VTK Delaunay3D fallback capability metadata, but monolith Meshing
+    still reports operation-aware placeholder acceptance.
+  - Chosen next slice: route `generate-volume-mesh` through the existing Mesh
+    pipeline and commit the generated Mesh into monolith
+    catalog/hierarchy/selection/rendering state.
+- Added next executable phase to `plan.md`: Meshing Infrastructure Action
+  Handler.
+- Started the next unattended loop iteration:
+  - Adding failing Meshing workflow action handler and composition-root tests
+    first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding the Meshing handler test target.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `Infrastructure/xq_MeshingWorkflowActionHandler.h` did not exist.
+- Implemented Meshing infrastructure action handling:
+  - Added a dynamic Meshing workflow action handler for
+    `generate-volume-mesh`.
+  - The handler resolves the selected Model node from the data-node registry or
+    active node and validates the Model pipeline stage before meshing.
+  - It passes edge-size and optimization parameter state into
+    `xq_MeshPipelineService::CreateVolumeMesh`.
+  - Successful mesh generation now registers a Mesh catalog entry, adds the
+    Meshes hierarchy node, binds the generated MITK grid node, selects it, and
+    refreshes rendering.
+  - The monolith composition root installs the Meshing infrastructure handler
+    after Domain workflow registration, overriding placeholder execution for
+    the supported operation.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(meshing_workflow_action_handler|application_import_wiring|domain_workflow_action_handlers|modeling_meshing_operation_pages|workflow_context_service)"`
+    passed: 5/5.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 69/69.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Meshing Infrastructure Action Handler to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Final Update: Legacy BlueBerry Include Isolation
 
 - Implemented default monolith include isolation:

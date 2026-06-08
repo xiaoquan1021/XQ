@@ -73,6 +73,17 @@ xq::core::DataImportRequest MakeSegmentationImport()
     return request;
 }
 
+xq::core::DataImportRequest MakeModelImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("model-001");
+    request.SourcePath = QStringLiteral("C:/studies/model-001.xqmodel.vtp");
+    request.DisplayName = QStringLiteral("Main Model");
+    request.Modality = QStringLiteral("Model");
+    request.WorkflowRole = xq::core::DataWorkflowRole::Model;
+    return request;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -266,6 +277,44 @@ int main(int argc, char** argv)
     if (Expect(message == QStringLiteral(
                               "Active segmentation node is required for modeling."),
                "configured modeling action should require a segmentation node"))
+        return 1;
+
+    auto meshingContext =
+        std::unique_ptr<xq::core::ApplicationContext>(
+            xq::core::ApplicationContext::CreateDefault());
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *meshingContext->WorkflowActions(),
+        meshingContext->WorkflowOperations());
+    CancelPathProvider meshingProvider;
+    auto meshingWindow =
+        xq::CreateConfiguredMainWindow(*meshingContext,
+                                       &meshingProvider);
+
+    if (Expect(meshingContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("meshing")),
+               "configured meshing workflow should be selectable"))
+        return 1;
+    if (Expect(meshingContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("meshing"),
+                   QStringLiteral("generate-volume-mesh"),
+                   &message),
+               "configured meshing workflow should select generate volume mesh"))
+        return 1;
+
+    const auto meshingImportResult =
+        meshingContext->DataImports()->Import(MakeModelImport(),
+                                              &message);
+    if (Expect(meshingImportResult.Succeeded,
+               "configured meshing model import should succeed"))
+        return 1;
+
+    if (Expect(!meshingContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured meshing action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active model node is required for meshing."),
+               "configured meshing action should require a model node"))
         return 1;
 
     return 0;

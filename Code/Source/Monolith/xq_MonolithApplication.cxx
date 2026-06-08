@@ -7,6 +7,7 @@
 #include "Infrastructure/xq_PathWorkflowActionHandler.h"
 #include "Infrastructure/xq_SegmentationWorkflowActionHandler.h"
 #include "Infrastructure/xq_ModelingWorkflowActionHandler.h"
+#include "Infrastructure/xq_MeshingWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
 
@@ -44,6 +45,9 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
         context,
         configured->RenderRefresh.get());
     xq::infrastructure::RegisterDynamicModelingWorkflowActionHandler(
+        context,
+        configured->RenderRefresh.get());
+    xq::infrastructure::RegisterDynamicMeshingWorkflowActionHandler(
         context,
         configured->RenderRefresh.get());
     configured->Window =

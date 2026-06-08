@@ -3340,6 +3340,43 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Meshing Infrastructure Action Handler
+
+1. Promote the Meshing workflow from Domain placeholder acceptance to an
+   Infrastructure action handler for `generate-volume-mesh`.
+   - Reuse the existing `xq_MeshPipelineService::CreateVolumeMesh`.
+   - Resolve the selected Model MITK node from `DataNodeRegistryService` or the
+     active node.
+   - Read edge size and optimization parameters from `WorkflowOperationService`
+     parameter values where available.
+   - Register the generated Mesh result in `DataCatalogService`,
+     `DataHierarchyService`, and `DataNodeRegistryService`.
+   - Select the generated result and refresh MITK rendering after success.
+2. Keep unsupported Meshing operations on the existing operation-aware Domain
+   placeholder path for this slice.
+3. Add C++ regression tests before implementation:
+   - Missing operation id or missing Model node fails without catalog mutation.
+   - A valid `generate-volume-mesh` request creates a Mesh node and metadata
+     using the existing pipeline.
+   - The configured monolith composition root installs the Infrastructure
+     Meshing handler after Domain registration.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
