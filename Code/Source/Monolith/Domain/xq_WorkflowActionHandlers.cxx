@@ -91,13 +91,15 @@ QString OperationTitle(xq::core::WorkflowOperationService* operations,
 }
 
 xq::core::WorkflowActionService::WorkflowActionHandler
-CreateSegmentationHandler(xq::core::WorkflowOperationService* operations)
+CreateOperationAwareHandler(xq::core::WorkflowOperationService* operations,
+                            const QString& operationKind)
 {
     if (!operations)
         return CreateDefaultHandler();
 
-    return [operations](const xq::core::WorkflowContextSnapshot& snapshot,
-                        QString* message) {
+    return [operations, operationKind](
+               const xq::core::WorkflowContextSnapshot& snapshot,
+               QString* message) {
         const QString operationId =
             operations->SelectedOperationId(snapshot.WorkflowId);
         const QString operationTitle =
@@ -110,37 +112,38 @@ CreateSegmentationHandler(xq::core::WorkflowOperationService* operations)
         if (message)
         {
             *message =
-                QStringLiteral("%1 segmentation operation accepted %2.")
-                    .arg(operationTitle, SelectedDataLabel(snapshot));
+                QStringLiteral("%1 %2 operation accepted %3.")
+                    .arg(operationTitle,
+                         operationKind,
+                         SelectedDataLabel(snapshot));
         }
         return true;
     };
 }
 
 xq::core::WorkflowActionService::WorkflowActionHandler
+CreateSegmentationHandler(xq::core::WorkflowOperationService* operations)
+{
+    return CreateOperationAwareHandler(operations,
+                                       QStringLiteral("segmentation"));
+}
+
+xq::core::WorkflowActionService::WorkflowActionHandler
 CreatePathHandler(xq::core::WorkflowOperationService* operations)
 {
-    if (!operations)
-        return CreateDefaultHandler();
+    return CreateOperationAwareHandler(operations, QStringLiteral("path"));
+}
 
-    return [operations](const xq::core::WorkflowContextSnapshot& snapshot,
-                        QString* message) {
-        const QString operationId =
-            operations->SelectedOperationId(snapshot.WorkflowId);
-        const QString operationTitle =
-            OperationTitle(operations, snapshot.WorkflowId, operationId);
-        if (operationTitle.trimmed().isEmpty())
-        {
-            return CreateDefaultHandler()(snapshot, message);
-        }
+xq::core::WorkflowActionService::WorkflowActionHandler
+CreateModelingHandler(xq::core::WorkflowOperationService* operations)
+{
+    return CreateOperationAwareHandler(operations, QStringLiteral("modeling"));
+}
 
-        if (message)
-        {
-            *message = QStringLiteral("%1 path operation accepted %2.")
-                           .arg(operationTitle, SelectedDataLabel(snapshot));
-        }
-        return true;
-    };
+xq::core::WorkflowActionService::WorkflowActionHandler
+CreateMeshingHandler(xq::core::WorkflowOperationService* operations)
+{
+    return CreateOperationAwareHandler(operations, QStringLiteral("meshing"));
 }
 
 QVector<xq::core::WorkflowOperationDescriptor>
@@ -261,6 +264,59 @@ QVector<xq::core::WorkflowOperationDescriptor> PathOperations()
     };
 }
 
+QVector<xq::core::WorkflowOperationDescriptor> ModelingOperations()
+{
+    using Type = xq::core::WorkflowOperationParameterValueType;
+    return {
+        Operation(QStringLiteral("loft-surface"),
+                  QStringLiteral("Loft Surface"),
+                  {Parameter(QStringLiteral("sample-count"),
+                             QStringLiteral("Sample Count"),
+                             Type::IntegerScalar)}),
+        Operation(QStringLiteral("build-solid-model"),
+                  QStringLiteral("Build Solid Model"),
+                  {Parameter(QStringLiteral("blend-radius"),
+                             QStringLiteral("Blend Radius"),
+                             Type::NumericScalar),
+                   Parameter(QStringLiteral("wall-thickness"),
+                             QStringLiteral("Wall Thickness"),
+                             Type::NumericScalar)}),
+        Operation(QStringLiteral("trim-branches"),
+                  QStringLiteral("Trim Branches"),
+                  {Parameter(QStringLiteral("trim-distance"),
+                             QStringLiteral("Trim Distance"),
+                             Type::NumericScalar)}),
+    };
+}
+
+QVector<xq::core::WorkflowOperationDescriptor> MeshingOperations()
+{
+    using Type = xq::core::WorkflowOperationParameterValueType;
+    return {
+        Operation(QStringLiteral("generate-surface-mesh"),
+                  QStringLiteral("Generate Surface Mesh"),
+                  {Parameter(QStringLiteral("target-edge-length"),
+                             QStringLiteral("Target Edge Length"),
+                             Type::NumericScalar)}),
+        Operation(QStringLiteral("generate-volume-mesh"),
+                  QStringLiteral("Generate Volume Mesh"),
+                  {Parameter(QStringLiteral("element-size"),
+                             QStringLiteral("Element Size"),
+                             Type::NumericScalar),
+                   Parameter(QStringLiteral("optimization-steps"),
+                             QStringLiteral("Optimization Steps"),
+                             Type::IntegerScalar)}),
+        Operation(QStringLiteral("boundary-layers"),
+                  QStringLiteral("Boundary Layers"),
+                  {Parameter(QStringLiteral("layer-count"),
+                             QStringLiteral("Layer Count"),
+                             Type::IntegerScalar),
+                   Parameter(QStringLiteral("growth-rate"),
+                             QStringLiteral("Growth Rate"),
+                             Type::NumericScalar)}),
+    };
+}
+
 QVector<xq::core::WorkflowOperationDescriptor> Segmentation3DOperations()
 {
     using Type = xq::core::WorkflowOperationParameterValueType;
@@ -321,6 +377,10 @@ int RegisterDefaultWorkflowActionHandlers(
                                        Segmentation2DOperations());
         operations->RegisterOperations(QStringLiteral("segmentation-3d"),
                                        Segmentation3DOperations());
+        operations->RegisterOperations(QStringLiteral("modeling"),
+                                       ModelingOperations());
+        operations->RegisterOperations(QStringLiteral("meshing"),
+                                       MeshingOperations());
     }
 
     if (actions.RegisterHandler(QStringLiteral("image-preprocessing"),
@@ -347,12 +407,26 @@ int RegisterDefaultWorkflowActionHandlers(
         ++registered;
     }
 
+    if (actions.RegisterHandler(QStringLiteral("modeling"),
+                                CreateModelingHandler(operations)))
+    {
+        ++registered;
+    }
+
+    if (actions.RegisterHandler(QStringLiteral("meshing"),
+                                CreateMeshingHandler(operations)))
+    {
+        ++registered;
+    }
+
     for (const auto& workflowId : dataDependentWorkflowIds)
     {
         if (workflowId == QStringLiteral("image-preprocessing") ||
             workflowId == QStringLiteral("path") ||
             workflowId == QStringLiteral("segmentation-2d") ||
-            workflowId == QStringLiteral("segmentation-3d"))
+            workflowId == QStringLiteral("segmentation-3d") ||
+            workflowId == QStringLiteral("modeling") ||
+            workflowId == QStringLiteral("meshing"))
             continue;
 
         if (actions.RegisterHandler(workflowId, CreateDefaultHandler()))

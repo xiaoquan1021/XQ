@@ -2734,6 +2734,18 @@
 
 ## Current verified checkpoint
 
+- Modeling/Meshing Operation Foundation is complete and promoted in `plan.md`.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 63/63.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Current verified checkpoint
+
 - Completed autonomous research refresh:
   - Segmentation operation selectors and parameter panels now exist, but the
     Run action still uses the generic Domain placeholder instead of the
@@ -2815,6 +2827,42 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Path Operation Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Path, 2D Segmentation, and 3D Segmentation now expose operation controls
+    and selected-operation action messages.
+  - Modeling and Meshing remain generic placeholders even though they are the
+    next core stages in the vascular pipeline.
+  - Chosen next slice: add Modeling/Meshing operation descriptors, controls,
+    and operation-aware Domain action routing.
+- Added next executable phase to `plan.md`: Modeling/Meshing Operation
+  Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing Domain/UI tests for Modeling and Meshing operations first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding `test_monolith_modeling_meshing_operation_pages`.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|modeling_meshing_operation_pages)"`
+    failed because Modeling/Meshing operations were not registered and their
+    pages had no selectors.
+- Implemented Modeling/Meshing Operation Foundation:
+  - Domain workflow registration now registers Modeling operations: Loft
+    Surface, Build Solid Model, and Trim Branches.
+  - Domain workflow registration now registers Meshing operations: Generate
+    Surface Mesh, Generate Volume Mesh, and Boundary Layers.
+  - Modeling/Meshing pages reuse the generic operation selector and parameter
+    panel.
+  - Operation-aware Domain action routing now covers Modeling and Meshing.
+- Debugging note:
+  - The first target run exposed a test setup issue: after Meshing import, the
+    selected data was a Model, so later Segmentation assertions had an
+    incompatible selection. The test now restores an Image selection before
+    running Segmentation assertions.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|modeling_meshing_operation_pages|path_operation_page|segmentation_operation_page)"`
+    passed: 4/4.
 
 ## Current verified checkpoint
 

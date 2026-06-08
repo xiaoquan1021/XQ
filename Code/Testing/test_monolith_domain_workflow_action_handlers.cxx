@@ -174,6 +174,44 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    const auto modelingOperations =
+        operationContext->WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("modeling"));
+    if (Expect(modelingOperations.size() == 3,
+               "Modeling should register workflow operations"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(modelingOperations.at(1).Id ==
+                       QStringLiteral("build-solid-model") &&
+                   modelingOperations.at(1).Parameters.size() == 2,
+               "Build Solid Model should expose modeling parameters"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    const auto meshingOperations =
+        operationContext->WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("meshing"));
+    if (Expect(meshingOperations.size() == 3,
+               "Meshing should register workflow operations"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(meshingOperations.at(1).Id ==
+                       QStringLiteral("generate-volume-mesh") &&
+                   meshingOperations.at(1).Parameters.size() == 2,
+               "Generate Volume Mesh should expose meshing parameters"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
     if (Expect(segmentation2dOperations.at(0).Id ==
                        QStringLiteral("threshold-contour") &&
                    segmentation2dOperations.at(0).Parameters.size() == 2,
@@ -245,6 +283,116 @@ int main(int argc, char** argv)
     if (Expect(actionMessage ==
                    QStringLiteral("Smooth Path path operation accepted Seg CTA."),
                "Path handler should report selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+
+    const auto segmentationForModeling =
+        operationContext->DataImports()->Import(MakeImport(
+                                                    QStringLiteral("model-seg"),
+                                                    QStringLiteral("Aorta Segmentation"),
+                                                    xq::core::DataWorkflowRole::Segmentation),
+                                                &errorMessage);
+    if (Expect(segmentationForModeling.Succeeded,
+               "modeling segmentation import should succeed"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("modeling")),
+               "Modeling workflow should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("modeling"),
+                   QStringLiteral("build-solid-model"),
+                   &errorMessage),
+               "Modeling operation should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &actionMessage),
+               "Modeling handler should run selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(actionMessage ==
+                   QStringLiteral("Build Solid Model modeling operation accepted Aorta Segmentation."),
+               "Modeling handler should report selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+
+    const auto modelForMeshing =
+        operationContext->DataImports()->Import(MakeImport(
+                                                    QStringLiteral("mesh-model"),
+                                                    QStringLiteral("Aorta Model"),
+                                                    xq::core::DataWorkflowRole::Model),
+                                                &errorMessage);
+    if (Expect(modelForMeshing.Succeeded,
+               "meshing model import should succeed"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("meshing")),
+               "Meshing workflow should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("meshing"),
+                   QStringLiteral("generate-volume-mesh"),
+                   &errorMessage),
+               "Meshing operation should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &actionMessage),
+               "Meshing handler should run selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(actionMessage ==
+                   QStringLiteral("Generate Volume Mesh meshing operation accepted Aorta Model."),
+               "Meshing handler should report selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+
+    const auto segmentationImageRestore =
+        operationContext->DataImports()->Import(MakeImport(
+                                                    QStringLiteral("seg-image-restore"),
+                                                    QStringLiteral("Seg CTA"),
+                                                    xq::core::DataWorkflowRole::Image),
+                                                &errorMessage);
+    if (Expect(segmentationImageRestore.Succeeded,
+               "segmentation image restore import should succeed"))
     {
         delete operationContext;
         delete context;
