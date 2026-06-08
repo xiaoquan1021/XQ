@@ -2569,3 +2569,51 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Data Page Role Display to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the monolith Image Preprocessing pipeline and comparable
+    workstation workflows.
+  - The Domain layer already exposes six preprocessing operations and
+    parameter descriptors, but the monolith page still shows only a generic
+    `Run` button.
+  - Chosen next slice: add a Core operation-selection service and surface the
+    Image Preprocessing operation selector in the Presentation page.
+- Added next executable phase to `plan.md`: Image Preprocessing Operation
+  Selector.
+- Started the next unattended loop iteration:
+  - Adding failing Core operation-service and Image Preprocessing page tests
+    first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new tests.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_workflow_operation_service` and
+    `test_monolith_image_preprocessing_operation_page` because
+    `Core/xq_WorkflowOperationService.h` did not exist.
+- Implemented Image Preprocessing operation selector:
+  - Added Core `WorkflowOperationService` with per-workflow ordered
+    operations and selected operation state.
+  - Exposed workflow operations from `ApplicationContext`.
+  - Registered the six Image Preprocessing operations from the Domain layer.
+  - The Image Preprocessing page now exposes an operation combo box and updates
+    the primary action text to the selected operation.
+  - The default domain action handler now runs the selected Image Preprocessing
+    operation when operation state is available.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workflow_operation_service|image_preprocessing_operation_page)"`
+    passed: 2/2.
+  - Related compatibility tests
+    `test_monolith_workflow_action_service`,
+    `test_monolith_domain_workflow_action_handlers`,
+    `test_monolith_image_preprocessing_workflow_service`, and
+    `test_monolith_workflow_primary_action_page` passed: 4/4.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 59/59.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Image Preprocessing Operation Selector to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

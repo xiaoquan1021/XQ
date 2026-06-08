@@ -14,6 +14,7 @@ set(XQ_MONOLITH_CORE_SRCS
     Core/xq_TaskRunner.cxx
     Core/xq_WorkflowActionService.cxx
     Core/xq_WorkflowContextService.cxx
+    Core/xq_WorkflowOperationService.cxx
     Core/xq_WorkflowRegistry.cxx
     Core/xq_WorkflowSelectionService.cxx
 )
@@ -34,6 +35,7 @@ set(XQ_MONOLITH_CORE_HDRS
     Core/xq_TaskRunner.h
     Core/xq_WorkflowActionService.h
     Core/xq_WorkflowContextService.h
+    Core/xq_WorkflowOperationService.h
     Core/xq_WorkflowRegistry.h
     Core/xq_WorkflowSelectionService.h
 )

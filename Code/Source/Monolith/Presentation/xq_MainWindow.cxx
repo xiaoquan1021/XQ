@@ -10,12 +10,14 @@
 #include "Core/xq_ProjectService.h"
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowContextService.h"
+#include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowRegistry.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Core/xq_TaskRunner.h"
 #include "xq_DataHierarchyModel.h"
 
 #include <QAction>
+#include <QComboBox>
 #include <QDockWidget>
 #include <QFrame>
 #include <QHeaderView>
@@ -185,9 +187,16 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             [this]() {
                 UpdateWorkflowContextStatusPage();
             });
+    connect(m_Context.WorkflowOperations(),
+            &xq::core::WorkflowOperationService::SelectedOperationChanged,
+            this,
+            [this](const QString&, const QString&) {
+                UpdateWorkflowOperationControls();
+            });
     SyncWorkflowNavigationFromCore(
         m_Context.WorkflowSelection()->SelectedWorkflowId());
     UpdateWorkflowContextStatusPage();
+    UpdateWorkflowOperationControls();
 
     connect(m_DataHierarchyView->selectionModel(),
             &QItemSelectionModel::currentChanged,
@@ -480,6 +489,61 @@ void MainWindow::UpdateWorkflowContextStatusPage()
     label->setText(QStringLiteral("Using %1.").arg(displayName));
 }
 
+void MainWindow::UpdateWorkflowOperationControls()
+{
+    for (auto it = m_WorkflowPrimaryActionButtons.begin();
+         it != m_WorkflowPrimaryActionButtons.end();
+         ++it)
+    {
+        const QString workflowId = it.key();
+        auto* button = it.value();
+        if (!button)
+            continue;
+
+        const auto operations =
+            m_Context.WorkflowOperations()->OperationsForWorkflow(workflowId);
+        if (operations.isEmpty())
+        {
+            button->setText(QStringLiteral("Run"));
+            continue;
+        }
+
+        QString selectedOperationId =
+            m_Context.WorkflowOperations()->SelectedOperationId(workflowId);
+        QString operationTitle;
+        for (const auto& operation : operations)
+        {
+            if (operation.Id == selectedOperationId)
+            {
+                operationTitle = operation.Title;
+                break;
+            }
+        }
+        if (operationTitle.trimmed().isEmpty())
+            operationTitle = operations.front().Title;
+
+        button->setText(QStringLiteral("Run %1").arg(operationTitle));
+    }
+
+    for (auto it = m_WorkflowOperationSelectors.begin();
+         it != m_WorkflowOperationSelectors.end();
+         ++it)
+    {
+        auto* selector = it.value();
+        if (!selector)
+            continue;
+
+        const QString selectedOperationId =
+            m_Context.WorkflowOperations()->SelectedOperationId(it.key());
+        const int index = selector->findData(selectedOperationId);
+        if (index >= 0 && selector->currentIndex() != index)
+        {
+            QSignalBlocker blocker(selector);
+            selector->setCurrentIndex(index);
+        }
+    }
+}
+
 void MainWindow::RunActiveWorkflowAction()
 {
     QString message;
@@ -681,6 +745,53 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
     else if (!xq::core::WorkflowContextService::AcceptedDataRolesForWorkflow(
                   id).isEmpty())
     {
+        const auto operations =
+            m_Context.WorkflowOperations()->OperationsForWorkflow(id);
+        if (!operations.isEmpty())
+        {
+            auto* operationSelector = new QComboBox(page);
+            if (id == QStringLiteral("image-preprocessing"))
+            {
+                operationSelector->setObjectName(QStringLiteral(
+                    "xqImagePreprocessingOperationSelector"));
+            }
+            else
+            {
+                operationSelector->setObjectName(
+                    QStringLiteral("xqWorkflowOperationSelector_%1").arg(id));
+            }
+            for (const auto& operation : operations)
+            {
+                operationSelector->addItem(operation.Title, operation.Id);
+            }
+
+            const int selectedIndex = operationSelector->findData(
+                m_Context.WorkflowOperations()->SelectedOperationId(id));
+            if (selectedIndex >= 0)
+                operationSelector->setCurrentIndex(selectedIndex);
+
+            connect(operationSelector,
+                    &QComboBox::currentIndexChanged,
+                    this,
+                    [this, id, operationSelector](int index) {
+                        if (index < 0)
+                            return;
+
+                        QString message;
+                        if (!m_Context.WorkflowOperations()->SelectOperation(
+                                id,
+                                operationSelector->itemData(index).toString(),
+                                &message))
+                        {
+                            m_Context.PostDiagnostic(message);
+                            UpdateWorkflowOperationControls();
+                        }
+                    });
+
+            m_WorkflowOperationSelectors.insert(id, operationSelector);
+            layout->addWidget(operationSelector);
+        }
+
         auto* statusLabel = new QLabel(page);
         statusLabel->setObjectName(
             QStringLiteral("xqWorkflowContextStatus_%1").arg(id));
@@ -700,6 +811,7 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                 });
         m_WorkflowPrimaryActionButtons.insert(id, actionButton);
         layout->addWidget(actionButton);
+        UpdateWorkflowOperationControls();
     }
     layout->addStretch(1);
 

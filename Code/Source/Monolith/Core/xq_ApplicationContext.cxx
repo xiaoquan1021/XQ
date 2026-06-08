@@ -12,6 +12,7 @@
 #include "xq_TaskRunner.h"
 #include "xq_WorkflowActionService.h"
 #include "xq_WorkflowContextService.h"
+#include "xq_WorkflowOperationService.h"
 #include "xq_WorkflowSelectionService.h"
 
 #include <mitkStandaloneDataStorage.h>
@@ -55,6 +56,7 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
           *m_DataSelectionService,
           *m_DataCatalogService,
           this))
+    , m_WorkflowOperationService(new WorkflowOperationService(this))
     , m_WorkflowActionService(new WorkflowActionService(
           *m_WorkflowContextService,
           *m_TaskRunner,
@@ -157,6 +159,11 @@ WorkflowActionService* ApplicationContext::WorkflowActions() const
 WorkflowContextService* ApplicationContext::WorkflowContext() const
 {
     return m_WorkflowContextService;
+}
+
+WorkflowOperationService* ApplicationContext::WorkflowOperations() const
+{
+    return m_WorkflowOperationService;
 }
 
 WorkflowSelectionService* ApplicationContext::WorkflowSelection() const

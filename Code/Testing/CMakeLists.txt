@@ -475,6 +475,12 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_workflow_operation_service
+        xqMonolithCore
+        Qt6::Core
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_domain_workflow_action_handlers
         xqMonolithDomain
         xqMonolithCore
@@ -568,6 +574,15 @@ if(TARGET xqMonolithCore)
 
     xq_add_registered_test(test_monolith_workflow_primary_action_page
         xqMonolithPresentation
+        xqMonolithCore
+        Qt6::Core
+        Qt6::Widgets
+        MitkCore
+    )
+
+    xq_add_registered_test(test_monolith_image_preprocessing_operation_page
+        xqMonolithPresentation
+        xqMonolithDomain
         xqMonolithCore
         Qt6::Core
         Qt6::Widgets

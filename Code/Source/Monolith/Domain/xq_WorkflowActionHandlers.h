@@ -5,6 +5,7 @@ namespace xq::core
 {
 
 class WorkflowActionService;
+class WorkflowOperationService;
 
 } // namespace xq::core
 
@@ -12,7 +13,8 @@ namespace xq::domain
 {
 
 int RegisterDefaultWorkflowActionHandlers(
-    xq::core::WorkflowActionService& actions);
+    xq::core::WorkflowActionService& actions,
+    xq::core::WorkflowOperationService* operations = nullptr);
 
 } // namespace xq::domain
 

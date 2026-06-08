@@ -23,6 +23,7 @@ class ProjectSessionService;
 class TaskRunner;
 class WorkflowActionService;
 class WorkflowContextService;
+class WorkflowOperationService;
 class WorkflowSelectionService;
 
 class ApplicationContext : public QObject
@@ -50,6 +51,7 @@ public:
     TaskRunner* Tasks() const;
     WorkflowActionService* WorkflowActions() const;
     WorkflowContextService* WorkflowContext() const;
+    WorkflowOperationService* WorkflowOperations() const;
     WorkflowSelectionService* WorkflowSelection() const;
 
 public slots:
@@ -78,6 +80,7 @@ private:
     DataImportService* m_DataImportService = nullptr;
     ProjectSessionService* m_ProjectSessionService = nullptr;
     WorkflowContextService* m_WorkflowContextService = nullptr;
+    WorkflowOperationService* m_WorkflowOperationService = nullptr;
     WorkflowActionService* m_WorkflowActionService = nullptr;
 };
 

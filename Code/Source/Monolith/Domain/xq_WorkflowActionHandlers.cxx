@@ -3,6 +3,7 @@
 #include "xq_ImagePreprocessingWorkflowService.h"
 
 #include "Core/xq_WorkflowActionService.h"
+#include "Core/xq_WorkflowOperationService.h"
 
 #include <QString>
 #include <QStringList>
@@ -41,11 +42,26 @@ CreateDefaultHandler()
 }
 
 xq::core::WorkflowActionService::WorkflowActionHandler
-CreateImagePreprocessingHandler()
+CreateImagePreprocessingHandler(xq::core::WorkflowOperationService* operations)
 {
     auto service = std::make_shared<ImagePreprocessingWorkflowService>();
-    return [service](const xq::core::WorkflowContextSnapshot& snapshot,
-                     QString* message) {
+    return [service, operations](
+               const xq::core::WorkflowContextSnapshot& snapshot,
+               QString* message) {
+        if (operations)
+        {
+            const QString operationId =
+                operations->SelectedOperationId(snapshot.WorkflowId);
+            if (!operationId.trimmed().isEmpty())
+            {
+                const auto operationResult =
+                    service->RunOperation(snapshot, operationId);
+                if (message)
+                    *message = operationResult.Message;
+                return operationResult.Succeeded;
+            }
+        }
+
         const auto result = service->Run(snapshot);
         if (message)
             *message = result.Message;
@@ -53,10 +69,27 @@ CreateImagePreprocessingHandler()
     };
 }
 
+QVector<xq::core::WorkflowOperationDescriptor>
+ImagePreprocessingOperations()
+{
+    ImagePreprocessingWorkflowService service;
+    QVector<xq::core::WorkflowOperationDescriptor> operations;
+    for (const auto& operation : service.Operations())
+    {
+        xq::core::WorkflowOperationDescriptor descriptor;
+        descriptor.Id = operation.Id;
+        descriptor.Title = operation.Title;
+        operations.push_back(descriptor);
+    }
+
+    return operations;
+}
+
 } // namespace
 
 int RegisterDefaultWorkflowActionHandlers(
-    xq::core::WorkflowActionService& actions)
+    xq::core::WorkflowActionService& actions,
+    xq::core::WorkflowOperationService* operations)
 {
     const QStringList dataDependentWorkflowIds = {
         QStringLiteral("image-preprocessing"),
@@ -71,8 +104,14 @@ int RegisterDefaultWorkflowActionHandlers(
     };
 
     int registered = 0;
+    if (operations)
+    {
+        operations->RegisterOperations(QStringLiteral("image-preprocessing"),
+                                       ImagePreprocessingOperations());
+    }
+
     if (actions.RegisterHandler(QStringLiteral("image-preprocessing"),
-                                CreateImagePreprocessingHandler()))
+                                CreateImagePreprocessingHandler(operations)))
     {
         ++registered;
     }

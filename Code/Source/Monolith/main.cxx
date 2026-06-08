@@ -23,7 +23,8 @@ int main(int argc, char* argv[])
     std::unique_ptr<xq::core::ApplicationContext> context(
         xq::core::ApplicationContext::CreateDefault());
     xq::domain::RegisterDefaultWorkflowActionHandlers(
-        *context->WorkflowActions());
+        *context->WorkflowActions(),
+        context->WorkflowOperations());
 
     auto configuredWindow = xq::CreateConfiguredMainWindow(*context);
     auto& window = *configuredWindow->Window;
