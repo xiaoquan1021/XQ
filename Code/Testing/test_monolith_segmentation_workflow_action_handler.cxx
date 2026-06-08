@@ -103,6 +103,28 @@ bool PrepareSegmentationWorkflow(xq::core::ApplicationContext& context)
     return importResult.Succeeded;
 }
 
+bool PrepareSegmentationWorkflow(xq::core::ApplicationContext& context,
+                                 const QString& workflowId,
+                                 const QString& operationId)
+{
+    QString message;
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *context.WorkflowActions(),
+        context.WorkflowOperations());
+    if (!context.WorkflowSelection()->SelectWorkflow(workflowId))
+        return false;
+    if (!context.WorkflowOperations()->SelectOperation(workflowId,
+                                                       operationId,
+                                                       &message))
+    {
+        return false;
+    }
+
+    const auto importResult = context.DataImports()->Import(MakePathImport(),
+                                                            &message);
+    return importResult.Succeeded;
+}
+
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
 {
 public:
@@ -266,6 +288,84 @@ int main(int argc, char** argv)
                            context->DataStorage().GetPointer(),
                    "segmentation handler should refresh rendering after success"))
         {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareSegmentationWorkflow(
+                       *context,
+                       QStringLiteral("segmentation-2d"),
+                       QStringLiteral("threshold-contour")),
+                   "unsupported 2D segmentation fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicSegmentationWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "unsupported 2D segmentation fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported 2D segmentation should fail"))
+        {
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "Threshold Contour is not wired to a native 2D Segmentation runtime yet."),
+                   "unsupported 2D segmentation diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareSegmentationWorkflow(
+                       *context,
+                       QStringLiteral("segmentation-3d"),
+                       QStringLiteral("region-growing")),
+                   "unsupported 3D segmentation fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicSegmentationWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "unsupported 3D segmentation fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported 3D segmentation should fail"))
+        {
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "Region Growing is not wired to a native 3D Segmentation runtime yet."),
+                   "unsupported 3D segmentation diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
             return 1;
         }
     }

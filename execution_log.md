@@ -3175,6 +3175,55 @@
 - Promoted Python API Script Runtime Guard to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run: Segmentation Unsupported Operation Guard
+
+- Completed autonomous research refresh:
+  - After Python API runtime guards, the remaining risky surface was workflow
+    operations that still looked executable but only returned placeholder
+    success.
+  - Segmentation pages expose Threshold, Loft, Region Growing, and Surface
+    Preview operations, but only `segmentation-2d/manual-contour` is wired to a
+    native monolith pipeline service.
+  - Chosen next slice: fail unsupported Segmentation operations explicitly
+    while preserving the real manual-contour path.
+- Added next executable phase to `plan.md`: Segmentation Unsupported Operation
+  Guard.
+- Started RED tests first:
+  - Extended `test_monolith_segmentation_workflow_action_handler` for
+    unsupported 2D and 3D Segmentation diagnostics.
+  - Extended `test_monolith_segmentation_operation_page` to run with the
+    Infrastructure handler and expect failed diagnostics for unsupported
+    operations.
+  - Extended `test_monolith_application_import_wiring` so configured monolith
+    composition must use the unsupported-operation guard.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - Initial build exposed missing test wiring: the UI test needed the dynamic
+    handler signature and `xqMonolithInfrastructure` link dependency.
+  - After fixing test wiring, target CTest failed because unsupported
+    Segmentation operations still returned placeholder success.
+- Implemented Segmentation unsupported-operation guard:
+  - Added a deterministic Infrastructure failure path naming the selected
+    operation and workflow title.
+  - Kept `segmentation-2d/manual-contour` on the existing
+    `xq_SegmentationPipelineService::CreateContourGroup` path.
+  - Kept Domain placeholder routing unchanged for generic Domain tests.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(segmentation_workflow_action_handler|segmentation_operation_page|application_import_wiring)"`
+    passed: 3/3.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Segmentation Unsupported Operation Guard to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Segmentation 2D Infrastructure Action Handler
 
 - Completed autonomous research refresh:

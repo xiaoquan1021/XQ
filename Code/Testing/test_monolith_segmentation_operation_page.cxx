@@ -3,6 +3,7 @@
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
+#include "Infrastructure/xq_SegmentationWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
@@ -74,6 +75,9 @@ int main(int argc, char** argv)
     xq::domain::RegisterDefaultWorkflowActionHandlers(
         *context->WorkflowActions(),
         context->WorkflowOperations());
+    xq::infrastructure::RegisterDynamicSegmentationWorkflowActionHandler(
+        *context,
+        nullptr);
     xq::presentation::MainWindow window(*context);
 
     auto* segmentation2dSelector =
@@ -178,8 +182,8 @@ int main(int argc, char** argv)
     segmentation2dButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run 2D Segmentation succeeded: Loft Profiles segmentation operation accepted Seg CTA.")),
-               "2D segmentation action should report selected operation"))
+                   "Run 2D Segmentation failed: Loft Profiles is not wired to a native 2D Segmentation runtime yet.")),
+               "2D segmentation action should report unsupported operation"))
     {
         delete context;
         return 1;
@@ -249,8 +253,8 @@ int main(int argc, char** argv)
     segmentation3dButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run 3D Segmentation succeeded: Region Growing segmentation operation accepted Seg CTA.")),
-               "3D segmentation action should report selected operation"))
+                   "Run 3D Segmentation failed: Region Growing is not wired to a native 3D Segmentation runtime yet.")),
+               "3D segmentation action should report unsupported operation"))
     {
         delete context;
         return 1;

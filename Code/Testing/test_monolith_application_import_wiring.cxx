@@ -251,6 +251,24 @@ int main(int argc, char** argv)
                               "Active path node is required for 2D segmentation."),
                "configured segmentation action should require a path node"))
         return 1;
+    if (Expect(segmentationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("segmentation-3d")),
+               "configured 3D segmentation workflow should be selectable"))
+        return 1;
+    if (Expect(segmentationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("segmentation-3d"),
+                   QStringLiteral("region-growing"),
+                   &message),
+               "configured 3D segmentation workflow should select region growing"))
+        return 1;
+    if (Expect(!segmentationContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured 3D segmentation action should use unsupported-operation guard"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Region Growing is not wired to a native 3D Segmentation runtime yet."),
+               "configured 3D segmentation action should report unsupported operation"))
+        return 1;
 
     auto modelingContext =
         std::unique_ptr<xq::core::ApplicationContext>(

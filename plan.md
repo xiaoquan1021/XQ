@@ -3674,6 +3674,42 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Segmentation Unsupported Operation Guard
+
+1. Stop reporting unsupported Segmentation operations as successful
+   Infrastructure actions.
+   - Keep `segmentation-2d/manual-contour` on the existing
+     `xq_SegmentationPipelineService::CreateContourGroup` path.
+   - Return failure for `segmentation-2d/threshold-contour`,
+     `segmentation-2d/loft-profiles`, and all `segmentation-3d` operations
+     until native MITK/ITK runtime integration exists.
+   - Use deterministic diagnostics that include the selected operation title
+     and workflow title.
+2. Keep Domain placeholder behavior intact for tests that intentionally verify
+   generic operation routing without Infrastructure.
+3. Add C++ regression tests before implementation:
+   - Dynamic handler rejects unsupported 2D Segmentation operations.
+   - Dynamic handler rejects 3D Segmentation operations.
+   - The Segmentation operation page posts failed diagnostics when wired with
+     the Infrastructure handler.
+   - The configured monolith composition root uses the Infrastructure guard.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
