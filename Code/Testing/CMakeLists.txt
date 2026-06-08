@@ -698,6 +698,7 @@ if(TARGET xqMonolithCore)
 
     xq_add_registered_test(test_monolith_modeling_meshing_operation_pages
         xqMonolithPresentation
+        xqMonolithInfrastructure
         xqMonolithDomain
         xqMonolithCore
         Qt6::Core

@@ -3,6 +3,7 @@
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
+#include "Infrastructure/xq_ModelingWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
@@ -76,6 +77,8 @@ int main(int argc, char** argv)
     xq::domain::RegisterDefaultWorkflowActionHandlers(
         *context->WorkflowActions(),
         context->WorkflowOperations());
+    xq::infrastructure::RegisterDynamicModelingWorkflowActionHandler(*context,
+                                                                     nullptr);
     xq::presentation::MainWindow window(*context);
 
     auto* modelingSelector =
@@ -103,25 +106,22 @@ int main(int argc, char** argv)
     }
 
     modelingSelector->setCurrentIndex(
-        modelingSelector->findData(QStringLiteral("build-solid-model")));
+        modelingSelector->findData(QStringLiteral("trim-branches")));
     app.processEvents();
     auto* modelingButton =
         FindActionButton(window, QStringLiteral("modeling"));
     if (Expect(modelingButton != nullptr &&
                    modelingButton->text() ==
-                       QStringLiteral("Run Build Solid Model"),
+                       QStringLiteral("Run Trim Branches"),
                "Modeling action should include selected operation"))
     {
         delete context;
         return 1;
     }
     if (Expect(FindNumericParameter(window,
-                                    QStringLiteral("blend-radius")) !=
-                       nullptr &&
-                   FindNumericParameter(window,
-                                        QStringLiteral("wall-thickness")) !=
-                       nullptr,
-               "Build Solid Model should expose modeling parameters"))
+                                    QStringLiteral("trim-distance")) !=
+                   nullptr,
+               "Trim Branches should expose modeling parameters"))
     {
         delete context;
         return 1;
@@ -164,8 +164,8 @@ int main(int argc, char** argv)
     modelingButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Modeling succeeded: Build Solid Model modeling operation accepted Aorta Segmentation.")),
-               "Modeling action should report selected operation"))
+                   "Run Modeling failed: Trim Branches is not wired to a native Modeling runtime yet.")),
+               "Modeling action should report unsupported operation"))
     {
         delete context;
         return 1;

@@ -137,6 +137,19 @@ bool PrepareModelingWorkflow(xq::core::ApplicationContext& context)
     return importResult.Succeeded;
 }
 
+bool PrepareModelingWorkflow(xq::core::ApplicationContext& context,
+                             const QString& operationId)
+{
+    if (!PrepareModelingWorkflow(context))
+        return false;
+
+    QString message;
+    return context.WorkflowOperations()->SelectOperation(
+        QStringLiteral("modeling"),
+        operationId,
+        &message);
+}
+
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
 {
 public:
@@ -306,6 +319,80 @@ int main(int argc, char** argv)
                            context->DataStorage().GetPointer(),
                    "modeling handler should refresh rendering after success"))
         {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareModelingWorkflow(*context,
+                                           QStringLiteral("loft-surface")),
+                   "unsupported loft fixture should prepare modeling workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicModelingWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "unsupported loft fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported loft surface should fail"))
+        {
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "Loft Surface is not wired to a native Modeling runtime yet."),
+                   "unsupported loft diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareModelingWorkflow(*context,
+                                           QStringLiteral("trim-branches")),
+                   "unsupported trim fixture should prepare modeling workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicModelingWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "unsupported trim fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported trim branches should fail"))
+        {
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "Trim Branches is not wired to a native Modeling runtime yet."),
+                   "unsupported trim diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
             return 1;
         }
     }
