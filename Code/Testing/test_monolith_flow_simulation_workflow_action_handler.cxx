@@ -816,6 +816,75 @@ int main(int argc, char** argv)
             return 1;
         }
 
+        if (Expect(context->WorkflowOperations()->SelectOperation(
+                       QStringLiteral("flow-simulation"),
+                       QStringLiteral("review-flow-results"),
+                       &message),
+                   "review fixture should select review operation"))
+        {
+            return 1;
+        }
+        FakeRenderRefreshService reviewRefresh;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicFlowSimulationWorkflowActionHandler(
+                        *context,
+                        &reviewRefresh,
+                        &message),
+                "review fixture should reinstall handler"))
+        {
+            return 1;
+        }
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "review handler should activate imported result display"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Prepared flow result review for point:pressure."),
+                   "review handler should report selected scalar"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+
+        bool visible = false;
+        bool scalarVisibility = false;
+        std::string activeScalar;
+        std::string reviewScalar;
+        std::string reviewStatus;
+        if (Expect(resultNode->GetBoolProperty("visible", visible) &&
+                       visible &&
+                       resultNode->GetBoolProperty("scalar visibility",
+                                                   scalarVisibility) &&
+                       scalarVisibility &&
+                       resultNode->GetStringProperty(
+                           "xq.result.active_scalar",
+                           activeScalar) &&
+                       activeScalar == "pressure" &&
+                       resultNode->GetStringProperty(
+                           "xq.review.flow.active_scalar",
+                           reviewScalar) &&
+                       reviewScalar == "point:pressure" &&
+                       resultNode->GetStringProperty(
+                           "xq.review.flow.status",
+                           reviewStatus) &&
+                       reviewStatus == "ready",
+                   "review handler should store scalar review metadata"))
+        {
+            return 1;
+        }
+        if (Expect(reviewRefresh.Calls == 1 &&
+                       reviewRefresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "review handler should refresh rendering after success"))
+        {
+            return 1;
+        }
+
         std::filesystem::remove_all(SolverCaseDir());
     }
 

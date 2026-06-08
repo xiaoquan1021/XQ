@@ -111,6 +111,53 @@
 - Promoted Flow Simulation Steady Run Infrastructure Action Handler to
   completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Pushed XQ commit:
+  - `6a1742f Wire steady flow simulation run action`.
+- Continued immediately into the next autonomous research refresh:
+  - Rechecked comparable result-review direction after native steady run
+    import landed.
+  - SimVascular-style workflows surface pressure, velocity, and wall-shear
+    result fields immediately after a solver run.
+  - MITK/Slicer-style workstations keep result review tied to selected data
+    nodes and rendering properties.
+  - Chosen next slice: Flow Results Review Infrastructure Action Handler.
+- Promoted the research refresh to completed in `plan.md`.
+- Started Active Phase: Flow Results Review Infrastructure Action Handler.
+- Starting RED tests first:
+  - `review-flow-results` should reject non-SimulationResult selections.
+  - A valid imported result node should get active scalar/review metadata and
+    a render refresh.
+  - Production composition should validate `review-flow-results` through the
+    Infrastructure handler, not the Domain placeholder.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed
+    after extending Flow review tests.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed after
+    the tests compiled.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(flow_simulation_workflow_action_handler|application_import_wiring)"`
+    failed because `review-flow-results` still used the operation-aware
+    Domain placeholder.
+- Implemented Flow Results Review infrastructure action:
+  - `review-flow-results` now requires a selected SimulationResult node.
+  - The handler discovers imported result fields, prefers pressure, and calls
+    `xq_ResultImport::SetActiveScalar`.
+  - It marks the result visible/scalar-visible, writes
+    `xq.review.flow.*` metadata, and refreshes rendering.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(flow_simulation_workflow_action_handler|application_import_wiring)"`
+    passed: 2/2.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 70/70.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Flow Results Review Infrastructure Action Handler to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 - Continued the requested unattended loop after the user enabled full access mode.
 - Reviewed `plan.md`, `execution_log.md`, and the monolith scaffold:

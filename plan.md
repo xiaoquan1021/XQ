@@ -3452,6 +3452,43 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Flow Results Review Infrastructure Action Handler
+
+1. Promote the Flow Simulation `review-flow-results` operation from
+   placeholder acceptance to a real Infrastructure action handler.
+   - Require the selected data to resolve to a MITK SimulationResult node.
+   - Choose a review scalar from imported result fields, preferring pressure,
+     then velocity, then wall-shear metadata.
+   - Use the existing result-import scalar activation helper where possible.
+   - Mark the result node visible/scalar-visible and persist review metadata
+     on the node.
+   - Refresh MITK rendering after success.
+2. Keep ROM and MultiPhysics on the existing operation-aware placeholder path
+   for this slice.
+3. Add C++ regression tests before implementation:
+   - `review-flow-results` rejects Mesh or missing SimulationResult
+     selections.
+   - A valid imported result node gets active scalar/review metadata and a
+     render refresh.
+   - The configured monolith composition root uses Infrastructure validation
+     for `review-flow-results`.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

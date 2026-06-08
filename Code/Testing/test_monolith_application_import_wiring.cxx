@@ -380,5 +380,20 @@ int main(int argc, char** argv)
                "configured steady flow action should require a simulation prep node"))
         return 1;
 
+    if (Expect(flowContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("flow-simulation"),
+                   QStringLiteral("review-flow-results"),
+                   &message),
+               "configured flow workflow should select flow result review"))
+        return 1;
+    if (Expect(!flowContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured flow review action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active simulation result node is required for flow result review."),
+               "configured flow review action should require a simulation result node"))
+        return 1;
+
     return 0;
 }

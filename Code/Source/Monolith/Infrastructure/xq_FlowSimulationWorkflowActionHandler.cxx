@@ -10,10 +10,12 @@
 #include "Core/xq_WorkflowOperationService.h"
 
 #include <xq_PipelineDataUtils.h>
+#include <xq_ResultImport.h>
 #include <xq_SimulationPrepPipeline.h>
 
 #include <algorithm>
 #include <filesystem>
+#include <sstream>
 
 namespace xq::infrastructure
 {
@@ -24,6 +26,7 @@ namespace
 constexpr const char* kFlowSimulationWorkflowId = "flow-simulation";
 constexpr const char* kConfigureCfdJobOperationId = "configure-cfd-job";
 constexpr const char* kRunSteadyFlowOperationId = "run-steady-flow";
+constexpr const char* kReviewFlowResultsOperationId = "review-flow-results";
 constexpr const char* kSimulationsFolderId = "simulations";
 constexpr const char* kSimulationsFolderTitle = "Simulations";
 
@@ -137,6 +140,20 @@ mitk::DataNode::Pointer ResolveModelNodeForMesh(
 }
 
 mitk::DataNode::Pointer ResolveSimulationPrepNode(
+    xq::core::ApplicationContext& context,
+    const xq::core::WorkflowContextSnapshot& snapshot)
+{
+    if (auto* dataNodes = context.DataNodes())
+    {
+        auto node = dataNodes->FindNode(snapshot.SelectedCatalogEntryId);
+        if (node.IsNotNull())
+            return node;
+    }
+
+    return context.ActiveNode();
+}
+
+mitk::DataNode::Pointer ResolveSimulationResultNode(
     xq::core::ApplicationContext& context,
     const xq::core::WorkflowContextSnapshot& snapshot)
 {
@@ -349,6 +366,58 @@ bool CommitSteadyFlowResults(xq::core::ApplicationContext& context,
     return true;
 }
 
+std::vector<std::string> SplitCsv(std::string text)
+{
+    std::vector<std::string> values;
+    std::string token;
+    std::istringstream input(text);
+    while (std::getline(input, token, ','))
+    {
+        if (!token.empty())
+            values.push_back(token);
+    }
+    return values;
+}
+
+std::string PreferredReviewScalar(const mitk::DataNode::Pointer& node)
+{
+    std::vector<std::string> fields =
+        xq_ResultImport::GetFieldNames(node.GetPointer());
+    if (fields.empty())
+    {
+        fields = SplitCsv(xq::pipeline::GetStringProperty(
+            node.GetPointer(), "xq.result.field_names"));
+    }
+
+    const auto findContaining = [&fields](const std::string& text) {
+        return std::find_if(fields.begin(),
+                            fields.end(),
+                            [&text](const std::string& field) {
+                                return field.find(text) != std::string::npos;
+                            });
+    };
+
+    if (auto pressure = findContaining("pressure");
+        pressure != fields.end())
+    {
+        return *pressure;
+    }
+    if (auto velocity = findContaining("velocity");
+        velocity != fields.end())
+    {
+        return *velocity;
+    }
+    if (auto shear = findContaining("shear");
+        shear != fields.end())
+    {
+        return *shear;
+    }
+    if (!fields.empty())
+        return fields.front();
+
+    return {};
+}
+
 std::filesystem::path SteadyFlowCaseDir()
 {
     return std::filesystem::temp_directory_path() /
@@ -519,6 +588,58 @@ bool RunSteadyFlow(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool RunReviewFlowResults(xq::core::ApplicationContext& context,
+                          xq::core::RenderRefreshService* renderRefresh,
+                          const xq::core::WorkflowContextSnapshot& snapshot,
+                          QString* message)
+{
+    const auto resultNode = ResolveSimulationResultNode(context, snapshot);
+    if (resultNode.IsNull() ||
+        !xq::pipeline::HasStage(resultNode.GetPointer(),
+                                xq::pipeline::Stage::Result))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active simulation result node is required for flow result review."));
+        return false;
+    }
+
+    const std::string scalar = PreferredReviewScalar(resultNode);
+    if (scalar.empty())
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Flow result review requires named result fields."));
+        return false;
+    }
+
+    if (!xq_ResultImport::SetActiveScalar(resultNode.GetPointer(), scalar))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Flow result review could not activate %1.")
+                       .arg(QString::fromStdString(scalar)));
+        return false;
+    }
+
+    resultNode->SetVisibility(true);
+    resultNode->SetBoolProperty("visible", true);
+    resultNode->SetBoolProperty("scalar visibility", true);
+    xq::pipeline::SetStringProperty(
+        resultNode, "xq.review.flow.active_scalar", scalar);
+    xq::pipeline::SetStringProperty(
+        resultNode, "xq.review.flow.status", "ready");
+    resultNode->Modified();
+
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    SetMessage(message,
+               QStringLiteral("Prepared flow result review for %1.")
+                   .arg(QString::fromStdString(scalar)));
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicFlowSimulationWorkflowActionHandler(
@@ -560,6 +681,15 @@ bool RegisterDynamicFlowSimulationWorkflowActionHandler(
                                      snapshot,
                                      operationId,
                                      taskMessage);
+            }
+
+            if (operationId ==
+                QString::fromLatin1(kReviewFlowResultsOperationId))
+            {
+                return RunReviewFlowResults(context,
+                                            renderRefresh,
+                                            snapshot,
+                                            taskMessage);
             }
 
             return RunPlaceholderFlowSimulationOperation(operations,
