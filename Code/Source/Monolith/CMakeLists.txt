@@ -202,25 +202,26 @@ target_link_libraries(xqMonolithApplication
         Qt6::Widgets
 )
 
-add_executable(XQMonolith
+set(XQ_MONOLITH_TARGET XQ)
+if(XQ_BUILD_LEGACY_BLUEBERRY)
+    set(XQ_MONOLITH_TARGET XQMonolith)
+endif()
+
+add_executable(${XQ_MONOLITH_TARGET}
     main.cxx
 )
 
-set_target_properties(XQMonolith PROPERTIES
+set_target_properties(${XQ_MONOLITH_TARGET} PROPERTIES
     AUTOMOC ON
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-if(NOT XQ_BUILD_LEGACY_BLUEBERRY)
-    set_target_properties(XQMonolith PROPERTIES OUTPUT_NAME XQ)
-endif()
-
-target_include_directories(XQMonolith
+target_include_directories(${XQ_MONOLITH_TARGET}
     PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_link_libraries(XQMonolith
+target_link_libraries(${XQ_MONOLITH_TARGET}
     PRIVATE
         xqMonolithApplication
         xqMonolithDomain

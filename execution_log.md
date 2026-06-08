@@ -2846,6 +2846,39 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Legacy BlueBerry Default Retirement to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked default delivery target naming after legacy BlueBerry became
+    opt-in by default.
+  - The monolith executable output is named `XQ`, but the CMake target is still
+    unconditionally declared as `XQMonolith`.
+  - Chosen next slice: make the default monolith CMake target `XQ`, falling
+    back to `XQMonolith` only when legacy BlueBerry is explicitly enabled.
+- Added next executable phase to `plan.md`: Default XQ Monolith Target Naming.
+- Started the next unattended loop iteration:
+  - Updating the monolith scaffold test to fail on unconditional
+    `XQMonolith` first.
+- Red test observed:
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\test_monolith_scaffold.ps1`
+    failed because `Code/Source/Monolith/CMakeLists.txt` unconditionally
+    declared `add_executable(XQMonolith ...)`.
+- Implemented Default XQ Monolith Target Naming:
+  - `XQ_MONOLITH_TARGET` now defaults to `XQ`.
+  - Legacy BlueBerry opt-in builds switch the monolith target to `XQMonolith`
+    so the legacy application can still use target `XQ`.
+  - Include/link properties now apply through the conditional target variable.
+- Red/green target verification:
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\test_monolith_scaffold.ps1`
+    passed.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 16/16.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Default XQ Monolith Target Naming to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 ## Current verified checkpoint
 

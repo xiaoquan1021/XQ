@@ -2963,6 +2963,35 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 4. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Default XQ Monolith Target Naming
+
+1. Make the default monolith CMake target name `XQ`.
+   - When `XQ_BUILD_LEGACY_BLUEBERRY=OFF`, the monolith executable target
+     should be named `XQ`.
+   - When legacy BlueBerry is explicitly enabled, keep the monolith target as
+     `XQMonolith` so the legacy application can still own target `XQ`.
+2. Update the monolith scaffold PowerShell regression test before
+   implementation:
+   - It should reject an unconditional `add_executable(XQMonolith ...)`.
+   - It should require a conditional `XQ_MONOLITH_TARGET` defaulting to `XQ`
+     and switching to `XQMonolith` only for legacy builds.
+3. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+4. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

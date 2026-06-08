@@ -15,8 +15,17 @@ if ($Options -notmatch "XQ_BUILD_MONOLITH") {
 if ($CodeCMake -notmatch "Source/Monolith") {
     throw "Code/CMakeLists.txt does not add the monolith source tree"
 }
-if ($MonolithCMake -notmatch "add_executable\(XQMonolith") {
-    throw "XQMonolith executable target is missing"
+if ($MonolithCMake -match "add_executable\(XQMonolith") {
+    throw "monolith executable target must not be unconditionally named XQMonolith"
+}
+if ($MonolithCMake -notmatch "set\(XQ_MONOLITH_TARGET XQ\)") {
+    throw "monolith executable target must default to XQ"
+}
+if ($MonolithCMake -notmatch "if\(XQ_BUILD_LEGACY_BLUEBERRY\)[\s\S]*set\(XQ_MONOLITH_TARGET XQMonolith\)[\s\S]*endif\(\)") {
+    throw "monolith executable target should switch to XQMonolith only for legacy builds"
+}
+if ($MonolithCMake -notmatch 'add_executable\(\$\{XQ_MONOLITH_TARGET\}') {
+    throw "monolith executable should use the conditional XQ_MONOLITH_TARGET"
 }
 if ($ContextHeader -notmatch "class ApplicationContext") {
     throw "ApplicationContext public interface is missing"
