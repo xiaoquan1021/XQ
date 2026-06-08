@@ -117,6 +117,7 @@ QVector<DataWorkflowRole> WorkflowContextService::AcceptedDataRolesForWorkflow(
         workflowId == QStringLiteral("multiphysics"))
     {
         return {DataWorkflowRole::Mesh,
+                DataWorkflowRole::SimulationPrep,
                 DataWorkflowRole::SimulationResult};
     }
 

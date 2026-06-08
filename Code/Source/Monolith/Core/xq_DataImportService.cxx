@@ -29,6 +29,8 @@ QString WorkflowRoleToken(DataWorkflowRole role)
         return QStringLiteral("model");
     case DataWorkflowRole::Mesh:
         return QStringLiteral("mesh");
+    case DataWorkflowRole::SimulationPrep:
+        return QStringLiteral("simulation");
     case DataWorkflowRole::SimulationResult:
         return QStringLiteral("result");
     case DataWorkflowRole::Unknown:
@@ -239,6 +241,8 @@ QString DataImportService::RoleFolderDisplayName(DataWorkflowRole role)
         return QStringLiteral("Models");
     case DataWorkflowRole::Mesh:
         return QStringLiteral("Meshes");
+    case DataWorkflowRole::SimulationPrep:
+        return QStringLiteral("Simulations");
     case DataWorkflowRole::SimulationResult:
         return QStringLiteral("Simulation Results");
     case DataWorkflowRole::Unknown:
@@ -264,6 +268,8 @@ QString DataImportService::RoleFolderId(DataWorkflowRole role)
         return QStringLiteral("models");
     case DataWorkflowRole::Mesh:
         return QStringLiteral("meshes");
+    case DataWorkflowRole::SimulationPrep:
+        return QStringLiteral("simulations");
     case DataWorkflowRole::SimulationResult:
         return QStringLiteral("simulation-results");
     case DataWorkflowRole::Unknown:

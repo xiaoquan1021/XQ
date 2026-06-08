@@ -84,6 +84,17 @@ xq::core::DataImportRequest MakeModelImport()
     return request;
 }
 
+xq::core::DataImportRequest MakeMeshImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("mesh-001");
+    request.SourcePath = QStringLiteral("C:/studies/mesh-001.xqmesh");
+    request.DisplayName = QStringLiteral("Main Mesh");
+    request.Modality = QStringLiteral("Mesh");
+    request.WorkflowRole = xq::core::DataWorkflowRole::Mesh;
+    return request;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -315,6 +326,43 @@ int main(int argc, char** argv)
     if (Expect(message == QStringLiteral(
                               "Active model node is required for meshing."),
                "configured meshing action should require a model node"))
+        return 1;
+
+    auto flowContext =
+        std::unique_ptr<xq::core::ApplicationContext>(
+            xq::core::ApplicationContext::CreateDefault());
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *flowContext->WorkflowActions(),
+        flowContext->WorkflowOperations());
+    CancelPathProvider flowProvider;
+    auto flowWindow =
+        xq::CreateConfiguredMainWindow(*flowContext,
+                                       &flowProvider);
+
+    if (Expect(flowContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("flow-simulation")),
+               "configured flow workflow should be selectable"))
+        return 1;
+    if (Expect(flowContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("flow-simulation"),
+                   QStringLiteral("configure-cfd-job"),
+                   &message),
+               "configured flow workflow should select CFD job configuration"))
+        return 1;
+
+    const auto flowImportResult =
+        flowContext->DataImports()->Import(MakeMeshImport(), &message);
+    if (Expect(flowImportResult.Succeeded,
+               "configured flow mesh import should succeed"))
+        return 1;
+
+    if (Expect(!flowContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured flow action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active mesh node is required for flow simulation."),
+               "configured flow action should require a mesh node"))
         return 1;
 
     return 0;

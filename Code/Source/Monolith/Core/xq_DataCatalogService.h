@@ -17,6 +17,7 @@ enum class DataWorkflowRole
     Segmentation,
     Model,
     Mesh,
+    SimulationPrep,
     SimulationResult
 };
 

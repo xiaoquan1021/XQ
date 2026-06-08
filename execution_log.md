@@ -2962,6 +2962,56 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Meshing Infrastructure Action Handler to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the post-meshing workflow chain against local Simulation module
+    contracts and comparable SimVascular-style vascular modeling workflows.
+  - XQ already has `xq_SimulationPrepPipelineService` for creating
+    SimulationPrep jobs from Model + VolumeMesh nodes, plus solver export/run
+    plumbing, while monolith Flow Simulation still reports operation-aware
+    placeholder acceptance.
+  - Chosen next slice: route `configure-cfd-job` through the existing
+    SimulationPrep pipeline and commit the generated solver job into monolith
+    catalog/hierarchy/selection/rendering state.
+- Added next executable phase to `plan.md`: Flow Simulation Prep
+  Infrastructure Action Handler.
+- Started the next unattended loop iteration:
+  - Adding failing Flow Simulation workflow action handler and composition-root
+    tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding the Flow Simulation handler test target.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `Infrastructure/xq_FlowSimulationWorkflowActionHandler.h` did not exist.
+- Implemented Flow Simulation Prep infrastructure action handling:
+  - Added a dynamic Flow Simulation workflow action handler for
+    `configure-cfd-job`.
+  - Added a first-class monolith `SimulationPrep` data workflow role with
+    project persistence, import folder, context compatibility, and UI display
+    mapping.
+  - The handler resolves the selected VolumeMesh node, resolves its upstream
+    Model node from pipeline metadata/DataStorage, and calls
+    `xq_SimulationPrepPipelineService::CreateOrUpdateSimulationPrep`.
+  - Successful simulation prep now registers a SimulationPrep catalog entry,
+    adds the Simulations hierarchy node, binds the generated MITK solver job
+    node, selects it, and refreshes rendering.
+  - Unsupported Flow Simulation operations stay on the existing
+    operation-aware placeholder path for this slice.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(flow_simulation_workflow_action_handler|application_import_wiring|workflow_context_service|project_data_persistence|data_import_service|simulation_operation_pages)"`
+    passed: 6/6.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 70/70.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Flow Simulation Prep Infrastructure Action Handler to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 ## Current Run Final Update: Legacy BlueBerry Include Isolation
 

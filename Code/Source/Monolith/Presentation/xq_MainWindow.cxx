@@ -67,6 +67,8 @@ QString RoleDisplayName(xq::core::DataWorkflowRole role)
         return QStringLiteral("Model");
     case xq::core::DataWorkflowRole::Mesh:
         return QStringLiteral("Mesh");
+    case xq::core::DataWorkflowRole::SimulationPrep:
+        return QStringLiteral("Simulation Prep");
     case xq::core::DataWorkflowRole::SimulationResult:
         return QStringLiteral("Simulation Result");
     case xq::core::DataWorkflowRole::Unknown:

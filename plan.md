@@ -3377,6 +3377,45 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Flow Simulation Prep Infrastructure Action Handler
+
+1. Promote the Flow Simulation workflow from Domain placeholder acceptance to
+   an Infrastructure action handler for `configure-cfd-job`.
+   - Reuse the existing
+     `xq_SimulationPrepPipelineService::CreateOrUpdateSimulationPrep`.
+   - Resolve the selected Mesh MITK node from `DataNodeRegistryService` or the
+     active node.
+   - Resolve the upstream Model node from pipeline metadata/DataStorage.
+   - Read solver profile and count parameters from `WorkflowOperationService`
+     parameter values where available.
+   - Register the generated SimulationPrep job in `DataCatalogService`,
+     `DataHierarchyService`, and `DataNodeRegistryService`.
+   - Select the generated job and refresh MITK rendering after success.
+2. Keep `run-steady-flow`, `review-flow-results`, ROM, and MultiPhysics on the
+   existing operation-aware Domain placeholder path for this slice.
+3. Add C++ regression tests before implementation:
+   - Missing operation id or missing Mesh node fails without catalog mutation.
+   - A valid `configure-cfd-job` request creates an `xq_MitkSolverJob` node and
+     metadata using the existing simulation-prep pipeline.
+   - The configured monolith composition root installs the Infrastructure Flow
+     Simulation handler after Domain registration.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

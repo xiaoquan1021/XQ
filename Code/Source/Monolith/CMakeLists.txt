@@ -109,6 +109,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
     Infrastructure/xq_SegmentationWorkflowActionHandler.cxx
     Infrastructure/xq_ModelingWorkflowActionHandler.cxx
     Infrastructure/xq_MeshingWorkflowActionHandler.cxx
+    Infrastructure/xq_FlowSimulationWorkflowActionHandler.cxx
 )
 
 set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
@@ -128,6 +129,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
     Infrastructure/xq_SegmentationWorkflowActionHandler.h
     Infrastructure/xq_ModelingWorkflowActionHandler.h
     Infrastructure/xq_MeshingWorkflowActionHandler.h
+    Infrastructure/xq_FlowSimulationWorkflowActionHandler.h
 )
 
 add_library(xqMonolithInfrastructure STATIC
@@ -154,6 +156,7 @@ target_link_libraries(xqMonolithInfrastructure
         xqModuleSegmentation
         xqModuleModelCommon
         xqModuleMeshCommon
+        xqModuleSimulation
         Qt6::Core
 )
 
