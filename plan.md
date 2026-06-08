@@ -2546,6 +2546,44 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 7. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith File Import Role Inference
+
+1. Teach the monolith single-file import command to infer the catalog workflow
+   role from the selected file name.
+   - Keep image imports as the default.
+   - Map segmentation-like files to `DataWorkflowRole::Segmentation`.
+   - Map model-like files to `DataWorkflowRole::Model`.
+   - Map mesh-like files to `DataWorkflowRole::Mesh`.
+   - Map simulation result-like files to
+     `DataWorkflowRole::SimulationResult`.
+2. Keep scope narrow.
+   - Do not add DICOM directory or multi-file import yet.
+   - Do not parse file contents; use deterministic file-name/extension rules
+     only.
+   - Preserve current successful image import behavior.
+3. Add C++ regression tests before implementation:
+   - `.nii.gz` remains an image import with `image-` id prefix.
+   - segmentation file names produce segmentation role and `segmentation-`
+     prefix.
+   - `.vtp`/model names produce model role and `model-` prefix.
+   - mesh names/extensions produce mesh role and `mesh-` prefix.
+   - `.vtu`/result names produce simulation result role and `result-` prefix.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

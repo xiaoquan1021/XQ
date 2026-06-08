@@ -39,6 +39,78 @@ QString NormalizedToken(QString value)
     return value;
 }
 
+struct InferredRole
+{
+    xq::core::DataWorkflowRole Role = xq::core::DataWorkflowRole::Image;
+    QString Prefix = QStringLiteral("image");
+};
+
+bool ContainsAny(const QString& value, std::initializer_list<QString> tokens)
+{
+    for (const auto& token : tokens)
+    {
+        if (value.contains(token))
+            return true;
+    }
+
+    return false;
+}
+
+InferredRole InferRole(const QFileInfo& fileInfo)
+{
+    const QString fileName = fileInfo.fileName().toLower();
+    const QString suffix = fileInfo.suffix().toLower();
+    const QString completeSuffix = fileInfo.completeSuffix().toLower();
+
+    if (ContainsAny(fileName,
+                    {QStringLiteral("segmentation"),
+                     QStringLiteral("-seg"),
+                     QStringLiteral("_seg"),
+                     QStringLiteral("contour"),
+                     QStringLiteral("label")}))
+    {
+        return {xq::core::DataWorkflowRole::Segmentation,
+                QStringLiteral("segmentation")};
+    }
+
+    if (ContainsAny(fileName,
+                    {QStringLiteral("result"),
+                     QStringLiteral("flow"),
+                     QStringLiteral("pressure"),
+                     QStringLiteral("velocity")}))
+    {
+        return {xq::core::DataWorkflowRole::SimulationResult,
+                QStringLiteral("result")};
+    }
+
+    if (fileName.contains(QStringLiteral("mesh")) ||
+        suffix == QStringLiteral("msh") ||
+        suffix == QStringLiteral("mesh"))
+    {
+        return {xq::core::DataWorkflowRole::Mesh,
+                QStringLiteral("mesh")};
+    }
+
+    if (fileName.contains(QStringLiteral("model")) ||
+        suffix == QStringLiteral("vtp") ||
+        suffix == QStringLiteral("stl") ||
+        suffix == QStringLiteral("obj") ||
+        suffix == QStringLiteral("ply"))
+    {
+        return {xq::core::DataWorkflowRole::Model,
+                QStringLiteral("model")};
+    }
+
+    if (suffix == QStringLiteral("vtu") ||
+        completeSuffix == QStringLiteral("vtu.gz"))
+    {
+        return {xq::core::DataWorkflowRole::Mesh,
+                QStringLiteral("mesh")};
+    }
+
+    return {};
+}
+
 xq::core::DataImportRequest BuildImportRequest(const QString& sourcePath)
 {
     const QFileInfo fileInfo(sourcePath);
@@ -46,12 +118,15 @@ xq::core::DataImportRequest BuildImportRequest(const QString& sourcePath)
     if (displayName.isEmpty())
         displayName = sourcePath.trimmed();
 
+    const InferredRole inferredRole = InferRole(fileInfo);
+
     xq::core::DataImportRequest request;
     request.SourcePath = sourcePath.trimmed();
     request.DisplayName = displayName;
     request.RequestedId =
-        QStringLiteral("image-%1").arg(NormalizedToken(displayName));
-    request.WorkflowRole = xq::core::DataWorkflowRole::Image;
+        QStringLiteral("%1-%2").arg(inferredRole.Prefix,
+                                    NormalizedToken(displayName));
+    request.WorkflowRole = inferredRole.Role;
     return request;
 }
 

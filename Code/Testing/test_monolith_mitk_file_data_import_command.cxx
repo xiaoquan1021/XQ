@@ -97,6 +97,52 @@ int StorageNodeCount(mitk::DataStorage::Pointer storage)
     return nodes.IsNull() ? 0 : nodes->Size();
 }
 
+int ExpectSuccessfulImportRole(const QString& sourcePath,
+                               const QString& expectedCatalogId,
+                               xq::core::DataWorkflowRole expectedRole)
+{
+    std::unique_ptr<xq::core::ApplicationContext> context(
+        xq::core::ApplicationContext::CreateDefault());
+    FakePathProvider provider;
+    provider.NextPath = sourcePath;
+    FakeReader reader;
+    reader.NextResult.Succeeded = true;
+    reader.NextResult.Data.push_back(MakeData());
+    FakeRenderRefreshService refresh;
+    xq::infrastructure::MitkFileDataImportCommand command(&provider,
+                                                          &reader,
+                                                          &refresh);
+
+    const auto result = command.RunImport(*context);
+    if (Expect(result.Succeeded,
+               "role inference import should succeed"))
+        return 1;
+    if (Expect(result.CatalogEntryId == expectedCatalogId,
+               "role inference should use expected catalog id prefix"))
+        return 1;
+
+    const auto* entry =
+        context->DataCatalog()->FindById(result.CatalogEntryId);
+    if (Expect(entry != nullptr,
+               "role inference should register catalog metadata"))
+        return 1;
+    if (Expect(entry->WorkflowRole == expectedRole,
+               "role inference should register expected workflow role"))
+        return 1;
+    if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                   result.CatalogEntryId,
+               "role inference should select imported entry"))
+        return 1;
+    if (Expect(StorageNodeCount(context->DataStorage()) == 1,
+               "role inference should add one storage node"))
+        return 1;
+    if (Expect(refresh.Invocations == 1,
+               "role inference success should refresh render views"))
+        return 1;
+
+    return 0;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -251,6 +297,42 @@ int main(int argc, char** argv)
                        context->DataStorage().GetPointer(),
                    "valid import should refresh the application DataStorage"))
             return 1;
+    }
+
+    if (ExpectSuccessfulImportRole(
+            QStringLiteral("C:/studies/cta-a.nii.gz"),
+            QStringLiteral("image-cta-a-nii-gz"),
+            xq::core::DataWorkflowRole::Image))
+    {
+        return 1;
+    }
+    if (ExpectSuccessfulImportRole(
+            QStringLiteral("C:/studies/lumen-segmentation.nrrd"),
+            QStringLiteral("segmentation-lumen-segmentation-nrrd"),
+            xq::core::DataWorkflowRole::Segmentation))
+    {
+        return 1;
+    }
+    if (ExpectSuccessfulImportRole(
+            QStringLiteral("C:/studies/aorta-model.vtp"),
+            QStringLiteral("model-aorta-model-vtp"),
+            xq::core::DataWorkflowRole::Model))
+    {
+        return 1;
+    }
+    if (ExpectSuccessfulImportRole(
+            QStringLiteral("C:/studies/aorta-mesh.vtu"),
+            QStringLiteral("mesh-aorta-mesh-vtu"),
+            xq::core::DataWorkflowRole::Mesh))
+    {
+        return 1;
+    }
+    if (ExpectSuccessfulImportRole(
+            QStringLiteral("C:/studies/flow-result.vtu"),
+            QStringLiteral("result-flow-result-vtu"),
+            xq::core::DataWorkflowRole::SimulationResult))
+    {
+        return 1;
     }
 
     return 0;

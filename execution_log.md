@@ -2494,3 +2494,43 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith Import Render Refresh to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked file import after render refresh wiring landed.
+  - The current command imports every file as an image, which is too narrow for
+    the monolith plan's modeling, meshing, and simulation-result workflows.
+  - Chosen next slice: deterministic role inference from file name/extension
+    for single-file imports.
+- Added next executable phase to `plan.md`: Monolith File Import Role
+  Inference.
+- Started the next unattended loop iteration:
+  - Adding failing role-inference regression tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed after
+    compiling the updated test.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_mitk_file_data_import_command`
+    failed because imported segmentation/model/mesh/result files still used
+    the `image-` catalog id prefix and image workflow role.
+- Implemented monolith file import role inference:
+  - Added deterministic file-name and extension rules in
+    `MitkFileDataImportCommand`.
+  - Image remains the default.
+  - Segmentation-like names use `DataWorkflowRole::Segmentation` and
+    `segmentation-` ids.
+  - Model-like names/extensions use `DataWorkflowRole::Model` and `model-`
+    ids.
+  - Mesh-like names/extensions use `DataWorkflowRole::Mesh` and `mesh-` ids.
+  - Simulation-result-like names use `DataWorkflowRole::SimulationResult` and
+    `result-` ids.
+- Red/green target verification:
+  - After implementation, the target build passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_mitk_file_data_import_command`
+    passed: 1/1.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 57/57.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith File Import Role Inference to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
