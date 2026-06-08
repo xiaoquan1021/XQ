@@ -2879,6 +2879,37 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Default XQ Monolith Target Naming to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Scanned repository filenames for stale backup artifacts.
+  - Found
+    `Code/Source/ImagingWorkbench/Plugins/org.xq.data.projectnodes/src/internal/xq_ProjectDataNodesPluginActivator.cxx.missing_target_backup_20260501_231206`.
+  - Chosen next slice: add a backup-artifact guard test and remove the stale
+    backup file.
+- Added next executable phase to `plan.md`: Backup Artifact Cleanup.
+- Started the next unattended loop iteration:
+  - Adding a failing PowerShell test for backup artifact filenames first.
+- Red test observed:
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\test_no_backup_artifacts.ps1`
+    failed on the stale tracked backup file under
+    `org.xq.data.projectnodes`.
+- Implemented Backup Artifact Cleanup:
+  - Deleted
+    `Code/Source/ImagingWorkbench/Plugins/org.xq.data.projectnodes/src/internal/xq_ProjectDataNodesPluginActivator.cxx.missing_target_backup_20260501_231206`.
+  - The guard test now reports backup artifact filenames that still exist in
+    the current working tree.
+- Red/green target verification:
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\test_no_backup_artifacts.ps1`
+    passed.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Backup Artifact Cleanup to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 ## Current verified checkpoint
 
