@@ -3,6 +3,7 @@
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
+#include "Infrastructure/xq_MeshingWorkflowActionHandler.h"
 #include "Infrastructure/xq_ModelingWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 
@@ -79,6 +80,8 @@ int main(int argc, char** argv)
         context->WorkflowOperations());
     xq::infrastructure::RegisterDynamicModelingWorkflowActionHandler(*context,
                                                                      nullptr);
+    xq::infrastructure::RegisterDynamicMeshingWorkflowActionHandler(*context,
+                                                                    nullptr);
     xq::presentation::MainWindow window(*context);
 
     auto* modelingSelector =
@@ -196,25 +199,25 @@ int main(int argc, char** argv)
     }
 
     meshingSelector->setCurrentIndex(
-        meshingSelector->findData(QStringLiteral("generate-volume-mesh")));
+        meshingSelector->findData(QStringLiteral("boundary-layers")));
     app.processEvents();
     auto* meshingButton =
         FindActionButton(window, QStringLiteral("meshing"));
     if (Expect(meshingButton != nullptr &&
                    meshingButton->text() ==
-                       QStringLiteral("Run Generate Volume Mesh"),
+                       QStringLiteral("Run Boundary Layers"),
                "Meshing action should include selected operation"))
     {
         delete context;
         return 1;
     }
     if (Expect(FindNumericParameter(window,
-                                    QStringLiteral("element-size")) !=
+                                    QStringLiteral("growth-rate")) !=
                        nullptr &&
                    FindIntegerParameter(window,
-                                        QStringLiteral("optimization-steps")) !=
+                                        QStringLiteral("layer-count")) !=
                        nullptr,
-               "Generate Volume Mesh should expose meshing parameters"))
+               "Boundary Layers should expose meshing parameters"))
     {
         delete context;
         return 1;
@@ -249,8 +252,8 @@ int main(int argc, char** argv)
     meshingButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Meshing succeeded: Generate Volume Mesh meshing operation accepted Aorta Model.")),
-               "Meshing action should report selected operation"))
+                   "Run Meshing failed: Boundary Layers is not wired to a native Meshing runtime yet.")),
+               "Meshing action should report unsupported operation"))
     {
         delete context;
         return 1;

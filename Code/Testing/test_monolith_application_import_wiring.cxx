@@ -373,6 +373,20 @@ int main(int argc, char** argv)
                               "Active model node is required for meshing."),
                "configured meshing action should require a model node"))
         return 1;
+    if (Expect(meshingContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("meshing"),
+                   QStringLiteral("boundary-layers"),
+                   &message),
+               "configured meshing workflow should select boundary layers"))
+        return 1;
+    if (Expect(!meshingContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured boundary layers should use unsupported-operation guard"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Boundary Layers is not wired to a native Meshing runtime yet."),
+               "configured boundary layers should report unsupported operation"))
+        return 1;
 
     auto flowContext =
         std::unique_ptr<xq::core::ApplicationContext>(

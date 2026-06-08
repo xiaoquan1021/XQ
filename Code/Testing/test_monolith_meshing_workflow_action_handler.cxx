@@ -116,6 +116,19 @@ bool PrepareMeshingWorkflow(xq::core::ApplicationContext& context)
     return importResult.Succeeded;
 }
 
+bool PrepareMeshingWorkflow(xq::core::ApplicationContext& context,
+                            const QString& operationId)
+{
+    if (!PrepareMeshingWorkflow(context))
+        return false;
+
+    QString message;
+    return context.WorkflowOperations()->SelectOperation(
+        QStringLiteral("meshing"),
+        operationId,
+        &message);
+}
+
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
 {
 public:
@@ -286,6 +299,81 @@ int main(int argc, char** argv)
                            context->DataStorage().GetPointer(),
                    "meshing handler should refresh rendering after success"))
         {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareMeshingWorkflow(
+                       *context,
+                       QStringLiteral("generate-surface-mesh")),
+                   "unsupported surface mesh fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicMeshingWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "unsupported surface mesh fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported surface mesh should fail"))
+        {
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "Generate Surface Mesh is not wired to a native Meshing runtime yet."),
+                   "unsupported surface mesh diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareMeshingWorkflow(*context,
+                                          QStringLiteral("boundary-layers")),
+                   "unsupported boundary layers fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicMeshingWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "unsupported boundary layers fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported boundary layers should fail"))
+        {
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "Boundary Layers is not wired to a native Meshing runtime yet."),
+                   "unsupported boundary layers diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
             return 1;
         }
     }

@@ -3121,6 +3121,49 @@
 - Promoted Modeling Unsupported Operation Guard to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Meshing Unsupported Operation Guard
+
+- Completed autonomous research refresh:
+  - Rechecked the post-modeling workflow handoff. The configured monolith
+    already validates and creates generated mesh nodes for
+    `meshing/generate-volume-mesh`.
+  - `meshing/generate-surface-mesh` and `meshing/boundary-layers` still report
+    successful placeholder execution, which can falsely imply mesh artifacts
+    exist before those native runtimes are wired.
+  - Chosen next slice: keep `generate-volume-mesh` real and guard unsupported
+    Meshing operations with deterministic failure diagnostics.
+- Red tests observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding the new Meshing guard tests.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(meshing_workflow_action_handler|modeling_meshing_operation_pages|application_import_wiring)"`
+    failed: 0/3, because unsupported Meshing operations still returned
+    placeholder success.
+- Implemented Meshing unsupported-operation guard:
+  - `meshing/generate-volume-mesh` continues to call
+    `xq_MeshPipelineService::CreateVolumeMesh`.
+  - `meshing/generate-surface-mesh` and `meshing/boundary-layers` now return
+    failure with diagnostics naming the selected operation and Meshing
+    workflow.
+  - The Modeling/Meshing page test now registers the Infrastructure Meshing
+    handler so UI diagnostics cover production composition instead of Domain
+    placeholder behavior.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(meshing_workflow_action_handler|modeling_meshing_operation_pages|application_import_wiring)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Meshing Unsupported Operation Guard to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Python API Availability Infrastructure Action Handler
 
 - Continued the requested unattended loop after the Python API phase was made
