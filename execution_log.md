@@ -2732,6 +2732,40 @@
   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workflow_operation_service|image_preprocessing_operation_page)"`
     passed: 2/2.
 
+## Current Run Final Update: Run Script Monolith Fallback
+
+- Debugging note:
+  - Full XQ PowerShell tests first failed in `test_no_backup_artifacts.ps1`
+    because the stale-artifact scan matched its own test filename.
+  - Root cause was path-pattern self-matching, not a newly tracked backup
+    source artifact.
+  - Renamed the regression test to `test_no_stale_artifacts.ps1` without
+    relaxing the backup artifact detection pattern.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Run Script Monolith Fallback to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Current Run: Run Script Monolith Fallback
+
+- Red test observed:
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\test_windows_env_scripts.ps1`
+    failed because `scripts/run-xq.ps1` still hardcoded `-Monolith` to only
+    `XQMonolith.exe`.
+- Implemented run-script monolith fallback:
+  - Updated help text so `-Monolith` describes preferring
+    `XQMonolith.exe`, then falling back to `XQ.exe`.
+  - Replaced single executable-name selection with an ordered candidate list.
+- Red/green target verification:
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\test_windows_env_scripts.ps1`
+    passed after the run-script update.
+
 - Completed autonomous research refresh:
   - Rechecked the first-version vascular workflow coverage after
     Modeling/Meshing operation controls landed.
@@ -2910,6 +2944,17 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Backup Artifact Cleanup to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked Windows run scripts after the default monolith CMake target was
+    renamed to `XQ`.
+  - `scripts/run-xq.ps1 -Monolith` still hardcodes `XQMonolith.exe`, which is
+    only produced for legacy opt-in builds after the target rename.
+  - Chosen next slice: make `-Monolith` prefer `XQMonolith.exe` but fall back
+    to default `XQ.exe`.
+- Added next executable phase to `plan.md`: Run Script Monolith Fallback.
+- Started the next unattended loop iteration:
+  - Extending `test_windows_env_scripts.ps1` to fail on hardcoded monolith exe
+    selection first.
 
 ## Current verified checkpoint
 
@@ -3231,3 +3276,23 @@
     passed.
   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workflow_operation_service|image_preprocessing_operation_page)"`
     passed: 2/2.
+
+## Current Run Final Update: Run Script Monolith Fallback
+
+- Debugging note:
+  - Full XQ PowerShell tests first failed in `test_no_backup_artifacts.ps1`
+    because the stale-artifact scan matched its own test filename.
+  - Root cause was path-pattern self-matching, not a newly tracked backup
+    source artifact.
+  - Renamed the regression test to `test_no_stale_artifacts.ps1` without
+    relaxing the backup artifact detection pattern.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Run Script Monolith Fallback to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

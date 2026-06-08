@@ -3017,6 +3017,36 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 4. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Run Script Monolith Fallback
+
+1. Update `scripts/run-xq.ps1` for the new default monolith target naming.
+   - Default execution remains `XQ.exe`.
+   - `-Monolith` should prefer `XQMonolith.exe` for legacy opt-in builds, then
+     fall back to `XQ.exe` for default monolith builds.
+   - Help text should describe the fallback instead of claiming
+     `XQMonolith.exe` is always the monolith executable.
+2. Extend the PowerShell environment-script regression test before
+   implementation:
+   - Reject the old single-name `$Monolith ? XQMonolith.exe : XQ.exe` logic.
+   - Require an executable-candidate list that includes both
+     `XQMonolith.exe` and `XQ.exe` for `-Monolith`.
+3. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+4. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

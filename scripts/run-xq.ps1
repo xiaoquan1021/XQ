@@ -19,7 +19,7 @@ Options:
   -BuildDir <path>        Build directory. Defaults to build/windows-msvc-release.
   -ExternalsRoot <path>   Root of the Externals entry repository.
   -Platform windows-x64   Externals platform suffix.
-  -Monolith               Run XQMonolith.exe instead of XQ.exe.
+  -Monolith               Prefer XQMonolith.exe, then fall back to XQ.exe.
 "@
     exit 0
 }
@@ -39,10 +39,25 @@ if ($ExternalsRoot) {
 }
 . $envScript @envParams | Out-Null
 
-$exeName = if ($Monolith) { "XQMonolith.exe" } else { "XQ.exe" }
-$exe = Join-Path $BuildDir (Join-Path "bin" $exeName)
-if (-not (Test-Path -LiteralPath $exe)) {
-    throw "[XQ][ERROR] XQ executable not found: $exe"
+$exeCandidates = if ($Monolith) {
+    @("XQMonolith.exe", "XQ.exe")
+} else {
+    @("XQ.exe")
+}
+
+$checkedPaths = @()
+$exe = $null
+foreach ($candidate in $exeCandidates) {
+    $candidatePath = Join-Path $BuildDir (Join-Path "bin" $candidate)
+    $checkedPaths += $candidatePath
+    if (Test-Path -LiteralPath $candidatePath) {
+        $exe = $candidatePath
+        break
+    }
+}
+
+if (-not $exe) {
+    throw "[XQ][ERROR] XQ executable not found. Checked: $($checkedPaths -join ', ')"
 }
 
 & $exe @args

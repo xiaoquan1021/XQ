@@ -16,3 +16,13 @@ foreach ($script in @(
         throw "$($script.Name) must dot-source xq-env.ps1 with an envParams splat"
     }
 }
+
+if ($RunScript -match '\$exeName\s*=\s*if\s*\(\$Monolith\)\s*\{\s*"XQMonolith\.exe"\s*\}\s*else\s*\{\s*"XQ\.exe"\s*\}') {
+    throw "run-xq.ps1 must not hardcode -Monolith to only XQMonolith.exe"
+}
+if ($RunScript -notmatch '\$exeCandidates\s*=\s*if\s*\(\$Monolith\)') {
+    throw "run-xq.ps1 should use executable candidates for -Monolith"
+}
+if ($RunScript -notmatch '@\(\s*"XQMonolith\.exe"\s*,\s*"XQ\.exe"\s*\)') {
+    throw "run-xq.ps1 -Monolith should fall back from XQMonolith.exe to XQ.exe"
+}
