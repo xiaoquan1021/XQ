@@ -365,5 +365,20 @@ int main(int argc, char** argv)
                "configured flow action should require a mesh node"))
         return 1;
 
+    if (Expect(flowContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("flow-simulation"),
+                   QStringLiteral("run-steady-flow"),
+                   &message),
+               "configured flow workflow should select steady flow run"))
+        return 1;
+    if (Expect(!flowContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured steady flow action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active simulation prep node is required for steady flow solve."),
+               "configured steady flow action should require a simulation prep node"))
+        return 1;
+
     return 0;
 }

@@ -13,6 +13,7 @@
 #include <xq_SimulationPrepPipeline.h>
 
 #include <algorithm>
+#include <filesystem>
 
 namespace xq::infrastructure
 {
@@ -22,6 +23,7 @@ namespace
 
 constexpr const char* kFlowSimulationWorkflowId = "flow-simulation";
 constexpr const char* kConfigureCfdJobOperationId = "configure-cfd-job";
+constexpr const char* kRunSteadyFlowOperationId = "run-steady-flow";
 constexpr const char* kSimulationsFolderId = "simulations";
 constexpr const char* kSimulationsFolderTitle = "Simulations";
 
@@ -103,6 +105,12 @@ QString VirtualSourcePath(const QString& catalogEntryId)
         .arg(catalogEntryId.trimmed());
 }
 
+QString VirtualResultSourcePath(const QString& catalogEntryId)
+{
+    return QStringLiteral("xq://generated/simulation-result/%1")
+        .arg(catalogEntryId.trimmed());
+}
+
 mitk::DataNode::Pointer ResolveMeshNode(
     xq::core::ApplicationContext& context,
     const xq::core::WorkflowContextSnapshot& snapshot)
@@ -128,6 +136,20 @@ mitk::DataNode::Pointer ResolveModelNodeForMesh(
         xq::pipeline::Stage::Model);
 }
 
+mitk::DataNode::Pointer ResolveSimulationPrepNode(
+    xq::core::ApplicationContext& context,
+    const xq::core::WorkflowContextSnapshot& snapshot)
+{
+    if (auto* dataNodes = context.DataNodes())
+    {
+        auto node = dataNodes->FindNode(snapshot.SelectedCatalogEntryId);
+        if (node.IsNotNull())
+            return node;
+    }
+
+    return context.ActiveNode();
+}
+
 QString FirstDiagnosticMessage(const xq::pipeline::OperationStatus& status)
 {
     if (!status.diagnostics.empty())
@@ -147,6 +169,19 @@ QString ResultDisplayName(const xq_SimulationPrepResult& result)
     }
 
     return QStringLiteral("Simulation prep job");
+}
+
+QString ResultDisplayName(const mitk::DataNode::Pointer& node)
+{
+    if (node.IsNotNull())
+    {
+        const QString nodeName =
+            QString::fromStdString(node->GetName()).trimmed();
+        if (!nodeName.isEmpty())
+            return nodeName;
+    }
+
+    return QStringLiteral("Steady flow result");
 }
 
 QString PreflightCommitTarget(xq::core::ApplicationContext& context,
@@ -174,6 +209,19 @@ QString PreflightCommitTarget(xq::core::ApplicationContext& context,
         return QStringLiteral("Duplicate hierarchy node id.");
 
     return {};
+}
+
+QString ResultSourcePath(const mitk::DataNode::Pointer& node,
+                         const QString& entryId)
+{
+    const QString filePath = QString::fromStdString(
+        xq::pipeline::GetStringProperty(node.GetPointer(),
+                                        "xq.result.file_path"))
+                                 .trimmed();
+    if (!filePath.isEmpty())
+        return filePath;
+
+    return VirtualResultSourcePath(entryId);
 }
 
 bool CommitSimulationPrepResult(xq::core::ApplicationContext& context,
@@ -225,6 +273,88 @@ bool CommitSimulationPrepResult(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool CommitSteadyFlowResults(xq::core::ApplicationContext& context,
+                             const QString& baseEntryId,
+                             const xq_SimulationRunResult& result,
+                             QString* firstEntryId,
+                             QString* message)
+{
+    if (result.resultNodes.empty())
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Steady flow solver did not import result nodes."));
+        return false;
+    }
+
+    if (!context.DataHierarchy()->FindNode(
+            QString::fromLatin1(kSimulationsFolderId)))
+    {
+        if (!context.DataHierarchy()->AddFolder(
+                QString::fromLatin1(kSimulationsFolderId),
+                context.DataHierarchy()->RootId(),
+                QString::fromLatin1(kSimulationsFolderTitle),
+                message))
+        {
+            return false;
+        }
+    }
+
+    for (size_t i = 0; i < result.resultNodes.size(); ++i)
+    {
+        const QString entryId =
+            QStringLiteral("%1-result-%2")
+                .arg(baseEntryId.trimmed())
+                .arg(static_cast<int>(i + 1));
+        const QString preflightMessage = PreflightCommitTarget(context,
+                                                               entryId);
+        if (!preflightMessage.isEmpty())
+        {
+            SetMessage(message, preflightMessage);
+            return false;
+        }
+
+        const auto& node = result.resultNodes[i];
+        xq::core::DataCatalogEntry entry;
+        entry.Id = entryId;
+        entry.DisplayName = ResultDisplayName(node);
+        entry.SourcePath = ResultSourcePath(node, entryId);
+        entry.Modality = QStringLiteral("SimulationResult");
+        entry.WorkflowRole = xq::core::DataWorkflowRole::SimulationResult;
+
+        if (!context.DataCatalog()->RegisterEntry(entry, message))
+            return false;
+        if (!context.DataHierarchy()->AddDataEntry(
+                HierarchyNodeId(entryId),
+                QString::fromLatin1(kSimulationsFolderId),
+                entryId,
+                entry.DisplayName,
+                message))
+        {
+            return false;
+        }
+        if (context.DataNodes() &&
+            !context.DataNodes()->BindNode(entryId, node, message))
+        {
+            return false;
+        }
+
+        if (i == 0 && firstEntryId)
+            *firstEntryId = entryId;
+    }
+
+    SetMessage(message,
+               QStringLiteral(
+                   "Registered steady flow result catalog entries."));
+    return true;
+}
+
+std::filesystem::path SteadyFlowCaseDir()
+{
+    return std::filesystem::temp_directory_path() /
+           "xq_monolith_run_steady_flow_case";
+}
+
 std::string SolverTypeForProfile(const QVariantMap& parameters)
 {
     const QString profile =
@@ -237,6 +367,8 @@ std::string SolverTypeForProfile(const QVariantMap& parameters)
         profile == QStringLiteral("pulsatile") ||
         profile == QStringLiteral("transient"))
     {
+        if (profile == QStringLiteral("steady"))
+            return "xq_simple_flow";
         return "xq_export_only";
     }
 
@@ -321,6 +453,72 @@ bool RunConfigureCfdJob(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool RunSteadyFlow(xq::core::ApplicationContext& context,
+                   xq::core::RenderRefreshService* renderRefresh,
+                   const xq::core::WorkflowContextSnapshot& snapshot,
+                   const QString& operationId,
+                   QString* message)
+{
+    const auto simPrepNode = ResolveSimulationPrepNode(context, snapshot);
+    if (simPrepNode.IsNull() ||
+        !xq::pipeline::HasStage(simPrepNode.GetPointer(),
+                                xq::pipeline::Stage::SimulationPrep))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active simulation prep node is required for steady flow solve."));
+        return false;
+    }
+
+    const QString baseEntryId = ResultCatalogEntryId(snapshot, operationId);
+    const QString firstResultEntryId =
+        QStringLiteral("%1-result-1").arg(baseEntryId);
+    const QString preflightMessage = PreflightCommitTarget(context,
+                                                           firstResultEntryId);
+    if (!preflightMessage.isEmpty())
+    {
+        SetMessage(message, preflightMessage);
+        return false;
+    }
+
+    xq_SimulationRunRequest request;
+    request.caseDir = SteadyFlowCaseDir().string();
+    request.numProcessors = 1;
+    request.mpiPath = "mpiexec";
+
+    const auto result =
+        xq_SimulationPrepPipelineService::RunSolverAndImportResults(
+            context.DataStorage().GetPointer(),
+            simPrepNode,
+            request);
+    if (!result.ok)
+    {
+        SetMessage(message, FirstDiagnosticMessage(result));
+        return false;
+    }
+
+    QString selectedEntryId;
+    if (!CommitSteadyFlowResults(context,
+                                 baseEntryId,
+                                 result,
+                                 &selectedEntryId,
+                                 message))
+    {
+        return false;
+    }
+
+    if (!selectedEntryId.trimmed().isEmpty())
+    {
+        QString selectionMessage;
+        context.DataSelection()->SelectCatalogEntry(selectedEntryId,
+                                                    &selectionMessage);
+    }
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicFlowSimulationWorkflowActionHandler(
@@ -344,19 +542,29 @@ bool RegisterDynamicFlowSimulationWorkflowActionHandler(
                 return false;
             }
 
-            if (operationId !=
+            if (operationId ==
                 QString::fromLatin1(kConfigureCfdJobOperationId))
             {
-                return RunPlaceholderFlowSimulationOperation(operations,
-                                                             snapshot,
-                                                             taskMessage);
+                return RunConfigureCfdJob(context,
+                                          renderRefresh,
+                                          snapshot,
+                                          operationId,
+                                          taskMessage);
             }
 
-            return RunConfigureCfdJob(context,
-                                      renderRefresh,
-                                      snapshot,
-                                      operationId,
-                                      taskMessage);
+            if (operationId ==
+                QString::fromLatin1(kRunSteadyFlowOperationId))
+            {
+                return RunSteadyFlow(context,
+                                     renderRefresh,
+                                     snapshot,
+                                     operationId,
+                                     taskMessage);
+            }
+
+            return RunPlaceholderFlowSimulationOperation(operations,
+                                                         snapshot,
+                                                         taskMessage);
         };
 
     return context.WorkflowActions()->RegisterHandler(

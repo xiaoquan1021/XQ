@@ -57,6 +57,61 @@
 
 ## 2026-06-08
 
+- Continued the autonomous Windows monolith migration loop after the user
+  enabled full review/full access mode.
+- Verified both local repositories were clean and synced on
+  `feature/windows-monolith-foundation`.
+- Reviewed Flow Simulation pipeline and handler state:
+  - Existing Infrastructure Flow handler supports `configure-cfd-job`.
+  - `xq_SimulationPrepPipelineService` already exposes
+    `ExportForSolver` and `RunSolverAndImportResults`.
+  - `xq_FlowSolverRegistry` registers the serial native `xq_simple_flow`
+    backend, which can prepare, run, and import deterministic steady-flow
+    results.
+- Promoted the research refresh to completed in `plan.md`.
+- Started Active Phase: Flow Simulation Steady Run Infrastructure Action
+  Handler.
+- Starting RED tests first:
+  - `run-steady-flow` should reject non-SimulationPrep selections.
+  - A valid SimulationPrep node should run/import through `xq_simple_flow`,
+    register a SimulationResult catalog/hierarchy/data-node binding, select
+    the first result, and refresh rendering.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed
+    after extending the Flow Simulation handler test.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed after
+    the test compiled.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_flow_simulation_workflow_action_handler`
+    failed because `configure-cfd-job` still generated `xq_export_only`
+    jobs, leaving `run-steady-flow` on placeholder behavior.
+- Implemented Flow Simulation steady run infrastructure action:
+  - `configure-cfd-job` now maps the steady solver profile to the registered
+    native `xq_simple_flow` backend.
+  - `run-steady-flow` now requires a selected SimulationPrep MITK node.
+  - The handler calls
+    `xq_SimulationPrepPipelineService::RunSolverAndImportResults`.
+  - Imported result nodes are registered as SimulationResult catalog entries,
+    added under the Simulations hierarchy, bound in the DataNode registry,
+    selected, and followed by a render refresh.
+  - `CreateConfiguredMainWindow()` composition-root coverage now verifies
+    that `run-steady-flow` uses Infrastructure validation instead of the
+    Domain placeholder.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(flow_simulation_workflow_action_handler|application_import_wiring)"`
+    passed: 2/2.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 70/70.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Flow Simulation Steady Run Infrastructure Action Handler to
+  completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 - Continued the requested unattended loop after the user enabled full access mode.
 - Reviewed `plan.md`, `execution_log.md`, and the monolith scaffold:
   - `ApplicationContext` currently owns MITK `DataStorage`, active node, and a fire-and-forget diagnostic signal.

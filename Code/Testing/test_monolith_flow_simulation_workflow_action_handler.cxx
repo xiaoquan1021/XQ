@@ -14,10 +14,13 @@
 
 #include <xq_Grid.h>
 #include <xq_MeshPipeline.h>
+#include <xq_MitkGrid.h>
 #include <xq_MitkSolverJob.h>
+#include <xq_TetGenGrid.h>
 #include <xq_Model.h>
 #include <xq_PipelineDataUtils.h>
 #include <xq_PolyGeometry.h>
+#include <xq_SimulationPrepPipeline.h>
 #include <xq_SolverJob.h>
 
 #include <QCoreApplication>
@@ -25,11 +28,17 @@
 #include <mitkDataNode.h>
 
 #include <vtkCellData.h>
+#include <vtkCellArray.h>
 #include <vtkIntArray.h>
 #include <vtkPolyData.h>
+#include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 #include <vtkSphereSource.h>
+#include <vtkTetra.h>
+#include <vtkTriangle.h>
+#include <vtkUnstructuredGrid.h>
 
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -54,6 +63,65 @@ vtkSmartPointer<vtkPolyData> MakeSpherePolyData()
     sphereSource->SetPhiResolution(16);
     sphereSource->Update();
     return sphereSource->GetOutput();
+}
+
+vtkSmartPointer<vtkPoints> MakeTetraPoints()
+{
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(0.0, 0.0, 0.0);
+    points->InsertNextPoint(1.0, 0.0, 0.0);
+    points->InsertNextPoint(0.0, 1.0, 0.0);
+    points->InsertNextPoint(0.0, 0.0, 1.0);
+    return points;
+}
+
+vtkSmartPointer<vtkPolyData> MakeTetraSurfacePolyData()
+{
+    auto polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(MakeTetraPoints());
+
+    auto cells = vtkSmartPointer<vtkCellArray>::New();
+    const int triangles[4][3] = {
+        {0, 2, 1},
+        {0, 1, 3},
+        {1, 2, 3},
+        {2, 0, 3},
+    };
+    for (const auto& ids : triangles)
+    {
+        auto triangle = vtkSmartPointer<vtkTriangle>::New();
+        triangle->GetPointIds()->SetId(0, ids[0]);
+        triangle->GetPointIds()->SetId(1, ids[1]);
+        triangle->GetPointIds()->SetId(2, ids[2]);
+        cells->InsertNextCell(triangle);
+    }
+    polyData->SetPolys(cells);
+
+    auto faceIds = vtkSmartPointer<vtkIntArray>::New();
+    faceIds->SetNumberOfComponents(1);
+    faceIds->SetNumberOfTuples(4);
+    for (vtkIdType i = 0; i < 4; ++i)
+        faceIds->SetValue(i, static_cast<int>(i));
+    faceIds->SetName("FaceIds");
+    polyData->GetCellData()->AddArray(faceIds);
+    return polyData;
+}
+
+vtkSmartPointer<vtkUnstructuredGrid> MakeTetraVolumeMesh()
+{
+    auto grid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    grid->SetPoints(MakeTetraPoints());
+
+    auto tetra = vtkSmartPointer<vtkTetra>::New();
+    tetra->GetPointIds()->SetId(0, 0);
+    tetra->GetPointIds()->SetId(1, 1);
+    tetra->GetPointIds()->SetId(2, 2);
+    tetra->GetPointIds()->SetId(3, 3);
+
+    auto cells = vtkSmartPointer<vtkCellArray>::New();
+    cells->InsertNextCell(tetra);
+    grid->SetCells(VTK_TETRA, cells);
+    return grid;
 }
 
 mitk::DataNode::Pointer MakeModelNode(const std::string& name)
@@ -86,6 +154,69 @@ mitk::DataNode::Pointer MakeModelNode(const std::string& name)
     return node;
 }
 
+mitk::DataNode::Pointer MakeSimpleFlowModelNode(const std::string& name)
+{
+    auto* geometry = new xq_PolyGeometry();
+    geometry->SetWholeVtkPolyData(MakeTetraSurfacePolyData());
+
+    FaceInfo wallFaceA;
+    wallFaceA.id = 0;
+    wallFaceA.name = "wall_a";
+    wallFaceA.type = "wall";
+    geometry->SetFaceInfo(wallFaceA.id, wallFaceA);
+
+    FaceInfo inletFace;
+    inletFace.id = 1;
+    inletFace.name = "inlet";
+    inletFace.type = "inlet";
+    geometry->SetFaceInfo(inletFace.id, inletFace);
+
+    FaceInfo outletFace;
+    outletFace.id = 2;
+    outletFace.name = "outlet";
+    outletFace.type = "outlet";
+    geometry->SetFaceInfo(outletFace.id, outletFace);
+
+    FaceInfo wallFaceB;
+    wallFaceB.id = 3;
+    wallFaceB.name = "wall_b";
+    wallFaceB.type = "wall";
+    geometry->SetFaceInfo(wallFaceB.id, wallFaceB);
+
+    auto model = xq_Model::New();
+    model->SetModelElement(geometry, 0);
+
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    node->SetData(model);
+    node->SetBoolProperty("xq.model.qa.ok", true);
+    xq::pipeline::MarkNode(node, xq::pipeline::Stage::Model);
+    return node;
+}
+
+mitk::DataNode::Pointer MakeSimpleFlowMeshNode(
+    const std::string& name,
+    const std::string& modelName)
+{
+    auto* tetGrid = new xq_TetGenGrid();
+    tetGrid->SetVolumeMesh(MakeTetraVolumeMesh());
+    tetGrid->SetSurfaceMesh(MakeTetraSurfacePolyData());
+
+    auto mitkGrid = xq_MitkGrid::New();
+    mitkGrid->SetMesh(tetGrid, 0);
+
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    node->SetData(mitkGrid);
+    node->SetBoolProperty("xq.mesh.qa.ok", true);
+    xq::pipeline::MarkNode(node, xq::pipeline::Stage::VolumeMesh);
+    xq::pipeline::SetStringProperty(
+        node,
+        xq::pipeline::kSourceModelProperty,
+        modelName);
+    return node;
+}
+
 xq::core::DataImportRequest MakeMeshImport()
 {
     xq::core::DataImportRequest request;
@@ -97,7 +228,8 @@ xq::core::DataImportRequest MakeMeshImport()
     return request;
 }
 
-bool PrepareFlowWorkflow(xq::core::ApplicationContext& context)
+bool PrepareFlowOperation(xq::core::ApplicationContext& context,
+                          const QString& operationId)
 {
     QString message;
     xq::domain::RegisterDefaultWorkflowActionHandlers(
@@ -110,7 +242,7 @@ bool PrepareFlowWorkflow(xq::core::ApplicationContext& context)
     }
     if (!context.WorkflowOperations()->SelectOperation(
             QStringLiteral("flow-simulation"),
-            QStringLiteral("configure-cfd-job"),
+            operationId,
             &message))
     {
         return false;
@@ -143,9 +275,179 @@ bool PrepareFlowWorkflow(xq::core::ApplicationContext& context)
         return false;
     }
 
+    return true;
+}
+
+bool PrepareFlowWorkflow(xq::core::ApplicationContext& context,
+                         const QString& operationId =
+                             QStringLiteral("configure-cfd-job"))
+{
+    if (!PrepareFlowOperation(context, operationId))
+        return false;
+
+    QString message;
     const auto importResult =
         context.DataImports()->Import(MakeMeshImport(), &message);
     return importResult.Succeeded;
+}
+
+bool RegisterSimulationPrepFixture(xq::core::ApplicationContext& context,
+                                   QString* message)
+{
+    const QString modelEntryId = QStringLiteral("model-001");
+    const QString meshEntryId = QStringLiteral("mesh-001");
+    const QString simEntryId = QStringLiteral("sim-001");
+
+    xq::core::DataCatalogEntry modelEntry;
+    modelEntry.Id = modelEntryId;
+    modelEntry.DisplayName = QStringLiteral("Flow Model");
+    modelEntry.SourcePath = QStringLiteral("C:/studies/model-001.xqmodel");
+    modelEntry.Modality = QStringLiteral("Model");
+    modelEntry.WorkflowRole = xq::core::DataWorkflowRole::Model;
+    if (!context.DataCatalog()->RegisterEntry(modelEntry, message))
+        return false;
+
+    xq::core::DataCatalogEntry meshEntry;
+    meshEntry.Id = meshEntryId;
+    meshEntry.DisplayName = QStringLiteral("Flow Mesh");
+    meshEntry.SourcePath = QStringLiteral("C:/studies/mesh-001.xqmesh");
+    meshEntry.Modality = QStringLiteral("Mesh");
+    meshEntry.WorkflowRole = xq::core::DataWorkflowRole::Mesh;
+    if (!context.DataCatalog()->RegisterEntry(meshEntry, message))
+        return false;
+
+    if (!context.DataHierarchy()->AddFolder(
+            QStringLiteral("models"),
+            context.DataHierarchy()->RootId(),
+            QStringLiteral("Models"),
+            message))
+    {
+        return false;
+    }
+    if (!context.DataHierarchy()->AddDataEntry(
+            QStringLiteral("data-model-001"),
+            QStringLiteral("models"),
+            modelEntryId,
+            modelEntry.DisplayName,
+            message))
+    {
+        return false;
+    }
+    if (!context.DataHierarchy()->AddFolder(
+            QStringLiteral("meshes"),
+            context.DataHierarchy()->RootId(),
+            QStringLiteral("Meshes"),
+            message))
+    {
+        return false;
+    }
+    if (!context.DataHierarchy()->AddDataEntry(
+            QStringLiteral("data-mesh-001"),
+            QStringLiteral("meshes"),
+            meshEntryId,
+            meshEntry.DisplayName,
+            message))
+    {
+        return false;
+    }
+
+    auto modelNode = MakeSimpleFlowModelNode("Flow Model");
+    auto meshNode = MakeSimpleFlowMeshNode("Flow Mesh", "Flow Model");
+    context.DataStorage()->Add(modelNode);
+    context.DataStorage()->Add(meshNode, modelNode);
+    if (!context.DataNodes()->BindNode(modelEntryId, modelNode, message))
+        return false;
+    if (!context.DataNodes()->BindNode(meshEntryId, meshNode, message))
+        return false;
+
+    xq_BoundaryCondition inlet;
+    inlet.faceName = "inlet";
+    inlet.faceRole = "inflow";
+    inlet.bcType = "prescribed_velocity";
+    inlet.parameters["value"] = "1.25";
+
+    xq_BoundaryCondition outlet;
+    outlet.faceName = "outlet";
+    outlet.faceRole = "outflow";
+    outlet.bcType = "resistance";
+    outlet.parameters["value"] = "1200.0";
+
+    xq_BoundaryCondition wallA;
+    wallA.faceName = "wall_a";
+    wallA.faceRole = "wall";
+    wallA.bcType = "no_slip";
+
+    xq_BoundaryCondition wallB;
+    wallB.faceName = "wall_b";
+    wallB.faceRole = "wall";
+    wallB.bcType = "no_slip";
+
+    xq_SimulationPrepRequest request;
+    request.jobName = "Flow Mesh_cfd";
+    request.solverType = "xq_simple_flow";
+    request.boundaryConditions = {inlet, outlet, wallA, wallB};
+    request.faceRoleOverrides = {
+        {"inlet", "inflow"},
+        {"outlet", "outflow"},
+        {"wall_a", "wall"},
+        {"wall_b", "wall"},
+    };
+
+    const auto simResult =
+        xq_SimulationPrepPipelineService::CreateOrUpdateSimulationPrep(
+            context.DataStorage().GetPointer(),
+            modelNode,
+            meshNode,
+            request);
+    if (!simResult.ok || simResult.node.IsNull())
+    {
+        if (message)
+        {
+            *message = simResult.diagnostics.empty()
+                           ? QStringLiteral("Simulation prep fixture failed.")
+                           : QString::fromStdString(
+                                 simResult.diagnostics.front().message);
+        }
+        return false;
+    }
+
+    xq::core::DataCatalogEntry simEntry;
+    simEntry.Id = simEntryId;
+    simEntry.DisplayName = QStringLiteral("Flow Mesh_cfd");
+    simEntry.SourcePath = QStringLiteral("xq://generated/simulation-prep/sim-001");
+    simEntry.Modality = QStringLiteral("SimulationPrep");
+    simEntry.WorkflowRole = xq::core::DataWorkflowRole::SimulationPrep;
+    if (!context.DataCatalog()->RegisterEntry(simEntry, message))
+        return false;
+
+    if (!context.DataHierarchy()->FindNode(QStringLiteral("simulations")) &&
+        !context.DataHierarchy()->AddFolder(
+            QStringLiteral("simulations"),
+            context.DataHierarchy()->RootId(),
+            QStringLiteral("Simulations"),
+            message))
+    {
+        return false;
+    }
+    if (!context.DataHierarchy()->AddDataEntry(
+            QStringLiteral("data-sim-001"),
+            QStringLiteral("simulations"),
+            simEntryId,
+            simEntry.DisplayName,
+            message))
+    {
+        return false;
+    }
+    if (!context.DataNodes()->BindNode(simEntryId, simResult.node, message))
+        return false;
+
+    return context.DataSelection()->SelectCatalogEntry(simEntryId, message);
+}
+
+std::filesystem::path SolverCaseDir()
+{
+    return std::filesystem::temp_directory_path() /
+           "xq_monolith_run_steady_flow_case";
 }
 
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
@@ -317,7 +619,7 @@ int main(int argc, char** argv)
         if (Expect(mitkJob != nullptr &&
                        solverJob != nullptr &&
                        solverJob->GetJobName() == "Main Mesh_cfd" &&
-                       solverJob->GetSolverType() == "xq_export_only" &&
+                       solverJob->GetSolverType() == "xq_simple_flow" &&
                        xq::pipeline::HasStage(
                            resultNode,
                            xq::pipeline::Stage::SimulationPrep),
@@ -338,6 +640,183 @@ int main(int argc, char** argv)
         {
             return 1;
         }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareFlowWorkflow(
+                       *context,
+                       QStringLiteral("run-steady-flow")),
+                   "steady run missing sim fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicFlowSimulationWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "steady run missing sim fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "steady run handler should reject missing simulation prep node"))
+        {
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Active simulation prep node is required for steady flow solve."),
+                   "missing simulation prep diagnostic should be specific"))
+        {
+            return 1;
+        }
+        if (Expect(context->DataCatalog()->FindById(
+                       QStringLiteral("mesh-001-run-steady-flow-result-1")) ==
+                       nullptr,
+                   "failed steady run should not register result catalog"))
+        {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareFlowOperation(
+                       *context,
+                       QStringLiteral("run-steady-flow")),
+                   "valid steady run fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(RegisterSimulationPrepFixture(*context, &message),
+                   "valid steady run fixture should register simulation prep"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+
+        std::filesystem::remove_all(SolverCaseDir());
+        FakeRenderRefreshService refresh;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicFlowSimulationWorkflowActionHandler(
+                        *context,
+                        &refresh,
+                        &message),
+                "valid steady run fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "steady run handler should run solver and import results"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Registered steady flow result catalog entries."),
+                   "steady run should report result catalog commit success"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+
+        const auto* resultEntry = context->DataCatalog()->FindById(
+            QStringLiteral("sim-001-run-steady-flow-result-1"));
+        if (Expect(resultEntry != nullptr &&
+                       resultEntry->WorkflowRole ==
+                           xq::core::DataWorkflowRole::SimulationResult &&
+                       resultEntry->SourcePath.endsWith(
+                           QStringLiteral("xq_simple_flow_result_0001.vtu")),
+                   "steady run should register imported result catalog entry"))
+        {
+            return 1;
+        }
+        const auto* hierarchyNode = context->DataHierarchy()->FindNode(
+            QStringLiteral("data-sim-001-run-steady-flow-result-1"));
+        if (Expect(hierarchyNode != nullptr &&
+                       hierarchyNode->DataCatalogEntryId ==
+                           QStringLiteral("sim-001-run-steady-flow-result-1"),
+                   "steady run should register imported result hierarchy entry"))
+        {
+            return 1;
+        }
+
+        auto resultNode = context->DataNodes()->FindNode(
+            QStringLiteral("sim-001-run-steady-flow-result-1"));
+        std::string backendId;
+        std::string fields;
+        int fieldCount = 0;
+        if (Expect(resultNode.IsNotNull() &&
+                       xq::pipeline::HasStage(
+                           resultNode,
+                           xq::pipeline::Stage::Result) &&
+                       resultNode->GetStringProperty(
+                           "xq.result.backend_id",
+                           backendId) &&
+                       backendId == "xq_simple_flow" &&
+                       resultNode->GetStringProperty(
+                           "xq.result.field_names",
+                           fields) &&
+                       fields.find("point:pressure") != std::string::npos &&
+                       fields.find("point:velocity") != std::string::npos &&
+                       fields.find("cell:wall_shear") != std::string::npos &&
+                       resultNode->GetIntProperty(
+                           "xq.result.field_count",
+                           fieldCount) &&
+                       fieldCount >= 3,
+                   "steady run should bind imported result node metadata"))
+        {
+            return 1;
+        }
+
+        auto simNode = context->DataNodes()->FindNode(
+            QStringLiteral("sim-001"));
+        std::string solverStatus;
+        std::string importStatus;
+        if (Expect(simNode.IsNotNull() &&
+                       simNode->GetStringProperty(
+                           "xq.solver.status",
+                           solverStatus) &&
+                       solverStatus == "completed_with_warnings" &&
+                       simNode->GetStringProperty(
+                           "xq.solver.result_import_status",
+                           importStatus) &&
+                       importStatus == "imported",
+                   "steady run should update simulation prep status"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("sim-001-run-steady-flow-result-1"),
+                   "steady run should select imported result"))
+        {
+            return 1;
+        }
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "steady run should refresh rendering after success"))
+        {
+            return 1;
+        }
+
+        std::filesystem::remove_all(SolverCaseDir());
     }
 
     return 0;
