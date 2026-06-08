@@ -471,6 +471,12 @@ void MainWindow::UpdateWorkflowContextStatusPage()
     if (!label)
         return;
 
+    if (!snapshot.RequiresSelectedData)
+    {
+        label->setText(QStringLiteral("Ready."));
+        return;
+    }
+
     if (!snapshot.HasSelectedData)
     {
         label->setText(QStringLiteral("Select compatible data to continue."));
@@ -885,93 +891,97 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
         layout->addWidget(m_DataSourcePathLabel);
         layout->addWidget(m_DataWorkflowRoleLabel);
     }
-    else if (!xq::core::WorkflowContextService::AcceptedDataRolesForWorkflow(
-                  id).isEmpty())
+    else
     {
+        const auto acceptedRoles =
+            xq::core::WorkflowContextService::AcceptedDataRolesForWorkflow(id);
         const auto operations =
             m_Context.WorkflowOperations()->OperationsForWorkflow(id);
-        if (!operations.isEmpty())
+        if (!acceptedRoles.isEmpty() || !operations.isEmpty())
         {
-            auto* operationSelector = new QComboBox(page);
-            if (id == QStringLiteral("image-preprocessing"))
+            if (!operations.isEmpty())
             {
-                operationSelector->setObjectName(QStringLiteral(
-                    "xqImagePreprocessingOperationSelector"));
-            }
-            else
-            {
-                operationSelector->setObjectName(
-                    QStringLiteral("xqWorkflowOperationSelector_%1").arg(id));
-            }
-            for (const auto& operation : operations)
-            {
-                operationSelector->addItem(operation.Title, operation.Id);
+                auto* operationSelector = new QComboBox(page);
+                if (id == QStringLiteral("image-preprocessing"))
+                {
+                    operationSelector->setObjectName(QStringLiteral(
+                        "xqImagePreprocessingOperationSelector"));
+                }
+                else
+                {
+                    operationSelector->setObjectName(
+                        QStringLiteral("xqWorkflowOperationSelector_%1").arg(id));
+                }
+                for (const auto& operation : operations)
+                {
+                    operationSelector->addItem(operation.Title, operation.Id);
+                }
+
+                const int selectedIndex = operationSelector->findData(
+                    m_Context.WorkflowOperations()->SelectedOperationId(id));
+                if (selectedIndex >= 0)
+                    operationSelector->setCurrentIndex(selectedIndex);
+
+                connect(operationSelector,
+                        &QComboBox::currentIndexChanged,
+                        this,
+                        [this, id, operationSelector](int index) {
+                            if (index < 0)
+                                return;
+
+                            QString message;
+                            if (!m_Context.WorkflowOperations()->SelectOperation(
+                                    id,
+                                    operationSelector->itemData(index).toString(),
+                                    &message))
+                            {
+                                m_Context.PostDiagnostic(message);
+                                UpdateWorkflowOperationControls();
+                            }
+                        });
+
+                m_WorkflowOperationSelectors.insert(id, operationSelector);
+                layout->addWidget(operationSelector);
+
+                auto* parameterPanel = new QWidget(page);
+                if (id == QStringLiteral("image-preprocessing"))
+                {
+                    parameterPanel->setObjectName(QStringLiteral(
+                        "xqImagePreprocessingParameterPanel"));
+                }
+                else
+                {
+                    parameterPanel->setObjectName(
+                        QStringLiteral("xqWorkflowParameterPanel_%1").arg(id));
+                }
+                auto* parameterLayout = new QFormLayout(parameterPanel);
+                parameterLayout->setContentsMargins(0, 0, 0, 0);
+                parameterLayout->setSpacing(8);
+                m_WorkflowParameterPanels.insert(id, parameterPanel);
+                layout->addWidget(parameterPanel);
             }
 
-            const int selectedIndex = operationSelector->findData(
-                m_Context.WorkflowOperations()->SelectedOperationId(id));
-            if (selectedIndex >= 0)
-                operationSelector->setCurrentIndex(selectedIndex);
+            auto* statusLabel = new QLabel(page);
+            statusLabel->setObjectName(
+                QStringLiteral("xqWorkflowContextStatus_%1").arg(id));
+            statusLabel->setWordWrap(true);
+            m_WorkflowContextStatusLabels.insert(id, statusLabel);
+            layout->addWidget(statusLabel);
 
-            connect(operationSelector,
-                    &QComboBox::currentIndexChanged,
+            auto* actionButton = new QPushButton(QStringLiteral("Run"), page);
+            actionButton->setObjectName(
+                QStringLiteral("xqWorkflowPrimaryAction_%1").arg(id));
+            actionButton->setEnabled(false);
+            connect(actionButton,
+                    &QPushButton::clicked,
                     this,
-                    [this, id, operationSelector](int index) {
-                        if (index < 0)
-                            return;
-
-                        QString message;
-                        if (!m_Context.WorkflowOperations()->SelectOperation(
-                                id,
-                                operationSelector->itemData(index).toString(),
-                                &message))
-                        {
-                            m_Context.PostDiagnostic(message);
-                            UpdateWorkflowOperationControls();
-                        }
+                    [this]() {
+                        RunActiveWorkflowAction();
                     });
-
-            m_WorkflowOperationSelectors.insert(id, operationSelector);
-            layout->addWidget(operationSelector);
-
-            auto* parameterPanel = new QWidget(page);
-            if (id == QStringLiteral("image-preprocessing"))
-            {
-                parameterPanel->setObjectName(QStringLiteral(
-                    "xqImagePreprocessingParameterPanel"));
-            }
-            else
-            {
-                parameterPanel->setObjectName(
-                    QStringLiteral("xqWorkflowParameterPanel_%1").arg(id));
-            }
-            auto* parameterLayout = new QFormLayout(parameterPanel);
-            parameterLayout->setContentsMargins(0, 0, 0, 0);
-            parameterLayout->setSpacing(8);
-            m_WorkflowParameterPanels.insert(id, parameterPanel);
-            layout->addWidget(parameterPanel);
+            m_WorkflowPrimaryActionButtons.insert(id, actionButton);
+            layout->addWidget(actionButton);
+            UpdateWorkflowOperationControls();
         }
-
-        auto* statusLabel = new QLabel(page);
-        statusLabel->setObjectName(
-            QStringLiteral("xqWorkflowContextStatus_%1").arg(id));
-        statusLabel->setWordWrap(true);
-        m_WorkflowContextStatusLabels.insert(id, statusLabel);
-        layout->addWidget(statusLabel);
-
-        auto* actionButton = new QPushButton(QStringLiteral("Run"), page);
-        actionButton->setObjectName(
-            QStringLiteral("xqWorkflowPrimaryAction_%1").arg(id));
-        actionButton->setEnabled(false);
-        connect(actionButton,
-                &QPushButton::clicked,
-                this,
-                [this]() {
-                    RunActiveWorkflowAction();
-                });
-        m_WorkflowPrimaryActionButtons.insert(id, actionButton);
-        layout->addWidget(actionButton);
-        UpdateWorkflowOperationControls();
     }
     layout->addStretch(1);
 

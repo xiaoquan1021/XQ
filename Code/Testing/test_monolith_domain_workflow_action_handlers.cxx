@@ -269,6 +269,25 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    const auto pythonOperations =
+        operationContext->WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("python-api"));
+    if (Expect(pythonOperations.size() == 3,
+               "Python API should register workflow operations"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(pythonOperations.at(1).Id ==
+                       QStringLiteral("run-project-script") &&
+                   pythonOperations.at(1).Parameters.size() == 2,
+               "Project Script Runner should expose Python API parameters"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
     if (Expect(segmentation2dOperations.at(0).Id ==
                        QStringLiteral("threshold-contour") &&
                    segmentation2dOperations.at(0).Parameters.size() == 2,
@@ -578,6 +597,41 @@ int main(int argc, char** argv)
     if (Expect(actionMessage ==
                    QStringLiteral("Coupled Solve multiphysics operation accepted Coupled Mesh."),
                "MultiPhysics handler should report selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+
+    if (Expect(operationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("python-api")),
+               "Python API workflow should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("python-api"),
+                   QStringLiteral("run-project-script"),
+                   &errorMessage),
+               "Python API operation should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &actionMessage),
+               "Python API handler should run selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(actionMessage ==
+                   QStringLiteral("Project Script Runner python api operation accepted."),
+               "Python API handler should report selected no-data operation"))
     {
         delete operationContext;
         delete context;

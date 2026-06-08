@@ -2774,6 +2774,46 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Simulation Operation Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked first-version workflow coverage after Flow/ROM/MultiPhysics
+    operation controls landed.
+  - Python API remains the only first-version workflow page with no operation
+    selector or action surface in the monolith shell.
+  - Chosen next slice: add a non-data-dependent Python API operation/action
+    shell.
+- Added next executable phase to `plan.md`: Python API Operation Foundation.
+- Started the next unattended loop iteration:
+  - Adding failing Domain/UI tests for Python API operations first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding `test_monolith_python_api_operation_page`.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|python_api_operation_page|workflow_primary_action_page)"`
+    failed because Python API operations were not registered and its page had
+    no operation selector.
+- Implemented Python API Operation Foundation:
+  - Domain workflow registration now registers Python API operations: Open
+    Python Console, Project Script Runner, and Export API Snippet.
+  - Python API gets an operation-aware no-data handler when a
+    `WorkflowOperationService` is supplied.
+  - Generic workflow pages now support operation-only workflows that do not
+    require selected data.
+  - No-data operation pages display `Ready.` instead of asking for compatible
+    data.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|python_api_operation_page|workflow_primary_action_page|workflow_context_status_page)"`
+    passed: 4/4.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Python API Operation Foundation to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 ## Current verified checkpoint
 

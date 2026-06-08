@@ -111,11 +111,20 @@ CreateOperationAwareHandler(xq::core::WorkflowOperationService* operations,
 
         if (message)
         {
-            *message =
-                QStringLiteral("%1 %2 operation accepted %3.")
-                    .arg(operationTitle,
-                         operationKind,
-                         SelectedDataLabel(snapshot));
+            if (!snapshot.RequiresSelectedData)
+            {
+                *message =
+                    QStringLiteral("%1 %2 operation accepted.")
+                        .arg(operationTitle, operationKind);
+            }
+            else
+            {
+                *message =
+                    QStringLiteral("%1 %2 operation accepted %3.")
+                        .arg(operationTitle,
+                             operationKind,
+                             SelectedDataLabel(snapshot));
+            }
         }
         return true;
     };
@@ -165,6 +174,13 @@ CreateMultiPhysicsHandler(xq::core::WorkflowOperationService* operations)
 {
     return CreateOperationAwareHandler(operations,
                                        QStringLiteral("multiphysics"));
+}
+
+xq::core::WorkflowActionService::WorkflowActionHandler
+CreatePythonApiHandler(xq::core::WorkflowOperationService* operations)
+{
+    return CreateOperationAwareHandler(operations,
+                                       QStringLiteral("python api"));
 }
 
 QVector<xq::core::WorkflowOperationDescriptor>
@@ -425,6 +441,31 @@ QVector<xq::core::WorkflowOperationDescriptor> MultiPhysicsOperations()
     };
 }
 
+QVector<xq::core::WorkflowOperationDescriptor> PythonApiOperations()
+{
+    using Type = xq::core::WorkflowOperationParameterValueType;
+    return {
+        Operation(QStringLiteral("open-python-console"),
+                  QStringLiteral("Open Python Console"),
+                  {Parameter(QStringLiteral("max-history-items"),
+                             QStringLiteral("Max History Items"),
+                             Type::IntegerScalar)}),
+        Operation(QStringLiteral("run-project-script"),
+                  QStringLiteral("Project Script Runner"),
+                  {Parameter(QStringLiteral("script-timeout-seconds"),
+                             QStringLiteral("Script Timeout Seconds"),
+                             Type::IntegerScalar),
+                   Parameter(QStringLiteral("max-output-lines"),
+                             QStringLiteral("Max Output Lines"),
+                             Type::IntegerScalar)}),
+        Operation(QStringLiteral("export-api-snippet"),
+                  QStringLiteral("Export API Snippet"),
+                  {Parameter(QStringLiteral("snippet-count"),
+                             QStringLiteral("Snippet Count"),
+                             Type::IntegerScalar)}),
+    };
+}
+
 QVector<xq::core::WorkflowOperationDescriptor> Segmentation3DOperations()
 {
     using Type = xq::core::WorkflowOperationParameterValueType;
@@ -495,6 +536,8 @@ int RegisterDefaultWorkflowActionHandlers(
                                        RomSimulationOperations());
         operations->RegisterOperations(QStringLiteral("multiphysics"),
                                        MultiPhysicsOperations());
+        operations->RegisterOperations(QStringLiteral("python-api"),
+                                       PythonApiOperations());
     }
 
     if (actions.RegisterHandler(QStringLiteral("image-preprocessing"),
@@ -547,6 +590,13 @@ int RegisterDefaultWorkflowActionHandlers(
 
     if (actions.RegisterHandler(QStringLiteral("multiphysics"),
                                 CreateMultiPhysicsHandler(operations)))
+    {
+        ++registered;
+    }
+
+    if (operations &&
+        actions.RegisterHandler(QStringLiteral("python-api"),
+                                CreatePythonApiHandler(operations)))
     {
         ++registered;
     }
