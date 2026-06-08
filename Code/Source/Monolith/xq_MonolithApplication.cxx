@@ -11,6 +11,7 @@
 #include "Infrastructure/xq_FlowSimulationWorkflowActionHandler.h"
 #include "Infrastructure/xq_RomSimulationWorkflowActionHandler.h"
 #include "Infrastructure/xq_MultiPhysicsWorkflowActionHandler.h"
+#include "Infrastructure/xq_PythonApiWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
 
@@ -62,6 +63,7 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
     xq::infrastructure::RegisterDynamicMultiPhysicsWorkflowActionHandler(
         context,
         configured->RenderRefresh.get());
+    xq::infrastructure::RegisterDynamicPythonApiWorkflowActionHandler(context);
     configured->Window =
         std::make_unique<xq::presentation::MainWindow>(context);
     configured->Window->SetDataImportCommand(

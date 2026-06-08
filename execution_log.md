@@ -258,6 +258,28 @@
 - Promoted MultiPhysics Configure Coupling Infrastructure Action Handler to
   completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Pushed XQ commit:
+  - `dedff64 Wire multiphysics coupling action`.
+- Continued immediately into the next autonomous research refresh:
+  - Rechecked remaining placeholder-heavy operations after Flow, ROM, and
+    MultiPhysics configuration handlers landed.
+  - ROM and MultiPhysics solver operations still lack native monolith runtime
+    backends, so running them now would be a fake implementation.
+  - Python API already has `xq_PythonApiService`, which exposes deterministic
+    version and runtime-availability diagnostics without requiring pybind11.
+  - Chosen next slice: Python API availability diagnostic for
+    `open-python-console`, not script execution.
+- Promoted the research refresh to completed in `plan.md`.
+- Started Active Phase: Python API Availability Infrastructure Action
+  Handler.
+- Starting RED tests first:
+  - Dynamic Python API handler registration should be discoverable.
+  - `open-python-console` should return the real unavailable-runtime
+    diagnostic from `xq_PythonApiService`.
+  - Unsupported Python API operations should continue using the existing
+    operation-aware placeholder.
+  - Production composition should validate `open-python-console` through an
+    Infrastructure handler, not the Domain placeholder.
 
 - Continued the requested unattended loop after the user enabled full access mode.
 - Reviewed `plan.md`, `execution_log.md`, and the monolith scaffold:
@@ -3015,6 +3037,44 @@
     passed: 65/65.
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Current Run: Python API Availability Infrastructure Action Handler
+
+- Continued the requested unattended loop after the Python API phase was made
+  active in `plan.md`.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding `test_monolith_python_api_workflow_action_handler` and extending
+    `test_monolith_application_import_wiring`.
+  - The first build failed because
+    `Infrastructure/xq_PythonApiWorkflowActionHandler.h` did not exist.
+  - After adding the handler, build failed once more because the new test used
+    `TaskRunner::History()` without including `Core/xq_TaskRunner.h`.
+- Implemented Python API availability infrastructure action:
+  - Added `RegisterDynamicPythonApiWorkflowActionHandler()`.
+  - `python-api/open-python-console` now reports the deterministic version and
+    unavailable-runtime diagnostic from `xq_PythonApiService`.
+  - `run-project-script` and other unsupported Python API operations keep the
+    existing operation-aware placeholder behavior.
+  - The monolith composition root registers the Infrastructure handler after
+    Domain workflow registration.
+  - `xqMonolithInfrastructure` now links `xqModulePythonApi`.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(python_api_workflow_action_handler|application_import_wiring)"`
+    passed: 2/2.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Python API Availability Infrastructure Action Handler to completed
+  in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
 ## Current Run: Segmentation 2D Infrastructure Action Handler

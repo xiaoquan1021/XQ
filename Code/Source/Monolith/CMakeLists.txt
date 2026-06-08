@@ -112,6 +112,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
     Infrastructure/xq_FlowSimulationWorkflowActionHandler.cxx
     Infrastructure/xq_RomSimulationWorkflowActionHandler.cxx
     Infrastructure/xq_MultiPhysicsWorkflowActionHandler.cxx
+    Infrastructure/xq_PythonApiWorkflowActionHandler.cxx
 )
 
 set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
@@ -134,6 +135,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
     Infrastructure/xq_FlowSimulationWorkflowActionHandler.h
     Infrastructure/xq_RomSimulationWorkflowActionHandler.h
     Infrastructure/xq_MultiPhysicsWorkflowActionHandler.h
+    Infrastructure/xq_PythonApiWorkflowActionHandler.h
 )
 
 add_library(xqMonolithInfrastructure STATIC
@@ -163,6 +165,7 @@ target_link_libraries(xqMonolithInfrastructure
         xqModuleSimulation
         xqModuleROMSimulation
         xqModuleMultiPhysics
+        xqModulePythonApi
         Qt6::Core
 )
 

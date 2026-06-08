@@ -466,5 +466,37 @@ int main(int argc, char** argv)
                "configured MultiPhysics action should require a MITK ROM or simulation prep node"))
         return 1;
 
+    auto pythonApiContext =
+        std::unique_ptr<xq::core::ApplicationContext>(
+            xq::core::ApplicationContext::CreateDefault());
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *pythonApiContext->WorkflowActions(),
+        pythonApiContext->WorkflowOperations());
+    CancelPathProvider pythonApiProvider;
+    auto pythonApiWindow =
+        xq::CreateConfiguredMainWindow(*pythonApiContext,
+                                       &pythonApiProvider);
+
+    if (Expect(pythonApiContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("python-api")),
+               "configured Python API workflow should be selectable"))
+        return 1;
+    if (Expect(pythonApiContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("python-api"),
+                   QStringLiteral("open-python-console"),
+                   &message),
+               "configured Python API workflow should select console operation"))
+        return 1;
+    if (Expect(pythonApiContext->WorkflowActions()
+                   ->RunActiveWorkflowAction(&message),
+               "configured Python API action should use infrastructure diagnostic"))
+        return 1;
+    if (Expect(message.contains(QStringLiteral(
+                       "Python API unavailable in this build")) &&
+                   message.contains(QStringLiteral(
+                       "C++ inspection service remains available")),
+               "configured Python API action should report runtime availability"))
+        return 1;
+
     return 0;
 }

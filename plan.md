@@ -3568,6 +3568,41 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Python API Availability Infrastructure Action Handler
+
+1. Promote the Python API `open-python-console` operation from placeholder
+   acceptance to a real Infrastructure action handler.
+   - Use the existing `xq_PythonApiService` C++ service.
+   - Report the service version and Python runtime availability diagnostic.
+   - Do not fabricate an interactive Python console while pybind11/runtime is
+     unavailable in the current Windows monolith build.
+   - Keep the operation result deterministic and task-history friendly.
+2. Keep `run-project-script` and `export-api-snippet` on the existing
+   operation-aware placeholder path for this slice.
+3. Add C++ regression tests before implementation:
+   - Dynamic Python API handler registration is discoverable.
+   - `open-python-console` returns the real unavailable-runtime diagnostic
+     from `xq_PythonApiService` and succeeds as a diagnostic action.
+   - Unsupported Python API operations still use the placeholder path.
+   - The configured monolith composition root uses Infrastructure behavior
+     for `open-python-console`.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
