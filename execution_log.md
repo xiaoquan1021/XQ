@@ -2815,6 +2815,56 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run: Segmentation 2D Infrastructure Action Handler
+
+- Completed autonomous research refresh:
+  - Rechecked comparable workstation flow: Slicer/MITK keep segmentation as
+    renderable data nodes, while SimVascular treats contour groups as the
+    first modeling-ready artifact after Image/Path.
+  - XQ already has `xq_SegmentationPipelineService::CreateContourGroup`, but
+    monolith 2D Segmentation still only reports operation-aware placeholder
+    acceptance.
+  - Chosen next slice: route `manual-contour` through the existing
+    Segmentation pipeline and commit the generated Segmentation into monolith
+    catalog/hierarchy/selection/rendering state.
+- Added next executable phase to `plan.md`: Segmentation 2D Infrastructure
+  Action Handler.
+- Started the next unattended loop iteration:
+  - Adding failing 2D Segmentation workflow action handler and composition-root
+    tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding the 2D Segmentation handler test target.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `Infrastructure/xq_SegmentationWorkflowActionHandler.h` did not exist.
+- Implemented 2D Segmentation infrastructure action handler:
+  - Added `RegisterDynamicSegmentationWorkflowActionHandler()` for
+    `segmentation-2d` `manual-contour`.
+  - The handler resolves the selected Path node, calls
+    `xq_SegmentationPipelineService::CreateContourGroup`, registers the
+    generated Segmentation catalog/hierarchy/node binding, selects the result,
+    and refreshes rendering.
+  - Unsupported 2D operations and 3D Segmentation remain on the operation-aware
+    placeholder path for this slice.
+  - `CreateConfiguredMainWindow()` now registers the dynamic Segmentation
+    handler after Domain handler registration.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(segmentation_workflow_action_handler|application_import_wiring|domain_workflow_action_handlers|segmentation_operation_page)"`
+    passed: 4/4.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 67/67.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Segmentation 2D Infrastructure Action Handler to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Final Update: Legacy BlueBerry Include Isolation
 
 - Implemented default monolith include isolation:

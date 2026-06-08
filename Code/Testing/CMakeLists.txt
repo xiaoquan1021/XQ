@@ -574,6 +574,17 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_segmentation_workflow_action_handler
+        xqMonolithInfrastructure
+        xqMonolithDomain
+        xqMonolithCore
+        xqModuleCommon
+        xqModulePath
+        xqModuleSegmentation
+        Qt6::Core
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_workflow_context_status_page
         xqMonolithPresentation
         xqMonolithCore

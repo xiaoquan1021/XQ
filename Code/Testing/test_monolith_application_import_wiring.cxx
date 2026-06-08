@@ -4,6 +4,7 @@
 #include "Core/xq_DataImportService.h"
 #include "Core/xq_TaskRunner.h"
 #include "Core/xq_WorkflowActionService.h"
+#include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
 #include "Presentation/xq_MainWindow.h"
@@ -47,6 +48,17 @@ xq::core::DataImportRequest MakeImageImport()
     request.DisplayName = QStringLiteral("CTA Image");
     request.Modality = QStringLiteral("CT");
     request.WorkflowRole = xq::core::DataWorkflowRole::Image;
+    return request;
+}
+
+xq::core::DataImportRequest MakePathImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("path-001");
+    request.SourcePath = QStringLiteral("C:/studies/path-001.xqpth");
+    request.DisplayName = QStringLiteral("Main Path");
+    request.Modality = QStringLiteral("Path");
+    request.WorkflowRole = xq::core::DataWorkflowRole::Path;
     return request;
 }
 
@@ -167,6 +179,44 @@ int main(int argc, char** argv)
     if (Expect(message == QStringLiteral(
                               "Path creation requires at least two seed points."),
                "configured path action should require seed points"))
+        return 1;
+
+    auto segmentationContext =
+        std::unique_ptr<xq::core::ApplicationContext>(
+            xq::core::ApplicationContext::CreateDefault());
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *segmentationContext->WorkflowActions(),
+        segmentationContext->WorkflowOperations());
+    CancelPathProvider segmentationProvider;
+    auto segmentationWindow =
+        xq::CreateConfiguredMainWindow(*segmentationContext,
+                                       &segmentationProvider);
+
+    if (Expect(segmentationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("segmentation-2d")),
+               "configured segmentation workflow should be selectable"))
+        return 1;
+    if (Expect(segmentationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("segmentation-2d"),
+                   QStringLiteral("manual-contour"),
+                   &message),
+               "configured segmentation workflow should select manual contour"))
+        return 1;
+
+    const auto segmentationImportResult =
+        segmentationContext->DataImports()->Import(MakePathImport(),
+                                                   &message);
+    if (Expect(segmentationImportResult.Succeeded,
+               "configured segmentation path import should succeed"))
+        return 1;
+
+    if (Expect(!segmentationContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured segmentation action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active path node is required for 2D segmentation."),
+               "configured segmentation action should require a path node"))
         return 1;
 
     return 0;
