@@ -2831,6 +2831,40 @@ The next monolith slice is grounded in these comparable systems:
 3. Write the next executable phase into this plan.
 4. Immediately return to plan execution.
 
+## Completed Phase: Segmentation Operation Action Routing
+
+1. Route 2D/3D Segmentation workflow actions through selected operation state.
+   - Use `WorkflowOperationService::SelectedOperationId()` for segmentation
+     workflows.
+   - Produce task messages that include the selected segmentation operation
+     title and selected data label.
+   - Preserve the existing generic placeholder behavior when no operation
+     service is supplied.
+2. Keep scope narrow.
+   - Do not yet execute MITK segmentation tools or write segmentation result
+     nodes in this slice.
+   - Do not change Image Preprocessing Infrastructure routing.
+3. Add C++ regression tests before implementation:
+   - Domain handler for `segmentation-2d` reports selected operation title.
+   - Domain handler for `segmentation-3d` reports selected operation title.
+   - UI Run on the Segmentation pages posts diagnostics/task history with the
+     selected operation title.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
 ## Completed Phase: Segmentation Operation Foundation
 
 1. Add Domain-level operation descriptors for segmentation workflows.

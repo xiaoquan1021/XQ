@@ -2734,6 +2734,50 @@
 
 ## Current verified checkpoint
 
+- Completed autonomous research refresh:
+  - Segmentation operation selectors and parameter panels now exist, but the
+    Run action still uses the generic Domain placeholder instead of the
+    selected segmentation operation.
+  - Chosen next slice: route segmentation Domain actions through selected
+    operation state so task history and diagnostics show the selected
+    operation.
+- Added next executable phase to `plan.md`: Segmentation Operation Action
+  Routing.
+- Started the next unattended loop iteration:
+  - Adding failing Domain/UI tests for selected segmentation operation action
+    messages first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed after
+    extending Domain and Segmentation UI tests.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|segmentation_operation_page)"`
+    failed because segmentation action messages still used generic workflow
+    placeholders instead of selected operation titles.
+- Implemented Segmentation Operation Action Routing:
+  - Domain registration now installs operation-aware handlers for
+    `segmentation-2d` and `segmentation-3d` when a
+    `WorkflowOperationService` is supplied.
+  - Selected segmentation operation titles are read from registered operation
+    descriptors and included in task/diagnostic messages.
+  - Registration without an operation service still preserves the generic
+    placeholder handler behavior.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|segmentation_operation_page)"`
+    passed: 2/2.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 61/61.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Segmentation Operation Action Routing to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Current verified checkpoint
+
 - Image Preprocessing Result Activation is complete and promoted in `plan.md`.
 - Final verification for this iteration:
   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.

@@ -73,6 +73,50 @@ CreateImagePreprocessingHandler(xq::core::WorkflowOperationService* operations)
     };
 }
 
+QString OperationTitle(xq::core::WorkflowOperationService* operations,
+                       const QString& workflowId,
+                       const QString& operationId)
+{
+    if (!operations)
+        return {};
+
+    for (const auto& operation :
+         operations->OperationsForWorkflow(workflowId))
+    {
+        if (operation.Id == operationId)
+            return operation.Title;
+    }
+
+    return {};
+}
+
+xq::core::WorkflowActionService::WorkflowActionHandler
+CreateSegmentationHandler(xq::core::WorkflowOperationService* operations)
+{
+    if (!operations)
+        return CreateDefaultHandler();
+
+    return [operations](const xq::core::WorkflowContextSnapshot& snapshot,
+                        QString* message) {
+        const QString operationId =
+            operations->SelectedOperationId(snapshot.WorkflowId);
+        const QString operationTitle =
+            OperationTitle(operations, snapshot.WorkflowId, operationId);
+        if (operationTitle.trimmed().isEmpty())
+        {
+            return CreateDefaultHandler()(snapshot, message);
+        }
+
+        if (message)
+        {
+            *message =
+                QStringLiteral("%1 segmentation operation accepted %2.")
+                    .arg(operationTitle, SelectedDataLabel(snapshot));
+        }
+        return true;
+    };
+}
+
 QVector<xq::core::WorkflowOperationDescriptor>
 ImagePreprocessingOperations()
 {
@@ -232,9 +276,23 @@ int RegisterDefaultWorkflowActionHandlers(
         ++registered;
     }
 
+    if (actions.RegisterHandler(QStringLiteral("segmentation-2d"),
+                                CreateSegmentationHandler(operations)))
+    {
+        ++registered;
+    }
+
+    if (actions.RegisterHandler(QStringLiteral("segmentation-3d"),
+                                CreateSegmentationHandler(operations)))
+    {
+        ++registered;
+    }
+
     for (const auto& workflowId : dataDependentWorkflowIds)
     {
-        if (workflowId == QStringLiteral("image-preprocessing"))
+        if (workflowId == QStringLiteral("image-preprocessing") ||
+            workflowId == QStringLiteral("segmentation-2d") ||
+            workflowId == QStringLiteral("segmentation-3d"))
             continue;
 
         if (actions.RegisterHandler(workflowId, CreateDefaultHandler()))

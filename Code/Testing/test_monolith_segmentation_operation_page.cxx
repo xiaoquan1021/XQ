@@ -1,4 +1,5 @@
 #include "Core/xq_ApplicationContext.h"
+#include "Core/xq_DataImportService.h"
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
@@ -50,6 +51,17 @@ QSpinBox* FindIntegerParameter(xq::presentation::MainWindow& window,
 {
     return window.findChild<QSpinBox*>(
         QStringLiteral("xqWorkflowParameter_%1").arg(parameterId));
+}
+
+xq::core::DataImportRequest MakeImageImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("seg-image");
+    request.SourcePath = QStringLiteral("C:/studies/seg-image");
+    request.DisplayName = QStringLiteral("Seg CTA");
+    request.Modality = QStringLiteral("CT");
+    request.WorkflowRole = xq::core::DataWorkflowRole::Image;
+    return request;
 }
 
 } // namespace
@@ -134,6 +146,44 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    QString errorMessage;
+    const auto importResult =
+        context->DataImports()->Import(MakeImageImport(), &errorMessage);
+    if (Expect(importResult.Succeeded,
+               "segmentation image import should succeed"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("segmentation-2d")),
+               "2D segmentation workflow should be selectable before run"))
+    {
+        delete context;
+        return 1;
+    }
+    app.processEvents();
+    if (Expect(segmentation2dButton->isEnabled(),
+               "compatible image should enable 2D segmentation action"))
+    {
+        delete context;
+        return 1;
+    }
+    QStringList diagnostics;
+    QObject::connect(context,
+                     &xq::core::ApplicationContext::DiagnosticPosted,
+                     [&diagnostics](const QString& message) {
+                         diagnostics.append(message);
+                     });
+    segmentation2dButton->click();
+    app.processEvents();
+    if (Expect(diagnostics.contains(QStringLiteral(
+                   "Run 2D Segmentation succeeded: Loft Profiles segmentation operation accepted Seg CTA.")),
+               "2D segmentation action should report selected operation"))
+    {
+        delete context;
+        return 1;
+    }
 
     auto* segmentation3dSelector =
         FindSelector(window, QStringLiteral("segmentation-3d"));
@@ -178,6 +228,29 @@ int main(int argc, char** argv)
                                         QStringLiteral("threshold-upper")) !=
                        nullptr,
                "3D region growing should expose seed and threshold controls"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("segmentation-3d")),
+               "3D segmentation workflow should be selectable before run"))
+    {
+        delete context;
+        return 1;
+    }
+    app.processEvents();
+    if (Expect(segmentation3dButton->isEnabled(),
+               "compatible image should enable 3D segmentation action"))
+    {
+        delete context;
+        return 1;
+    }
+    segmentation3dButton->click();
+    app.processEvents();
+    if (Expect(diagnostics.contains(QStringLiteral(
+                   "Run 3D Segmentation succeeded: Region Growing segmentation operation accepted Seg CTA.")),
+               "3D segmentation action should report selected operation"))
     {
         delete context;
         return 1;

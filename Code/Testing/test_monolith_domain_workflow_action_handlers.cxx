@@ -184,6 +184,89 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+
+    const auto segmentationImport =
+        operationContext->DataImports()->Import(MakeImport(
+                                                    QStringLiteral("seg-image"),
+                                                    QStringLiteral("Seg CTA"),
+                                                    xq::core::DataWorkflowRole::Image),
+                                                &errorMessage);
+    if (Expect(segmentationImport.Succeeded,
+               "segmentation image import should succeed"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("segmentation-2d")),
+               "2D segmentation workflow should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("segmentation-2d"),
+                   QStringLiteral("loft-profiles"),
+                   &errorMessage),
+               "2D segmentation operation should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &actionMessage),
+               "2D segmentation handler should run selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(actionMessage ==
+                   QStringLiteral("Loft Profiles segmentation operation accepted Seg CTA."),
+               "2D segmentation handler should report selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+
+    if (Expect(operationContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("segmentation-3d")),
+               "3D segmentation workflow should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("segmentation-3d"),
+                   QStringLiteral("region-growing"),
+                   &errorMessage),
+               "3D segmentation operation should be selectable"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(operationContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &actionMessage),
+               "3D segmentation handler should run selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
+    if (Expect(actionMessage ==
+                   QStringLiteral("Region Growing segmentation operation accepted Seg CTA."),
+               "3D segmentation handler should report selected operation"))
+    {
+        delete operationContext;
+        delete context;
+        return 1;
+    }
     delete operationContext;
 
     auto* plainContext = xq::core::ApplicationContext::CreateDefault();
