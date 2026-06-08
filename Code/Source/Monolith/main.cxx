@@ -1,6 +1,7 @@
 #include "Core/xq_ApplicationContext.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
 #include "Presentation/xq_MainWindow.h"
+#include "xq_MonolithApplication.h"
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -24,7 +25,8 @@ int main(int argc, char* argv[])
     xq::domain::RegisterDefaultWorkflowActionHandlers(
         *context->WorkflowActions());
 
-    xq::presentation::MainWindow window(*context);
+    auto configuredWindow = xq::CreateConfiguredMainWindow(*context);
+    auto& window = *configuredWindow->Window;
 
     auto* renderHost = new QmitkStdMultiWidget();
     renderHost->setObjectName(QStringLiteral("xqMitkRenderHost"));

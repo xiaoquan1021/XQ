@@ -2471,6 +2471,44 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Monolith Qt File Import Wiring
+
+1. Move the file-path selection port into Core.
+   - Add `FileImportPathProvider` alongside `DataImportCommand`.
+   - Keep `MitkFileDataImportCommand` depending on Core ports, not Qt widgets.
+2. Add a Presentation Qt file-path provider.
+   - Use `QFileDialog::getOpenFileName` in production.
+   - Keep provider construction and filter text testable without opening a
+     native dialog.
+3. Wire the monolith executable composition root.
+   - Create a Qt file path provider.
+   - Create a `MitkFileDataImportCommand`.
+   - Inject the command into `MainWindow` before showing the window.
+4. Keep scope narrow.
+   - Do not add DICOM directory import or multi-file selection.
+   - Do not add project persistence changes.
+5. Add C++ regression tests before implementation:
+   - Qt provider exposes the expected import dialog caption and medical image
+     file filters.
+   - `MitkFileDataImportCommand` still depends on the Core path-provider port.
+   - Monolith window composition injects an import command so triggering Import
+     no longer posts the "not configured" diagnostic.
+6. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+7. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

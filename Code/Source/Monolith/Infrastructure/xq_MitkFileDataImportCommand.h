@@ -9,26 +9,18 @@
 namespace xq::infrastructure
 {
 
-class FileImportPathProvider
-{
-public:
-    virtual ~FileImportPathProvider() = default;
-
-    virtual QString ChooseFilePath() const = 0;
-};
-
 class MitkFileDataImportCommand : public xq::core::DataImportCommand
 {
 public:
     explicit MitkFileDataImportCommand(
-        const FileImportPathProvider* pathProvider,
+        const xq::core::FileImportPathProvider* pathProvider,
         const MitkFileReader* reader = nullptr);
 
     xq::core::DataImportCommandResult RunImport(
         xq::core::ApplicationContext& context) override;
 
 private:
-    const FileImportPathProvider* m_PathProvider = nullptr;
+    const xq::core::FileImportPathProvider* m_PathProvider = nullptr;
     const MitkFileReader* m_Reader = nullptr;
 };
 

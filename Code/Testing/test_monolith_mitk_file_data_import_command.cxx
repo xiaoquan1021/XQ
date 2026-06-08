@@ -36,7 +36,7 @@ protected:
     ~FakeBaseData() override = default;
 };
 
-class FakePathProvider : public xq::infrastructure::FileImportPathProvider
+class FakePathProvider : public xq::core::FileImportPathProvider
 {
 public:
     QString NextPath;

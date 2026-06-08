@@ -326,7 +326,6 @@ if(TARGET xqMonolithCore)
 
     xq_add_registered_test(test_monolith_mitk_file_data_import_command
         xqMonolithInfrastructure
-        xqMonolithPresentation
         xqMonolithCore
         Qt6::Core
         MitkCore
@@ -410,6 +409,24 @@ if(TARGET xqMonolithCore)
 
     xq_add_registered_test(test_monolith_main_window_import_action
         xqMonolithPresentation
+        xqMonolithCore
+        Qt6::Core
+        Qt6::Widgets
+        MitkCore
+    )
+
+    xq_add_registered_test(test_monolith_qt_file_import_path_provider
+        xqMonolithPresentation
+        xqMonolithCore
+        Qt6::Core
+        Qt6::Widgets
+        MitkCore
+    )
+
+    xq_add_registered_test(test_monolith_application_import_wiring
+        xqMonolithApplication
+        xqMonolithPresentation
+        xqMonolithInfrastructure
         xqMonolithCore
         Qt6::Core
         Qt6::Widgets

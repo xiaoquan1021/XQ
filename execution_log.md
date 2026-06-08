@@ -2414,3 +2414,43 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Monolith MITK File Data Import Command to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the command path after `MitkFileDataImportCommand` landed.
+  - The next gap is production wiring: the Import action is testable, and the
+    MITK import command exists, but `main.cxx` still constructs `MainWindow`
+    without a command.
+  - Chosen next slice: add a Qt file path provider and wire the monolith
+    composition root while keeping tests away from real native dialogs.
+- Added next executable phase to `plan.md`: Monolith Qt File Import Wiring.
+- Started the next unattended loop iteration:
+  - Adding failing Qt provider and composition wiring tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    registering the new tests.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_qt_file_import_path_provider` because
+    `Presentation/xq_QtFileImportPathProvider.h` did not exist.
+  - The same build failed while compiling
+    `test_monolith_application_import_wiring` because
+    `xq_MonolithApplication.h` did not exist.
+- Implemented monolith Qt file import wiring:
+  - Moved `FileImportPathProvider` into Core beside `DataImportCommand`.
+  - Added Presentation `QtFileImportPathProvider` using
+    `QFileDialog::getOpenFileName` with a medical-image filter.
+  - Added `ConfiguredMainWindow` and `CreateConfiguredMainWindow()` as the
+    composition root for MainWindow plus the MITK file import command.
+  - Updated `main.cxx` to create the configured window before setting the MITK
+    render host.
+- Red/green target verification:
+  - After implementation, the target build passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(qt_file_import_path_provider|application_import_wiring|mitk_file_data_import_command)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 57/57.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Monolith Qt File Import Wiring to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.

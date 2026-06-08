@@ -8,6 +8,14 @@ namespace xq::core
 
 class ApplicationContext;
 
+class FileImportPathProvider
+{
+public:
+    virtual ~FileImportPathProvider() = default;
+
+    virtual QString ChooseFilePath() const = 0;
+};
+
 struct DataImportCommandResult
 {
     bool Succeeded = false;

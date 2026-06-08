@@ -143,11 +143,13 @@ target_link_libraries(xqMonolithInfrastructure
 set(XQ_MONOLITH_PRESENTATION_SRCS
     Presentation/xq_DataHierarchyModel.cxx
     Presentation/xq_MainWindow.cxx
+    Presentation/xq_QtFileImportPathProvider.cxx
 )
 
 set(XQ_MONOLITH_PRESENTATION_HDRS
     Presentation/xq_DataHierarchyModel.h
     Presentation/xq_MainWindow.h
+    Presentation/xq_QtFileImportPathProvider.h
 )
 
 add_library(xqMonolithPresentation STATIC
@@ -172,6 +174,29 @@ target_link_libraries(xqMonolithPresentation
         Qt6::Widgets
 )
 
+add_library(xqMonolithApplication STATIC
+    xq_MonolithApplication.cxx
+    xq_MonolithApplication.h
+)
+
+set_target_properties(xqMonolithApplication PROPERTIES
+    AUTOMOC ON
+)
+
+target_include_directories(xqMonolithApplication
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+target_link_libraries(xqMonolithApplication
+    PUBLIC
+        xqMonolithInfrastructure
+        xqMonolithPresentation
+        Qt6::Core
+        Qt6::Widgets
+)
+
 add_executable(XQMonolith
     main.cxx
 )
@@ -192,6 +217,7 @@ target_include_directories(XQMonolith
 
 target_link_libraries(XQMonolith
     PRIVATE
+        xqMonolithApplication
         xqMonolithDomain
         xqMonolithPresentation
         MitkQtWidgets

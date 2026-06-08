@@ -58,7 +58,7 @@ xq::core::DataImportRequest BuildImportRequest(const QString& sourcePath)
 } // namespace
 
 MitkFileDataImportCommand::MitkFileDataImportCommand(
-    const FileImportPathProvider* pathProvider,
+    const xq::core::FileImportPathProvider* pathProvider,
     const MitkFileReader* reader)
     : m_PathProvider(pathProvider)
     , m_Reader(reader)
