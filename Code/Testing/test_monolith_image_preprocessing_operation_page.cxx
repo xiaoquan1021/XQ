@@ -11,6 +11,7 @@
 #include <QComboBox>
 #include <QDir>
 #include <QDoubleSpinBox>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QSpinBox>
 #include <QTemporaryDir>
@@ -70,6 +71,13 @@ QSpinBox* FindIntegerParameter(xq::presentation::MainWindow& window,
                                const QString& parameterId)
 {
     return window.findChild<QSpinBox*>(
+        QStringLiteral("xqImagePreprocessingParameter_%1").arg(parameterId));
+}
+
+QLineEdit* FindPointListParameter(xq::presentation::MainWindow& window,
+                                  const QString& parameterId)
+{
+    return window.findChild<QLineEdit*>(
         QStringLiteral("xqImagePreprocessingParameter_%1").arg(parameterId));
 }
 
@@ -220,6 +228,67 @@ int main(int argc, char** argv)
     }
     if (Expect(FindNumericParameter(window, QStringLiteral("lower")) == nullptr,
                "switching operations should remove previous parameter controls"))
+    {
+        delete context;
+        return 1;
+    }
+
+    operationSelector->setCurrentIndex(
+        operationSelector->findData(QStringLiteral("connected-threshold")));
+    app.processEvents();
+    auto* seedsEditor =
+        FindPointListParameter(window, QStringLiteral("seeds"));
+    if (Expect(seedsEditor != nullptr,
+               "connected threshold should expose an editable seeds parameter"))
+    {
+        delete context;
+        return 1;
+    }
+    seedsEditor->setText(QStringLiteral("1,2,3; 4,5,6"));
+    app.processEvents();
+    seedsEditor->editingFinished();
+    app.processEvents();
+    const QVariantList seedPoints =
+        context->WorkflowOperations()
+            ->ParameterValues(QStringLiteral("image-preprocessing"),
+                              QStringLiteral("connected-threshold"))
+            .value(QStringLiteral("seeds"))
+            .toList();
+    if (Expect(seedPoints.size() == 2 &&
+                   seedPoints.at(0).toList().size() == 3 &&
+                   seedPoints.at(0).toList().at(0).toInt() == 1 &&
+                   seedPoints.at(1).toList().at(2).toInt() == 6,
+               "editing seeds should update Core point-list state"))
+    {
+        delete context;
+        return 1;
+    }
+    QStringList pointListDiagnostics;
+    QObject::connect(context,
+                     &xq::core::ApplicationContext::DiagnosticPosted,
+                     [&pointListDiagnostics](const QString& message) {
+                         pointListDiagnostics.append(message);
+                     });
+    seedsEditor->setText(QStringLiteral("bad seed"));
+    app.processEvents();
+    seedsEditor->editingFinished();
+    app.processEvents();
+    const QVariantList unchangedSeedPoints =
+        context->WorkflowOperations()
+            ->ParameterValues(QStringLiteral("image-preprocessing"),
+                              QStringLiteral("connected-threshold"))
+            .value(QStringLiteral("seeds"))
+            .toList();
+    if (Expect(unchangedSeedPoints.size() == 2 &&
+                   unchangedSeedPoints.at(1).toList().at(2).toInt() == 6,
+               "invalid seeds text should not replace the last valid state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(pointListDiagnostics.contains(QStringLiteral(
+                   "Point list entries must use x,y,z format.")),
+               "invalid seeds text should post a point-list diagnostic"))
     {
         delete context;
         return 1;

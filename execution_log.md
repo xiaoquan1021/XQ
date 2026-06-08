@@ -253,6 +253,16 @@
     passed.
   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_operation_page`
     passed: 1/1.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Workflow Point List Parameter Editor to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 - Final verification for this iteration:
   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
@@ -2845,6 +2855,36 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Workflow Operation Option Parameters to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+
+## Current Run: Workflow Point List Parameter Editor
+
+- Completed autonomous research refresh:
+  - Rechecked workflow parameter coverage after option-set support.
+  - The remaining parameter placeholder is `IntegerPointList`, which maps to
+    seed-point workflows such as connected-threshold segmentation and should be
+    editable before real MITK segmentation tools are wired.
+  - Chosen next slice: replace the point-list placeholder row with a simple
+    editable text control that stores integer point triplets in Core state.
+- Added next executable phase to `plan.md`: Workflow Point List Parameter
+  Editor.
+- Started the next unattended loop iteration:
+  - Adding a failing Image Preprocessing seeds editor test first.
+- Red test observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_operation_page`
+    failed because connected-threshold still exposed `seeds` as a placeholder
+    label instead of an editable parameter.
+- Implemented Workflow Point List Parameter Editor:
+  - `IntegerPointList` parameters now render as `QLineEdit` controls.
+  - The editor accepts `x,y,z; x,y,z` text and stores a `QVariantList` of
+    integer triplets in `WorkflowOperationService`.
+  - Parameter-value restore formats stored triplets back into canonical text.
+  - Invalid text posts a diagnostic and leaves the last valid Core value
+    unchanged.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_operation_page`
+    passed: 1/1.
 
 ## Current Run: Run Script Monolith Fallback
 

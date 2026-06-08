@@ -49,6 +49,10 @@ private:
     void SaveProject();
     void SyncWorkflowNavigationFromCore(const QString& workflowId);
     void UpdateWorkflowContextStatusPage();
+    void StoreWorkflowPointListParameter(const QString& workflowId,
+                                         const QString& operationId,
+                                         const QString& parameterId,
+                                         const QString& text);
     void UpdateWorkflowOperationControls();
     void UpdateWorkflowParameterEditorValue(const QString& workflowId,
                                             const QString& parameterId,

@@ -25,6 +25,7 @@
 #include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QLabel>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
 #include <QScopeGuard>
@@ -39,6 +40,7 @@
 #include <QToolBar>
 #include <QTreeView>
 #include <QVBoxLayout>
+#include <QVariantList>
 #include <QWidget>
 
 #include <utility>
@@ -70,6 +72,83 @@ QString RoleDisplayName(xq::core::DataWorkflowRole role)
     }
 
     return QStringLiteral("Unknown");
+}
+
+bool ParseIntegerPointList(const QString& text,
+                           QVariantList& points,
+                           QString* message)
+{
+    points.clear();
+    const QString trimmed = text.trimmed();
+    if (trimmed.isEmpty())
+    {
+        if (message)
+            *message = QStringLiteral(
+                "Point list must contain at least one x,y,z triplet.");
+        return false;
+    }
+
+    const QStringList pointTexts =
+        trimmed.split(QStringLiteral(";"), Qt::SkipEmptyParts);
+    for (const auto& pointText : pointTexts)
+    {
+        const QStringList coordinates =
+            pointText.trimmed().split(QStringLiteral(","));
+        if (coordinates.size() != 3)
+        {
+            if (message)
+                *message = QStringLiteral(
+                    "Point list entries must use x,y,z format.");
+            return false;
+        }
+
+        QVariantList point;
+        for (const auto& coordinateText : coordinates)
+        {
+            bool ok = false;
+            const int coordinate = coordinateText.trimmed().toInt(&ok);
+            if (!ok)
+            {
+                if (message)
+                    *message = QStringLiteral(
+                        "Point list coordinates must be integers.");
+                return false;
+            }
+            point.push_back(coordinate);
+        }
+        points.push_back(point);
+    }
+
+    if (points.isEmpty())
+    {
+        if (message)
+            *message = QStringLiteral(
+                "Point list must contain at least one x,y,z triplet.");
+        return false;
+    }
+
+    if (message)
+        message->clear();
+    return true;
+}
+
+QString FormatIntegerPointList(const QVariant& value)
+{
+    QStringList pointTexts;
+    const QVariantList points = value.toList();
+    for (const auto& pointValue : points)
+    {
+        const QVariantList point = pointValue.toList();
+        if (point.size() != 3)
+            continue;
+
+        pointTexts.push_back(QStringLiteral("%1,%2,%3")
+                                 .arg(point.at(0).toInt())
+                                 .arg(point.at(1).toInt())
+                                 .arg(point.at(2).toInt()));
+    }
+
+    return pointTexts.join(QStringLiteral("; "));
 }
 
 } // namespace
@@ -681,21 +760,32 @@ void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
         }
         case xq::core::WorkflowOperationParameterValueType::IntegerPointList:
         {
-            auto* label =
-                new QLabel(QStringLiteral("Point editor pending"), panel);
+            auto* lineEdit = new QLineEdit(panel);
             if (workflowId == QStringLiteral("image-preprocessing"))
             {
-                label->setObjectName(
+                lineEdit->setObjectName(
                     QStringLiteral("xqImagePreprocessingParameter_%1")
                         .arg(parameter.Id));
             }
             else
             {
-                label->setObjectName(
+                lineEdit->setObjectName(
                     QStringLiteral("xqWorkflowParameter_%1")
                         .arg(parameter.Id));
             }
-            editor = label;
+            lineEdit->setText(FormatIntegerPointList(value));
+            connect(lineEdit,
+                    &QLineEdit::editingFinished,
+                    this,
+                    [this, lineEdit, workflowId,
+                     operationId = selectedOperation->Id,
+                     parameterId = parameter.Id]() {
+                        StoreWorkflowPointListParameter(workflowId,
+                                                        operationId,
+                                                        parameterId,
+                                                        lineEdit->text());
+                    });
+            editor = lineEdit;
             break;
         }
         case xq::core::WorkflowOperationParameterValueType::Option:
@@ -782,6 +872,37 @@ void MainWindow::UpdateWorkflowParameterEditorValue(const QString& workflowId,
             QSignalBlocker blocker(optionEditor);
             optionEditor->setCurrentIndex(index);
         }
+        return;
+    }
+
+    if (auto* pointListEditor = panel->findChild<QLineEdit*>(objectName))
+    {
+        QSignalBlocker blocker(pointListEditor);
+        pointListEditor->setText(FormatIntegerPointList(value));
+    }
+}
+
+void MainWindow::StoreWorkflowPointListParameter(const QString& workflowId,
+                                                 const QString& operationId,
+                                                 const QString& parameterId,
+                                                 const QString& text)
+{
+    QVariantList points;
+    QString parseMessage;
+    if (!ParseIntegerPointList(text, points, &parseMessage))
+    {
+        m_Context.PostDiagnostic(parseMessage);
+        return;
+    }
+
+    QString message;
+    if (!m_Context.WorkflowOperations()->SetParameterValue(workflowId,
+                                                           operationId,
+                                                           parameterId,
+                                                           points,
+                                                           &message))
+    {
+        m_Context.PostDiagnostic(message);
     }
 }
 
