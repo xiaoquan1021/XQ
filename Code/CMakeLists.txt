@@ -142,36 +142,38 @@ include_directories(
   ${MITK_INSTALL_DIR}/include/ctk
 )
 
-# BlueBerry plugin include directories
-set(BERRY_PLUGIN_SOURCE_DIRS
-  "${MITK_SRC_DIR}/Plugins/org.blueberry.core.runtime/src"
-  "${MITK_SRC_DIR}/Plugins/org.blueberry.core.commands/src"
-  "${MITK_SRC_DIR}/Plugins/org.blueberry.ui.qt/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.common/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.common/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.application/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.ext/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.extapplication/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.datamanager/src"
-)
+if(XQ_BUILD_LEGACY_BLUEBERRY)
+  # BlueBerry plugin include directories
+  set(BERRY_PLUGIN_SOURCE_DIRS
+    "${MITK_SRC_DIR}/Plugins/org.blueberry.core.runtime/src"
+    "${MITK_SRC_DIR}/Plugins/org.blueberry.core.commands/src"
+    "${MITK_SRC_DIR}/Plugins/org.blueberry.ui.qt/src"
+    "${MITK_SRC_DIR}/Plugins/org.mitk.gui.common/src"
+    "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.common/src"
+    "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.application/src"
+    "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.ext/src"
+    "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.extapplication/src"
+    "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.datamanager/src"
+  )
 
-# Add build-tree generated headers for each plugin
-set(BERRY_PLUGIN_BUILD_DIRS
-  "${MITK_BUILD_DIR}/Plugins/org.blueberry.core.runtime"
-  "${MITK_BUILD_DIR}/Plugins/org.blueberry.core.commands"
-  "${MITK_BUILD_DIR}/Plugins/org.blueberry.ui.qt"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.common"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.common"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.application"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.ext"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.extapplication"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.datamanager"
-)
+  # Add build-tree generated headers for each plugin
+  set(BERRY_PLUGIN_BUILD_DIRS
+    "${MITK_BUILD_DIR}/Plugins/org.blueberry.core.runtime"
+    "${MITK_BUILD_DIR}/Plugins/org.blueberry.core.commands"
+    "${MITK_BUILD_DIR}/Plugins/org.blueberry.ui.qt"
+    "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.common"
+    "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.common"
+    "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.application"
+    "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.ext"
+    "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.extapplication"
+    "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.datamanager"
+  )
 
-include_directories(
-  ${BERRY_PLUGIN_SOURCE_DIRS}
-  ${BERRY_PLUGIN_BUILD_DIRS}
-)
+  include_directories(
+    ${BERRY_PLUGIN_SOURCE_DIRS}
+    ${BERRY_PLUGIN_BUILD_DIRS}
+  )
+endif()
 
 #-----------------------------------------------------------------------------
 # 7. Module library name variables

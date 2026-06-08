@@ -36,6 +36,10 @@ if ($ContextHeader -notmatch "DataStorage\(\)") {
 if ($CodeCMake -notmatch "if\(XQ_BUILD_LEGACY_BLUEBERRY\)[\s\S]*Source/ImagingWorkbench/Plugins/PluginList\.cmake[\s\S]*foreach\(_plugin_entry \$\{XQ_PLUGINS\}\)") {
     throw "legacy plugin directories must only be added when XQ_BUILD_LEGACY_BLUEBERRY is ON"
 }
+$LegacyBerryIncludePattern = 'if\(XQ_BUILD_LEGACY_BLUEBERRY\)[\s\S]*set\(BERRY_PLUGIN_SOURCE_DIRS[\s\S]*set\(BERRY_PLUGIN_BUILD_DIRS[\s\S]*include_directories\([\s\S]*\$\{BERRY_PLUGIN_SOURCE_DIRS\}[\s\S]*\$\{BERRY_PLUGIN_BUILD_DIRS\}[\s\S]*endif\(\)'
+if ($CodeCMake -notmatch $LegacyBerryIncludePattern) {
+    throw "BlueBerry plugin include directories must only be added when XQ_BUILD_LEGACY_BLUEBERRY is ON"
+}
 if ($MainWindowSource -match "QmitkStdMultiWidget") {
     throw "monolith MainWindow must not hard-code QmitkStdMultiWidget; inject the render host from main"
 }

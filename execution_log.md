@@ -300,6 +300,22 @@
 - Promoted Workflow Operation Rich Parameter Persistence to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+
+## Current Run: Legacy BlueBerry Include Isolation
+
+- Completed autonomous research refresh:
+  - Rechecked remaining default-build legacy surface after monolith workflow
+    parameter coverage.
+  - Legacy BlueBerry targets are opt-in, but `Code/CMakeLists.txt` still adds
+    MITK/BlueBerry plugin include directories unconditionally in default
+    monolith configuration.
+  - Chosen next slice: guard BlueBerry plugin include directories behind
+    `XQ_BUILD_LEGACY_BLUEBERRY`, matching the existing legacy plugin target
+    guard.
+- Added next executable phase to `plan.md`: Legacy BlueBerry Include
+  Isolation.
+- Started the next unattended loop iteration:
+  - Extending the monolith scaffold PowerShell test first.
 - Final verification for this iteration:
   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
@@ -2797,6 +2813,27 @@
     passed: 65/65.
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Current Run Final Update: Legacy BlueBerry Include Isolation
+
+- Implemented default monolith include isolation:
+  - `BERRY_PLUGIN_SOURCE_DIRS`, `BERRY_PLUGIN_BUILD_DIRS`, and the BlueBerry
+    plugin `include_directories()` call are now evaluated only when
+    `XQ_BUILD_LEGACY_BLUEBERRY` is enabled.
+  - Generic MITK module include paths remain available to the monolith build.
+- Red/green target verification:
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\test_monolith_scaffold.ps1`
+    passed.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Legacy BlueBerry Include Isolation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
 ## Current Run: Workflow Operation Parameter UI Restore

@@ -3199,6 +3199,36 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Legacy BlueBerry Include Isolation
+
+1. Keep default monolith CMake include paths free of legacy BlueBerry plugin
+   headers.
+   - The generic MITK module include paths may remain available.
+   - `BERRY_PLUGIN_SOURCE_DIRS`, `BERRY_PLUGIN_BUILD_DIRS`, and their
+     `include_directories()` call should only be evaluated when
+     `XQ_BUILD_LEGACY_BLUEBERRY` is enabled.
+2. Add a PowerShell scaffold regression test before implementation.
+   - Reject unguarded BlueBerry plugin include-directory setup in
+     `Code/CMakeLists.txt`.
+   - Preserve the existing test that legacy plugin subdirectories are still
+     behind `XQ_BUILD_LEGACY_BLUEBERRY`.
+3. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+4. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
