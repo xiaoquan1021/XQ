@@ -2814,6 +2814,38 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Python API Operation Foundation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked monolith delivery defaults after all first-version workflow pages
+    gained operation controls.
+  - `CMakePresets.json` disables `XQ_BUILD_LEGACY_BLUEBERRY` for Windows, but
+    `Code/CMake/XQOptions.cmake` still defaults the global option to `ON`.
+  - Chosen next slice: make legacy BlueBerry opt-in by default so local CMake
+    configuration paths also build the monolith delivery target first.
+- Added next executable phase to `plan.md`: Legacy BlueBerry Default
+  Retirement.
+- Started the next unattended loop iteration:
+  - Adding a failing PowerShell test for the global legacy option default
+    first.
+- Red test observed:
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\test_windows_legacy_blueberry_default_off.ps1`
+    failed because `XQ_BUILD_LEGACY_BLUEBERRY` still defaulted to `ON`.
+- Implemented Legacy BlueBerry Default Retirement:
+  - `Code/CMake/XQOptions.cmake` now defaults
+    `XQ_BUILD_LEGACY_BLUEBERRY` to `OFF`.
+  - The Windows preset remains explicitly set to `OFF`.
+- Red/green target verification:
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\test_windows_legacy_blueberry_default_off.ps1`
+    passed.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 16/16.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Legacy BlueBerry Default Retirement to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 ## Current verified checkpoint
 

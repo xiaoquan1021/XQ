@@ -2937,6 +2937,32 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 6. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Legacy BlueBerry Default Retirement
+
+1. Make the monolith target the default local CMake configuration path.
+   - Keep `XQ_BUILD_LEGACY_BLUEBERRY` available as an opt-in migration flag.
+   - Change the global CMake option default from `ON` to `OFF`.
+   - Keep the Windows preset explicitly disabling legacy for clarity.
+2. Add a PowerShell regression test before implementation:
+   - `Code/CMake/XQOptions.cmake` should declare
+     `XQ_BUILD_LEGACY_BLUEBERRY` with default `OFF`.
+   - The Windows preset should still set `XQ_BUILD_LEGACY_BLUEBERRY=OFF`.
+3. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+4. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
