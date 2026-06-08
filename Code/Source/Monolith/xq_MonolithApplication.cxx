@@ -4,6 +4,7 @@
 #include "Infrastructure/xq_MitkFileDataImportCommand.h"
 #include "Infrastructure/xq_MitkRenderRefreshService.h"
 #include "Infrastructure/xq_ImagePreprocessingWorkflowActionHandler.h"
+#include "Infrastructure/xq_PathWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
 
@@ -32,6 +33,9 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
             nullptr,
             configured->RenderRefresh.get());
     xq::infrastructure::RegisterDynamicImagePreprocessingWorkflowActionHandler(
+        context,
+        configured->RenderRefresh.get());
+    xq::infrastructure::RegisterDynamicPathWorkflowActionHandler(
         context,
         configured->RenderRefresh.get());
     configured->Window =

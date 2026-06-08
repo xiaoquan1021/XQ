@@ -36,6 +36,8 @@ QString WorkflowRoleToString(DataWorkflowRole role)
         return QStringLiteral("dicom-series");
     case DataWorkflowRole::Image:
         return QStringLiteral("image");
+    case DataWorkflowRole::Path:
+        return QStringLiteral("path");
     case DataWorkflowRole::Segmentation:
         return QStringLiteral("segmentation");
     case DataWorkflowRole::Model:
@@ -57,6 +59,8 @@ bool WorkflowRoleFromString(const QString& value, DataWorkflowRole* role)
         *role = DataWorkflowRole::DICOMSeries;
     else if (value == QStringLiteral("image"))
         *role = DataWorkflowRole::Image;
+    else if (value == QStringLiteral("path"))
+        *role = DataWorkflowRole::Path;
     else if (value == QStringLiteral("segmentation"))
         *role = DataWorkflowRole::Segmentation;
     else if (value == QStringLiteral("model"))

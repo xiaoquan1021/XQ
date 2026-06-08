@@ -78,6 +78,15 @@ int main(int argc, char** argv)
                    &errorMessage),
                "second data entry should register"))
         return 1;
+    if (Expect(catalog.RegisterEntry(
+                   MakeEntry(QStringLiteral("path-003"),
+                             QStringLiteral("Aorta Path"),
+                             QStringLiteral("xq://generated/path/path-003"),
+                             QStringLiteral("Generated"),
+                             xq::core::DataWorkflowRole::Path),
+                   &errorMessage),
+               "path data entry should register"))
+        return 1;
 
     if (Expect(projectService.SaveProject(catalog, &errorMessage),
                "SaveProject should write project data catalog metadata"))
@@ -92,7 +101,7 @@ int main(int argc, char** argv)
         return 1;
 
     const auto restoredEntries = openedCatalog.Entries();
-    if (Expect(restoredEntries.size() == 2,
+    if (Expect(restoredEntries.size() == 3,
                "OpenProject should restore all data catalog entries"))
         return 1;
     if (Expect(restoredEntries.at(0).Id == QStringLiteral("image-001"),
@@ -105,6 +114,10 @@ int main(int argc, char** argv)
     if (Expect(restoredEntries.at(1).WorkflowRole ==
                    xq::core::DataWorkflowRole::DICOMSeries,
                "OpenProject should restore DICOM workflow role"))
+        return 1;
+    if (Expect(restoredEntries.at(2).WorkflowRole ==
+                   xq::core::DataWorkflowRole::Path,
+               "OpenProject should restore path workflow role"))
         return 1;
     if (Expect(restoredEntries.at(1).SourcePath == QStringLiteral("C:/data/mr"),
                "OpenProject should restore source paths"))

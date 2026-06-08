@@ -62,6 +62,13 @@ InferredRole InferRole(const QFileInfo& fileInfo)
     const QString suffix = fileInfo.suffix().toLower();
     const QString completeSuffix = fileInfo.completeSuffix().toLower();
 
+    if (suffix == QStringLiteral("xqpth") ||
+        ContainsAny(fileName, {QStringLiteral("centerline")}))
+    {
+        return {xq::core::DataWorkflowRole::Path,
+                QStringLiteral("path")};
+    }
+
     if (ContainsAny(fileName,
                     {QStringLiteral("segmentation"),
                      QStringLiteral("-seg"),

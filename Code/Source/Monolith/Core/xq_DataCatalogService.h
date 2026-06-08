@@ -13,6 +13,7 @@ enum class DataWorkflowRole
     Unknown,
     DICOMSeries,
     Image,
+    Path,
     Segmentation,
     Model,
     Mesh,

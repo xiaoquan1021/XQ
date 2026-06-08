@@ -139,5 +139,35 @@ int main(int argc, char** argv)
                "configured preprocessing action failure should be recorded"))
         return 1;
 
+    auto pathContext =
+        std::unique_ptr<xq::core::ApplicationContext>(
+            xq::core::ApplicationContext::CreateDefault());
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *pathContext->WorkflowActions(),
+        pathContext->WorkflowOperations());
+    CancelPathProvider pathProvider;
+    auto pathWindow =
+        xq::CreateConfiguredMainWindow(*pathContext, &pathProvider);
+
+    if (Expect(pathContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("path")),
+               "configured path workflow should be selectable"))
+        return 1;
+
+    const auto pathImportResult =
+        pathContext->DataImports()->Import(MakeImageImport(), &message);
+    if (Expect(pathImportResult.Succeeded,
+               "configured path image import should succeed"))
+        return 1;
+
+    if (Expect(!pathContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &message),
+               "configured path action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Path creation requires at least two seed points."),
+               "configured path action should require seed points"))
+        return 1;
+
     return 0;
 }

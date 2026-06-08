@@ -87,16 +87,22 @@ QVector<DataWorkflowRole> WorkflowContextService::AcceptedDataRolesForWorkflow(
                 DataWorkflowRole::Image};
     }
 
-    if (workflowId == QStringLiteral("path") ||
-        workflowId == QStringLiteral("segmentation-2d") ||
-        workflowId == QStringLiteral("segmentation-3d"))
+    if (workflowId == QStringLiteral("path"))
     {
         return {DataWorkflowRole::Image};
     }
 
+    if (workflowId == QStringLiteral("segmentation-2d") ||
+        workflowId == QStringLiteral("segmentation-3d"))
+    {
+        return {DataWorkflowRole::Image,
+                DataWorkflowRole::Path};
+    }
+
     if (workflowId == QStringLiteral("modeling"))
     {
-        return {DataWorkflowRole::Segmentation,
+        return {DataWorkflowRole::Path,
+                DataWorkflowRole::Segmentation,
                 DataWorkflowRole::Model};
     }
 

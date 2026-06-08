@@ -304,7 +304,10 @@ QVector<xq::core::WorkflowOperationDescriptor> PathOperations()
     return {
         Operation(QStringLiteral("create-centerline"),
                   QStringLiteral("Create Centerline"),
-                  {Parameter(QStringLiteral("control-point-count"),
+                  {Parameter(QStringLiteral("seed-points"),
+                             QStringLiteral("Seed Points"),
+                             Type::IntegerPointList),
+                   Parameter(QStringLiteral("control-point-count"),
                              QStringLiteral("Control Point Count"),
                              Type::IntegerScalar)}),
         Operation(QStringLiteral("edit-control-points"),

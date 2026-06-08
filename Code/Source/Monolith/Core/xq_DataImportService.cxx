@@ -21,6 +21,8 @@ QString WorkflowRoleToken(DataWorkflowRole role)
         return QStringLiteral("dicom");
     case DataWorkflowRole::Image:
         return QStringLiteral("image");
+    case DataWorkflowRole::Path:
+        return QStringLiteral("path");
     case DataWorkflowRole::Segmentation:
         return QStringLiteral("segmentation");
     case DataWorkflowRole::Model:
@@ -229,6 +231,8 @@ QString DataImportService::RoleFolderDisplayName(DataWorkflowRole role)
         return QStringLiteral("DICOM");
     case DataWorkflowRole::Image:
         return QStringLiteral("Images");
+    case DataWorkflowRole::Path:
+        return QStringLiteral("Paths");
     case DataWorkflowRole::Segmentation:
         return QStringLiteral("Segmentations");
     case DataWorkflowRole::Model:
@@ -252,6 +256,8 @@ QString DataImportService::RoleFolderId(DataWorkflowRole role)
         return QStringLiteral("dicom");
     case DataWorkflowRole::Image:
         return QStringLiteral("images");
+    case DataWorkflowRole::Path:
+        return QStringLiteral("paths");
     case DataWorkflowRole::Segmentation:
         return QStringLiteral("segmentations");
     case DataWorkflowRole::Model:

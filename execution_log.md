@@ -2836,6 +2836,56 @@
 - Promoted Legacy BlueBerry Include Isolation to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run: Path Infrastructure Action Handler
+
+- Completed autonomous research refresh:
+  - Rechecked comparable workstation flow: Slicer/MITK keep data and
+    segmentation/path tools tied to rendering, while SimVascular makes Path the
+    first downstream artifact after Image import.
+  - XQ's Image Preprocessing workflow already uses an Infrastructure
+    MITK-backed handler, but Path still only posts operation-aware placeholder
+    acceptance.
+  - Chosen next slice: route `create-centerline` through existing
+    `xq_PathPipelineService` and commit the generated Path into monolith
+    catalog/hierarchy/selection/rendering state.
+- Added next executable phase to `plan.md`: Path Infrastructure Action
+  Handler.
+- Started the next unattended loop iteration:
+  - Adding failing Path workflow action handler and composition-root tests
+    first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding the Path handler test target.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `Infrastructure/xq_PathWorkflowActionHandler.h` did not exist.
+- Implemented Path infrastructure action handler:
+  - Added first-class `DataWorkflowRole::Path` with import folders, project
+    schema role roundtrip, workflow compatibility, and data-page display.
+  - Added `seed-points` to the `create-centerline` Path operation descriptor.
+  - Added `RegisterDynamicPathWorkflowActionHandler()` using the existing
+    `xq_PathPipelineService::CreatePath` for `create-centerline`.
+  - Successful Path creation now registers catalog/hierarchy/node bindings,
+    selects the generated path, and refreshes rendering.
+  - Unsupported Path operations continue through the existing operation-aware
+    placeholder path for this slice.
+  - `CreateConfiguredMainWindow()` now registers the dynamic Path handler after
+    Domain handler registration.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(path_workflow_action_handler|mitk_file_data_import_command|project_data_persistence|application_import_wiring|workflow_context_service|domain_workflow_action_handlers|path_operation_page)"`
+    passed: 7/7.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 66/66.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Path Infrastructure Action Handler to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Workflow Operation Parameter UI Restore
 
 - Completed autonomous research refresh:

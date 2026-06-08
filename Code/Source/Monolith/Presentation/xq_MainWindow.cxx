@@ -59,6 +59,8 @@ QString RoleDisplayName(xq::core::DataWorkflowRole role)
         return QStringLiteral("DICOM Series");
     case xq::core::DataWorkflowRole::Image:
         return QStringLiteral("Image");
+    case xq::core::DataWorkflowRole::Path:
+        return QStringLiteral("Path");
     case xq::core::DataWorkflowRole::Segmentation:
         return QStringLiteral("Segmentation");
     case xq::core::DataWorkflowRole::Model:

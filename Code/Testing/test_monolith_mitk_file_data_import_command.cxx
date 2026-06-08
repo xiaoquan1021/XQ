@@ -314,6 +314,13 @@ int main(int argc, char** argv)
         return 1;
     }
     if (ExpectSuccessfulImportRole(
+            QStringLiteral("C:/studies/aorta.xqpth"),
+            QStringLiteral("path-aorta-xqpth"),
+            xq::core::DataWorkflowRole::Path))
+    {
+        return 1;
+    }
+    if (ExpectSuccessfulImportRole(
             QStringLiteral("C:/studies/aorta-model.vtp"),
             QStringLiteral("model-aorta-model-vtp"),
             xq::core::DataWorkflowRole::Model))
