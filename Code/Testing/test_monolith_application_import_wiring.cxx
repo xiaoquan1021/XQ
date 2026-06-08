@@ -213,6 +213,20 @@ int main(int argc, char** argv)
                               "Path creation requires at least two seed points."),
                "configured path action should require seed points"))
         return 1;
+    if (Expect(pathContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("path"),
+                   QStringLiteral("smooth-path"),
+                   &message),
+               "configured path workflow should select smooth path"))
+        return 1;
+    if (Expect(!pathContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &message),
+               "configured smooth path action should use unsupported-operation guard"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Smooth Path is not wired to a native Path runtime yet."),
+               "configured smooth path action should report unsupported operation"))
+        return 1;
 
     auto segmentationContext =
         std::unique_ptr<xq::core::ApplicationContext>(

@@ -3039,6 +3039,46 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Path Unsupported Operation Guard
+
+- Completed autonomous research refresh:
+  - Rechecked the Path workflow after the native `create-centerline` wiring.
+  - The remaining Path operations, `edit-control-points` and `smooth-path`,
+    were still reporting successful placeholder execution in the configured
+    monolith, which would mislead users before interactive path editing and
+    smoothing runtimes exist.
+  - Chosen next slice: keep `create-centerline` real and guard unsupported
+    Path operations with deterministic failure diagnostics.
+- Red tests observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed after
+    adding the new Path guard tests.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(path_workflow_action_handler|path_operation_page|application_import_wiring)"`
+    failed: 0/3, because unsupported Path operations still returned
+    placeholder success.
+- Implemented Path unsupported-operation guard:
+  - `path/create-centerline` continues to call
+    `xq_PathPipelineService::CreatePath`.
+  - `path/edit-control-points` and `path/smooth-path` now return failure with
+    diagnostics naming the selected operation and Path workflow.
+  - The Path operation page test now registers the Infrastructure handler so
+    UI diagnostics cover production composition instead of Domain placeholder
+    behavior.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(path_workflow_action_handler|path_operation_page|application_import_wiring)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Path Unsupported Operation Guard to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Python API Availability Infrastructure Action Handler
 
 - Continued the requested unattended loop after the Python API phase was made

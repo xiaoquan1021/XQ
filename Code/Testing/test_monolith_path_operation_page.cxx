@@ -5,6 +5,7 @@
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
+#include "Infrastructure/xq_PathWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
@@ -76,6 +77,8 @@ int main(int argc, char** argv)
     xq::domain::RegisterDefaultWorkflowActionHandlers(
         *context->WorkflowActions(),
         context->WorkflowOperations());
+    xq::infrastructure::RegisterDynamicPathWorkflowActionHandler(*context,
+                                                                 nullptr);
     xq::presentation::MainWindow window(*context);
 
     auto* selector = FindSelector(window);
@@ -232,8 +235,8 @@ int main(int argc, char** argv)
     actionButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Path succeeded: Smooth Path path operation accepted Path CTA.")),
-               "Path action should report selected operation"))
+                   "Run Path failed: Smooth Path is not wired to a native Path runtime yet.")),
+               "Path action should report unsupported operation"))
     {
         delete context;
         return 1;

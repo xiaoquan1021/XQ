@@ -116,6 +116,19 @@ bool PreparePathWorkflow(xq::core::ApplicationContext& context)
     return importResult.Succeeded;
 }
 
+bool PreparePathWorkflow(xq::core::ApplicationContext& context,
+                         const QString& operationId)
+{
+    if (!PreparePathWorkflow(context))
+        return false;
+
+    QString message;
+    return context.WorkflowOperations()->SelectOperation(
+        QStringLiteral("path"),
+        operationId,
+        &message);
+}
+
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
 {
 public:
@@ -257,6 +270,65 @@ int main(int argc, char** argv)
                            context->DataStorage().GetPointer(),
                    "path handler should refresh rendering after success"))
             return 1;
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PreparePathWorkflow(
+                       *context,
+                       QStringLiteral("edit-control-points")),
+                   "unsupported path edit fixture should prepare workflow"))
+            return 1;
+
+        QString message;
+        if (Expect(xq::infrastructure::RegisterDynamicPathWorkflowActionHandler(
+                       *context,
+                       nullptr,
+                       &message),
+                   "unsupported path edit fixture should install handler"))
+            return 1;
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported path edit should fail"))
+            return 1;
+        if (Expect(message == QStringLiteral(
+                                  "Edit Control Points is not wired to a native Path runtime yet."),
+                   "unsupported path edit diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PreparePathWorkflow(*context,
+                                       QStringLiteral("smooth-path")),
+                   "unsupported path smoothing fixture should prepare workflow"))
+            return 1;
+
+        QString message;
+        if (Expect(xq::infrastructure::RegisterDynamicPathWorkflowActionHandler(
+                       *context,
+                       nullptr,
+                       &message),
+                   "unsupported path smoothing fixture should install handler"))
+            return 1;
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported path smoothing should fail"))
+            return 1;
+        if (Expect(message == QStringLiteral(
+                                  "Smooth Path is not wired to a native Path runtime yet."),
+                   "unsupported path smoothing diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
     }
 
     return 0;
