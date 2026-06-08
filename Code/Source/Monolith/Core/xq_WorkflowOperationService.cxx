@@ -209,6 +209,9 @@ bool WorkflowOperationService::RegisterOperations(
 void WorkflowOperationService::ReplaceStateWith(
     const WorkflowOperationService& other)
 {
+    const auto previousSelections = m_SelectedOperationIds;
+    const auto previousParameterValues = m_ParameterValues;
+
     m_SelectedOperationIds = other.m_SelectedOperationIds;
     m_ParameterValues = other.m_ParameterValues;
 
@@ -235,6 +238,42 @@ void WorkflowOperationService::ReplaceStateWith(
                                           m_Operations.value(workflowId)
                                               .front()
                                               .Id);
+        }
+    }
+
+    for (auto it = m_SelectedOperationIds.cbegin();
+         it != m_SelectedOperationIds.cend();
+         ++it)
+    {
+        if (previousSelections.value(it.key()) != it.value())
+            emit SelectedOperationChanged(it.key(), it.value());
+    }
+
+    for (auto it = m_ParameterValues.cbegin();
+         it != m_ParameterValues.cend();
+         ++it)
+    {
+        const QVariantMap previousValues =
+            previousParameterValues.value(it.key());
+        const QVariantMap nextValues = it.value();
+        QStringList parameterIds = nextValues.keys();
+        parameterIds.sort();
+        const QStringList keyParts = it.key().split(QStringLiteral("/"));
+        if (keyParts.size() != 2)
+            continue;
+
+        for (const auto& parameterId : parameterIds)
+        {
+            if (previousValues.value(parameterId) ==
+                nextValues.value(parameterId))
+            {
+                continue;
+            }
+
+            emit ParameterValueChanged(keyParts.at(0),
+                                       keyParts.at(1),
+                                       parameterId,
+                                       nextValues.value(parameterId));
         }
     }
 }

@@ -1,5 +1,7 @@
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataImportService.h"
+#include "Core/xq_ProjectService.h"
+#include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
@@ -7,9 +9,11 @@
 
 #include <QApplication>
 #include <QComboBox>
+#include <QDir>
 #include <QDoubleSpinBox>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QTemporaryDir>
 #include <QWidget>
 
 #include <iostream>
@@ -253,6 +257,69 @@ int main(int argc, char** argv)
     if (Expect(diagnostics.contains(QStringLiteral(
                    "Run Image Preprocessing succeeded: Gaussian Smoothing preprocessing operation accepted CTA Image.")),
                "operation action should run the selected image preprocessing operation"))
+    {
+        delete context;
+        return 1;
+    }
+
+    QTemporaryDir tempDir;
+    if (Expect(tempDir.isValid(), "temporary directory should be available"))
+    {
+        delete context;
+        return 1;
+    }
+    const QString projectPath =
+        QDir(tempDir.path()).filePath(QStringLiteral("OperationUi.xqproj"));
+    if (Expect(context->Projects()->CreateProject(QStringLiteral("OperationUi"),
+                                                  projectPath,
+                                                  &errorMessage),
+               "operation UI project should be created"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->ProjectSession()->Save(&errorMessage),
+               "operation UI project should save selected operation state"))
+    {
+        delete context;
+        return 1;
+    }
+
+    operationSelector->setCurrentIndex(
+        operationSelector->findData(QStringLiteral("crop")));
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("image-preprocessing")) ==
+                   QStringLiteral("crop"),
+               "operation selector should switch away before project reopen"))
+    {
+        delete context;
+        return 1;
+    }
+
+    if (Expect(context->ProjectSession()->Open(projectPath, &errorMessage),
+               "operation UI project should reopen with persisted operation state"))
+    {
+        delete context;
+        return 1;
+    }
+    app.processEvents();
+    if (Expect(operationSelector->currentData().toString() ==
+                   QStringLiteral("gaussian-smoothing"),
+               "project open should refresh operation selector from persisted state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(actionButton->text() == QStringLiteral("Run Gaussian Smoothing"),
+               "project open should refresh action text from persisted operation"))
+    {
+        delete context;
+        return 1;
+    }
+    sigmaEditor = FindNumericParameter(window, QStringLiteral("sigma"));
+    if (Expect(sigmaEditor != nullptr && sigmaEditor->value() == 1.25,
+               "project open should rebuild parameter panel with persisted values"))
     {
         delete context;
         return 1;

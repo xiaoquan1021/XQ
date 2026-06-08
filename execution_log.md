@@ -225,6 +225,44 @@
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 - Completed autonomous research refresh:
+  - Rechecked the persisted Image Preprocessing operation state against the
+    existing Presentation wiring.
+  - `MainWindow` updates operation controls on `SelectedOperationChanged`, but
+    project open currently replaces operation state without emitting UI refresh
+    signals.
+  - Chosen next slice: refresh the Image Preprocessing page after project open
+    restores operation state.
+- Added next executable phase to `plan.md`: Image Preprocessing UI State
+  Restore.
+- Started the next unattended loop iteration:
+  - Adding failing MainWindow project-open operation restore test first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed after
+    extending `test_monolith_image_preprocessing_operation_page`.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_operation_page`
+    failed because project open restored Core operation state without
+    refreshing the existing selector.
+- Implemented Image Preprocessing UI state restore:
+  - `WorkflowOperationService::ReplaceStateWith()` now emits selection and
+    parameter-value change signals for changed restored state.
+  - Existing `MainWindow` operation-control wiring now refreshes the selector,
+    action text, and parameter panel after project open.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R test_monolith_image_preprocessing_operation_page`
+    passed: 1/1.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 60/60.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Image Preprocessing UI State Restore to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
   - GitHub connector initially hit a transport failure, so web search was used as fallback and the GitHub connector was retried with exact official repository queries.
   - Confirmed official comparable repositories: `Slicer/Slicer` and `OHIF/Viewers`.
   - Research conclusion: comparable medical imaging workstations converge on a central data catalog/import layer before deeper workflow pages. 3D Slicer emphasizes DICOM/data management, OHIF emphasizes data-source abstraction and DICOMweb, and SimVascular-style workflows depend on image data being cataloged before path, segmentation, modeling, meshing, and simulation steps.

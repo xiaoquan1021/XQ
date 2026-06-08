@@ -2831,6 +2831,38 @@ The next monolith slice is grounded in these comparable systems:
 3. Write the next executable phase into this plan.
 4. Immediately return to plan execution.
 
+## Completed Phase: Image Preprocessing UI State Restore
+
+1. Keep the Image Preprocessing page synchronized after project open restores
+   workflow operation state.
+   - Operation selector should switch to the restored selected operation.
+   - Primary action text should show the restored operation title.
+   - Parameter panel should rebuild using restored parameter values.
+2. Preserve existing operation selector behavior.
+   - User-driven selector changes still update Core state.
+   - Core-driven selection changes still update the selector without feedback
+     loops.
+3. Add C++ regression tests before implementation:
+   - Open a project whose persisted Image Preprocessing state selects
+     Gaussian Smoothing with sigma `2.25`.
+   - Existing `MainWindow` updates selector, action button, and sigma editor
+     after `ProjectSession()->Open()`.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
 ## Completed Phase: Image Preprocessing Operation State Persistence
 
 1. Persist monolith workflow operation state in the fresh `.xqproj` schema.
