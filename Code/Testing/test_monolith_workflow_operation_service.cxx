@@ -40,6 +40,15 @@ xq::core::WorkflowOperationParameterDescriptor Parameter(
     return parameter;
 }
 
+xq::core::WorkflowOperationParameterOption Option(const QString& id,
+                                                  const QString& title)
+{
+    xq::core::WorkflowOperationParameterOption option;
+    option.Id = id;
+    option.Title = title;
+    return option;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -100,6 +109,56 @@ int main(int argc, char** argv)
                    .value(QStringLiteral("sigma"))
                    .toDouble() == 0.0,
                "registered numeric parameters should get default values"))
+        return 1;
+
+    QVector<xq::core::WorkflowOperationDescriptor> flowOperations = {
+        Operation(QStringLiteral("configure-cfd-job"),
+                  QStringLiteral("Configure CFD Job")),
+    };
+    flowOperations[0].Parameters.push_back(
+        Parameter(QStringLiteral("solver-profile"),
+                  QStringLiteral("Solver Profile"),
+                  xq::core::WorkflowOperationParameterValueType::Option));
+    flowOperations[0].Parameters[0].Options = {
+        Option(QStringLiteral("steady"), QStringLiteral("Steady")),
+        Option(QStringLiteral("pulsatile"), QStringLiteral("Pulsatile")),
+    };
+    if (Expect(service.RegisterOperations(QStringLiteral("flow-simulation"),
+                                          flowOperations,
+                                          &message),
+               "option parameter registration should succeed"))
+        return 1;
+    const auto flowRegistered =
+        service.OperationsForWorkflow(QStringLiteral("flow-simulation"));
+    if (Expect(flowRegistered.size() == 1 &&
+                   flowRegistered.front().Parameters.size() == 1 &&
+                   flowRegistered.front().Parameters.front().Type ==
+                       xq::core::WorkflowOperationParameterValueType::Option &&
+                   flowRegistered.front().Parameters.front().Options.size() == 2 &&
+                   flowRegistered.front().Parameters.front().Options.at(0).Id ==
+                       QStringLiteral("steady") &&
+                   flowRegistered.front().Parameters.front().Options.at(1).Title ==
+                       QStringLiteral("Pulsatile"),
+               "option parameters should preserve ordered option metadata"))
+        return 1;
+    if (Expect(service.ParameterValues(QStringLiteral("flow-simulation"),
+                                       QStringLiteral("configure-cfd-job"))
+                   .value(QStringLiteral("solver-profile"))
+                   .toString() == QStringLiteral("steady"),
+               "option parameters should default to the first option id"))
+        return 1;
+    if (Expect(service.SetParameterValue(QStringLiteral("flow-simulation"),
+                                         QStringLiteral("configure-cfd-job"),
+                                         QStringLiteral("solver-profile"),
+                                         QStringLiteral("pulsatile"),
+                                         &message),
+               "option parameters should accept option ids"))
+        return 1;
+    if (Expect(service.ParameterValues(QStringLiteral("flow-simulation"),
+                                       QStringLiteral("configure-cfd-job"))
+                   .value(QStringLiteral("solver-profile"))
+                   .toString() == QStringLiteral("pulsatile"),
+               "option parameter lookup should return stored option id"))
         return 1;
 
     int selectionChanges = 0;
@@ -237,6 +296,27 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(message == QStringLiteral("Duplicate workflow operation parameter id."),
                "duplicate parameter rejection should use explicit message"))
+        return 1;
+
+    QVector<xq::core::WorkflowOperationDescriptor> invalidOptionOperations = {
+        Operation(QStringLiteral("configure-cfd-job"),
+                  QStringLiteral("Configure CFD Job")),
+    };
+    invalidOptionOperations[0].Parameters.push_back(
+        Parameter(QStringLiteral("solver-profile"),
+                  QStringLiteral("Solver Profile"),
+                  xq::core::WorkflowOperationParameterValueType::Option));
+    invalidOptionOperations[0].Parameters[0].Options = {
+        Option(QStringLiteral("steady"), QStringLiteral("Steady")),
+        Option(QStringLiteral("steady"), QStringLiteral("Duplicate Steady")),
+    };
+    if (Expect(!service.RegisterOperations(QStringLiteral("flow-simulation"),
+                                           invalidOptionOperations,
+                                           &message),
+               "duplicate option ids should be rejected"))
+        return 1;
+    if (Expect(message == QStringLiteral("Duplicate workflow operation parameter option id."),
+               "duplicate option rejection should use explicit message"))
         return 1;
 
     auto* context = xq::core::ApplicationContext::CreateDefault();

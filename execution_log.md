@@ -2800,6 +2800,52 @@
 - Promoted Workflow Operation Parameter UI Restore to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run: Workflow Operation Option Parameters
+
+- Completed autonomous research refresh:
+  - Rechecked comparable workstation patterns after generic parameter restore:
+    segmentation and simulation tool panels routinely include option-set
+    parameters, not only numeric spin boxes.
+  - Current XQ operation parameter metadata supports numeric scalar, integer
+    scalar, and placeholder point-list values, so solver profiles and mode
+    choices cannot be represented in the monolith workflow UI.
+  - Chosen next slice: add option-set parameter descriptors and render them as
+    generic workflow combo boxes, starting with Flow Simulation solver profile.
+- Added next executable phase to `plan.md`: Workflow Operation Option
+  Parameters.
+- Started the next unattended loop iteration:
+  - Adding failing Core option-parameter and Flow Simulation UI tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_workflow_operation_service` because Core did not
+    expose `WorkflowOperationParameterOption`, option metadata, or an `Option`
+    parameter value type.
+- Implemented Workflow Operation Option Parameters:
+  - Added Core option parameter descriptors with ordered option id/title
+    metadata.
+  - Option parameters default to their first option id and reject empty or
+    duplicate option lists.
+  - `SetParameterValue()` now rejects unknown option values.
+  - Generic workflow parameter panels render option parameters as `QComboBox`
+    controls and synchronize combo changes into Core state.
+  - Flow Simulation `configure-cfd-job` now exposes a `solver-profile` option
+    with steady, pulsatile, and transient profiles.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workflow_operation_service|simulation_operation_pages)"`
+    passed: 2/2.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 65/65.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Workflow Operation Option Parameters to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Run Script Monolith Fallback
 
 - Red test observed:

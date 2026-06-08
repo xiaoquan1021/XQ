@@ -698,6 +698,46 @@ void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
             editor = label;
             break;
         }
+        case xq::core::WorkflowOperationParameterValueType::Option:
+        {
+            auto* comboBox = new QComboBox(panel);
+            if (workflowId == QStringLiteral("image-preprocessing"))
+            {
+                comboBox->setObjectName(
+                    QStringLiteral("xqImagePreprocessingParameter_%1")
+                        .arg(parameter.Id));
+            }
+            else
+            {
+                comboBox->setObjectName(
+                    QStringLiteral("xqWorkflowParameter_%1")
+                        .arg(parameter.Id));
+            }
+            for (const auto& option : parameter.Options)
+                comboBox->addItem(option.Title, option.Id);
+            const int index = comboBox->findData(value.toString());
+            if (index >= 0)
+                comboBox->setCurrentIndex(index);
+            connect(comboBox,
+                    &QComboBox::currentIndexChanged,
+                    this,
+                    [this, comboBox, workflowId,
+                     operationId = selectedOperation->Id,
+                     parameterId = parameter.Id](int) {
+                        QString message;
+                        if (!m_Context.WorkflowOperations()->SetParameterValue(
+                                workflowId,
+                                operationId,
+                                parameterId,
+                                comboBox->currentData().toString(),
+                                &message))
+                        {
+                            m_Context.PostDiagnostic(message);
+                        }
+                    });
+            editor = comboBox;
+            break;
+        }
         }
 
         formLayout->addRow(parameter.Title, editor);
@@ -731,6 +771,17 @@ void MainWindow::UpdateWorkflowParameterEditorValue(const QString& workflowId,
     {
         QSignalBlocker blocker(integerEditor);
         integerEditor->setValue(value.toInt());
+        return;
+    }
+
+    if (auto* optionEditor = panel->findChild<QComboBox*>(objectName))
+    {
+        const int index = optionEditor->findData(value.toString());
+        if (index >= 0)
+        {
+            QSignalBlocker blocker(optionEditor);
+            optionEditor->setCurrentIndex(index);
+        }
     }
 }
 

@@ -15,7 +15,14 @@ enum class WorkflowOperationParameterValueType
 {
     NumericScalar,
     IntegerScalar,
-    IntegerPointList
+    IntegerPointList,
+    Option
+};
+
+struct WorkflowOperationParameterOption
+{
+    QString Id;
+    QString Title;
 };
 
 struct WorkflowOperationParameterDescriptor
@@ -24,6 +31,7 @@ struct WorkflowOperationParameterDescriptor
     QString Title;
     WorkflowOperationParameterValueType Type =
         WorkflowOperationParameterValueType::NumericScalar;
+    QVector<WorkflowOperationParameterOption> Options;
     bool Required = true;
 };
 
@@ -87,6 +95,10 @@ private:
     bool ContainsParameter(const QString& workflowId,
                            const QString& operationId,
                            const QString& parameterId) const;
+    bool ContainsOptionValue(const QString& workflowId,
+                             const QString& operationId,
+                             const QString& parameterId,
+                             const QString& value) const;
     static QVariant DefaultValueForParameter(
         const WorkflowOperationParameterDescriptor& parameter);
     static QString ParameterValueKey(const QString& workflowId,

@@ -3083,6 +3083,46 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Workflow Operation Option Parameters
+
+1. Extend monolith workflow operation parameter descriptors with option-set
+   values.
+   - Add a new `Option` parameter value type.
+   - Add ordered option descriptors with stable id and display title.
+   - Default option value should be the first option id.
+   - Reject option parameters that have no options or duplicate option ids.
+2. Render option parameters in generic workflow pages.
+   - Use `QComboBox` for option parameters.
+   - Object names should follow the existing generic parameter convention:
+     `xqWorkflowParameter_<parameter-id>`.
+   - Changing the combo box should update `WorkflowOperationService`
+     parameter state.
+3. Add first domain use in Flow Simulation.
+   - `configure-cfd-job` should expose a `solver-profile` option with ordered
+     values `steady`, `pulsatile`, and `transient`.
+   - Keep execution placeholder-only in this slice.
+4. Add regression tests before implementation:
+   - Core service preserves option metadata, initializes the first option id as
+     the default value, and rejects duplicate option ids.
+   - Flow Simulation page exposes a `solver-profile` combo box whose selected
+     value updates Core state.
+5. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+6. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

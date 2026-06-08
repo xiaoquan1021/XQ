@@ -239,6 +239,28 @@ xq::core::WorkflowOperationParameterDescriptor Parameter(
     return parameter;
 }
 
+xq::core::WorkflowOperationParameterOption Option(const QString& id,
+                                                  const QString& title)
+{
+    xq::core::WorkflowOperationParameterOption option;
+    option.Id = id;
+    option.Title = title;
+    return option;
+}
+
+xq::core::WorkflowOperationParameterDescriptor OptionParameter(
+    const QString& id,
+    const QString& title,
+    const QVector<xq::core::WorkflowOperationParameterOption>& options)
+{
+    auto parameter =
+        Parameter(id,
+                  title,
+                  xq::core::WorkflowOperationParameterValueType::Option);
+    parameter.Options = options;
+    return parameter;
+}
+
 xq::core::WorkflowOperationDescriptor Operation(
     const QString& id,
     const QString& title,
@@ -360,7 +382,16 @@ QVector<xq::core::WorkflowOperationDescriptor> FlowSimulationOperations()
     return {
         Operation(QStringLiteral("configure-cfd-job"),
                   QStringLiteral("Configure CFD Job"),
-                  {Parameter(QStringLiteral("inlet-count"),
+                  {OptionParameter(
+                       QStringLiteral("solver-profile"),
+                       QStringLiteral("Solver Profile"),
+                       {Option(QStringLiteral("steady"),
+                               QStringLiteral("Steady")),
+                        Option(QStringLiteral("pulsatile"),
+                               QStringLiteral("Pulsatile")),
+                        Option(QStringLiteral("transient"),
+                               QStringLiteral("Transient"))}),
+                   Parameter(QStringLiteral("inlet-count"),
                              QStringLiteral("Inlet Count"),
                              Type::IntegerScalar),
                    Parameter(QStringLiteral("outlet-count"),

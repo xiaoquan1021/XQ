@@ -53,6 +53,13 @@ QSpinBox* FindIntegerParameter(xq::presentation::MainWindow& window,
         QStringLiteral("xqWorkflowParameter_%1").arg(parameterId));
 }
 
+QComboBox* FindOptionParameter(xq::presentation::MainWindow& window,
+                               const QString& parameterId)
+{
+    return window.findChild<QComboBox*>(
+        QStringLiteral("xqWorkflowParameter_%1").arg(parameterId));
+}
+
 xq::core::DataImportRequest MakeMeshImport(const QString& id,
                                            const QString& displayName)
 {
@@ -125,6 +132,40 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+
+    flowSelector->setCurrentIndex(
+        flowSelector->findData(QStringLiteral("configure-cfd-job")));
+    app.processEvents();
+    auto* solverProfile =
+        FindOptionParameter(window, QStringLiteral("solver-profile"));
+    if (Expect(solverProfile != nullptr &&
+                   solverProfile->count() == 3 &&
+                   solverProfile->itemData(0).toString() ==
+                       QStringLiteral("steady") &&
+                   solverProfile->itemText(1) ==
+                       QStringLiteral("Pulsatile"),
+               "Configure CFD Job should expose ordered solver profile options"))
+    {
+        delete context;
+        return 1;
+    }
+    solverProfile->setCurrentIndex(
+        solverProfile->findData(QStringLiteral("transient")));
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()
+                   ->ParameterValues(QStringLiteral("flow-simulation"),
+                                     QStringLiteral("configure-cfd-job"))
+                   .value(QStringLiteral("solver-profile"))
+                   .toString() == QStringLiteral("transient"),
+               "solver profile option selector should update Core state"))
+    {
+        delete context;
+        return 1;
+    }
+
+    flowSelector->setCurrentIndex(
+        flowSelector->findData(QStringLiteral("run-steady-flow")));
+    app.processEvents();
 
     QString errorMessage;
     const auto flowMesh =

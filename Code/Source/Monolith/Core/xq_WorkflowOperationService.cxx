@@ -160,6 +160,45 @@ bool WorkflowOperationService::RegisterOperations(
             }
 
             parameterIds.insert(parameter.Id);
+
+            if (parameter.Type ==
+                WorkflowOperationParameterValueType::Option)
+            {
+                QSet<QString> optionIds;
+                for (auto& option : parameter.Options)
+                {
+                    option.Id = option.Id.trimmed();
+                    option.Title = option.Title.trimmed();
+                    if (option.Id.isEmpty() || option.Title.isEmpty())
+                    {
+                        SetMessage(
+                            message,
+                            QStringLiteral(
+                                "Workflow operation parameter option id and title are required."));
+                        return false;
+                    }
+
+                    if (optionIds.contains(option.Id))
+                    {
+                        SetMessage(
+                            message,
+                            QStringLiteral(
+                                "Duplicate workflow operation parameter option id."));
+                        return false;
+                    }
+
+                    optionIds.insert(option.Id);
+                }
+
+                if (optionIds.isEmpty())
+                {
+                    SetMessage(
+                        message,
+                        QStringLiteral(
+                            "Workflow operation option parameters require options."));
+                    return false;
+                }
+            }
         }
 
         operationIds.insert(normalizedOperation.Id);
@@ -342,6 +381,17 @@ bool WorkflowOperationService::SetParameterValue(const QString& workflowId,
         return false;
     }
 
+    if (!ContainsOptionValue(normalizedWorkflowId,
+                             normalizedOperationId,
+                             normalizedParameterId,
+                             value.toString()))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Workflow operation parameter option was not found."));
+        return false;
+    }
+
     const QString valueKey =
         ParameterValueKey(normalizedWorkflowId, normalizedOperationId);
     QVariantMap values = m_ParameterValues.value(valueKey);
@@ -403,6 +453,37 @@ bool WorkflowOperationService::ContainsParameter(
     return false;
 }
 
+bool WorkflowOperationService::ContainsOptionValue(
+    const QString& workflowId,
+    const QString& operationId,
+    const QString& parameterId,
+    const QString& value) const
+{
+    const auto operations = OperationsForWorkflow(workflowId);
+    for (const auto& operation : operations)
+    {
+        if (operation.Id != operationId)
+            continue;
+
+        for (const auto& parameter : operation.Parameters)
+        {
+            if (parameter.Id != parameterId)
+                continue;
+            if (parameter.Type != WorkflowOperationParameterValueType::Option)
+                return true;
+
+            for (const auto& option : parameter.Options)
+            {
+                if (option.Id == value.trimmed())
+                    return true;
+            }
+            return false;
+        }
+    }
+
+    return false;
+}
+
 QVariant WorkflowOperationService::DefaultValueForParameter(
     const WorkflowOperationParameterDescriptor& parameter)
 {
@@ -414,6 +495,10 @@ QVariant WorkflowOperationService::DefaultValueForParameter(
         return 0;
     case WorkflowOperationParameterValueType::IntegerPointList:
         return QVariantList();
+    case WorkflowOperationParameterValueType::Option:
+        if (!parameter.Options.isEmpty())
+            return parameter.Options.front().Id;
+        return QString();
     }
 
     return {};
