@@ -120,6 +120,62 @@ int main(int argc, char** argv)
             xq::core::ApplicationContext::CreateDefault());
         if (Expect(PreparePythonApiWorkflow(
                        *context,
+                       QStringLiteral("export-api-snippet")),
+                   "Python API fixture should prepare snippet operation"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(context->WorkflowOperations()->SetParameterValue(
+                       QStringLiteral("python-api"),
+                       QStringLiteral("export-api-snippet"),
+                       QStringLiteral("snippet-count"),
+                       3,
+                       &message),
+                   "Python API snippet count should be configurable"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicPythonApiWorkflowActionHandler(*context,
+                                                                  &message),
+                "Python API snippet fixture should install handler"))
+        {
+            return 1;
+        }
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "Python API snippet export should succeed"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message.contains(QStringLiteral(
+                       "Python API snippets (3)")) &&
+                       message.contains(QStringLiteral("xq.version()")) &&
+                       message.contains(QStringLiteral("xq.list_nodes()")) &&
+                       message.contains(QStringLiteral("xq.find_node(name)")),
+                   "snippet export should report deterministic API snippets"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(!message.contains(QStringLiteral("xq.resolve_upstream")),
+                   "snippet-count should limit generated snippets"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PreparePythonApiWorkflow(
+                       *context,
                        QStringLiteral("run-project-script")),
                    "Python API fixture should prepare script operation"))
         {

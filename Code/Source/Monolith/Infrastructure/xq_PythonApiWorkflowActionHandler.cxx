@@ -6,6 +6,11 @@
 
 #include <xq_PythonApiService.h>
 
+#include <QStringList>
+#include <QVariantMap>
+
+#include <algorithm>
+
 namespace xq::infrastructure
 {
 
@@ -14,6 +19,7 @@ namespace
 
 constexpr const char* kPythonApiWorkflowId = "python-api";
 constexpr const char* kOpenPythonConsoleOperationId = "open-python-console";
+constexpr const char* kExportApiSnippetOperationId = "export-api-snippet";
 
 void SetMessage(QString* message, const QString& value)
 {
@@ -79,6 +85,57 @@ bool RunOpenPythonConsole(xq::core::ApplicationContext& context,
     return true;
 }
 
+QStringList PythonApiSnippetCatalog()
+{
+    return {
+        QStringLiteral("xq.version()"),
+        QStringLiteral("xq.list_nodes()"),
+        QStringLiteral("xq.find_node(name)"),
+        QStringLiteral("xq.resolve_upstream(node_name, stage)"),
+        QStringLiteral("xq.read_model(name)"),
+        QStringLiteral("xq.project.save(path)"),
+    };
+}
+
+int RequestedSnippetCount(xq::core::WorkflowOperationService* operations,
+                          const QString& workflowId,
+                          const QString& operationId)
+{
+    if (!operations)
+        return PythonApiSnippetCatalog().size();
+
+    const QVariantMap parameters =
+        operations->ParameterValues(workflowId, operationId);
+    const int requested =
+        parameters.value(QStringLiteral("snippet-count")).toInt();
+    if (requested <= 0)
+        return PythonApiSnippetCatalog().size();
+
+    return requested;
+}
+
+bool RunExportApiSnippet(xq::core::WorkflowOperationService* operations,
+                         const xq::core::WorkflowContextSnapshot& snapshot,
+                         QString* message)
+{
+    const QStringList snippets = PythonApiSnippetCatalog();
+    const int count = std::min(
+        RequestedSnippetCount(operations,
+                              snapshot.WorkflowId,
+                              QString::fromLatin1(kExportApiSnippetOperationId)),
+        static_cast<int>(snippets.size()));
+    QStringList selected;
+    for (int i = 0; i < count; ++i)
+        selected.append(snippets.at(i));
+
+    SetMessage(
+        message,
+        QStringLiteral("Python API snippets (%1): %2")
+            .arg(count)
+            .arg(selected.join(QStringLiteral(" | "))));
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicPythonApiWorkflowActionHandler(
@@ -103,6 +160,14 @@ bool RegisterDynamicPythonApiWorkflowActionHandler(
             if (operationId !=
                 QString::fromLatin1(kOpenPythonConsoleOperationId))
             {
+                if (operationId ==
+                    QString::fromLatin1(kExportApiSnippetOperationId))
+                {
+                    return RunExportApiSnippet(operations,
+                                               snapshot,
+                                               taskMessage);
+                }
+
                 return RunPlaceholderPythonApiOperation(operations,
                                                         snapshot,
                                                         taskMessage);

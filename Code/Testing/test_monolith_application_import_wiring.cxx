@@ -497,6 +497,30 @@ int main(int argc, char** argv)
                        "C++ inspection service remains available")),
                "configured Python API action should report runtime availability"))
         return 1;
+    if (Expect(pythonApiContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("python-api"),
+                   QStringLiteral("export-api-snippet"),
+                   &message),
+               "configured Python API workflow should select snippet export"))
+        return 1;
+    if (Expect(pythonApiContext->WorkflowOperations()->SetParameterValue(
+                   QStringLiteral("python-api"),
+                   QStringLiteral("export-api-snippet"),
+                   QStringLiteral("snippet-count"),
+                   2,
+                   &message),
+               "configured Python API snippet count should be configurable"))
+        return 1;
+    if (Expect(pythonApiContext->WorkflowActions()
+                   ->RunActiveWorkflowAction(&message),
+               "configured Python API snippet action should use infrastructure behavior"))
+        return 1;
+    if (Expect(message.contains(QStringLiteral("Python API snippets (2)")) &&
+                   message.contains(QStringLiteral("xq.version()")) &&
+                   message.contains(QStringLiteral("xq.list_nodes()")) &&
+                   !message.contains(QStringLiteral("xq.find_node(name)")),
+               "configured Python API snippet action should export limited snippets"))
+        return 1;
 
     return 0;
 }

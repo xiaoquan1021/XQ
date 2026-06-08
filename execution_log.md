@@ -3077,6 +3077,54 @@
   in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run: Python API Snippet Export Infrastructure Action
+
+- Completed autonomous research refresh:
+  - After Python API availability landed, `run-project-script` still requires a
+    real Python runtime and pybind11 bridge, so implementing it now would fake
+    execution.
+  - `export-api-snippet` can use the existing C++ inspection service surface
+    and the already visible `snippet-count` parameter without requiring Python
+    runtime availability.
+  - Chosen next slice: deterministic Python API snippet export.
+- Added next executable phase to `plan.md`: Python API Snippet Export
+  Infrastructure Action.
+- Started RED tests first:
+  - Extended `test_monolith_python_api_workflow_action_handler` so
+    `export-api-snippet` must return deterministic snippet text and honor
+    `snippet-count`.
+  - Extended `test_monolith_application_import_wiring` so configured monolith
+    composition must use Infrastructure snippet behavior.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(python_api_workflow_action_handler|application_import_wiring)"`
+    failed because `export-api-snippet` still returned the placeholder
+    `Export API Snippet python api operation accepted.`
+- Implemented Python API snippet export:
+  - Added an Infrastructure snippet catalog for version, list-nodes,
+    find-node, upstream resolution, model read, and project save examples.
+  - `export-api-snippet` now reads `snippet-count` from
+    `WorkflowOperationService` and returns a deterministic limited snippet
+    message.
+  - `run-project-script` remains on the operation-aware placeholder path.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(python_api_workflow_action_handler|application_import_wiring)"`
+    passed: 2/2.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Python API Snippet Export Infrastructure Action to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Segmentation 2D Infrastructure Action Handler
 
 - Completed autonomous research refresh:

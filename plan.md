@@ -3603,6 +3603,41 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Python API Snippet Export Infrastructure Action
+
+1. Promote the Python API `export-api-snippet` operation from placeholder
+   acceptance to a deterministic Infrastructure action.
+   - Generate a small usage snippet catalog from the existing
+     `xq_PythonApiService` C++ inspection surface.
+   - Respect the `snippet-count` operation parameter so the UI control has
+     observable behavior.
+   - Keep output text deterministic and task-history friendly.
+2. Keep `run-project-script` on the existing placeholder path for this slice.
+   - Do not fabricate script execution while pybind11/runtime is unavailable.
+3. Add C++ regression tests before implementation:
+   - `export-api-snippet` returns real snippet text including version,
+     list-nodes, and find-node usage.
+   - `snippet-count` limits the number of generated snippets.
+   - Unsupported Python API operations still use the placeholder path.
+   - The configured monolith composition root uses Infrastructure snippet
+     behavior for `export-api-snippet`.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
