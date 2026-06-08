@@ -3638,6 +3638,42 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Python API Script Runtime Guard
+
+1. Promote the Python API `run-project-script` operation from placeholder
+   acceptance to an Infrastructure runtime guard.
+   - Use `xq_PythonApiService::IsAvailable()` and
+     `GetAvailabilityDiagnostic()` to detect the unavailable Python runtime.
+   - Return failure with a deterministic diagnostic while pybind11/runtime is
+     unavailable.
+   - Do not fabricate script execution or mark script runs as successful.
+2. Keep `open-python-console` and `export-api-snippet` Infrastructure behavior
+   from the previous slices.
+3. Add C++ regression tests before implementation:
+   - `run-project-script` returns false and reports the runtime-unavailable
+     diagnostic.
+   - Task history records the script attempt as failed.
+   - The Python API operation page posts a failed diagnostic for the script
+     runner instead of a succeeded placeholder.
+   - The configured monolith composition root uses Infrastructure guard
+     behavior for `run-project-script`.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

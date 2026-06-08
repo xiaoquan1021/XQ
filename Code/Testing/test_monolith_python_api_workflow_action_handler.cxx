@@ -191,17 +191,24 @@ int main(int argc, char** argv)
         {
             return 1;
         }
-        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
                        &message),
-                   "unsupported Python API operation should preserve placeholder"))
+                   "Python API script runner should fail when runtime is unavailable"))
         {
             return 1;
         }
-        if (Expect(message == QStringLiteral(
-                                  "Project Script Runner python api operation accepted."),
-                   "unsupported Python API operation should report placeholder"))
+        if (Expect(message.contains(QStringLiteral(
+                       "Python project script runtime is unavailable")) &&
+                       message.contains(QStringLiteral(
+                           "Python API unavailable in this build")),
+                   "Python API script runner should report runtime diagnostic"))
         {
             std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(!context->Tasks()->History().back().Succeeded,
+                   "Python API script task should be recorded as failed"))
+        {
             return 1;
         }
     }

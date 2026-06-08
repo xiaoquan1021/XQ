@@ -19,6 +19,7 @@ namespace
 
 constexpr const char* kPythonApiWorkflowId = "python-api";
 constexpr const char* kOpenPythonConsoleOperationId = "open-python-console";
+constexpr const char* kRunProjectScriptOperationId = "run-project-script";
 constexpr const char* kExportApiSnippetOperationId = "export-api-snippet";
 
 void SetMessage(QString* message, const QString& value)
@@ -82,6 +83,25 @@ bool RunOpenPythonConsole(xq::core::ApplicationContext& context,
 
     SetMessage(message,
                QStringLiteral("%1 | %2").arg(versionText, availability));
+    return true;
+}
+
+bool RunProjectScript(xq::core::ApplicationContext& context,
+                      QString* message)
+{
+    xq_PythonApiService service(context.DataStorage().GetPointer());
+    if (!service.IsAvailable())
+    {
+        SetMessage(
+            message,
+            QStringLiteral("Python project script runtime is unavailable. %1")
+                .arg(QString::fromStdString(
+                    service.GetAvailabilityDiagnostic())));
+        return false;
+    }
+
+    SetMessage(message,
+               QStringLiteral("Python project script runtime is available."));
     return true;
 }
 
@@ -160,6 +180,12 @@ bool RegisterDynamicPythonApiWorkflowActionHandler(
             if (operationId !=
                 QString::fromLatin1(kOpenPythonConsoleOperationId))
             {
+                if (operationId ==
+                    QString::fromLatin1(kRunProjectScriptOperationId))
+                {
+                    return RunProjectScript(context, taskMessage);
+                }
+
                 if (operationId ==
                     QString::fromLatin1(kExportApiSnippetOperationId))
                 {

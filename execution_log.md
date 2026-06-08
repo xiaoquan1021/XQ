@@ -3125,6 +3125,56 @@
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run: Python API Script Runtime Guard
+
+- Completed autonomous research refresh:
+  - Comparable workstation Python surfaces are real automation entry points,
+    not successful no-op placeholders.
+  - The Windows monolith still builds without pybind11/Python extension ABI, so
+    `run-project-script` should fail clearly instead of reporting accepted.
+  - Chosen next slice: runtime-unavailable guard for `run-project-script`.
+- Added next executable phase to `plan.md`: Python API Script Runtime Guard.
+- Started RED tests first:
+  - Extended `test_monolith_python_api_workflow_action_handler` so
+    `run-project-script` must fail with the Python runtime diagnostic and record
+    failed task history.
+  - Extended `test_monolith_python_api_operation_page` so the UI posts a failed
+    diagnostic instead of a succeeded placeholder.
+  - Extended `test_monolith_application_import_wiring` so production
+    composition uses the Infrastructure guard.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(python_api_workflow_action_handler|application_import_wiring|python_api_operation_page)"`
+    failed because `run-project-script` still returned the placeholder
+    `Project Script Runner python api operation accepted.`
+- Implemented Python API script runtime guard:
+  - Added a `run-project-script` Infrastructure branch that calls
+    `xq_PythonApiService::IsAvailable()`.
+  - When the runtime is unavailable, the action returns false with the existing
+    availability diagnostic and records failed task history.
+  - `open-python-console` and `export-api-snippet` behavior remains unchanged.
+- Debugging note:
+  - The first target rerun showed the new UI test referenced the Infrastructure
+    handler without linking `xqMonolithInfrastructure`.
+  - Added the missing CMake test target dependencies and kept the test scoped
+    to production-like handler registration.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(python_api_workflow_action_handler|application_import_wiring|python_api_operation_page)"`
+    passed: 3/3.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Python API Script Runtime Guard to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Segmentation 2D Infrastructure Action Handler
 
 - Completed autonomous research refresh:

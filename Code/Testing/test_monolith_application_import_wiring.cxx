@@ -521,6 +521,22 @@ int main(int argc, char** argv)
                    !message.contains(QStringLiteral("xq.find_node(name)")),
                "configured Python API snippet action should export limited snippets"))
         return 1;
+    if (Expect(pythonApiContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("python-api"),
+                   QStringLiteral("run-project-script"),
+                   &message),
+               "configured Python API workflow should select script runner"))
+        return 1;
+    if (Expect(!pythonApiContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured Python API script action should use runtime guard"))
+        return 1;
+    if (Expect(message.contains(QStringLiteral(
+                       "Python project script runtime is unavailable")) &&
+                   message.contains(QStringLiteral(
+                       "Python API unavailable in this build")),
+               "configured Python API script action should report unavailable runtime"))
+        return 1;
 
     return 0;
 }

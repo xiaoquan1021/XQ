@@ -2,6 +2,7 @@
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
+#include "Infrastructure/xq_PythonApiWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
@@ -61,6 +62,8 @@ int main(int argc, char** argv)
     xq::domain::RegisterDefaultWorkflowActionHandlers(
         *context->WorkflowActions(),
         context->WorkflowOperations());
+    xq::infrastructure::RegisterDynamicPythonApiWorkflowActionHandler(
+        *context);
     xq::presentation::MainWindow window(*context);
 
     if (Expect(FindActionButton(window, QStringLiteral("project")) == nullptr,
@@ -155,8 +158,8 @@ int main(int argc, char** argv)
     actionButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Python API succeeded: Project Script Runner python api operation accepted.")),
-               "Python API action should report selected operation"))
+                   "Run Python API failed: Python project script runtime is unavailable. Python API unavailable in this build: the xq Python extension module was not built because pybind11 and a matching Python 3.11 ABI are not linked. The C++ inspection service remains available for tests and internal callers.")),
+               "Python API script action should report unavailable runtime"))
     {
         delete context;
         return 1;

@@ -714,8 +714,10 @@ if(TARGET xqMonolithCore)
 
     xq_add_registered_test(test_monolith_python_api_operation_page
         xqMonolithPresentation
+        xqMonolithInfrastructure
         xqMonolithDomain
         xqMonolithCore
+        xqModulePythonApi
         Qt6::Core
         Qt6::Widgets
         MitkCore
