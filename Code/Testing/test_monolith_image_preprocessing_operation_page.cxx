@@ -7,7 +7,10 @@
 
 #include <QApplication>
 #include <QComboBox>
+#include <QDoubleSpinBox>
 #include <QPushButton>
+#include <QSpinBox>
+#include <QWidget>
 
 #include <iostream>
 
@@ -46,6 +49,26 @@ QPushButton* FindActionButton(xq::presentation::MainWindow& window)
         QStringLiteral("xqWorkflowPrimaryAction_image-preprocessing"));
 }
 
+QWidget* FindParameterPanel(xq::presentation::MainWindow& window)
+{
+    return window.findChild<QWidget*>(
+        QStringLiteral("xqImagePreprocessingParameterPanel"));
+}
+
+QDoubleSpinBox* FindNumericParameter(xq::presentation::MainWindow& window,
+                                     const QString& parameterId)
+{
+    return window.findChild<QDoubleSpinBox*>(
+        QStringLiteral("xqImagePreprocessingParameter_%1").arg(parameterId));
+}
+
+QSpinBox* FindIntegerParameter(xq::presentation::MainWindow& window,
+                               const QString& parameterId)
+{
+    return window.findChild<QSpinBox*>(
+        QStringLiteral("xqImagePreprocessingParameter_%1").arg(parameterId));
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -68,6 +91,13 @@ int main(int argc, char** argv)
     auto* actionButton = FindActionButton(window);
     if (Expect(actionButton != nullptr,
                "image preprocessing page should expose a primary action"))
+    {
+        delete context;
+        return 1;
+    }
+    auto* parameterPanel = FindParameterPanel(window);
+    if (Expect(parameterPanel != nullptr,
+               "image preprocessing page should expose a parameter panel"))
     {
         delete context;
         return 1;
@@ -97,6 +127,21 @@ int main(int argc, char** argv)
     }
     if (Expect(actionButton->text() == QStringLiteral("Run Binary Threshold"),
                "image preprocessing action text should include selected operation"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindNumericParameter(window, QStringLiteral("lower")) != nullptr &&
+                   FindNumericParameter(window, QStringLiteral("upper")) != nullptr &&
+                   FindNumericParameter(window, QStringLiteral("inside-value")) != nullptr &&
+                   FindNumericParameter(window, QStringLiteral("outside-value")) != nullptr,
+               "binary threshold should expose numeric parameter controls"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindNumericParameter(window, QStringLiteral("sigma")) == nullptr,
+               "inactive operation parameters should not be visible"))
     {
         delete context;
         return 1;
@@ -150,6 +195,39 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(FindNumericParameter(window, QStringLiteral("sigma")) != nullptr,
+               "Gaussian smoothing should expose sigma parameter"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindNumericParameter(window, QStringLiteral("lower")) == nullptr,
+               "switching operations should remove previous parameter controls"))
+    {
+        delete context;
+        return 1;
+    }
+
+    operationSelector->setCurrentIndex(
+        operationSelector->findData(QStringLiteral("crop")));
+    app.processEvents();
+    if (Expect(FindIntegerParameter(window, QStringLiteral("origin-x")) != nullptr &&
+                   FindIntegerParameter(window, QStringLiteral("size-z")) != nullptr,
+               "crop should expose integer parameter controls"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindNumericParameter(window, QStringLiteral("sigma")) == nullptr,
+               "switching to crop should remove Gaussian parameter controls"))
+    {
+        delete context;
+        return 1;
+    }
+
+    operationSelector->setCurrentIndex(
+        operationSelector->findData(QStringLiteral("gaussian-smoothing")));
+    app.processEvents();
 
     QStringList diagnostics;
     QObject::connect(context,

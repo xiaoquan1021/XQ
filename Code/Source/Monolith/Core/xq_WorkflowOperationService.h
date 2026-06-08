@@ -9,10 +9,27 @@
 namespace xq::core
 {
 
+enum class WorkflowOperationParameterValueType
+{
+    NumericScalar,
+    IntegerScalar,
+    IntegerPointList
+};
+
+struct WorkflowOperationParameterDescriptor
+{
+    QString Id;
+    QString Title;
+    WorkflowOperationParameterValueType Type =
+        WorkflowOperationParameterValueType::NumericScalar;
+    bool Required = true;
+};
+
 struct WorkflowOperationDescriptor
 {
     QString Id;
     QString Title;
+    QVector<WorkflowOperationParameterDescriptor> Parameters;
 };
 
 class WorkflowOperationService : public QObject

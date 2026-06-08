@@ -79,6 +79,33 @@ ImagePreprocessingOperations()
         xq::core::WorkflowOperationDescriptor descriptor;
         descriptor.Id = operation.Id;
         descriptor.Title = operation.Title;
+        for (const auto& parameter : operation.Parameters)
+        {
+            xq::core::WorkflowOperationParameterDescriptor
+                parameterDescriptor;
+            parameterDescriptor.Id = parameter.Id;
+            parameterDescriptor.Title = parameter.Title;
+            parameterDescriptor.Required = parameter.Required;
+            switch (parameter.Type)
+            {
+            case ImagePreprocessingParameterValueType::NumericScalar:
+                parameterDescriptor.Type =
+                    xq::core::WorkflowOperationParameterValueType::
+                        NumericScalar;
+                break;
+            case ImagePreprocessingParameterValueType::IntegerScalar:
+                parameterDescriptor.Type =
+                    xq::core::WorkflowOperationParameterValueType::
+                        IntegerScalar;
+                break;
+            case ImagePreprocessingParameterValueType::IntegerPointList:
+                parameterDescriptor.Type =
+                    xq::core::WorkflowOperationParameterValueType::
+                        IntegerPointList;
+                break;
+            }
+            descriptor.Parameters.push_back(parameterDescriptor);
+        }
         operations.push_back(descriptor);
     }
 

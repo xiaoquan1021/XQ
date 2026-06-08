@@ -19,6 +19,8 @@
 #include <QAction>
 #include <QComboBox>
 #include <QDockWidget>
+#include <QDoubleSpinBox>
+#include <QFormLayout>
 #include <QFrame>
 #include <QHeaderView>
 #include <QItemSelectionModel>
@@ -28,6 +30,7 @@
 #include <QScopeGuard>
 #include <QSignalBlocker>
 #include <QSplitter>
+#include <QSpinBox>
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QTableWidget>
@@ -523,6 +526,7 @@ void MainWindow::UpdateWorkflowOperationControls()
             operationTitle = operations.front().Title;
 
         button->setText(QStringLiteral("Run %1").arg(operationTitle));
+        RebuildWorkflowParameterPanel(workflowId);
     }
 
     for (auto it = m_WorkflowOperationSelectors.begin();
@@ -541,6 +545,79 @@ void MainWindow::UpdateWorkflowOperationControls()
             QSignalBlocker blocker(selector);
             selector->setCurrentIndex(index);
         }
+    }
+}
+
+void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
+{
+    auto* panel = m_WorkflowParameterPanels.value(workflowId, nullptr);
+    if (!panel)
+        return;
+
+    auto* formLayout = qobject_cast<QFormLayout*>(panel->layout());
+    if (!formLayout)
+        return;
+
+    while (formLayout->rowCount() > 0)
+        formLayout->removeRow(0);
+
+    const auto operations =
+        m_Context.WorkflowOperations()->OperationsForWorkflow(workflowId);
+    const QString selectedOperationId =
+        m_Context.WorkflowOperations()->SelectedOperationId(workflowId);
+    const xq::core::WorkflowOperationDescriptor* selectedOperation = nullptr;
+    for (const auto& operation : operations)
+    {
+        if (operation.Id == selectedOperationId)
+        {
+            selectedOperation = &operation;
+            break;
+        }
+    }
+    if (!selectedOperation && !operations.isEmpty())
+        selectedOperation = &operations.front();
+    if (!selectedOperation)
+        return;
+
+    for (const auto& parameter : selectedOperation->Parameters)
+    {
+        QWidget* editor = nullptr;
+        switch (parameter.Type)
+        {
+        case xq::core::WorkflowOperationParameterValueType::NumericScalar:
+        {
+            auto* spinBox = new QDoubleSpinBox(panel);
+            spinBox->setObjectName(
+                QStringLiteral("xqImagePreprocessingParameter_%1")
+                    .arg(parameter.Id));
+            spinBox->setDecimals(3);
+            spinBox->setRange(-1000000.0, 1000000.0);
+            editor = spinBox;
+            break;
+        }
+        case xq::core::WorkflowOperationParameterValueType::IntegerScalar:
+        {
+            auto* spinBox = new QSpinBox(panel);
+            spinBox->setObjectName(
+                QStringLiteral("xqImagePreprocessingParameter_%1")
+                    .arg(parameter.Id));
+            spinBox->setRange(-1000000, 1000000);
+            editor = spinBox;
+            break;
+        }
+        case xq::core::WorkflowOperationParameterValueType::IntegerPointList:
+        {
+            auto* label =
+                new QLabel(QStringLiteral("Point editor pending"), panel);
+            label->setObjectName(
+                QStringLiteral("xqImagePreprocessingParameter_%1")
+                    .arg(parameter.Id));
+            editor = label;
+            break;
+        }
+        }
+
+        formLayout->addRow(parameter.Title, editor);
     }
 }
 
@@ -790,6 +867,23 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
 
             m_WorkflowOperationSelectors.insert(id, operationSelector);
             layout->addWidget(operationSelector);
+
+            auto* parameterPanel = new QWidget(page);
+            if (id == QStringLiteral("image-preprocessing"))
+            {
+                parameterPanel->setObjectName(QStringLiteral(
+                    "xqImagePreprocessingParameterPanel"));
+            }
+            else
+            {
+                parameterPanel->setObjectName(
+                    QStringLiteral("xqWorkflowParameterPanel_%1").arg(id));
+            }
+            auto* parameterLayout = new QFormLayout(parameterPanel);
+            parameterLayout->setContentsMargins(0, 0, 0, 0);
+            parameterLayout->setSpacing(8);
+            m_WorkflowParameterPanels.insert(id, parameterPanel);
+            layout->addWidget(parameterPanel);
         }
 
         auto* statusLabel = new QLabel(page);

@@ -2663,6 +2663,51 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 7. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Image Preprocessing Parameter Panel
+
+1. Extend Core workflow operation descriptors with ordered parameters.
+   - Add a generic parameter descriptor with id, title, value type, and
+     required flag.
+   - Preserve parameters when registering operations.
+   - Reject duplicate parameter ids inside a single operation.
+2. Map Image Preprocessing domain parameters into Core operation metadata.
+   - Numeric scalar parameters become numeric UI controls.
+   - Integer scalar parameters become integer UI controls.
+   - Integer point-list parameters remain represented for a later richer
+     editor.
+3. Surface operation parameters on the Image Preprocessing page.
+   - Add a panel object named `xqImagePreprocessingParameterPanel`.
+   - Default Binary Threshold shows lower, upper, inside value, and outside
+     value numeric controls.
+   - Gaussian Smoothing shows only sigma.
+   - Crop shows origin and size integer controls.
+   - Switching operations rebuilds the parameter panel and removes stale
+     controls.
+4. Keep scope narrow.
+   - Do not yet persist parameter values.
+   - Do not yet pass UI parameter values into the MITK execution path.
+   - Preserve the selected-operation action behavior from the previous slice.
+5. Add C++ regression tests before implementation:
+   - Core operation-service parameters roundtrip and duplicate parameter ids
+     are rejected.
+   - Image Preprocessing page exposes a parameter panel and rebuilds controls
+     for Binary Threshold, Gaussian Smoothing, and Crop.
+6. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+7. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

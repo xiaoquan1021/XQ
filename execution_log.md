@@ -2603,6 +2603,15 @@
     passed.
   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workflow_operation_service|image_preprocessing_operation_page)"`
     passed: 2/2.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All PowerShell tests in `tests\*.ps1` passed: 15/15.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 59/59.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Image Preprocessing Parameter Panel to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
   - Related compatibility tests
     `test_monolith_workflow_action_service`,
     `test_monolith_domain_workflow_action_handlers`,
@@ -2617,3 +2626,38 @@
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Image Preprocessing Operation Selector to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Rechecked the new Image Preprocessing operation selector against the
+    existing Domain parameter descriptors.
+  - The page can now choose an operation, but it still does not expose the
+    operation's parameters, leaving the workflow too generic for real
+    preprocessing use.
+  - Chosen next slice: carry operation parameter descriptors through Core and
+    render a dynamic Image Preprocessing parameter panel.
+- Added next executable phase to `plan.md`: Image Preprocessing Parameter
+  Panel.
+- Started the next unattended loop iteration:
+  - Adding failing Core parameter metadata and Image Preprocessing parameter
+    panel tests first.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    extending the existing operation-service and operation-page tests.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed while
+    compiling `test_monolith_workflow_operation_service` because Core did not
+    expose workflow operation parameter descriptors or value types.
+- Implemented Image Preprocessing parameter panel:
+  - Extended Core workflow operation descriptors with ordered parameter
+    descriptors.
+  - `WorkflowOperationService` now preserves parameters and rejects duplicate
+    parameter ids inside an operation.
+  - Mapped Image Preprocessing Domain parameters into Core operation metadata.
+  - Added a dynamic Image Preprocessing parameter panel that rebuilds controls
+    when the selected operation changes.
+  - Numeric scalar parameters use `QDoubleSpinBox`; integer scalar parameters
+    use `QSpinBox`; integer point lists get a placeholder row for a later
+    richer editor.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workflow_operation_service|image_preprocessing_operation_page)"`
+    passed: 2/2.

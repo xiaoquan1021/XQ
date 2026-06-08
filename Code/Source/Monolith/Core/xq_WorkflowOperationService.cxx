@@ -45,6 +45,7 @@ bool WorkflowOperationService::RegisterOperations(
         WorkflowOperationDescriptor normalizedOperation;
         normalizedOperation.Id = operation.Id.trimmed();
         normalizedOperation.Title = operation.Title.trimmed();
+        normalizedOperation.Parameters = operation.Parameters;
         if (normalizedOperation.Id.isEmpty() ||
             normalizedOperation.Title.isEmpty())
         {
@@ -59,6 +60,31 @@ bool WorkflowOperationService::RegisterOperations(
             SetMessage(message,
                        QStringLiteral("Duplicate workflow operation id."));
             return false;
+        }
+
+        QSet<QString> parameterIds;
+        for (auto& parameter : normalizedOperation.Parameters)
+        {
+            parameter.Id = parameter.Id.trimmed();
+            parameter.Title = parameter.Title.trimmed();
+            if (parameter.Id.isEmpty() || parameter.Title.isEmpty())
+            {
+                SetMessage(message,
+                           QStringLiteral(
+                               "Workflow operation parameter id and title are required."));
+                return false;
+            }
+
+            if (parameterIds.contains(parameter.Id))
+            {
+                SetMessage(
+                    message,
+                    QStringLiteral(
+                        "Duplicate workflow operation parameter id."));
+                return false;
+            }
+
+            parameterIds.insert(parameter.Id);
         }
 
         operationIds.insert(normalizedOperation.Id);

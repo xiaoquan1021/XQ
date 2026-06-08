@@ -26,6 +26,19 @@ xq::core::WorkflowOperationDescriptor Operation(const QString& id,
     return operation;
 }
 
+xq::core::WorkflowOperationParameterDescriptor Parameter(
+    const QString& id,
+    const QString& title,
+    xq::core::WorkflowOperationParameterValueType type)
+{
+    xq::core::WorkflowOperationParameterDescriptor parameter;
+    parameter.Id = id;
+    parameter.Title = title;
+    parameter.Type = type;
+    parameter.Required = true;
+    return parameter;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -45,6 +58,10 @@ int main(int argc, char** argv)
         Operation(QStringLiteral("gaussian-smoothing"),
                   QStringLiteral("Gaussian Smoothing")),
     };
+    operations[1].Parameters.push_back(
+        Parameter(QStringLiteral("sigma"),
+                  QStringLiteral("Sigma"),
+                  xq::core::WorkflowOperationParameterValueType::NumericScalar));
     if (Expect(service.RegisterOperations(QStringLiteral("image-preprocessing"),
                                           operations,
                                           &message),
@@ -62,6 +79,15 @@ int main(int argc, char** argv)
     if (Expect(registered.at(0).Id == QStringLiteral("binary-threshold") &&
                    registered.at(0).Title == QStringLiteral("Binary Threshold"),
                "registered workflow operations should preserve order and title"))
+        return 1;
+    if (Expect(registered.at(1).Parameters.size() == 1 &&
+                   registered.at(1).Parameters.at(0).Id ==
+                       QStringLiteral("sigma") &&
+                   registered.at(1).Parameters.at(0).Title ==
+                       QStringLiteral("Sigma") &&
+                   registered.at(1).Parameters.at(0).Type ==
+                       xq::core::WorkflowOperationParameterValueType::NumericScalar,
+               "registered workflow operations should preserve parameters"))
         return 1;
     if (Expect(service.SelectedOperationId(QStringLiteral("image-preprocessing")) ==
                    QStringLiteral("binary-threshold"),
@@ -137,6 +163,27 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(message == QStringLiteral("Duplicate workflow operation id."),
                "duplicate operation rejection should use explicit message"))
+        return 1;
+
+    operations = {
+        Operation(QStringLiteral("crop"),
+                  QStringLiteral("Crop")),
+    };
+    operations[0].Parameters.push_back(
+        Parameter(QStringLiteral("origin-x"),
+                  QStringLiteral("Origin X"),
+                  xq::core::WorkflowOperationParameterValueType::IntegerScalar));
+    operations[0].Parameters.push_back(
+        Parameter(QStringLiteral("origin-x"),
+                  QStringLiteral("Duplicate Origin X"),
+                  xq::core::WorkflowOperationParameterValueType::IntegerScalar));
+    if (Expect(!service.RegisterOperations(QStringLiteral("image-preprocessing"),
+                                           operations,
+                                           &message),
+               "duplicate parameter ids should be rejected"))
+        return 1;
+    if (Expect(message == QStringLiteral("Duplicate workflow operation parameter id."),
+               "duplicate parameter rejection should use explicit message"))
         return 1;
 
     auto* context = xq::core::ApplicationContext::CreateDefault();

@@ -6,6 +6,7 @@
 
 class QAction;
 class QComboBox;
+class QFormLayout;
 class QLabel;
 class QListWidget;
 class QPushButton;
@@ -49,6 +50,7 @@ private:
     void SyncWorkflowNavigationFromCore(const QString& workflowId);
     void UpdateWorkflowContextStatusPage();
     void UpdateWorkflowOperationControls();
+    void RebuildWorkflowParameterPanel(const QString& workflowId);
     void UpdateDataWorkflowPage();
     void UpdateProjectPage(const xq::core::ProjectMetadata* project);
     void UpdateProjectPageDataCount();
@@ -69,6 +71,7 @@ private:
     QLabel* m_DataDisplayNameLabel = nullptr;
     QLabel* m_DataSourcePathLabel = nullptr;
     QLabel* m_DataWorkflowRoleLabel = nullptr;
+    QHash<QString, QWidget*> m_WorkflowParameterPanels;
     QHash<QString, QComboBox*> m_WorkflowOperationSelectors;
     QHash<QString, QLabel*> m_WorkflowContextStatusLabels;
     QHash<QString, QPushButton*> m_WorkflowPrimaryActionButtons;
