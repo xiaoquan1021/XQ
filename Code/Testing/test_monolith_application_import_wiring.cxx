@@ -430,5 +430,41 @@ int main(int argc, char** argv)
                "configured ROM action should require a MITK mesh or simulation prep node"))
         return 1;
 
+    auto multiphysicsContext =
+        std::unique_ptr<xq::core::ApplicationContext>(
+            xq::core::ApplicationContext::CreateDefault());
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *multiphysicsContext->WorkflowActions(),
+        multiphysicsContext->WorkflowOperations());
+    CancelPathProvider multiphysicsProvider;
+    auto multiphysicsWindow =
+        xq::CreateConfiguredMainWindow(*multiphysicsContext,
+                                       &multiphysicsProvider);
+
+    if (Expect(multiphysicsContext->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("multiphysics")),
+               "configured MultiPhysics workflow should be selectable"))
+        return 1;
+    if (Expect(multiphysicsContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("multiphysics"),
+                   QStringLiteral("configure-coupling"),
+                   &message),
+               "configured MultiPhysics workflow should select coupling configuration"))
+        return 1;
+    const auto multiphysicsImportResult =
+        multiphysicsContext->DataImports()->Import(MakeMeshImport(),
+                                                   &message);
+    if (Expect(multiphysicsImportResult.Succeeded,
+               "configured MultiPhysics mesh import should succeed"))
+        return 1;
+    if (Expect(!multiphysicsContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured MultiPhysics action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active ROM or simulation prep node is required for multiphysics coupling."),
+               "configured MultiPhysics action should require a MITK ROM or simulation prep node"))
+        return 1;
+
     return 0;
 }

@@ -10,6 +10,7 @@
 #include "Infrastructure/xq_MeshingWorkflowActionHandler.h"
 #include "Infrastructure/xq_FlowSimulationWorkflowActionHandler.h"
 #include "Infrastructure/xq_RomSimulationWorkflowActionHandler.h"
+#include "Infrastructure/xq_MultiPhysicsWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
 
@@ -56,6 +57,9 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
         context,
         configured->RenderRefresh.get());
     xq::infrastructure::RegisterDynamicRomSimulationWorkflowActionHandler(
+        context,
+        configured->RenderRefresh.get());
+    xq::infrastructure::RegisterDynamicMultiPhysicsWorkflowActionHandler(
         context,
         configured->RenderRefresh.get());
     configured->Window =

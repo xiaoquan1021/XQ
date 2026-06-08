@@ -3526,6 +3526,48 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: MultiPhysics Configure Coupling Infrastructure Action Handler
+
+1. Promote the MultiPhysics `configure-coupling` operation from placeholder
+   acceptance to a real Infrastructure action handler.
+   - Require the selected data to resolve to a ROMSimulation or
+     SimulationPrep MITK node.
+   - Create an `xq_MitkMultiPhysicsJob` with a validated
+     `xq_MultiPhysicsJob`.
+   - Seed minimal fluid and solid domains plus an FSI equation so validation
+     passes without running a solver.
+   - Persist source ROM/simulation metadata and selected operation parameters
+     on the generated node.
+   - Register the generated MultiPhysics job in `DataCatalogService`,
+     `DataHierarchyService`, and `DataNodeRegistryService`.
+   - Select the generated MultiPhysics job and refresh MITK rendering after
+     success.
+2. Keep `run-coupled-solve`, `review-coupled-results`, and ROM solver
+   execution on the existing operation-aware placeholder path for this slice.
+3. Add C++ regression tests before implementation:
+   - `configure-coupling` rejects missing ROMSimulation/SimulationPrep MITK
+     nodes.
+   - A valid ROMSimulation selection creates and registers an
+     `xq_MitkMultiPhysicsJob` node.
+   - The configured monolith composition root uses Infrastructure validation
+     for `configure-coupling`.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

@@ -50,6 +50,8 @@ QString WorkflowRoleToString(DataWorkflowRole role)
         return QStringLiteral("simulation-result");
     case DataWorkflowRole::ROMSimulation:
         return QStringLiteral("rom-simulation");
+    case DataWorkflowRole::MultiPhysics:
+        return QStringLiteral("multiphysics");
     }
 
     return QStringLiteral("unknown");
@@ -77,6 +79,8 @@ bool WorkflowRoleFromString(const QString& value, DataWorkflowRole* role)
         *role = DataWorkflowRole::SimulationResult;
     else if (value == QStringLiteral("rom-simulation"))
         *role = DataWorkflowRole::ROMSimulation;
+    else if (value == QStringLiteral("multiphysics"))
+        *role = DataWorkflowRole::MultiPhysics;
     else
         return false;
 

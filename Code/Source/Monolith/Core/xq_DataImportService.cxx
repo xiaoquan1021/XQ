@@ -35,6 +35,8 @@ QString WorkflowRoleToken(DataWorkflowRole role)
         return QStringLiteral("result");
     case DataWorkflowRole::ROMSimulation:
         return QStringLiteral("rom");
+    case DataWorkflowRole::MultiPhysics:
+        return QStringLiteral("multiphysics");
     case DataWorkflowRole::Unknown:
         break;
     }
@@ -249,6 +251,8 @@ QString DataImportService::RoleFolderDisplayName(DataWorkflowRole role)
         return QStringLiteral("Simulation Results");
     case DataWorkflowRole::ROMSimulation:
         return QStringLiteral("ROM Simulations");
+    case DataWorkflowRole::MultiPhysics:
+        return QStringLiteral("MultiPhysics");
     case DataWorkflowRole::Unknown:
         break;
     }
@@ -278,6 +282,8 @@ QString DataImportService::RoleFolderId(DataWorkflowRole role)
         return QStringLiteral("simulation-results");
     case DataWorkflowRole::ROMSimulation:
         return QStringLiteral("rom-simulations");
+    case DataWorkflowRole::MultiPhysics:
+        return QStringLiteral("multiphysics");
     case DataWorkflowRole::Unknown:
         break;
     }

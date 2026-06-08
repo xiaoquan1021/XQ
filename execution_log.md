@@ -204,6 +204,60 @@
 - Promoted ROM Build Network Infrastructure Action Handler to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Pushed XQ commit:
+  - `08c17ff Wire ROM network build action`.
+- Continued immediately into the next autonomous research refresh:
+  - Rechecked ROM and MultiPhysics modules after ROM network configuration
+    landed.
+  - ROM currently has job/data/IO support but no native solver backend to run
+    without inventing a fake result path.
+  - MultiPhysics already has `xq_MultiPhysicsJob`,
+    `xq_MitkMultiPhysicsJob`, domain/equation validation, and XML persistence.
+  - Chosen next slice: MultiPhysics coupling job configuration, not solver
+    execution.
+- Promoted the research refresh to completed in `plan.md`.
+- Started Active Phase: MultiPhysics Configure Coupling Infrastructure Action
+  Handler.
+- Starting RED tests first:
+  - `configure-coupling` should reject selections that do not resolve to a
+    ROMSimulation or SimulationPrep MITK node.
+  - A valid ROMSimulation selection should create and register an
+    `xq_MitkMultiPhysicsJob`.
+  - Production composition should validate `configure-coupling` through an
+    Infrastructure handler, not the Domain placeholder.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` failed because
+    `Infrastructure/xq_MultiPhysicsWorkflowActionHandler.h` did not exist.
+- Implemented MultiPhysics configure-coupling infrastructure action:
+  - Added `RegisterDynamicMultiPhysicsWorkflowActionHandler()` and wired it
+    into the monolith composition root after ROM registration.
+  - `configure-coupling` now requires a selected ROMSimulation or
+    SimulationPrep MITK node.
+  - The handler creates a validated `xq_MultiPhysicsJob` wrapped in
+    `xq_MitkMultiPhysicsJob` with fluid and solid domains plus one FSI
+    equation.
+  - Generated MultiPhysics nodes store source ROM/simulation metadata,
+    coupling parameters, configured status, catalog/hierarchy/data-node
+    bindings, selection, and render refresh.
+  - Added `DataWorkflowRole::MultiPhysics` roundtrip/display/import/context
+    support so generated coupling jobs persist and remain compatible
+    selections.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(multiphysics_workflow_action_handler|application_import_wiring)"`
+    passed: 2/2.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 72/72.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted MultiPhysics Configure Coupling Infrastructure Action Handler to
+  completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 - Continued the requested unattended loop after the user enabled full access mode.
 - Reviewed `plan.md`, `execution_log.md`, and the monolith scaffold:

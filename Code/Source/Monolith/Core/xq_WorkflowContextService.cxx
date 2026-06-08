@@ -119,7 +119,8 @@ QVector<DataWorkflowRole> WorkflowContextService::AcceptedDataRolesForWorkflow(
         return {DataWorkflowRole::Mesh,
                 DataWorkflowRole::SimulationPrep,
                 DataWorkflowRole::SimulationResult,
-                DataWorkflowRole::ROMSimulation};
+                DataWorkflowRole::ROMSimulation,
+                DataWorkflowRole::MultiPhysics};
     }
 
     return {};
