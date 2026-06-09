@@ -8,8 +8,10 @@
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QGroupBox>
 #include <QLabel>
 #include <QPushButton>
 #include <QSpinBox>
@@ -288,9 +290,180 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto* meshModelLabel =
+        window.findChild<QLabel*>(QStringLiteral("xqMeshingModelLabel"));
+    auto* meshModelCombo =
+        window.findChild<QComboBox*>(
+            QStringLiteral("xqMeshingModelSelector"));
+    auto* newMeshButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqMeshingNewMeshButton"));
+    auto* meshingTabs =
+        window.findChild<QTabWidget*>(QStringLiteral("xqMeshingTabs"));
+    auto* globalGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqMeshingGlobalParamsGroup"));
+    auto* meshTypeCombo =
+        window.findChild<QComboBox*>(
+            QStringLiteral("xqMeshingMeshTypeCombo"));
+    auto* globalEdgeSpin =
+        window.findChild<QDoubleSpinBox*>(
+            QStringLiteral("xqMeshingGlobalEdgeSizeSpinBox"));
+    auto* localSizeTable =
+        window.findChild<QTableWidget*>(
+            QStringLiteral("xqMeshingLocalSizeTable"));
+    auto* boundaryLayerCheckBox =
+        window.findChild<QCheckBox*>(
+            QStringLiteral("xqMeshingBoundaryLayerCheckBox"));
+    auto* boundaryLayerGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqMeshingBoundaryLayerParamsGroup"));
+    auto* boundaryLayerPreviewButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqMeshingBoundaryLayerPreviewButton"));
+    auto* refinementTable =
+        window.findChild<QTableWidget*>(
+            QStringLiteral("xqMeshingRefinementRegionsTable"));
+    auto* statisticsGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqMeshingStatisticsGroup"));
+    auto* surfaceMeshButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqMeshingGenerateSurfaceMeshButton"));
+    auto* volumeMeshButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqMeshingGenerateVolumeMeshButton"));
+    auto* boundaryLayersButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqMeshingBoundaryLayersButton"));
+    if (Expect(meshModelLabel != nullptr &&
+                   meshModelLabel->text() == QStringLiteral("Model:") &&
+                   meshModelCombo != nullptr &&
+                   newMeshButton != nullptr &&
+                   newMeshButton->text() == QStringLiteral("New Mesh..."),
+               "Meshing page should restore legacy model selector row"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(meshingTabs != nullptr &&
+                   meshingTabs->count() == 5 &&
+                   meshingTabs->tabText(0) ==
+                       QStringLiteral("Global Settings") &&
+                   meshingTabs->tabText(1) == QStringLiteral("Local Size") &&
+                   meshingTabs->tabText(2) ==
+                       QStringLiteral("Boundary Layer") &&
+                   meshingTabs->tabText(3) ==
+                       QStringLiteral("Refinement Regions") &&
+                   meshingTabs->tabText(4) == QStringLiteral("Advanced"),
+               "Meshing page should restore legacy meshing tabs"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(globalGroup != nullptr &&
+                   globalGroup->title() ==
+                       QStringLiteral("Global Mesh Parameters") &&
+                   meshTypeCombo != nullptr &&
+                   meshTypeCombo->itemText(0) == QStringLiteral("TetGen") &&
+                   globalEdgeSpin != nullptr &&
+                   globalEdgeSpin->value() == 1.0,
+               "Meshing global tab should expose TetGen parameters"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(localSizeTable != nullptr &&
+                   localSizeTable->columnCount() == 3 &&
+                   localSizeTable->horizontalHeaderItem(0)->text() ==
+                       QStringLiteral("Face Name") &&
+                   localSizeTable->horizontalHeaderItem(2)->text() ==
+                       QStringLiteral("Edge Size"),
+               "Meshing page should restore local-size table anchor"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(boundaryLayerCheckBox != nullptr &&
+                   boundaryLayerCheckBox->text() ==
+                       QStringLiteral("Enable Boundary Layer Mesh") &&
+                   boundaryLayerGroup != nullptr &&
+                   !boundaryLayerGroup->isEnabled() &&
+                   boundaryLayerPreviewButton != nullptr &&
+                   !boundaryLayerPreviewButton->isEnabled(),
+               "Meshing boundary layer tab should start disabled"))
+    {
+        delete context;
+        return 1;
+    }
+    boundaryLayerCheckBox->setChecked(true);
+    app.processEvents();
+    if (Expect(boundaryLayerGroup->isEnabled() &&
+                   boundaryLayerPreviewButton->isEnabled(),
+               "Meshing boundary layer toggle should enable parameters"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(refinementTable != nullptr &&
+                   refinementTable->columnCount() == 7 &&
+                   refinementTable->horizontalHeaderItem(0)->text() ==
+                       QStringLiteral("Name") &&
+                   refinementTable->horizontalHeaderItem(6)->text() ==
+                       QStringLiteral("Target Size"),
+               "Meshing page should restore refinement-region table anchor"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(statisticsGroup != nullptr &&
+                   statisticsGroup->title() ==
+                       QStringLiteral("Mesh Statistics"),
+               "Meshing advanced tab should restore statistics group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(surfaceMeshButton != nullptr &&
+                   volumeMeshButton != nullptr &&
+                   boundaryLayersButton != nullptr &&
+                   surfaceMeshButton->isCheckable() &&
+                   volumeMeshButton->isCheckable() &&
+                   boundaryLayersButton->isCheckable(),
+               "Meshing page should restore operation buttons"))
+    {
+        delete context;
+        return 1;
+    }
 
     meshingSelector->setCurrentIndex(
         meshingSelector->findData(QStringLiteral("boundary-layers")));
+    app.processEvents();
+    if (Expect(boundaryLayersButton->isChecked(),
+               "Meshing boundary layer button should mirror selector changes"))
+    {
+        delete context;
+        return 1;
+    }
+    volumeMeshButton->click();
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("meshing")) ==
+                   QStringLiteral("generate-volume-mesh"),
+               "Meshing Volume Mesh button should update Core operation state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(meshingSelector->currentData().toString() ==
+                   QStringLiteral("generate-volume-mesh") &&
+                   volumeMeshButton->isChecked(),
+               "Meshing selector and tool button should stay synchronized"))
+    {
+        delete context;
+        return 1;
+    }
+    boundaryLayersButton->click();
     app.processEvents();
     auto* meshingButton =
         FindActionButton(window, QStringLiteral("meshing"));

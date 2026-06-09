@@ -54,6 +54,7 @@ private:
     void SyncWorkflowNavigationFromCore(const QString& workflowId);
     void UpdateWorkflowToolbarSelection(const QString& workflowId);
     void UpdateModelingToolButtons();
+    void UpdateMeshingToolButtons();
     void UpdatePathToolButtons();
     void UpdateSegmentation2DToolButtons();
     void UpdateSegmentation3DToolButtons();

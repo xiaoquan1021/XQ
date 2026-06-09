@@ -20,6 +20,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QButtonGroup>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDockWidget>
 #include <QDoubleSpinBox>
@@ -1087,9 +1088,34 @@ void MainWindow::UpdateWorkflowOperationControls()
     }
 
     UpdateModelingToolButtons();
+    UpdateMeshingToolButtons();
     UpdatePathToolButtons();
     UpdateSegmentation2DToolButtons();
     UpdateSegmentation3DToolButtons();
+}
+
+void MainWindow::UpdateMeshingToolButtons()
+{
+    const QString selectedOperationId =
+        m_Context.WorkflowOperations()->SelectedOperationId(
+            QStringLiteral("meshing"));
+    const QStringList buttonObjectNames = {
+        QStringLiteral("xqMeshingGenerateSurfaceMeshButton"),
+        QStringLiteral("xqMeshingGenerateVolumeMeshButton"),
+        QStringLiteral("xqMeshingBoundaryLayersButton"),
+    };
+
+    for (const auto& objectName : buttonObjectNames)
+    {
+        auto* button = findChild<QPushButton*>(objectName);
+        if (!button)
+            continue;
+
+        QSignalBlocker blocker(button);
+        button->setChecked(
+            button->property("xqOperationId").toString() ==
+            selectedOperationId);
+    }
 }
 
 void MainWindow::UpdateModelingToolButtons()
@@ -2225,6 +2251,350 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                                           QStringLiteral("build-solid-model"));
                     connectModelingButton(trimBranchesButton,
                                           QStringLiteral("trim-branches"));
+                }
+                else if (id == QStringLiteral("meshing"))
+                {
+                    operationSelector->setVisible(false);
+                    layout->addWidget(operationSelector);
+
+                    auto* selectorLayout = new QHBoxLayout();
+                    auto* modelLabel =
+                        new QLabel(QStringLiteral("Model:"), page);
+                    modelLabel->setObjectName(
+                        QStringLiteral("xqMeshingModelLabel"));
+                    auto* modelSelector = new QComboBox(page);
+                    modelSelector->setObjectName(
+                        QStringLiteral("xqMeshingModelSelector"));
+                    auto* newMeshButton =
+                        new QPushButton(QStringLiteral("New Mesh..."),
+                                        page);
+                    newMeshButton->setObjectName(
+                        QStringLiteral("xqMeshingNewMeshButton"));
+                    newMeshButton->setEnabled(false);
+                    selectorLayout->addWidget(modelLabel);
+                    selectorLayout->addWidget(modelSelector, 1);
+                    selectorLayout->addWidget(newMeshButton);
+                    layout->addLayout(selectorLayout);
+
+                    auto* meshingTabs = new QTabWidget(page);
+                    meshingTabs->setObjectName(
+                        QStringLiteral("xqMeshingTabs"));
+
+                    auto* globalTab = new QWidget(meshingTabs);
+                    auto* globalLayout = new QVBoxLayout(globalTab);
+                    auto* globalGroup =
+                        new QGroupBox(QStringLiteral("Global Mesh Parameters"),
+                                      globalTab);
+                    globalGroup->setObjectName(QStringLiteral(
+                        "xqMeshingGlobalParamsGroup"));
+                    auto* globalForm = new QFormLayout(globalGroup);
+                    auto* meshTypeCombo = new QComboBox(globalGroup);
+                    meshTypeCombo->setObjectName(
+                        QStringLiteral("xqMeshingMeshTypeCombo"));
+                    meshTypeCombo->addItem(QStringLiteral("TetGen"));
+                    auto* globalEdgeSpin =
+                        new QDoubleSpinBox(globalGroup);
+                    globalEdgeSpin->setObjectName(QStringLiteral(
+                        "xqMeshingGlobalEdgeSizeSpinBox"));
+                    globalEdgeSpin->setRange(0.001, 1000.0);
+                    globalEdgeSpin->setDecimals(3);
+                    globalEdgeSpin->setSingleStep(0.1);
+                    globalEdgeSpin->setValue(1.0);
+                    globalEdgeSpin->setEnabled(false);
+                    globalForm->addRow(QStringLiteral("Mesh Type:"),
+                                       meshTypeCombo);
+                    globalForm->addRow(QStringLiteral("Global Edge Size:"),
+                                       globalEdgeSpin);
+                    globalLayout->addWidget(globalGroup);
+
+                    auto* globalOperationLayout = new QHBoxLayout();
+                    auto* surfaceMeshButton =
+                        new QPushButton(QStringLiteral("Generate Surface Mesh"),
+                                        globalTab);
+                    surfaceMeshButton->setObjectName(QStringLiteral(
+                        "xqMeshingGenerateSurfaceMeshButton"));
+                    surfaceMeshButton->setCheckable(true);
+                    surfaceMeshButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("generate-surface-mesh"));
+                    auto* volumeMeshButton =
+                        new QPushButton(QStringLiteral("Generate Volume Mesh"),
+                                        globalTab);
+                    volumeMeshButton->setObjectName(QStringLiteral(
+                        "xqMeshingGenerateVolumeMeshButton"));
+                    volumeMeshButton->setCheckable(true);
+                    volumeMeshButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("generate-volume-mesh"));
+                    globalOperationLayout->addWidget(surfaceMeshButton);
+                    globalOperationLayout->addWidget(volumeMeshButton);
+                    globalLayout->addLayout(globalOperationLayout);
+                    globalLayout->addWidget(parameterPanel);
+                    globalLayout->addStretch(1);
+                    meshingTabs->addTab(globalTab,
+                                        QStringLiteral("Global Settings"));
+
+                    auto* localTab = new QWidget(meshingTabs);
+                    auto* localLayout = new QVBoxLayout(localTab);
+                    auto* localSizeTable = new QTableWidget(localTab);
+                    localSizeTable->setObjectName(
+                        QStringLiteral("xqMeshingLocalSizeTable"));
+                    localSizeTable->setMinimumHeight(150);
+                    localSizeTable->setSelectionBehavior(
+                        QAbstractItemView::SelectRows);
+                    localSizeTable->setColumnCount(3);
+                    localSizeTable->setHorizontalHeaderLabels(
+                        {QStringLiteral("Face Name"),
+                         QStringLiteral("Type"),
+                         QStringLiteral("Edge Size")});
+                    localSizeTable->horizontalHeader()->setStretchLastSection(
+                        true);
+                    localLayout->addWidget(localSizeTable);
+                    auto* localButtonLayout = new QHBoxLayout();
+                    auto* addLocalSizeButton =
+                        new QPushButton(QStringLiteral("Add"), localTab);
+                    addLocalSizeButton->setObjectName(
+                        QStringLiteral("xqMeshingAddLocalSizeButton"));
+                    addLocalSizeButton->setEnabled(false);
+                    auto* removeLocalSizeButton =
+                        new QPushButton(QStringLiteral("Remove"), localTab);
+                    removeLocalSizeButton->setObjectName(
+                        QStringLiteral("xqMeshingRemoveLocalSizeButton"));
+                    removeLocalSizeButton->setEnabled(false);
+                    localButtonLayout->addWidget(addLocalSizeButton);
+                    localButtonLayout->addWidget(removeLocalSizeButton);
+                    localButtonLayout->addStretch(1);
+                    localLayout->addLayout(localButtonLayout);
+                    meshingTabs->addTab(localTab,
+                                        QStringLiteral("Local Size"));
+
+                    auto* boundaryTab = new QWidget(meshingTabs);
+                    auto* boundaryLayout = new QVBoxLayout(boundaryTab);
+                    auto* boundaryLayerCheckBox =
+                        new QCheckBox(QStringLiteral(
+                                          "Enable Boundary Layer Mesh"),
+                                      boundaryTab);
+                    boundaryLayerCheckBox->setObjectName(QStringLiteral(
+                        "xqMeshingBoundaryLayerCheckBox"));
+                    auto* boundaryLayerGroup =
+                        new QGroupBox(QStringLiteral(
+                                          "Boundary Layer Parameters"),
+                                      boundaryTab);
+                    boundaryLayerGroup->setObjectName(QStringLiteral(
+                        "xqMeshingBoundaryLayerParamsGroup"));
+                    boundaryLayerGroup->setEnabled(false);
+                    auto* boundaryForm = new QFormLayout(boundaryLayerGroup);
+                    auto* layerCountSpin = new QSpinBox(boundaryLayerGroup);
+                    layerCountSpin->setObjectName(
+                        QStringLiteral("xqMeshingLayerCountSpinBox"));
+                    layerCountSpin->setRange(1, 20);
+                    layerCountSpin->setValue(4);
+                    auto* firstHeightSpin =
+                        new QDoubleSpinBox(boundaryLayerGroup);
+                    firstHeightSpin->setObjectName(QStringLiteral(
+                        "xqMeshingFirstLayerHeightSpinBox"));
+                    firstHeightSpin->setRange(0.001, 10.0);
+                    firstHeightSpin->setDecimals(4);
+                    firstHeightSpin->setSingleStep(0.01);
+                    firstHeightSpin->setValue(0.1);
+                    auto* growthRateSpin =
+                        new QDoubleSpinBox(boundaryLayerGroup);
+                    growthRateSpin->setObjectName(
+                        QStringLiteral("xqMeshingGrowthRateSpinBox"));
+                    growthRateSpin->setRange(1.0, 5.0);
+                    growthRateSpin->setDecimals(2);
+                    growthRateSpin->setSingleStep(0.1);
+                    growthRateSpin->setValue(1.2);
+                    auto* inwardCheckBox =
+                        new QCheckBox(QStringLiteral("Direction Inward"),
+                                      boundaryLayerGroup);
+                    inwardCheckBox->setObjectName(QStringLiteral(
+                        "xqMeshingBoundaryLayerDirectionInwardCheckBox"));
+                    inwardCheckBox->setChecked(true);
+                    boundaryForm->addRow(QStringLiteral("Number of Layers:"),
+                                         layerCountSpin);
+                    boundaryForm->addRow(QStringLiteral("First Layer Height:"),
+                                         firstHeightSpin);
+                    boundaryForm->addRow(QStringLiteral("Growth Rate:"),
+                                         growthRateSpin);
+                    boundaryForm->addRow(inwardCheckBox);
+                    auto* boundaryLayerButton =
+                        new QPushButton(QStringLiteral("Boundary Layers"),
+                                        boundaryTab);
+                    boundaryLayerButton->setObjectName(QStringLiteral(
+                        "xqMeshingBoundaryLayersButton"));
+                    boundaryLayerButton->setCheckable(true);
+                    boundaryLayerButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("boundary-layers"));
+                    auto* previewButton =
+                        new QPushButton(QStringLiteral(
+                                            "Preview Boundary Layer"),
+                                        boundaryTab);
+                    previewButton->setObjectName(QStringLiteral(
+                        "xqMeshingBoundaryLayerPreviewButton"));
+                    previewButton->setEnabled(false);
+                    auto* statusLabel = new QLabel(boundaryTab);
+                    statusLabel->setObjectName(
+                        QStringLiteral("xqMeshingBoundaryLayerStatusLabel"));
+                    boundaryLayout->addWidget(boundaryLayerCheckBox);
+                    boundaryLayout->addWidget(boundaryLayerGroup);
+                    boundaryLayout->addWidget(boundaryLayerButton);
+                    boundaryLayout->addWidget(previewButton);
+                    boundaryLayout->addWidget(statusLabel);
+                    boundaryLayout->addStretch(1);
+                    connect(boundaryLayerCheckBox,
+                            &QCheckBox::toggled,
+                            boundaryLayerGroup,
+                            &QWidget::setEnabled);
+                    connect(boundaryLayerCheckBox,
+                            &QCheckBox::toggled,
+                            previewButton,
+                            &QWidget::setEnabled);
+                    meshingTabs->addTab(boundaryTab,
+                                        QStringLiteral("Boundary Layer"));
+
+                    auto* refinementTab = new QWidget(meshingTabs);
+                    auto* refinementLayout =
+                        new QVBoxLayout(refinementTab);
+                    auto* refinementTable =
+                        new QTableWidget(refinementTab);
+                    refinementTable->setObjectName(QStringLiteral(
+                        "xqMeshingRefinementRegionsTable"));
+                    refinementTable->setMinimumHeight(150);
+                    refinementTable->setSelectionBehavior(
+                        QAbstractItemView::SelectRows);
+                    refinementTable->setColumnCount(7);
+                    refinementTable->setHorizontalHeaderLabels(
+                        {QStringLiteral("Name"),
+                         QStringLiteral("Type"),
+                         QStringLiteral("Center X"),
+                         QStringLiteral("Center Y"),
+                         QStringLiteral("Center Z"),
+                         QStringLiteral("Radius/Size"),
+                         QStringLiteral("Target Size")});
+                    refinementTable->horizontalHeader()->setStretchLastSection(
+                        true);
+                    refinementLayout->addWidget(refinementTable);
+                    auto* refinementButtonLayout = new QHBoxLayout();
+                    auto* addSphereButton =
+                        new QPushButton(QStringLiteral("Add Sphere"),
+                                        refinementTab);
+                    addSphereButton->setObjectName(
+                        QStringLiteral("xqMeshingAddSphereRegionButton"));
+                    auto* addCylinderButton =
+                        new QPushButton(QStringLiteral("Add Cylinder"),
+                                        refinementTab);
+                    addCylinderButton->setObjectName(QStringLiteral(
+                        "xqMeshingAddCylinderRegionButton"));
+                    auto* removeRegionButton =
+                        new QPushButton(QStringLiteral("Remove Selected"),
+                                        refinementTab);
+                    removeRegionButton->setObjectName(
+                        QStringLiteral("xqMeshingRemoveRegionButton"));
+                    refinementButtonLayout->addWidget(addSphereButton);
+                    refinementButtonLayout->addWidget(addCylinderButton);
+                    refinementButtonLayout->addWidget(removeRegionButton);
+                    refinementLayout->addLayout(refinementButtonLayout);
+                    auto* visualizeRegionsButton =
+                        new QPushButton(QStringLiteral("Visualize Regions"),
+                                        refinementTab);
+                    visualizeRegionsButton->setObjectName(QStringLiteral(
+                        "xqMeshingVisualizeRegionsButton"));
+                    auto* regionCountLabel =
+                        new QLabel(QStringLiteral(
+                                       "0 refinement regions defined"),
+                                   refinementTab);
+                    regionCountLabel->setObjectName(QStringLiteral(
+                        "xqMeshingRegionCountLabel"));
+                    refinementLayout->addWidget(visualizeRegionsButton);
+                    refinementLayout->addWidget(regionCountLabel);
+                    refinementLayout->addStretch(1);
+                    meshingTabs->addTab(refinementTab,
+                                        QStringLiteral(
+                                            "Refinement Regions"));
+
+                    auto* advancedTab = new QWidget(meshingTabs);
+                    auto* advancedLayout = new QVBoxLayout(advancedTab);
+                    auto* statisticsGroup =
+                        new QGroupBox(QStringLiteral("Mesh Statistics"),
+                                      advancedTab);
+                    statisticsGroup->setObjectName(
+                        QStringLiteral("xqMeshingStatisticsGroup"));
+                    auto* statisticsLayout =
+                        new QVBoxLayout(statisticsGroup);
+                    auto* elementsLabel =
+                        new QLabel(QStringLiteral("Elements: --"),
+                                   statisticsGroup);
+                    elementsLabel->setObjectName(
+                        QStringLiteral("xqMeshingElementsLabel"));
+                    auto* nodesLabel =
+                        new QLabel(QStringLiteral("Nodes: --"),
+                                   statisticsGroup);
+                    nodesLabel->setObjectName(
+                        QStringLiteral("xqMeshingNodesLabel"));
+                    auto* qualityLabel =
+                        new QLabel(QStringLiteral("Quality: --"),
+                                   statisticsGroup);
+                    qualityLabel->setObjectName(
+                        QStringLiteral("xqMeshingQualityLabel"));
+                    auto* qualityReportButton =
+                        new QPushButton(QStringLiteral("Quality Report"),
+                                        statisticsGroup);
+                    qualityReportButton->setObjectName(QStringLiteral(
+                        "xqMeshingQualityReportButton"));
+                    qualityReportButton->setEnabled(false);
+                    auto* exportMeshButton =
+                        new QPushButton(QStringLiteral("Export Mesh"),
+                                        statisticsGroup);
+                    exportMeshButton->setObjectName(
+                        QStringLiteral("xqMeshingExportMeshButton"));
+                    exportMeshButton->setEnabled(false);
+                    statisticsLayout->addWidget(elementsLabel);
+                    statisticsLayout->addWidget(nodesLabel);
+                    statisticsLayout->addWidget(qualityLabel);
+                    statisticsLayout->addWidget(qualityReportButton);
+                    statisticsLayout->addWidget(exportMeshButton);
+                    advancedLayout->addWidget(statisticsGroup);
+                    advancedLayout->addStretch(1);
+                    meshingTabs->addTab(advancedTab,
+                                        QStringLiteral("Advanced"));
+
+                    layout->addWidget(meshingTabs);
+
+                    auto* toolButtons = new QButtonGroup(page);
+                    toolButtons->setExclusive(true);
+                    toolButtons->addButton(surfaceMeshButton);
+                    toolButtons->addButton(volumeMeshButton);
+                    toolButtons->addButton(boundaryLayerButton);
+
+                    auto connectMeshingButton =
+                        [this](QPushButton* button,
+                               const QString& operationId) {
+                            connect(button,
+                                    &QPushButton::clicked,
+                                    this,
+                                    [this, operationId]() {
+                                        QString message;
+                                        if (!m_Context.WorkflowOperations()
+                                                 ->SelectOperation(
+                                                     QStringLiteral("meshing"),
+                                                     operationId,
+                                                     &message))
+                                        {
+                                            m_Context.PostDiagnostic(message);
+                                        }
+                                        UpdateWorkflowOperationControls();
+                                    });
+                        };
+                    connectMeshingButton(
+                        surfaceMeshButton,
+                        QStringLiteral("generate-surface-mesh"));
+                    connectMeshingButton(
+                        volumeMeshButton,
+                        QStringLiteral("generate-volume-mesh"));
+                    connectMeshingButton(boundaryLayerButton,
+                                         QStringLiteral("boundary-layers"));
                 }
                 else if (id == QStringLiteral("path"))
                 {

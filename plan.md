@@ -5123,3 +5123,36 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted modeling/workflow UI tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Meshing Tool Panel Restore
+
+1. Restore the visible panel structure of the original
+   `xq_GridGenerationView` inside the monolith Meshing page.
+   - Add the legacy `Model:` selector row and `New Mesh...` command anchor.
+   - Add the Global Settings, Local Size, Boundary Layer, Refinement Regions,
+     and Advanced tabs with stable object names.
+   - Restore the global TetGen parameter controls, local-size table,
+     boundary-layer controls, refinement-region table, mesh statistics labels,
+     and export/quality command anchors.
+   - Keep the existing hidden monolith operation selector so current tests and
+     Core operation state remain compatible.
+2. Keep Core workflow operations authoritative.
+   - Surface Mesh, Volume Mesh, and Boundary Layers buttons call
+     `WorkflowOperationService::SelectOperation()`.
+   - Core-driven operation changes still update the hidden selector.
+   - Selector-driven operation changes update the restored meshing buttons.
+3. Keep scope honest.
+   - Do not reintroduce BlueBerry/CTK view runtime.
+   - Do not implement the full local-size/refinement-region editing dialogs in
+     this slice.
+   - Real meshing execution continues through the existing monolith action
+     handlers.
+4. Add regression coverage.
+   - `test_monolith_modeling_meshing_operation_pages` verifies the restored
+     meshing selector row, tabs, tables, boundary-layer toggle, operation
+     buttons, operation synchronization, parameter anchors, and existing run
+     validation.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted meshing/workflow UI tests.
+   - full XQ and Externals test gates before commit.
