@@ -83,6 +83,12 @@ int main(int argc, char** argv)
         window.findChild<QAction*>(QStringLiteral("xqMakeAllDataVisibleAction"));
     auto* makeAllInvisibleAction =
         window.findChild<QAction*>(QStringLiteral("xqMakeAllDataInvisibleAction"));
+    auto* surfaceRepresentationAction =
+        window.findChild<QAction*>(QStringLiteral("xqSetDataRepresentationSurfaceAction"));
+    auto* wireframeRepresentationAction =
+        window.findChild<QAction*>(QStringLiteral("xqSetDataRepresentationWireframeAction"));
+    auto* pointsRepresentationAction =
+        window.findChild<QAction*>(QStringLiteral("xqSetDataRepresentationPointsAction"));
     auto* searchBox =
         window.findChild<QLineEdit*>(QStringLiteral("xqDataManagerSearchBox"));
     auto* opacitySlider =
@@ -117,9 +123,25 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(surfaceRepresentationAction != nullptr &&
+                   wireframeRepresentationAction != nullptr &&
+                   pointsRepresentationAction != nullptr,
+               "Data Manager should restore representation context actions"))
+    {
+        delete context;
+        return 1;
+    }
     if (Expect(!toggleVisibilityAction->isEnabled() &&
                    !showOnlySelectedAction->isEnabled(),
                "selection-dependent visibility actions should start disabled"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!surfaceRepresentationAction->isEnabled() &&
+                   !wireframeRepresentationAction->isEnabled() &&
+                   !pointsRepresentationAction->isEnabled(),
+               "representation actions should start disabled"))
     {
         delete context;
         return 1;
@@ -327,6 +349,14 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(surfaceRepresentationAction->isEnabled() &&
+                   wireframeRepresentationAction->isEnabled() &&
+                   pointsRepresentationAction->isEnabled(),
+               "representation actions should enable for MITK-backed data"))
+    {
+        delete context;
+        return 1;
+    }
     if (Expect(opacitySlider->value() == 42 &&
                    opacityValue->text() == QStringLiteral("42%"),
                "selecting a MITK-backed data row should load node opacity"))
@@ -471,6 +501,55 @@ int main(int argc, char** argv)
     secondNode->GetBoolProperty("visible", secondVisible);
     if (Expect(visible && !secondVisible,
                "Show Only Selected should show selected data and hide other registered nodes"))
+    {
+        delete context;
+        return 1;
+    }
+
+    wireframeRepresentationAction->trigger();
+    app.processEvents();
+    int representation = -1;
+    bool materialWireframe = false;
+    mitkNode->GetIntProperty("material.representation", representation);
+    mitkNode->GetBoolProperty("material.wireframe", materialWireframe);
+    if (Expect(representation == 1 && materialWireframe,
+               "Wireframe representation action should set selected node to wireframe"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(TableValue(propertiesTable,
+                          QStringLiteral("material.representation")) ==
+                   QStringLiteral("1"),
+               "properties table should show wireframe representation"))
+    {
+        delete context;
+        return 1;
+    }
+
+    pointsRepresentationAction->trigger();
+    app.processEvents();
+    representation = -1;
+    materialWireframe = true;
+    mitkNode->GetIntProperty("material.representation", representation);
+    mitkNode->GetBoolProperty("material.wireframe", materialWireframe);
+    if (Expect(representation == 0 && !materialWireframe,
+               "Points representation action should set selected node to points"))
+    {
+        delete context;
+        return 1;
+    }
+
+    surfaceRepresentationAction->trigger();
+    app.processEvents();
+    representation = -1;
+    materialWireframe = true;
+    bool volumeRendering = true;
+    mitkNode->GetIntProperty("material.representation", representation);
+    mitkNode->GetBoolProperty("material.wireframe", materialWireframe);
+    mitkNode->GetBoolProperty("volumerendering", volumeRendering);
+    if (Expect(representation == 2 && !materialWireframe && !volumeRendering,
+               "Surface representation action should restore selected node surface mode"))
     {
         delete context;
         return 1;

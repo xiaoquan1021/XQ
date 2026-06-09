@@ -4949,3 +4949,31 @@ The next monolith slice is grounded in these comparable systems:
    - targeted `ctest` for Data Manager, data actions, selection sync,
      Workbench layout, DataManagementService, and DataNodeRegistry.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Data Manager Representation Actions
+
+1. Continue UI restoration from a fresh clone of
+   `xiaoquan1021/XQ@feature/windows-monolith-foundation`.
+   - Use `C:\Users\OCEAN\Desktop\XIAOQUAN\XQ-fresh-ui` as the active UI work
+     tree for this phase.
+2. Restore the original Data Explorer representation actions in the monolith
+   Data Manager tree.
+   - Add stable actions for Surface, Wireframe, and Points representation.
+   - Keep these actions disabled until the selected catalog entry has a bound
+     `mitk::DataNode`.
+3. Match the legacy MITK property contract used by the original Data Explorer.
+   - Surface sets `material.representation = 2`,
+     `material.wireframe = false`, and disables `volumerendering`.
+   - Wireframe sets `material.representation = 1` and
+     `material.wireframe = true`.
+   - Points sets `material.representation = 0` and
+     `material.wireframe = false`.
+   - Representation changes refresh the properties table and request a MITK
+     render update.
+4. Add regression coverage.
+   - `test_monolith_main_window_data_panel` verifies action discovery,
+     enabled state, node property writes, and property-table refresh.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted Data Manager/data tests.
+   - full XQ and Externals test gates before commit.

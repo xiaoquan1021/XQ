@@ -55,6 +55,7 @@
 #include <mitkDataStorage.h>
 #include <mitkBaseProperty.h>
 #include <mitkPropertyList.h>
+#include <mitkProperties.h>
 #include <mitkRenderingManager.h>
 
 #include <utility>
@@ -369,6 +370,34 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         QStringLiteral("xqMakeAllDataInvisibleAction"));
     m_DataHierarchyView->addAction(makeAllInvisibleAction);
 
+    auto* representationSeparator = new QAction(m_DataHierarchyView);
+    representationSeparator->setSeparator(true);
+    m_DataHierarchyView->addAction(representationSeparator);
+
+    m_SurfaceRepresentationAction =
+        new QAction(QStringLiteral("Representation: Surface"),
+                    m_DataHierarchyView);
+    m_SurfaceRepresentationAction->setObjectName(
+        QStringLiteral("xqSetDataRepresentationSurfaceAction"));
+    m_SurfaceRepresentationAction->setEnabled(false);
+    m_DataHierarchyView->addAction(m_SurfaceRepresentationAction);
+
+    m_WireframeRepresentationAction =
+        new QAction(QStringLiteral("Representation: Wireframe"),
+                    m_DataHierarchyView);
+    m_WireframeRepresentationAction->setObjectName(
+        QStringLiteral("xqSetDataRepresentationWireframeAction"));
+    m_WireframeRepresentationAction->setEnabled(false);
+    m_DataHierarchyView->addAction(m_WireframeRepresentationAction);
+
+    m_PointsRepresentationAction =
+        new QAction(QStringLiteral("Representation: Points"),
+                    m_DataHierarchyView);
+    m_PointsRepresentationAction->setObjectName(
+        QStringLiteral("xqSetDataRepresentationPointsAction"));
+    m_PointsRepresentationAction->setEnabled(false);
+    m_DataHierarchyView->addAction(m_PointsRepresentationAction);
+
     auto* dataControlLayout = new QHBoxLayout();
     dataControlLayout->setContentsMargins(0, 0, 0, 0);
     dataControlLayout->setSpacing(6);
@@ -446,6 +475,24 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this]() {
                 SetAllDataVisibility(false);
+            });
+    connect(m_SurfaceRepresentationAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                SetSelectedDataRepresentation(2, false, true);
+            });
+    connect(m_WireframeRepresentationAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                SetSelectedDataRepresentation(1, true, false);
+            });
+    connect(m_PointsRepresentationAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                SetSelectedDataRepresentation(0, false, false);
             });
     connect(propertiesToggle,
             &QPushButton::toggled,
@@ -1376,6 +1423,12 @@ void MainWindow::UpdateDataActions()
         m_ToggleDataVisibilityAction->setEnabled(hasSelectedNode);
     if (m_ShowOnlySelectedDataAction)
         m_ShowOnlySelectedDataAction->setEnabled(hasSelectedNode);
+    if (m_SurfaceRepresentationAction)
+        m_SurfaceRepresentationAction->setEnabled(hasSelectedNode);
+    if (m_WireframeRepresentationAction)
+        m_WireframeRepresentationAction->setEnabled(hasSelectedNode);
+    if (m_PointsRepresentationAction)
+        m_PointsRepresentationAction->setEnabled(hasSelectedNode);
 }
 
 void MainWindow::ApplyDataManagerSearch(const QString& text)
@@ -1618,6 +1671,26 @@ void MainWindow::SetAllDataVisibility(bool visible)
 
 void MainWindow::RefreshDataManagerAfterVisibilityChange()
 {
+    UpdateDataManagerSelection();
+    if (auto* renderingManager = mitk::RenderingManager::GetInstance())
+        renderingManager->RequestUpdateAll();
+}
+
+void MainWindow::SetSelectedDataRepresentation(int representation,
+                                               bool materialWireframe,
+                                               bool disableVolumeRendering)
+{
+    const QString catalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+    if (node.IsNull())
+        return;
+
+    if (disableVolumeRendering)
+        node->SetBoolProperty("volumerendering", false);
+    node->SetProperty("material.representation",
+                      mitk::IntProperty::New(representation));
+    node->SetBoolProperty("material.wireframe", materialWireframe);
     UpdateDataManagerSelection();
     if (auto* renderingManager = mitk::RenderingManager::GetInstance())
         renderingManager->RequestUpdateAll();
