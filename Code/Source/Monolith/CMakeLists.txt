@@ -173,6 +173,7 @@ set(XQ_MONOLITH_PRESENTATION_SRCS
     Presentation/xq_DataHierarchyModel.cxx
     Presentation/xq_MainWindow.cxx
     Presentation/xq_QtFileImportPathProvider.cxx
+    ../ImagingWorkbench/Plugins/org.xq.core.application/resources/xqApplication.qrc
 )
 
 set(XQ_MONOLITH_PRESENTATION_HDRS
@@ -188,6 +189,7 @@ add_library(xqMonolithPresentation STATIC
 
 set_target_properties(xqMonolithPresentation PROPERTIES
     AUTOMOC ON
+    AUTORCC ON
 )
 
 target_include_directories(xqMonolithPresentation
@@ -206,12 +208,10 @@ target_link_libraries(xqMonolithPresentation
 add_library(xqMonolithApplication STATIC
     xq_MonolithApplication.cxx
     xq_MonolithApplication.h
-    ../ImagingWorkbench/Plugins/org.xq.core.application/resources/xqApplication.qrc
 )
 
 set_target_properties(xqMonolithApplication PROPERTIES
     AUTOMOC ON
-    AUTORCC ON
 )
 
 target_include_directories(xqMonolithApplication

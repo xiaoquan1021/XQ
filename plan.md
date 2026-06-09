@@ -4821,3 +4821,30 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted `ctest` for theme, Workbench layout, and composition.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Workflow Toolbar Restore
+
+1. Restore the original XQ Workbench top-level workflow entry pattern in the
+   monolith shell.
+   - Add `xqViewToolBar` beside the main actions toolbar.
+   - Add checkable toolbar actions for Image, Path, 2D Seg, 3D Seg, Model,
+     Mesh, and Simulation.
+   - Reuse the original SVG assets from `:/xq/tool-*.svg`.
+2. Keep monolith selection state authoritative.
+   - Toolbar actions call `WorkflowSelectionService::SelectWorkflow()`.
+   - Core-driven selection changes update the toolbar checked state.
+   - Existing right-dock workflow navigation and pages remain synchronized.
+3. Keep resource loading robust.
+   - Move `xqApplication.qrc` ownership to the Presentation layer so
+     `MainWindow` tests and production composition can both use the same
+     icons.
+   - Explicitly register the resource before constructing icon-backed
+     toolbar actions.
+4. Add regression coverage.
+   - `test_monolith_main_window_workflow_selection` verifies the toolbar,
+     icon-backed workflow actions, and action-to-Core selection routing.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for workflow selection, Workbench layout, theme, and
+     composition.
+   - full XQ and Externals test gates before commit.

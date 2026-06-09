@@ -34,7 +34,7 @@
 #include <mitkRenderingManager.h>
 #include <mitkTimeNavigationController.h>
 
-void InitXqApplicationResources()
+static void InitXqApplicationResources()
 {
     Q_INIT_RESOURCE(xqApplication);
 }

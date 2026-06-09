@@ -17,12 +17,14 @@
 #include "xq_DataHierarchyModel.h"
 
 #include <QAction>
+#include <QActionGroup>
 #include <QComboBox>
 #include <QDockWidget>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QFrame>
 #include <QHeaderView>
+#include <QIcon>
 #include <QItemSelectionModel>
 #include <QLabel>
 #include <QLineEdit>
@@ -30,8 +32,10 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QPushButton>
+#include <QResource>
 #include <QScopeGuard>
 #include <QSignalBlocker>
+#include <QSize>
 #include <QSplitter>
 #include <QSpinBox>
 #include <QStackedWidget>
@@ -46,6 +50,11 @@
 #include <QWidget>
 
 #include <utility>
+
+static void InitXqApplicationResources()
+{
+    Q_INIT_RESOURCE(xqApplication);
+}
 
 namespace xq::presentation
 {
@@ -161,6 +170,23 @@ QString FormatIntegerPointList(const QVariant& value)
     return pointTexts.join(QStringLiteral("; "));
 }
 
+struct WorkflowToolDescriptor
+{
+    const char* WorkflowId;
+    const char* Label;
+    const char* IconPath;
+};
+
+const WorkflowToolDescriptor kWorkflowTools[] = {
+    {"image-preprocessing", "Image", ":/xq/tool-process.svg"},
+    {"path", "Path", ":/xq/tool-path.svg"},
+    {"segmentation-2d", "2D Seg", ":/xq/tool-seg-2d.svg"},
+    {"segmentation-3d", "3D Seg", ":/xq/tool-seg-3d.svg"},
+    {"modeling", "Model", ":/xq/tool-model.svg"},
+    {"meshing", "Mesh", ":/xq/tool-mesh.svg"},
+    {"flow-simulation", "Simulation", ":/xq/tool-flow.svg"},
+};
+
 } // namespace
 
 MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
@@ -168,6 +194,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     , m_Context(context)
 {
     setWindowTitle(QStringLiteral("XQ"));
+    InitXqApplicationResources();
     resize(1440, 960);
     statusBar()->setObjectName(QStringLiteral("xqProjectStatusBar"));
     statusBar()->showMessage(QStringLiteral("No project"));
@@ -201,6 +228,36 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     m_RemoveDataAction->setEnabled(false);
     mainToolbar->addAction(m_RemoveDataAction);
     addToolBar(Qt::TopToolBarArea, mainToolbar);
+
+    auto* viewToolbar = new QToolBar(QStringLiteral("XQ Views"), this);
+    viewToolbar->setObjectName(QStringLiteral("xqViewToolBar"));
+    viewToolbar->setMovable(false);
+    viewToolbar->setFloatable(false);
+    viewToolbar->setAllowedAreas(Qt::TopToolBarArea);
+    viewToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    viewToolbar->setIconSize(QSize(32, 32));
+    m_WorkflowToolbarActionGroup = new QActionGroup(this);
+    m_WorkflowToolbarActionGroup->setExclusive(true);
+    for (const auto& tool : kWorkflowTools)
+    {
+        const QString workflowId = QString::fromLatin1(tool.WorkflowId);
+        auto* action = new QAction(QIcon(QString::fromLatin1(tool.IconPath)),
+                                   QString::fromLatin1(tool.Label),
+                                   this);
+        action->setObjectName(
+            QStringLiteral("xqToolAction_%1").arg(workflowId));
+        action->setCheckable(true);
+        action->setActionGroup(m_WorkflowToolbarActionGroup);
+        connect(action,
+                &QAction::triggered,
+                this,
+                [this, workflowId]() {
+                    m_Context.WorkflowSelection()->SelectWorkflow(workflowId);
+                });
+        m_WorkflowToolbarActions.insert(workflowId, action);
+        viewToolbar->addAction(action);
+    }
+    addToolBar(Qt::TopToolBarArea, viewToolbar);
 
     m_RenderHostContainer = new QWidget(this);
     m_RenderHostContainer->setObjectName(
@@ -297,6 +354,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this](const QString& workflowId) {
                 SyncWorkflowNavigationFromCore(workflowId);
+                UpdateWorkflowToolbarSelection(workflowId);
             });
     connect(m_Context.WorkflowContext(),
             &xq::core::WorkflowContextService::ContextChanged,
@@ -322,6 +380,8 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                                                    value);
             });
     SyncWorkflowNavigationFromCore(
+        m_Context.WorkflowSelection()->SelectedWorkflowId());
+    UpdateWorkflowToolbarSelection(
         m_Context.WorkflowSelection()->SelectedWorkflowId());
     UpdateWorkflowContextStatusPage();
     UpdateWorkflowOperationControls();
@@ -588,6 +648,16 @@ void MainWindow::SyncWorkflowNavigationFromCore(const QString& workflowId)
         m_Navigation->setCurrentRow(row);
         m_Pages->setCurrentIndex(row);
         return;
+    }
+}
+
+void MainWindow::UpdateWorkflowToolbarSelection(const QString& workflowId)
+{
+    for (auto it = m_WorkflowToolbarActions.begin();
+         it != m_WorkflowToolbarActions.end();
+         ++it)
+    {
+        it.value()->setChecked(it.key() == workflowId);
     }
 }
 

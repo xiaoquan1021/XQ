@@ -4,8 +4,10 @@
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
+#include <QAction>
 #include <QListWidget>
 #include <QStackedWidget>
+#include <QToolBar>
 
 #include <iostream>
 
@@ -35,6 +37,8 @@ int main(int argc, char** argv)
     auto* pages =
         window.findChild<QStackedWidget*>(QStringLiteral("xqWorkflowPages"));
     auto* workflowSelection = context->WorkflowSelection();
+    auto* viewToolbar =
+        window.findChild<QToolBar*>(QStringLiteral("xqViewToolBar"));
 
     if (Expect(navigation != nullptr,
                "MainWindow should expose workflow navigation"))
@@ -50,6 +54,12 @@ int main(int argc, char** argv)
     }
     if (Expect(workflowSelection != nullptr,
                "ApplicationContext should expose workflow selection"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(viewToolbar != nullptr,
+               "Workbench shell should expose the original XQ views toolbar"))
     {
         delete context;
         return 1;
@@ -124,6 +134,54 @@ int main(int argc, char** argv)
     {
         delete context;
         return 1;
+    }
+
+    struct ToolbarExpectation
+    {
+        const char* WorkflowId;
+        const char* ActionName;
+    };
+    const ToolbarExpectation toolbarExpectations[] = {
+        {"image-preprocessing", "xqToolAction_image-preprocessing"},
+        {"path", "xqToolAction_path"},
+        {"segmentation-2d", "xqToolAction_segmentation-2d"},
+        {"segmentation-3d", "xqToolAction_segmentation-3d"},
+        {"modeling", "xqToolAction_modeling"},
+        {"meshing", "xqToolAction_meshing"},
+        {"flow-simulation", "xqToolAction_flow-simulation"},
+    };
+    for (const auto& expectation : toolbarExpectations)
+    {
+        auto* action = window.findChild<QAction*>(
+            QString::fromLatin1(expectation.ActionName));
+        if (Expect(action != nullptr,
+                   "Workbench views toolbar should expose workflow actions"))
+        {
+            delete context;
+            return 1;
+        }
+        if (Expect(viewToolbar->actions().contains(action),
+                   "Workflow action should belong to xqViewToolBar"))
+        {
+            delete context;
+            return 1;
+        }
+        if (Expect(!action->icon().isNull(),
+                   "Workflow toolbar actions should use original XQ SVG icons"))
+        {
+            delete context;
+            return 1;
+        }
+
+        action->trigger();
+        app.processEvents();
+        if (Expect(workflowSelection->SelectedWorkflowId() ==
+                       QString::fromLatin1(expectation.WorkflowId),
+                   "Workflow toolbar action should update Core selection"))
+        {
+            delete context;
+            return 1;
+        }
     }
 
     delete context;

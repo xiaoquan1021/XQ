@@ -1,5 +1,46 @@
 # XQ Execution Log
 
+## Current Run: Workbench Workflow Toolbar Restore
+
+- Continued after `790214a` with the next UI-fidelity gap:
+  - The original Workbench had prominent top-level workflow/tool entries with
+    XQ SVG icons.
+  - The monolith could only discover workflows through the right-dock list,
+    which made it feel like a generic workflow shell.
+- RED test observed before production code:
+  - Extended `test_monolith_main_window_workflow_selection` to require
+    `xqViewToolBar`, icon-backed actions for Image/Path/2D Seg/3D Seg/Model/
+    Mesh/Simulation, and action-to-Core selection routing.
+  - The test first failed because `xqViewToolBar` did not exist.
+- Implemented the slice:
+  - Added `xqViewToolBar` in `MainWindow`.
+  - Added checkable workflow actions with stable object names
+    `xqToolAction_<workflow-id>`.
+  - Actions reuse original resources such as `:/xq/tool-process.svg`,
+    `:/xq/tool-path.svg`, and `:/xq/tool-flow.svg`.
+  - Triggering an action updates `WorkflowSelectionService`; Core-driven
+    selection changes update the toolbar checked state.
+- Debugging note:
+  - The first implementation created toolbar actions but their icons were
+    empty in Presentation-only tests because the old resource package was
+    compiled into `xqMonolithApplication`, not `xqMonolithPresentation`.
+  - Moved `xqApplication.qrc` to the Presentation target and explicitly
+    registered it before MainWindow creates icon-backed actions.
+- Targeted verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release -R "test_monolith_main_window_workflow_selection|test_monolith_main_window_workbench_layout|test_monolith_workbench_theme|test_monolith_application_import_wiring" --output-on-failure --timeout 120`
+    passed: 4/4.
+- Full verification before commit:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - Full XQ `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - Toolbar runtime smoke launched `build\windows-msvc-release\bin\XQ.exe`,
+    kept it alive for 10 seconds, and closed it cleanly.
+  - `git diff --check` passed in both XQ and Externals.
+
 ## Current Run: Monolith Workbench Theme Resource Restore
 
 - Continued after `cad2162` with the next UI-fidelity gap:

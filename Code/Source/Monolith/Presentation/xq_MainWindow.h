@@ -5,6 +5,7 @@
 #include <QMainWindow>
 
 class QAction;
+class QActionGroup;
 class QComboBox;
 class QDockWidget;
 class QFormLayout;
@@ -50,6 +51,7 @@ private:
     void RunActiveWorkflowAction();
     void SaveProject();
     void SyncWorkflowNavigationFromCore(const QString& workflowId);
+    void UpdateWorkflowToolbarSelection(const QString& workflowId);
     void UpdateWorkflowContextStatusPage();
     void StoreWorkflowPointListParameter(const QString& workflowId,
                                          const QString& operationId,
@@ -84,6 +86,8 @@ private:
     QHash<QString, QComboBox*> m_WorkflowOperationSelectors;
     QHash<QString, QLabel*> m_WorkflowContextStatusLabels;
     QHash<QString, QPushButton*> m_WorkflowPrimaryActionButtons;
+    QHash<QString, QAction*> m_WorkflowToolbarActions;
+    QActionGroup* m_WorkflowToolbarActionGroup = nullptr;
     QAction* m_SaveProjectAction = nullptr;
     QAction* m_ImportDataAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
