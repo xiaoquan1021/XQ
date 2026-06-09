@@ -3289,6 +3289,46 @@
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Flow Simulation Page Infrastructure Wiring
+
+- Completed autonomous research refresh:
+  - Rechecked UI tests after removing configured Infrastructure placeholder
+    success fallbacks.
+  - `test_monolith_simulation_operation_pages` still accepted
+    `Run Flow Simulation succeeded: Steady Flow Solve flow simulation operation accepted Aorta Mesh.`,
+    which exercises the Domain placeholder instead of the configured
+    Infrastructure handler.
+  - Chosen next slice: wire the Flow Simulation page test to the existing
+    Infrastructure Flow handler and expect deterministic validation
+    diagnostics.
+- Red test observed:
+  - Updated the Flow page expectation to require
+    `Run Flow Simulation failed: Active simulation prep node is required for steady flow solve.`
+    before registering the Flow Infrastructure handler.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_simulation_operation_pages"`
+    failed because the page test still used the Domain placeholder handler.
+- Implemented Flow page Infrastructure wiring:
+  - `test_monolith_simulation_operation_pages` now registers
+    `RegisterDynamicFlowSimulationWorkflowActionHandler`.
+  - The Flow page assertion now covers the steady-flow Infrastructure
+    validation path instead of a placeholder success diagnostic.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_simulation_operation_pages"`
+    passed: 1/1.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Flow Simulation Page Infrastructure Wiring to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Python API Availability Infrastructure Action Handler
 
 - Continued the requested unattended loop after the Python API phase was made

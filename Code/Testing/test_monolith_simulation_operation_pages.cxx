@@ -3,6 +3,7 @@
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
+#include "Infrastructure/xq_FlowSimulationWorkflowActionHandler.h"
 #include "Infrastructure/xq_MultiPhysicsWorkflowActionHandler.h"
 #include "Infrastructure/xq_RomSimulationWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
@@ -84,6 +85,9 @@ int main(int argc, char** argv)
     xq::domain::RegisterDefaultWorkflowActionHandlers(
         *context->WorkflowActions(),
         context->WorkflowOperations());
+    xq::infrastructure::RegisterDynamicFlowSimulationWorkflowActionHandler(
+        *context,
+        nullptr);
     xq::infrastructure::RegisterDynamicRomSimulationWorkflowActionHandler(
         *context,
         nullptr);
@@ -210,8 +214,8 @@ int main(int argc, char** argv)
     flowButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Flow Simulation succeeded: Steady Flow Solve flow simulation operation accepted Aorta Mesh.")),
-               "Flow Simulation action should report selected operation"))
+                   "Run Flow Simulation failed: Active simulation prep node is required for steady flow solve.")),
+               "Flow Simulation action should report infrastructure validation"))
     {
         delete context;
         return 1;

@@ -3921,11 +3921,44 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
-## Active Phase: Autonomous Research Refresh
+## Completed Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
    again.
 2. Extract the next high-value monolith migration slice.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Flow Simulation Page Infrastructure Wiring
+
+1. Stop the simulation operation page test from accepting Flow Simulation
+   Domain placeholder success as UI behavior.
+   - Register `RegisterDynamicFlowSimulationWorkflowActionHandler` in
+     `test_monolith_simulation_operation_pages`.
+   - Keep `configure-cfd-job`, `run-steady-flow`, and `review-flow-results` on
+     their existing Infrastructure validation paths.
+   - Expect the Flow page to report deterministic Infrastructure validation
+     diagnostics when no compatible MITK node exists.
+2. Keep Domain placeholder behavior intact for tests that intentionally verify
+   generic operation routing without Infrastructure.
+3. Add the RED expectation before wiring the handler:
+   - Flow page action should expect the steady-flow missing simulation-prep
+     diagnostic instead of a successful placeholder.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   legacy placeholder or workflow gap.
 3. Write the next executable phase into this plan.
 4. Immediately return to plan execution.
 
