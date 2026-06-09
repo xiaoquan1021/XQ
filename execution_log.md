@@ -4132,6 +4132,45 @@
   - Clean-PATH direct startup smoke passed for
     `build\windows-msvc-release\bin\XQ.exe`.
 
+## Current Run Update: Workbench Screenshot Action
+
+- Continued the UI restoration loop after Close Workspace.
+- Selected View -> Screenshot as the next high-visibility Workbench parity
+  slice because it is visible in both the View menu and main toolbar.
+- RED test observed:
+  - Added `test_monolith_screenshot_action`.
+  - `scripts\build-xq.ps1 configure` passed.
+  - `scripts\build-xq.ps1 build` failed because
+    `Core/xq_ScreenshotFilePathProvider.h` did not exist yet, proving the
+    test covered the missing screenshot path abstraction.
+- Implemented Screenshot action:
+  - Added `ScreenshotFilePathProvider`.
+  - Added `QtScreenshotFilePathProvider` for the production Save Screenshot
+    PNG dialog.
+  - Added `MainWindow::SetScreenshotFilePathProvider()` for tests and
+    composition.
+  - Added `MainWindow::CaptureScreenshot()` using `grab()` and PNG save.
+  - Replaced the View -> Screenshot unavailable diagnostic with the real
+    capture action.
+  - Installed the Qt screenshot provider in `CreateConfiguredMainWindow()`.
+- Scope note:
+  - Windows v1 now captures the current Workbench window as PNG.
+  - Dedicated MITK render-window-only export remains a later refinement.
+- Targeted verification so far:
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(screenshot_action|workbench_menu_toolbar|view_menu_actions)"`
+    passed: 3/3.
+- Full verification:
+  - `scripts\build-xq.ps1 configure` passed using `.env`.
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - Full `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 82/82.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+
 ## Current Run Update: Workbench Project Menu Actions Wiring
 
 - User environment note:

@@ -5627,3 +5627,32 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench Screenshot Action
+
+1. Replace the restored View -> Screenshot guard with a real Windows v1 action.
+   - Add `ScreenshotFilePathProvider` so presentation tests can inject an
+     output path without driving a modal file dialog.
+   - Add a Qt provider that prompts for a PNG destination.
+   - Save the current Workbench main window as a PNG and report a deterministic
+     success or failure diagnostic.
+2. Keep scope honest.
+   - This slice captures the current monolith window, including the MITK host
+     area and Workbench chrome.
+   - It does not yet implement a dedicated MITK render-window-only export
+     pipeline or legacy scene snapshot settings.
+3. Wire production composition.
+   - `CreateConfiguredMainWindow()` installs the Qt screenshot path provider
+     alongside the existing data/project path providers.
+4. Add regression coverage.
+   - `test_monolith_screenshot_action` verifies the action requests a path,
+     writes a non-empty PNG, and no longer emits the Windows v1 unavailable
+     diagnostic.
+   - Workbench menu/view tests remain green with Screenshot treated as a
+     migrated View action.
+5. Verification gate:
+   - targeted Screenshot/View/Menu tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.

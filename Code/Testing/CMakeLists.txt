@@ -391,6 +391,14 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_screenshot_action
+        xqMonolithPresentation
+        xqMonolithCore
+        Qt6::Core
+        Qt6::Widgets
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_main_window_diagnostics_log
         xqMonolithPresentation
         xqMonolithCore

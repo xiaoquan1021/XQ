@@ -15,6 +15,7 @@
 #include "Presentation/xq_MainWindow.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
 #include "Presentation/xq_QtProjectFilePathProvider.h"
+#include "Presentation/xq_QtScreenshotFilePathProvider.h"
 
 #include <QApplication>
 #include <QDoubleSpinBox>
@@ -139,6 +140,11 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
             configured->Window.get());
     configured->Window->SetProjectFilePathProvider(
         configured->OwnedProjectPathProvider.get());
+    configured->OwnedScreenshotPathProvider =
+        std::make_unique<xq::presentation::QtScreenshotFilePathProvider>(
+            configured->Window.get());
+    configured->Window->SetScreenshotFilePathProvider(
+        configured->OwnedScreenshotPathProvider.get());
     return configured;
 }
 

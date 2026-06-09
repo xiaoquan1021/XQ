@@ -25,6 +25,7 @@ namespace xq::core
 class ApplicationContext;
 class DataImportCommand;
 class ProjectFilePathProvider;
+class ScreenshotFilePathProvider;
 struct ProjectMetadata;
 struct TaskRecord;
 }
@@ -44,6 +45,8 @@ public:
     void SetDataImportCommand(xq::core::DataImportCommand* command);
     void SetProjectFilePathProvider(
         xq::core::ProjectFilePathProvider* provider);
+    void SetScreenshotFilePathProvider(
+        xq::core::ScreenshotFilePathProvider* provider);
     void SetRenderHost(QWidget* renderHost);
     void SetImageNavigatorWidget(QWidget* imageNavigator);
 
@@ -51,6 +54,7 @@ private:
     QWidget* CreateWorkflowPage(const QString& id, const QString& title);
     void AddWorkflowPage(const QString& id, const QString& title);
     void AppendTaskHistoryRow(const xq::core::TaskRecord& task);
+    void CaptureScreenshot();
     void CreateProjectFromProvider();
     void CloseWorkspace();
     void ImportData();
@@ -151,6 +155,8 @@ private:
     QAction* m_PointsRepresentationAction = nullptr;
     xq::core::DataImportCommand* m_DataImportCommand = nullptr;
     xq::core::ProjectFilePathProvider* m_ProjectFilePathProvider = nullptr;
+    xq::core::ScreenshotFilePathProvider* m_ScreenshotFilePathProvider =
+        nullptr;
     QListWidget* m_Navigation = nullptr;
     QStackedWidget* m_Pages = nullptr;
     QDockWidget* m_ImageNavigatorDock = nullptr;

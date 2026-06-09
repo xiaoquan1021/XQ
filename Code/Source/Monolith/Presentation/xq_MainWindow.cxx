@@ -11,6 +11,7 @@
 #include "Core/xq_ProjectFilePathProvider.h"
 #include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_ProjectService.h"
+#include "Core/xq_ScreenshotFilePathProvider.h"
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowContextService.h"
 #include "Core/xq_WorkflowOperationService.h"
@@ -42,6 +43,7 @@
 #include <QMenuBar>
 #include <QProgressBar>
 #include <QPushButton>
+#include <QPixmap>
 #include <QResource>
 #include <QScopeGuard>
 #include <QSignalBlocker>
@@ -510,8 +512,9 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     connect(screenshotAction,
             &QAction::triggered,
             this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "Screenshot is not available in Windows monolith v1.")));
+            [this]() {
+                CaptureScreenshot();
+            });
     connect(volumeRenderingAction,
             &QAction::triggered,
             this,
@@ -1130,6 +1133,12 @@ void MainWindow::SetProjectFilePathProvider(
     m_ProjectFilePathProvider = provider;
 }
 
+void MainWindow::SetScreenshotFilePathProvider(
+    xq::core::ScreenshotFilePathProvider* provider)
+{
+    m_ScreenshotFilePathProvider = provider;
+}
+
 void MainWindow::SetRenderHost(QWidget* renderHost)
 {
     if (!renderHost || !m_RenderHostContainer)
@@ -1284,6 +1293,42 @@ void MainWindow::SaveProjectAsFromProvider()
     UpdateProjectPage(m_Context.Projects()->CurrentProject());
     UpdateProjectPageDataCount();
     UpdateProjectStructureTree();
+}
+
+void MainWindow::CaptureScreenshot()
+{
+    if (!m_ScreenshotFilePathProvider)
+    {
+        m_Context.PostDiagnostic(QStringLiteral(
+            "Screenshot failed: No screenshot file path provider is configured."));
+        return;
+    }
+
+    QString filePath = m_ScreenshotFilePathProvider->ScreenshotFilePath()
+                           .trimmed();
+    if (filePath.isEmpty())
+        return;
+
+    if (!filePath.endsWith(QStringLiteral(".png"), Qt::CaseInsensitive))
+        filePath += QStringLiteral(".png");
+
+    const QPixmap screenshot = grab();
+    if (screenshot.isNull())
+    {
+        m_Context.PostDiagnostic(
+            QStringLiteral("Screenshot failed: Unable to capture the window."));
+        return;
+    }
+
+    if (!screenshot.save(filePath, "PNG"))
+    {
+        m_Context.PostDiagnostic(
+            QStringLiteral("Screenshot failed: Unable to write %1.")
+                .arg(filePath));
+        return;
+    }
+
+    m_Context.PostDiagnostic(QStringLiteral("Screenshot saved."));
 }
 
 void MainWindow::CloseWorkspace()

@@ -33,6 +33,7 @@ set(XQ_MONOLITH_CORE_HDRS
     Core/xq_ProjectService.h
     Core/xq_ProjectSessionService.h
     Core/xq_RenderRefreshService.h
+    Core/xq_ScreenshotFilePathProvider.h
     Core/xq_TaskRunner.h
     Core/xq_WorkflowActionService.h
     Core/xq_WorkflowContextService.h
@@ -176,6 +177,7 @@ set(XQ_MONOLITH_PRESENTATION_SRCS
     Presentation/xq_PreferencesDialog.cxx
     Presentation/xq_QtFileImportPathProvider.cxx
     Presentation/xq_QtProjectFilePathProvider.cxx
+    Presentation/xq_QtScreenshotFilePathProvider.cxx
     ../ImagingWorkbench/Plugins/org.xq.core.application/resources/xqApplication.qrc
 )
 
@@ -185,6 +187,7 @@ set(XQ_MONOLITH_PRESENTATION_HDRS
     Presentation/xq_PreferencesDialog.h
     Presentation/xq_QtFileImportPathProvider.h
     Presentation/xq_QtProjectFilePathProvider.h
+    Presentation/xq_QtScreenshotFilePathProvider.h
 )
 
 add_library(xqMonolithPresentation STATIC
