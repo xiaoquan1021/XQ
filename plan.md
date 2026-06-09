@@ -4148,6 +4148,48 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   native workflow gap.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Surface Meshing Infrastructure Action
+
+1. Replace the `generate-surface-mesh` Meshing unsupported guard with a native
+   Infrastructure action.
+   - Resolve the selected Model node from `DataNodeRegistryService` or the
+     active node.
+   - Read `target-edge-length` from `WorkflowOperationService` and record it on
+     the result node.
+   - Extract the upstream model's whole `vtkPolyData` surface into an
+     `xq_MitkGrid` surface-only result.
+   - Commit a generated Mesh catalog/hierarchy entry, select it, and refresh
+     rendering on success.
+2. Keep the action honest about scope.
+   - Do not claim TetGen/MMG remeshing when only the existing model surface is
+     preserved.
+   - Do not generate a volume mesh for this operation.
+3. Add RED C++ tests before implementation:
+   - `generate-surface-mesh` with a real model should no longer return the
+     unsupported-operation diagnostic.
+   - A successful run should register a mesh result, bind `xq_MitkGrid`, record
+     surface-only metadata, select the result, and refresh rendering.
+   - Production composition should validate `generate-surface-mesh` through the
+     Infrastructure handler.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for meshing handler/composition tests
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

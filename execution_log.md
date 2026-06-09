@@ -101,6 +101,49 @@
 - Promoted 3D Surface Preview Infrastructure Action to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Remaining unsupported exposed operations were reviewed across Path,
+    Modeling, Meshing, ROM, MultiPhysics, and Python API.
+  - `generate-surface-mesh` is the next narrow native slice because the
+    selected Model already carries a `vtkPolyData` surface and `xq_MitkGrid`
+    can store a surface mesh without claiming full volume/TetGen behavior.
+  - ROM/MultiPhysics solver/review operations remain later slices because
+    creating fake solver results would be misleading.
+- Added next executable phase to `plan.md`: Surface Meshing Infrastructure
+  Action.
+- Starting RED tests first:
+  - `generate-surface-mesh` with a real model should create a surface-only
+    `xq_MitkGrid` result instead of returning the unsupported diagnostic.
+  - Production composition should validate `generate-surface-mesh` through the
+    Infrastructure handler.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - Targeted `ctest` failed because `generate-surface-mesh` still returned
+    `Generate Surface Mesh is not wired to a native Meshing runtime yet.`
+- Implemented Surface Meshing Infrastructure action:
+  - The dynamic Meshing handler now routes `generate-surface-mesh` to a native
+    surface-preserve path.
+  - The handler resolves the selected Model node, copies the upstream model
+    `vtkPolyData` into an `xq_TetGenGrid` surface-only container, wraps it in
+    `xq_MitkGrid`, and records `surface_only` / `surface-preserve` metadata.
+  - Successful runs register Mesh catalog/hierarchy/data-node bindings, select
+    the generated result, and refresh rendering.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(meshing_workflow_action_handler|application_import_wiring)"`
+    passed: 2/2.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Surface Meshing Infrastructure Action to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 ## 2026-06-07
 

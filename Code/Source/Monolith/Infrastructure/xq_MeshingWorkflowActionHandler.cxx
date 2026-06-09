@@ -10,7 +10,13 @@
 #include "Core/xq_WorkflowOperationService.h"
 
 #include <xq_MeshPipeline.h>
+#include <xq_MitkGrid.h>
+#include <xq_Model.h>
 #include <xq_PipelineDataUtils.h>
+#include <xq_TetGenGrid.h>
+#include <xq_VascularGeometry.h>
+
+#include <vtkPolyData.h>
 
 #include <algorithm>
 
@@ -21,6 +27,7 @@ namespace
 {
 
 constexpr const char* kMeshingWorkflowId = "meshing";
+constexpr const char* kGenerateSurfaceMeshOperationId = "generate-surface-mesh";
 constexpr const char* kGenerateVolumeMeshOperationId = "generate-volume-mesh";
 constexpr const char* kBoundaryLayersOperationId = "boundary-layers";
 constexpr const char* kMeshesFolderId = "meshes";
@@ -278,6 +285,125 @@ bool RunGenerateVolumeMesh(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool RunGenerateSurfaceMesh(xq::core::ApplicationContext& context,
+                            xq::core::RenderRefreshService* renderRefresh,
+                            const xq::core::WorkflowContextSnapshot& snapshot,
+                            const QString& operationId,
+                            QString* message)
+{
+    const auto modelNode = ResolveModelNode(context, snapshot);
+    if (modelNode.IsNull() ||
+        !xq::pipeline::HasStage(modelNode.GetPointer(),
+                                xq::pipeline::Stage::Model))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active model node is required for meshing."));
+        return false;
+    }
+
+    const QString entryId = ResultCatalogEntryId(snapshot, operationId);
+    const QString preflightMessage = PreflightCommitTarget(context, entryId);
+    if (!preflightMessage.isEmpty())
+    {
+        SetMessage(message, preflightMessage);
+        return false;
+    }
+
+    auto* model = dynamic_cast<xq_Model*>(modelNode->GetData());
+    auto* modelElement = model ? model->GetModelElement(0) : nullptr;
+    auto surface = modelElement ? modelElement->GetWholeVtkPolyData() : nullptr;
+    if (!surface || surface->GetNumberOfPoints() == 0 ||
+        surface->GetNumberOfCells() == 0)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Model node does not contain usable surface geometry."));
+        return false;
+    }
+
+    const QVariantMap parameters =
+        context.WorkflowOperations()
+            ? context.WorkflowOperations()->ParameterValues(snapshot.WorkflowId,
+                                                            operationId)
+            : QVariantMap();
+    const double targetEdgeLength =
+        std::max(1.0e-6,
+                 parameters.value(QStringLiteral("target-edge-length"), 1.0)
+                     .toDouble());
+
+    auto gridData = new xq_TetGenGrid();
+    MeshParams meshParams;
+    meshParams.surfaceMeshOnly = true;
+    meshParams.globalEdgeSize = targetEdgeLength;
+    gridData->SetModelElement(modelElement);
+    gridData->SetMeshParams(meshParams);
+
+    auto surfaceCopy = vtkSmartPointer<vtkPolyData>::New();
+    surfaceCopy->DeepCopy(surface);
+    gridData->SetSurfaceMesh(surfaceCopy);
+
+    auto mitkGrid = xq_MitkGrid::New();
+    mitkGrid->SetMesh(gridData, 0);
+
+    const QString sourceName =
+        QString::fromStdString(modelNode->GetName()).trimmed();
+    auto meshNode = mitk::DataNode::New();
+    meshNode->SetData(mitkGrid);
+    meshNode->SetName(
+        QStringLiteral("%1_surface_mesh").arg(sourceName).toStdString());
+    meshNode->SetStringProperty("xq.mesh.type", "Surface mesh preserve");
+    meshNode->SetStringProperty("xq.mesh.requested_backend",
+                                "surface-preserve");
+    meshNode->SetStringProperty("xq.mesh.actual_backend",
+                                "surface-preserve");
+    meshNode->SetBoolProperty("xq.mesh.backend.fallback", false);
+    meshNode->SetBoolProperty("xq.mesh.surface_only", true);
+    meshNode->SetDoubleProperty("xq.mesh.surface.target_edge_length",
+                                targetEdgeLength);
+    meshNode->SetIntProperty("xq.mesh.surface.cells",
+                             surfaceCopy->GetNumberOfCells());
+    meshNode->SetIntProperty("xq.mesh.surface.points",
+                             surfaceCopy->GetNumberOfPoints());
+    meshNode->SetStringProperty(
+        "xq.mesh.capability.diagnostic",
+        "Surface mesh operation preserved the upstream model surface. "
+        "No volume mesh, TetGen, MMG, or remeshing backend was run.");
+    xq::pipeline::MarkNode(meshNode, xq::pipeline::Stage::VolumeMesh);
+    xq::pipeline::SetStringProperty(
+        meshNode,
+        xq::pipeline::kSourceModelProperty,
+        modelNode->GetName());
+    xq::pipeline::SetStringProperty(
+        meshNode,
+        xq::pipeline::kAlgorithmProperty,
+        "surface-preserve");
+
+    auto meshFolder = xq::pipeline::FindCategoryFolder(
+        context.DataStorage().GetPointer(),
+        xq::pipeline::Stage::VolumeMesh,
+        modelNode.GetPointer());
+    if (meshFolder.IsNotNull())
+        context.DataStorage()->Add(meshNode, meshFolder);
+    else
+        context.DataStorage()->Add(meshNode, modelNode);
+
+    xq_MeshGenerationResult result;
+    result.ok = true;
+    result.node = meshNode;
+    result.gridData = mitkGrid;
+
+    if (!CommitMeshResult(context, entryId, result, message))
+        return false;
+
+    QString selectionMessage;
+    context.DataSelection()->SelectCatalogEntry(entryId, &selectionMessage);
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicMeshingWorkflowActionHandler(
@@ -301,6 +427,8 @@ bool RegisterDynamicMeshingWorkflowActionHandler(
             }
 
             if (operationId !=
+                    QString::fromLatin1(kGenerateSurfaceMeshOperationId) &&
+                operationId !=
                     QString::fromLatin1(kGenerateVolumeMeshOperationId) &&
                 operationId != QString::fromLatin1(kBoundaryLayersOperationId))
             {
@@ -308,6 +436,16 @@ bool RegisterDynamicMeshingWorkflowActionHandler(
                                                       snapshot,
                                                       operationId,
                                                       taskMessage);
+            }
+
+            if (operationId ==
+                QString::fromLatin1(kGenerateSurfaceMeshOperationId))
+            {
+                return RunGenerateSurfaceMesh(context,
+                                              renderRefresh,
+                                              snapshot,
+                                              operationId,
+                                              taskMessage);
             }
 
             return RunGenerateVolumeMesh(context,

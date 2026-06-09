@@ -309,34 +309,122 @@ int main(int argc, char** argv)
         if (Expect(PrepareMeshingWorkflow(
                        *context,
                        QStringLiteral("generate-surface-mesh")),
-                   "unsupported surface mesh fixture should prepare workflow"))
+                   "surface mesh fixture should prepare workflow"))
+        {
+            return 1;
+        }
+        QString message;
+        if (Expect(context->WorkflowOperations()->SetParameterValue(
+                       QStringLiteral("meshing"),
+                       QStringLiteral("generate-surface-mesh"),
+                       QStringLiteral("target-edge-length"),
+                       1.5,
+                       &message),
+                   "surface mesh fixture should set target edge length"))
         {
             return 1;
         }
 
-        QString message;
+        auto modelNode = MakeModelNode("Main Model");
+        context->DataStorage()->Add(modelNode);
+        context->DataNodes()->BindNode(QStringLiteral("model-001"),
+                                       modelNode);
+
+        FakeRenderRefreshService refresh;
         if (Expect(
                 xq::infrastructure::
                     RegisterDynamicMeshingWorkflowActionHandler(
                         *context,
-                        nullptr,
+                        &refresh,
                         &message),
-                "unsupported surface mesh fixture should install handler"))
+                "surface mesh fixture should install handler"))
         {
             return 1;
         }
 
-        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
                        &message),
-                   "unsupported surface mesh should fail"))
+                   "surface mesh should create mesh result"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Registered mesh result catalog entry."),
+                   "surface mesh should report catalog commit success"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        const auto* entry = context->DataCatalog()->FindById(
+            QStringLiteral("model-001-generate-surface-mesh"));
+        if (Expect(entry != nullptr &&
+                       entry->WorkflowRole ==
+                           xq::core::DataWorkflowRole::Mesh &&
+                       entry->SourcePath ==
+                           QStringLiteral(
+                               "xq://generated/mesh/model-001-generate-surface-mesh"),
+                   "surface mesh should register generated catalog entry"))
         {
             return 1;
         }
-        if (Expect(message == QStringLiteral(
-                                  "Generate Surface Mesh is not wired to a native Meshing runtime yet."),
-                   "unsupported surface mesh diagnostic should name operation"))
+        const auto* hierarchyNode = context->DataHierarchy()->FindNode(
+            QStringLiteral("data-model-001-generate-surface-mesh"));
+        if (Expect(hierarchyNode != nullptr &&
+                       hierarchyNode->DataCatalogEntryId ==
+                           QStringLiteral("model-001-generate-surface-mesh"),
+                   "surface mesh should register generated hierarchy entry"))
         {
-            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        auto resultNode = context->DataNodes()->FindNode(
+            QStringLiteral("model-001-generate-surface-mesh"));
+        auto* grid = resultNode.IsNotNull()
+                         ? dynamic_cast<xq_MitkGrid*>(resultNode->GetData())
+                         : nullptr;
+        auto* mesh = grid ? grid->GetMesh(0) : nullptr;
+        if (Expect(grid != nullptr &&
+                       mesh != nullptr &&
+                       mesh->GetSurfaceMesh() != nullptr &&
+                       mesh->GetSurfaceMesh()->GetNumberOfCells() > 0 &&
+                       (mesh->GetVolumeMesh() == nullptr ||
+                        mesh->GetVolumeMesh()->GetNumberOfCells() == 0),
+                   "surface mesh should bind surface-only mesh data"))
+        {
+            return 1;
+        }
+        double targetEdgeLength = 0.0;
+        bool surfaceOnly = false;
+        if (Expect(resultNode->GetDoubleProperty(
+                       "xq.mesh.surface.target_edge_length",
+                       targetEdgeLength) &&
+                       targetEdgeLength == 1.5 &&
+                       resultNode->GetBoolProperty("xq.mesh.surface_only",
+                                                   surfaceOnly) &&
+                       surfaceOnly &&
+                       xq::pipeline::HasStage(
+                           resultNode,
+                           xq::pipeline::Stage::VolumeMesh) &&
+                       xq::pipeline::GetStringProperty(
+                           resultNode.GetPointer(),
+                           xq::pipeline::kAlgorithmProperty) ==
+                           "surface-preserve",
+                   "surface mesh should record surface-only pipeline metadata"))
+        {
+            return 1;
+        }
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("model-001-generate-surface-mesh"),
+                   "surface mesh should select generated mesh"))
+        {
+            return 1;
+        }
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "surface mesh should refresh rendering after success"))
+        {
             return 1;
         }
     }

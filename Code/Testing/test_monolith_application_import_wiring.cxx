@@ -389,6 +389,20 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(meshingContext->WorkflowOperations()->SelectOperation(
                    QStringLiteral("meshing"),
+                   QStringLiteral("generate-surface-mesh"),
+                   &message),
+               "configured meshing workflow should select surface mesh"))
+        return 1;
+    if (Expect(!meshingContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured surface meshing should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active model node is required for meshing."),
+               "configured surface meshing should require a model node"))
+        return 1;
+    if (Expect(meshingContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("meshing"),
                    QStringLiteral("boundary-layers"),
                    &message),
                "configured meshing workflow should select boundary layers"))
