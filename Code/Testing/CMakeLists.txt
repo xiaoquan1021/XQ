@@ -441,6 +441,12 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_workbench_theme
+        xqMonolithApplication
+        Qt6::Core
+        Qt6::Widgets
+    )
+
     xq_add_registered_test(test_monolith_main_window_selection_sync
         xqMonolithPresentation
         xqMonolithCore

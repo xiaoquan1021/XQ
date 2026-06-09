@@ -1,5 +1,49 @@
 # XQ Execution Log
 
+## Current Run: Monolith Workbench Theme Resource Restore
+
+- Continued after `cad2162` with the next UI-fidelity gap:
+  - The monolith had the Workbench dock shape and MITK Image Navigator, but it
+    still did not load the original XQ visual resource package.
+  - The legacy Workbench assets already exist in
+    `org.xq.core.application/resources`, including `xq.qss`, `icon.png`, and
+    workflow/tool SVG icons.
+- RED test observed before production code:
+  - Added `test_monolith_workbench_theme`.
+  - The first build failed because `xq::ApplyXqWorkbenchTheme()` did not
+    exist.
+- Implemented the slice:
+  - Added `xq::ApplyXqWorkbenchTheme(QApplication&, QString*)`.
+  - The function registers the old `xqApplication.qrc`, applies the original
+    Arctic Light palette, loads `:/xq/xq.qss`, and sets `:/xq/icon.png` as
+    the application icon.
+  - `main.cxx` now applies the theme during monolith startup and emits a
+    warning if the resource cannot be loaded.
+  - `xqMonolithApplication` now compiles the existing
+    `org.xq.core.application/resources/xqApplication.qrc` with `AUTORCC`.
+- Debugging note:
+  - The first implementation compiled but the theme test failed because the
+    resource object from the static library was not registered in the test
+    executable.
+  - Added explicit `Q_INIT_RESOURCE(xqApplication)` in the theme loader.
+  - The first `Q_INIT_RESOURCE` attempt was inside an anonymous namespace and
+    produced an unresolved `qInitResources_xqApplication` symbol; moving the
+    helper to global namespace fixed the generated-symbol lookup.
+- Targeted verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release -R "test_monolith_workbench_theme|test_monolith_main_window_workbench_layout|test_monolith_application_import_wiring" --output-on-failure --timeout 120`
+    passed: 3/3.
+- Full verification before commit:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - Full XQ `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - Themed runtime smoke launched `build\windows-msvc-release\bin\XQ.exe`,
+    kept it alive for 10 seconds, and closed it cleanly.
+  - `git diff --check` passed in both XQ and Externals.
+
 ## Current Run: MITK Image Navigator Dock
 
 - Continued from pushed `f927c25` after the Workbench-style shell correction.

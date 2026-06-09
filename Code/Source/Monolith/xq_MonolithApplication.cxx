@@ -15,9 +15,14 @@
 #include "Presentation/xq_MainWindow.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
 
+#include <QApplication>
 #include <QDoubleSpinBox>
+#include <QFile>
 #include <QGridLayout>
+#include <QIcon>
 #include <QLabel>
+#include <QPalette>
+#include <QResource>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -28,6 +33,11 @@
 
 #include <mitkRenderingManager.h>
 #include <mitkTimeNavigationController.h>
+
+void InitXqApplicationResources()
+{
+    Q_INIT_RESOURCE(xqApplication);
+}
 
 namespace xq
 {
@@ -185,6 +195,60 @@ QWidget* CreateMitkImageNavigator(QmitkStdMultiWidget& multiWidget,
     timeAdapter->setParent(navigator);
 
     return navigator;
+}
+
+bool ApplyXqWorkbenchTheme(QApplication& application, QString* errorMessage)
+{
+    InitXqApplicationResources();
+
+    QFile styleFile(QStringLiteral(":/xq/xq.qss"));
+    if (!styleFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        if (errorMessage)
+        {
+            *errorMessage =
+                QStringLiteral("Unable to load XQ Workbench stylesheet: %1")
+                    .arg(styleFile.errorString());
+        }
+        return false;
+    }
+
+    QPalette lightPalette;
+    lightPalette.setColor(QPalette::Window, QColor(QStringLiteral("#F8FAFC")));
+    lightPalette.setColor(QPalette::WindowText,
+                          QColor(QStringLiteral("#1E293B")));
+    lightPalette.setColor(QPalette::Base, QColor(QStringLiteral("#FFFFFF")));
+    lightPalette.setColor(QPalette::AlternateBase,
+                          QColor(QStringLiteral("#F1F5F9")));
+    lightPalette.setColor(QPalette::ToolTipBase,
+                          QColor(QStringLiteral("#FFFFFF")));
+    lightPalette.setColor(QPalette::ToolTipText,
+                          QColor(QStringLiteral("#1E293B")));
+    lightPalette.setColor(QPalette::Text, QColor(QStringLiteral("#1E293B")));
+    lightPalette.setColor(QPalette::Button, QColor(QStringLiteral("#F1F5F9")));
+    lightPalette.setColor(QPalette::ButtonText,
+                          QColor(QStringLiteral("#1E293B")));
+    lightPalette.setColor(QPalette::BrightText,
+                          QColor(QStringLiteral("#FFFFFF")));
+    lightPalette.setColor(QPalette::Link, QColor(QStringLiteral("#2563EB")));
+    lightPalette.setColor(QPalette::Highlight,
+                          QColor(QStringLiteral("#2563EB")));
+    lightPalette.setColor(QPalette::HighlightedText,
+                          QColor(QStringLiteral("#FFFFFF")));
+    lightPalette.setColor(QPalette::Light, QColor(QStringLiteral("#FFFFFF")));
+    lightPalette.setColor(QPalette::Midlight,
+                          QColor(QStringLiteral("#E2E8F0")));
+    lightPalette.setColor(QPalette::Mid, QColor(QStringLiteral("#CBD5E1")));
+    lightPalette.setColor(QPalette::Dark, QColor(QStringLiteral("#94A3B8")));
+    lightPalette.setColor(QPalette::Shadow, QColor(QStringLiteral("#64748B")));
+    application.setPalette(lightPalette);
+
+    application.setStyleSheet(QString::fromUtf8(styleFile.readAll()));
+    application.setWindowIcon(QIcon(QStringLiteral(":/xq/icon.png")));
+
+    if (errorMessage)
+        errorMessage->clear();
+    return true;
 }
 
 } // namespace xq

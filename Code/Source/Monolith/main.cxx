@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QSurfaceFormat>
+#include <QString>
 
 #include <QmitkStdMultiWidget.h>
 #include <QVTKOpenGLNativeWidget.h>
@@ -19,6 +20,9 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
     QCoreApplication::setApplicationName(QStringLiteral("XQ"));
     QCoreApplication::setOrganizationName(QStringLiteral("XQ"));
+    QString themeError;
+    if (!xq::ApplyXqWorkbenchTheme(app, &themeError))
+        qWarning("%s", qPrintable(themeError));
 
     std::unique_ptr<xq::core::ApplicationContext> context(
         xq::core::ApplicationContext::CreateDefault());

@@ -206,10 +206,12 @@ target_link_libraries(xqMonolithPresentation
 add_library(xqMonolithApplication STATIC
     xq_MonolithApplication.cxx
     xq_MonolithApplication.h
+    ../ImagingWorkbench/Plugins/org.xq.core.application/resources/xqApplication.qrc
 )
 
 set_target_properties(xqMonolithApplication PROPERTIES
     AUTOMOC ON
+    AUTORCC ON
 )
 
 target_include_directories(xqMonolithApplication

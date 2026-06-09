@@ -4797,3 +4797,27 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted `ctest` for the Workbench layout and production composition
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Monolith Workbench Theme Resource Restore
+
+1. Restore the original XQ Workbench visual resource package in the monolith
+   build without reintroducing the BlueBerry/CTK runtime shell.
+   - Compile the existing
+     `org.xq.core.application/resources/xqApplication.qrc` into the monolith
+     application layer as a normal Qt resource.
+   - Reuse the original `:/xq/xq.qss`, application icon, and workflow SVG
+     assets instead of duplicating resources.
+2. Add an explicit composition API for theme loading.
+   - `xq::ApplyXqWorkbenchTheme()` registers the resource, applies the
+     original Arctic Light palette, loads `:/xq/xq.qss`, and sets the XQ
+     application icon.
+   - `main.cxx` applies the theme during startup and reports a clear warning
+     if the resource cannot be loaded.
+3. Add regression coverage.
+   - `test_monolith_workbench_theme` verifies that the stylesheet, application
+     icon, and workflow SVG assets are embedded and that the stylesheet is
+     applied to `QApplication`.
+4. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for theme, Workbench layout, and composition.
+   - full XQ and Externals test gates before commit.

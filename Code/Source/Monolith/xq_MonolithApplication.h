@@ -5,6 +5,8 @@
 
 class QWidget;
 class QmitkStdMultiWidget;
+class QApplication;
+class QString;
 
 namespace xq::core
 {
@@ -46,6 +48,9 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
 
 QWidget* CreateMitkImageNavigator(QmitkStdMultiWidget& multiWidget,
                                   QWidget* parent = nullptr);
+
+bool ApplyXqWorkbenchTheme(QApplication& application,
+                           QString* errorMessage = nullptr);
 
 } // namespace xq
 
