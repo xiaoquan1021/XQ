@@ -4458,7 +4458,7 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
-## Active Phase: Autonomous Research Refresh
+## Completed Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
    again.
@@ -4466,6 +4466,40 @@ The next monolith slice is grounded in these comparable systems:
    native workflow gap.
 3. Write the next executable phase into this plan.
 4. Immediately return to plan execution.
+
+## Completed Phase: ROM Boundary Calibration Infrastructure Action
+
+1. Replace the `calibrate-boundary-conditions` ROM unsupported guard with a
+   native Infrastructure configuration action.
+   - Resolve the selected `xq_MitkROMJob` from `DataNodeRegistryService` or the
+     active node.
+   - Require an existing configured ROM job with valid inlet/outlet cap data.
+   - Clone the selected `xq_ROMJob`, scale outlet RCR resistances using
+     `resistance-scale`, and record the requested `target-flow-rate`.
+   - Commit a generated ROMSimulation catalog/hierarchy entry, select it, and
+     refresh rendering on success.
+2. Keep the action honest about scope.
+   - Mark results as calibrated/configured boundary conditions only.
+   - Record `not_solver_run` metadata and do not claim ROM solver execution.
+   - Keep `run-rom-solver` on the unsupported-operation guard until a native
+     solver/result path exists.
+3. Add RED C++ tests before implementation:
+   - `calibrate-boundary-conditions` with no ROM job should require a selected
+     ROM job instead of reporting unsupported runtime.
+   - A valid ROM job should create a calibrated ROM job with scaled RCR values,
+     source metadata, catalog/hierarchy/data-node bindings, selection, and
+     render refresh.
+   - Production composition and the ROM operation page should validate
+     `calibrate-boundary-conditions` through the Infrastructure handler.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for ROM handler/page/composition tests
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
 
 ## Completed Phase: Path Operation Foundation
 

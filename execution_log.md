@@ -1,6 +1,59 @@
 # XQ Execution Log
 
-## Current Run: Loft Profiles Segmentation Infrastructure Action
+## Current Run: ROM Boundary Calibration Infrastructure Action
+
+- Continued from clean pushed `feature/windows-monolith-foundation` state after
+  `loft-profiles` was pushed as `9c33955`.
+- Completed the active autonomous research refresh:
+  - Remaining ROM/MultiPhysics gaps are solver/review-heavy except
+    `calibrate-boundary-conditions`.
+  - ROM already has `xq_ROMJob` RCR storage, `xq_MitkROMJob` deep-copy
+    semantics, and generated ROM catalog support.
+  - The narrow native slice is therefore a real ROM boundary-condition
+    configuration/calibration action, not a solver run.
+- Added next executable phase to `plan.md`: ROM Boundary Calibration
+  Infrastructure Action.
+- Starting RED tests first:
+  - `calibrate-boundary-conditions` should require a selected ROM job.
+  - A valid ROM job should create a calibrated copy with scaled outlet RCR
+    resistances and honest `not_solver_run` metadata.
+  - Production composition and the ROM operation page should validate
+    calibration through the Infrastructure handler rather than the unsupported
+    guard.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed after
+    fixing one missing test include.
+  - Targeted `ctest` failed because calibration still returned
+    `Calibrate Boundary Conditions is not wired to a native ROM Simulation runtime yet.`
+    through the unsupported-operation guard.
+- Implemented ROM boundary calibration Infrastructure action:
+  - The dynamic ROM handler now routes `calibrate-boundary-conditions` to a
+    native configuration path while keeping `run-rom-solver` unsupported.
+  - The handler resolves an existing `xq_MitkROMJob`, validates the source
+    `xq_ROMJob`, clones it, scales outlet RCR resistances, and records
+    target-flow/scale metadata.
+  - Successful runs commit a generated ROMSimulation entry, select it, refresh
+    rendering, and record `not_solver_run` limitations so no solver execution
+    is implied.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(rom_simulation_workflow_action_handler|simulation_operation_pages|application_import_wiring)"`
+    passed: 3/3.
+- Full-gate verification before commit:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - XQ `tests\*.ps1` passed.
+  - Full XQ `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - XQ `git diff --check` passed.
+  - Externals `tests\*.ps1` passed.
+  - Externals `git diff --check` passed.
+- Marked ROM Boundary Calibration Infrastructure Action completed in
+  `plan.md`.
+
+## Previous Run: Loft Profiles Segmentation Infrastructure Action
 
 - Continued from clean pushed `feature/windows-monolith-foundation` state after
   `threshold-contour` was pushed as `ad3237d`.

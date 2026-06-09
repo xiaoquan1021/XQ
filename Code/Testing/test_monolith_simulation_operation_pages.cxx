@@ -1,5 +1,6 @@
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataImportService.h"
+#include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
@@ -8,6 +9,10 @@
 #include "Infrastructure/xq_RomSimulationWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 
+#include <xq_MitkROMJob.h>
+#include <xq_PipelineDataUtils.h>
+#include <xq_ROMJob.h>
+
 #include <QApplication>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -15,6 +20,7 @@
 #include <QSpinBox>
 
 #include <iostream>
+#include <memory>
 
 namespace
 {
@@ -73,6 +79,45 @@ xq::core::DataImportRequest MakeMeshImport(const QString& id,
     request.Modality = QStringLiteral("CFD");
     request.WorkflowRole = xq::core::DataWorkflowRole::Mesh;
     return request;
+}
+
+xq::core::DataImportRequest MakeRomImport(const QString& id,
+                                          const QString& displayName)
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = id;
+    request.SourcePath = QStringLiteral("C:/studies/") + id;
+    request.DisplayName = displayName;
+    request.Modality = QStringLiteral("ROMSimulation");
+    request.WorkflowRole = xq::core::DataWorkflowRole::ROMSimulation;
+    return request;
+}
+
+mitk::DataNode::Pointer MakeRomNode(const std::string& name)
+{
+    auto job = std::make_unique<xq_ROMJob>();
+    job->SetJobName(name);
+    job->SetModelType("1D");
+    job->SetCapProp("inlet", "role", "inflow");
+    job->SetCapProp("outlet", "role", "outflow");
+    job->SetRCR("outlet", 100.0, 1.0e-5, 900.0);
+
+    auto mitkJob = xq_MitkROMJob::New();
+    mitkJob->SetROMJob(std::move(job));
+    mitkJob->SetStatus("configured");
+
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    node->SetData(mitkJob);
+    xq::pipeline::MarkGeneratedNode(node,
+                                    xq::pipeline::Stage::ROMSimulation,
+                                    "build-1d-network",
+                                    "test",
+                                    "1");
+    xq::pipeline::SetStringProperty(
+        node, xq::pipeline::kSourceMeshProperty, "ROM Mesh");
+    xq::pipeline::SetStringProperty(node, "xq.rom.status", "configured");
+    return node;
 }
 
 } // namespace
@@ -298,6 +343,66 @@ int main(int argc, char** argv)
     if (Expect(diagnostics.contains(QStringLiteral(
                    "Run ROM Simulation failed: ROM Solver is not wired to a native ROM Simulation runtime yet.")),
                "ROM Simulation action should report unsupported operation"))
+    {
+        delete context;
+        return 1;
+    }
+
+    romSelector->setCurrentIndex(
+        romSelector->findData(
+            QStringLiteral("calibrate-boundary-conditions")));
+    app.processEvents();
+    if (Expect(romButton != nullptr &&
+                   romButton->text() ==
+                       QStringLiteral("Run Calibrate Boundary Conditions"),
+               "ROM Simulation action should include calibration operation"))
+    {
+        delete context;
+        return 1;
+    }
+    auto* targetFlowRate =
+        FindNumericParameter(window, QStringLiteral("target-flow-rate"));
+    auto* resistanceScale =
+        FindNumericParameter(window, QStringLiteral("resistance-scale"));
+    if (Expect(targetFlowRate != nullptr && resistanceScale != nullptr,
+               "ROM calibration should expose calibration parameters"))
+    {
+        delete context;
+        return 1;
+    }
+    targetFlowRate->setValue(72.5);
+    resistanceScale->setValue(1.5);
+    app.processEvents();
+
+    const auto existingRom =
+        context->DataImports()->Import(MakeRomImport(
+                                           QStringLiteral("existing-rom"),
+                                           QStringLiteral("Existing ROM")),
+                                       &errorMessage);
+    if (Expect(existingRom.Succeeded, "ROM job import should succeed"))
+    {
+        delete context;
+        return 1;
+    }
+    auto romJobNode = MakeRomNode("Existing ROM");
+    context->DataStorage()->Add(romJobNode);
+    context->DataNodes()->BindNode(QStringLiteral("existing-rom"),
+                                   romJobNode);
+    if (Expect(context->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("rom-simulation")),
+               "ROM Simulation workflow should be selectable before calibration"))
+    {
+        delete context;
+        return 1;
+    }
+    app.processEvents();
+    romButton->click();
+    app.processEvents();
+    if (Expect(context->DataCatalog()->FindById(
+                   QStringLiteral(
+                       "existing-rom-calibrate-boundary-conditions")) !=
+                   nullptr,
+               "ROM Simulation calibration should register calibrated entry"))
     {
         delete context;
         return 1;

@@ -12,7 +12,9 @@
 #include "xq_MonolithApplication.h"
 
 #include <xq_CenterlineSegment.h>
+#include <xq_MitkROMJob.h>
 #include <xq_PipelineDataUtils.h>
+#include <xq_ROMJob.h>
 #include <xq_VesselCenterline.h>
 
 #include <QAction>
@@ -126,6 +128,44 @@ xq::core::DataImportRequest MakeMeshImport()
     request.Modality = QStringLiteral("Mesh");
     request.WorkflowRole = xq::core::DataWorkflowRole::Mesh;
     return request;
+}
+
+xq::core::DataImportRequest MakeRomImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("rom-001");
+    request.SourcePath = QStringLiteral("C:/studies/rom-001.xqrom");
+    request.DisplayName = QStringLiteral("Existing ROM");
+    request.Modality = QStringLiteral("ROMSimulation");
+    request.WorkflowRole = xq::core::DataWorkflowRole::ROMSimulation;
+    return request;
+}
+
+mitk::DataNode::Pointer MakeRomNode()
+{
+    auto job = std::make_unique<xq_ROMJob>();
+    job->SetJobName("Existing ROM");
+    job->SetModelType("1D");
+    job->SetCapProp("inlet", "role", "inflow");
+    job->SetCapProp("outlet", "role", "outflow");
+    job->SetRCR("outlet", 100.0, 1.0e-5, 900.0);
+
+    auto mitkJob = xq_MitkROMJob::New();
+    mitkJob->SetROMJob(std::move(job));
+    mitkJob->SetStatus("configured");
+
+    auto node = mitk::DataNode::New();
+    node->SetName("Existing ROM");
+    node->SetData(mitkJob);
+    xq::pipeline::MarkGeneratedNode(node,
+                                    xq::pipeline::Stage::ROMSimulation,
+                                    "build-1d-network",
+                                    "test",
+                                    "1");
+    xq::pipeline::SetStringProperty(
+        node, xq::pipeline::kSourceMeshProperty, "Main Mesh");
+    xq::pipeline::SetStringProperty(node, "xq.rom.status", "configured");
+    return node;
 }
 
 } // namespace
@@ -601,19 +641,47 @@ int main(int argc, char** argv)
                               "Active mesh or simulation prep node is required for ROM network build."),
                "configured ROM action should require a MITK mesh or simulation prep node"))
         return 1;
+    const auto romJobImportResult =
+        romContext->DataImports()->Import(MakeRomImport(), &message);
+    if (Expect(romJobImportResult.Succeeded,
+               "configured ROM existing job import should succeed"))
+        return 1;
+    auto romJobNode = MakeRomNode();
+    romContext->DataStorage()->Add(romJobNode);
+    romContext->DataNodes()->BindNode(QStringLiteral("rom-001"),
+                                      romJobNode);
     if (Expect(romContext->WorkflowOperations()->SelectOperation(
                    QStringLiteral("rom-simulation"),
                    QStringLiteral("calibrate-boundary-conditions"),
                    &message),
                "configured ROM workflow should select boundary calibration"))
         return 1;
-    if (Expect(!romContext->WorkflowActions()
-                    ->RunActiveWorkflowAction(&message),
-               "configured ROM calibration should use unsupported-operation guard"))
+    if (Expect(romContext->WorkflowOperations()->SetParameterValue(
+                   QStringLiteral("rom-simulation"),
+                   QStringLiteral("calibrate-boundary-conditions"),
+                   QStringLiteral("target-flow-rate"),
+                   72.5,
+                   &message),
+               "configured ROM calibration should set target flow"))
         return 1;
+    if (Expect(romContext->WorkflowOperations()->SetParameterValue(
+                   QStringLiteral("rom-simulation"),
+                   QStringLiteral("calibrate-boundary-conditions"),
+                   QStringLiteral("resistance-scale"),
+                   1.5,
+                   &message),
+               "configured ROM calibration should set resistance scale"))
+        return 1;
+    if (Expect(romContext->WorkflowActions()
+                   ->RunActiveWorkflowAction(&message),
+               "configured ROM calibration should use infrastructure behavior"))
+    {
+        std::cerr << message.toStdString() << '\n';
+        return 1;
+    }
     if (Expect(message == QStringLiteral(
-                              "Calibrate Boundary Conditions is not wired to a native ROM Simulation runtime yet."),
-               "configured ROM calibration should report unsupported operation"))
+                              "Registered calibrated ROM boundary conditions catalog entry."),
+               "configured ROM calibration should report catalog success"))
         return 1;
 
     auto multiphysicsContext =

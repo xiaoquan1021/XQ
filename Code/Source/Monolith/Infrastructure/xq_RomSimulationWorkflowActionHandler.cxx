@@ -24,8 +24,11 @@ namespace
 
 constexpr const char* kRomSimulationWorkflowId = "rom-simulation";
 constexpr const char* kBuild1DNetworkOperationId = "build-1d-network";
+constexpr const char* kCalibrateBoundaryConditionsOperationId =
+    "calibrate-boundary-conditions";
 constexpr const char* kRomSimulationsFolderId = "rom-simulations";
 constexpr const char* kRomSimulationsFolderTitle = "ROM Simulations";
+constexpr const char* kSourceRomProperty = "xq.source.rom";
 
 void SetMessage(QString* message, const QString& value)
 {
@@ -121,6 +124,27 @@ mitk::DataNode::Pointer ResolveMeshNode(
             selectedNode.GetPointer(),
             xq::pipeline::kSourceMeshProperty,
             xq::pipeline::Stage::VolumeMesh);
+    }
+
+    return nullptr;
+}
+
+mitk::DataNode::Pointer ResolveRomNode(
+    xq::core::ApplicationContext& context,
+    const xq::core::WorkflowContextSnapshot& snapshot)
+{
+    const auto selectedNode = ResolveSelectedNode(context, snapshot);
+    if (selectedNode.IsNotNull() &&
+        xq::pipeline::HasStage(selectedNode.GetPointer(),
+                               xq::pipeline::Stage::ROMSimulation))
+    {
+        return selectedNode;
+    }
+
+    if (selectedNode.IsNotNull() &&
+        dynamic_cast<xq_MitkROMJob*>(selectedNode->GetData()) != nullptr)
+    {
+        return selectedNode;
     }
 
     return nullptr;
@@ -263,6 +287,7 @@ bool CommitRomResult(xq::core::ApplicationContext& context,
                      const QString& entryId,
                      const mitk::DataNode::Pointer& sourceNode,
                      const mitk::DataNode::Pointer& resultNode,
+                     const QString& successMessage,
                      QString* message)
 {
     xq::core::DataCatalogEntry entry;
@@ -312,9 +337,132 @@ bool CommitRomResult(xq::core::ApplicationContext& context,
         return false;
     }
 
-    SetMessage(message,
-               QStringLiteral("Registered ROM network catalog entry."));
+    SetMessage(message, successMessage);
     return true;
+}
+
+QString FixedNumber(double value)
+{
+    return QString::number(value, 'f', 6);
+}
+
+bool IsOutletRole(const std::string& role)
+{
+    return role == "outflow" || role == "outlet";
+}
+
+int ScaleOutletRcr(xq_ROMJob& job, double scale)
+{
+    int scaledCaps = 0;
+    const auto caps = job.GetCapProps();
+    for (const auto& cap : caps)
+    {
+        const auto role = job.GetCapProp(cap.first, "role");
+        if (!IsOutletRole(role))
+            continue;
+
+        double rp = 0.0;
+        double c = 0.0;
+        double rd = 0.0;
+        if (!job.GetRCR(cap.first, rp, c, rd))
+            continue;
+
+        job.SetRCR(cap.first, rp * scale, c, rd * scale);
+        ++scaledCaps;
+    }
+
+    return scaledCaps;
+}
+
+mitk::DataNode::Pointer CreateCalibratedRomNode(
+    const mitk::DataNode::Pointer& sourceNode,
+    const xq_ROMJob& sourceJob,
+    const QVariantMap& parameters,
+    QString* message)
+{
+    const double targetFlowRate =
+        parameters.value(QStringLiteral("target-flow-rate"), 0.0)
+            .toDouble();
+    const double resistanceScale =
+        parameters.value(QStringLiteral("resistance-scale"), 1.0)
+            .toDouble();
+    if (resistanceScale <= 0.0)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "ROM boundary calibration resistance scale must be positive."));
+        return nullptr;
+    }
+
+    auto job = std::make_unique<xq_ROMJob>(sourceJob);
+    const QString sourceName =
+        QString::fromStdString(sourceNode->GetName()).trimmed();
+    job->SetJobName(
+        QStringLiteral("%1_calibrated_bc").arg(sourceName).toStdString());
+
+    const int scaledCaps = ScaleOutletRcr(*job, resistanceScale);
+    if (scaledCaps <= 0)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "ROM boundary calibration requires outlet RCR boundary conditions."));
+        return nullptr;
+    }
+
+    job->SetProperty("calibration_target_flow_rate",
+                     FixedNumber(targetFlowRate).toStdString());
+    job->SetProperty("calibration_resistance_scale",
+                     FixedNumber(resistanceScale).toStdString());
+    job->SetProperty("calibration_status", "calibrated");
+    job->SetProperty("solver_state", "not_solver_run");
+
+    auto mitkJob = xq_MitkROMJob::New();
+    mitkJob->SetROMJob(std::move(job));
+    mitkJob->SetStatus("calibrated");
+
+    auto node = mitk::DataNode::New();
+    node->SetName(
+        QStringLiteral("%1_calibrated_bc").arg(sourceName).toStdString());
+    node->SetData(mitkJob);
+    xq::pipeline::MarkGeneratedNode(node,
+                                    xq::pipeline::Stage::ROMSimulation,
+                                    "calibrate-boundary-conditions",
+                                    "XQ Monolith",
+                                    "1");
+    xq::pipeline::SetStringProperty(node,
+                                    kSourceRomProperty,
+                                    sourceName.toStdString());
+
+    const std::string sourceMesh = xq::pipeline::GetStringProperty(
+        sourceNode.GetPointer(), xq::pipeline::kSourceMeshProperty);
+    if (!sourceMesh.empty())
+    {
+        xq::pipeline::SetStringProperty(
+            node, xq::pipeline::kSourceMeshProperty, sourceMesh);
+    }
+
+    xq::pipeline::SetStringProperty(node, "xq.rom.status", "calibrated");
+    xq::pipeline::SetStringProperty(node, "xq.rom.model_type",
+                                    sourceJob.GetModelType());
+    xq::pipeline::SetStringProperty(node,
+                                    "xq.rom.solver_state",
+                                    "not_solver_run");
+    xq::pipeline::SetStringProperty(
+        node,
+        "xq.rom.calibration.target_flow_rate",
+        FixedNumber(targetFlowRate).toStdString());
+    xq::pipeline::SetStringProperty(
+        node,
+        "xq.rom.calibration.resistance_scale",
+        FixedNumber(resistanceScale).toStdString());
+    xq::pipeline::SetStringProperty(
+        node,
+        xq::pipeline::kLimitationsProperty,
+        "Boundary conditions calibrated/configured only; ROM solver not run.");
+    SetIntProperty(node, "xq.rom.calibration.scaled_outlet_count",
+                   scaledCaps);
+    node->Modified();
+    return node;
 }
 
 bool RunBuild1DNetwork(xq::core::ApplicationContext& context,
@@ -362,7 +510,86 @@ bool RunBuild1DNetwork(xq::core::ApplicationContext& context,
                          entryId,
                          selectedNode,
                          resultNode,
+                         QStringLiteral(
+                             "Registered ROM network catalog entry."),
                          message))
+    {
+        return false;
+    }
+
+    QString selectionMessage;
+    context.DataSelection()->SelectCatalogEntry(entryId, &selectionMessage);
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    return true;
+}
+
+bool RunCalibrateBoundaryConditions(
+    xq::core::ApplicationContext& context,
+    xq::core::RenderRefreshService* renderRefresh,
+    const xq::core::WorkflowContextSnapshot& snapshot,
+    const QString& operationId,
+    QString* message)
+{
+    const auto romNode = ResolveRomNode(context, snapshot);
+    auto* mitkJob = romNode.IsNotNull()
+                        ? dynamic_cast<xq_MitkROMJob*>(romNode->GetData())
+                        : nullptr;
+    auto* sourceJob = mitkJob ? mitkJob->GetROMJob(0) : nullptr;
+    if (!sourceJob)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active ROM job node is required for boundary calibration."));
+        return false;
+    }
+
+    const std::string validationMessage = sourceJob->Validate();
+    if (!validationMessage.empty())
+    {
+        SetMessage(message, QString::fromStdString(validationMessage));
+        return false;
+    }
+
+    const QString entryId = ResultCatalogEntryId(snapshot, operationId);
+    const QString preflightMessage = PreflightCommitTarget(context, entryId);
+    if (!preflightMessage.isEmpty())
+    {
+        SetMessage(message, preflightMessage);
+        return false;
+    }
+
+    const QVariantMap parameters =
+        context.WorkflowOperations()
+            ? context.WorkflowOperations()->ParameterValues(snapshot.WorkflowId,
+                                                            operationId)
+            : QVariantMap();
+
+    auto resultNode =
+        CreateCalibratedRomNode(romNode, *sourceJob, parameters, message);
+    if (resultNode.IsNull())
+        return false;
+
+    auto* resultMitkJob =
+        dynamic_cast<xq_MitkROMJob*>(resultNode->GetData());
+    auto* resultJob = resultMitkJob ? resultMitkJob->GetROMJob(0) : nullptr;
+    const std::string resultValidation =
+        resultJob ? resultJob->Validate() : "ROM job is missing.";
+    if (!resultValidation.empty())
+    {
+        SetMessage(message, QString::fromStdString(resultValidation));
+        return false;
+    }
+
+    if (!CommitRomResult(
+            context,
+            entryId,
+            romNode,
+            resultNode,
+            QStringLiteral(
+                "Registered calibrated ROM boundary conditions catalog entry."),
+            message))
     {
         return false;
     }
@@ -398,19 +625,29 @@ bool RegisterDynamicRomSimulationWorkflowActionHandler(
                 return false;
             }
 
-            if (operationId != QString::fromLatin1(kBuild1DNetworkOperationId))
+            if (operationId == QString::fromLatin1(kBuild1DNetworkOperationId))
             {
-                return RunUnsupportedRomSimulationOperation(operations,
-                                                            snapshot,
-                                                            operationId,
-                                                            taskMessage);
+                return RunBuild1DNetwork(context,
+                                         renderRefresh,
+                                         snapshot,
+                                         operationId,
+                                         taskMessage);
             }
 
-            return RunBuild1DNetwork(context,
-                                     renderRefresh,
-                                     snapshot,
-                                     operationId,
-                                     taskMessage);
+            if (operationId ==
+                QString::fromLatin1(kCalibrateBoundaryConditionsOperationId))
+            {
+                return RunCalibrateBoundaryConditions(context,
+                                                      renderRefresh,
+                                                      snapshot,
+                                                      operationId,
+                                                      taskMessage);
+            }
+
+            return RunUnsupportedRomSimulationOperation(operations,
+                                                        snapshot,
+                                                        operationId,
+                                                        taskMessage);
         };
 
     return context.WorkflowActions()->RegisterHandler(
