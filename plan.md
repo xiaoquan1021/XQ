@@ -5411,3 +5411,34 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Windows Dotenv Environment Activation
+
+1. Add a project-local Windows environment activation layer.
+   - Track `.env.example` as the template for local path configuration.
+   - Ignore `.env` so each workstation can keep its own Visual Studio, CMake,
+     Externals, build directory, and platform paths.
+   - Add `scripts\xq-dotenv.ps1` as the shared parser used by all Windows
+     entry scripts.
+2. Make configure/build/run use the same environment source.
+   - `scripts\build-xq.ps1` loads `.env`, then resolves VS2022 x64 and CMake.
+   - `scripts\run-xq.ps1` loads `.env`, then initializes XQ runtime paths.
+   - `scripts\xq-env.ps1` can also load `.env` directly for dot-source callers.
+   - `scripts\Enter-XQEnvironment.ps1` provides a PowerShell activation entry
+     for the current process, similar to a virtual environment for the native
+     C++ desktop stack.
+3. Keep precedence deterministic.
+   - Explicit script parameters win over existing process environment.
+   - Existing process environment wins over `.env`.
+   - `.env` wins over hardcoded defaults.
+   - Defaults remain `build\windows-msvc-release` and `windows-x64`.
+4. Add regression coverage.
+   - `test_windows_dotenv_virtual_environment.ps1` verifies the template,
+     git-ignore rule, dotenv parser, override behavior, script integration,
+     and platform-default precedence.
+5. Verification gate:
+   - targeted environment tests and `build-xq.ps1 doctor`.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.

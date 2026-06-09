@@ -3,7 +3,7 @@ param(
     [string]$BuildDir,
     [string]$BuildType = "Release",
     [string]$ExternalsRoot,
-    [string]$Platform = "windows-x64",
+    [string]$Platform,
     [string]$VsInstallPath,
     [string]$CMake,
     [switch]$Help
@@ -14,6 +14,9 @@ $ErrorActionPreference = "Stop"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $ScriptDir ".."))
+. (Join-Path $ScriptDir "xq-dotenv.ps1")
+. (Join-Path $ScriptDir "xq-toolchain.ps1")
+Import-XQDotEnv -RepoRoot $RepoRoot | Out-Null
 
 function Show-Usage {
     @"
@@ -31,86 +34,8 @@ Options:
   -BuildDir <path>        Build directory. Defaults to build/windows-msvc-release.
   -VsInstallPath <path>   Visual Studio 2022 installation path.
   -CMake <path>           CMake executable.
+  .env                    Optional local environment file copied from .env.example.
 "@
-}
-
-function Find-XQVisualStudioInstall {
-    param([string]$PreferredPath)
-
-    if ($PreferredPath -and (Test-Path -LiteralPath $PreferredPath)) {
-        return (Resolve-Path -LiteralPath $PreferredPath).Path
-    }
-    if ($env:VSINSTALLDIR -and (Test-Path -LiteralPath $env:VSINSTALLDIR)) {
-        return (Resolve-Path -LiteralPath $env:VSINSTALLDIR).Path
-    }
-
-    $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
-    if (Test-Path -LiteralPath $vswhere) {
-        $found = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-        if ($LASTEXITCODE -eq 0 -and $found -and (Test-Path -LiteralPath $found)) {
-            return (Resolve-Path -LiteralPath $found).Path
-        }
-    }
-
-    foreach ($root in @(
-        "C:\software\Visual Studio\Visual Studio2022\Community",
-        "C:\Program Files\Microsoft Visual Studio\2022\Community",
-        "C:\Program Files\Microsoft Visual Studio\2022\Professional",
-        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise",
-        "C:\Program Files\Microsoft Visual Studio\2022\BuildTools"
-    )) {
-        if (Test-Path -LiteralPath $root) {
-            return (Resolve-Path -LiteralPath $root).Path
-        }
-    }
-
-    throw "[XQ][ERROR] Visual Studio 2022 with MSVC x64 tools was not found."
-}
-
-function Import-XQVisualStudioEnvironment {
-    param([Parameter(Mandatory)][string]$InstallPath)
-
-    $vsDevCmd = Join-Path $InstallPath "Common7\Tools\VsDevCmd.bat"
-    if (-not (Test-Path -LiteralPath $vsDevCmd)) {
-        throw "[XQ][ERROR] VsDevCmd.bat not found under $InstallPath"
-    }
-
-    $cmd = "`"$vsDevCmd`" -arch=x64 -host_arch=x64 && set"
-    $envLines = & cmd.exe /s /c $cmd
-    if ($LASTEXITCODE -ne 0) {
-        throw "[XQ][ERROR] Failed to initialize Visual Studio environment."
-    }
-
-    foreach ($line in $envLines) {
-        $idx = $line.IndexOf("=")
-        if ($idx -le 0) {
-            continue
-        }
-        [Environment]::SetEnvironmentVariable(
-            $line.Substring(0, $idx),
-            $line.Substring($idx + 1),
-            "Process")
-    }
-}
-
-function Resolve-XQCMake {
-    param([string]$RequestedCMake, [string]$VsPath)
-
-    if ($RequestedCMake -and (Test-Path -LiteralPath $RequestedCMake)) {
-        return (Resolve-Path -LiteralPath $RequestedCMake).Path
-    }
-
-    $command = Get-Command cmake -ErrorAction SilentlyContinue
-    if ($command) {
-        return $command.Source
-    }
-
-    $vsCMake = Join-Path $VsPath "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
-    if (Test-Path -LiteralPath $vsCMake) {
-        return (Resolve-Path -LiteralPath $vsCMake).Path
-    }
-
-    throw "[XQ][ERROR] CMake was not found."
 }
 
 if ($Help) {
@@ -118,8 +43,32 @@ if ($Help) {
     exit 0
 }
 
+if (-not $BuildDir -and $env:XQ_BUILD_DIR) {
+    $BuildDir = $env:XQ_BUILD_DIR
+}
 if (-not $BuildDir) {
     $BuildDir = Join-Path $RepoRoot "build\windows-msvc-release"
+}
+if (-not [System.IO.Path]::IsPathRooted($BuildDir)) {
+    $BuildDir = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $BuildDir))
+}
+else {
+    $BuildDir = [System.IO.Path]::GetFullPath($BuildDir)
+}
+if (-not $ExternalsRoot -and $env:XQ_EXTERNALS_ROOT) {
+    $ExternalsRoot = $env:XQ_EXTERNALS_ROOT
+}
+if (-not $Platform -and $env:XQ_EXTERNALS_PLATFORM) {
+    $Platform = $env:XQ_EXTERNALS_PLATFORM
+}
+if (-not $Platform) {
+    $Platform = "windows-x64"
+}
+if (-not $VsInstallPath -and $env:XQ_VS_INSTALL_PATH) {
+    $VsInstallPath = $env:XQ_VS_INSTALL_PATH
+}
+if (-not $CMake -and $env:XQ_CMAKE) {
+    $CMake = $env:XQ_CMAKE
 }
 
 $VsPath = Find-XQVisualStudioInstall -PreferredPath $VsInstallPath

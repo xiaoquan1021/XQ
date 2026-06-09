@@ -4079,6 +4079,61 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Windows Dotenv Environment Activation
+
+- User asked why there are so many environment bugs and whether a `.env`-style
+  virtual environment can be used.
+- Root cause framing:
+  - XQ is a native Windows MSVC + Qt + MITK application, so Python-style venv
+    alone cannot isolate the runtime.
+  - The fragile parts are VS2022 toolchain activation, CMake discovery,
+    `XQ_EXTERNALS_ROOT`, build directory selection, `PATH`, `QT_PLUGIN_PATH`,
+    and `XQ_PLUGIN_PATH`.
+  - A project-local `.env` plus PowerShell activation script is the right
+    equivalent for this native desktop stack.
+- Added RED regression test first:
+  - `tests\test_windows_dotenv_virtual_environment.ps1` initially failed
+    because `scripts\xq-dotenv.ps1` did not exist.
+- Implemented environment activation:
+  - Added tracked `.env.example` with `XQ_EXTERNALS_ROOT`, `XQ_BUILD_DIR`,
+    `XQ_EXTERNALS_PLATFORM`, `XQ_VS_INSTALL_PATH`, and `XQ_CMAKE`.
+  - Added `.env` to `.gitignore`.
+  - Added `scripts\xq-dotenv.ps1` shared dotenv parser.
+  - Added `scripts\xq-toolchain.ps1` shared VS2022/CMake helper functions.
+  - Added `scripts\Enter-XQEnvironment.ps1` to activate VS2022, CMake, XQ
+    Externals, and runtime PATH in the current PowerShell process.
+  - Updated `scripts\build-xq.ps1`, `scripts\run-xq.ps1`, and
+    `scripts\xq-env.ps1` to load `.env`.
+  - Kept command-line parameters higher precedence than process env, process
+    env higher precedence than `.env`, and `.env` higher precedence than
+    defaults.
+- Local workstation setup:
+  - Created ignored `.env` pointing to `..\Externals`,
+    `build\windows-msvc-release`, `windows-x64`, and
+    `C:\software\Visual Studio\Visual Studio2022\Community`.
+- Targeted verification:
+  - `tests\test_windows_dotenv_virtual_environment.ps1` passed.
+  - `tests\test_windows_env_scripts.ps1` passed.
+  - `scripts\build-xq.ps1 doctor` passed and resolved the local Externals,
+    VS2022 Community installation, and VS CMake.
+- Full verification:
+  - `scripts\build-xq.ps1 configure` passed using `.env` without an explicit
+    `-ExternalsRoot`.
+  - `scripts\build-xq.ps1 build` passed and staged runtime DLLs.
+  - Initial PowerShell test harness using `$LASTEXITCODE` misreported failures
+    because `$LASTEXITCODE` can carry stale native-command status through
+    successful `.ps1` scripts.
+  - Re-ran with try/catch script-error detection: all XQ PowerShell tests
+    passed, 20/20.
+  - Re-ran Externals PowerShell tests with try/catch script-error detection:
+    passed, 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed, 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Clean-PATH direct startup smoke for
+    `build\windows-msvc-release\bin\XQ.exe` passed.
+- Promoted Windows Dotenv Environment Activation to completed in `plan.md`.
+
 ## Current Run Final Update: Workbench UI and Direct Startup Runtime
 
 - User feedback:

@@ -2,7 +2,7 @@ param(
     [string]$XQRoot,
     [string]$BuildDir,
     [string]$ExternalsRoot,
-    [string]$Platform = "windows-x64"
+    [string]$Platform
 )
 
 Set-StrictMode -Version Latest
@@ -16,6 +16,23 @@ function Get-XQRepoRoot {
     }
 
     return [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $MyInvocation.ScriptName) ".."))
+}
+
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $ScriptDir "xq-dotenv.ps1")
+$RepoRootForDotEnv = Get-XQRepoRoot -Root $XQRoot
+Import-XQDotEnv -RepoRoot $RepoRootForDotEnv | Out-Null
+if (-not $BuildDir -and $env:XQ_BUILD_DIR) {
+    $BuildDir = $env:XQ_BUILD_DIR
+}
+if (-not $ExternalsRoot -and $env:XQ_EXTERNALS_ROOT) {
+    $ExternalsRoot = $env:XQ_EXTERNALS_ROOT
+}
+if (-not $Platform -and $env:XQ_EXTERNALS_PLATFORM) {
+    $Platform = $env:XQ_EXTERNALS_PLATFORM
+}
+if (-not $Platform) {
+    $Platform = "windows-x64"
 }
 
 function Get-XQInstallRoot {

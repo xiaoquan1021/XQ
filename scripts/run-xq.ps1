@@ -1,7 +1,7 @@
 param(
     [string]$BuildDir,
     [string]$ExternalsRoot,
-    [string]$Platform = "windows-x64",
+    [string]$Platform,
     [switch]$Monolith,
     [switch]$Help
 )
@@ -11,6 +11,8 @@ $ErrorActionPreference = "Stop"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $ScriptDir ".."))
+. (Join-Path $ScriptDir "xq-dotenv.ps1")
+Import-XQDotEnv -RepoRoot $RepoRoot | Out-Null
 if ($Help) {
     @"
 Usage: powershell -File scripts/run-xq.ps1 [options]
@@ -25,7 +27,22 @@ Options:
 }
 
 if (-not $BuildDir) {
-    $BuildDir = Join-Path $RepoRoot "build\windows-msvc-release"
+    $BuildDir = if ($env:XQ_BUILD_DIR) { $env:XQ_BUILD_DIR } else { Join-Path $RepoRoot "build\windows-msvc-release" }
+}
+if (-not [System.IO.Path]::IsPathRooted($BuildDir)) {
+    $BuildDir = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $BuildDir))
+}
+else {
+    $BuildDir = [System.IO.Path]::GetFullPath($BuildDir)
+}
+if (-not $ExternalsRoot -and $env:XQ_EXTERNALS_ROOT) {
+    $ExternalsRoot = $env:XQ_EXTERNALS_ROOT
+}
+if (-not $Platform -and $env:XQ_EXTERNALS_PLATFORM) {
+    $Platform = $env:XQ_EXTERNALS_PLATFORM
+}
+if (-not $Platform) {
+    $Platform = "windows-x64"
 }
 
 $envScript = Join-Path $ScriptDir "xq-env.ps1"

@@ -1,6 +1,9 @@
 # Build output
 build/
 
+# Local Windows environment
+.env
+
 # Backup files created by automation agents
 *.backup_*
 *.bak
