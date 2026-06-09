@@ -12,10 +12,13 @@
 #include <QComboBox>
 #include <QDir>
 #include <QDoubleSpinBox>
+#include <QGroupBox>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSpinBox>
 #include <QTemporaryDir>
+#include <QTextEdit>
 #include <QWidget>
 
 #include <iostream>
@@ -59,6 +62,12 @@ QWidget* FindParameterPanel(xq::presentation::MainWindow& window)
 {
     return window.findChild<QWidget*>(
         QStringLiteral("xqImagePreprocessingParameterPanel"));
+}
+
+QGroupBox* FindWorkbenchGroup(xq::presentation::MainWindow& window,
+                              const QString& objectName)
+{
+    return window.findChild<QGroupBox*>(objectName);
 }
 
 QDoubleSpinBox* FindNumericParameter(xq::presentation::MainWindow& window,
@@ -113,6 +122,82 @@ int main(int argc, char** argv)
     auto* parameterPanel = FindParameterPanel(window);
     if (Expect(parameterPanel != nullptr,
                "image preprocessing page should expose a parameter panel"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(window.findChild<QLabel*>(QStringLiteral(
+                   "xqImagePreprocessingContextLabel")) != nullptr,
+               "image preprocessing page should restore original context status label"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindWorkbenchGroup(window,
+                                  QStringLiteral("xqImagePreprocessingInputGroup")) !=
+                   nullptr,
+               "image preprocessing page should restore original Input group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(window.findChild<QComboBox*>(QStringLiteral(
+                   "xqImagePreprocessingImageComboBox")) != nullptr,
+               "image preprocessing page should restore original image selector"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(window.findChild<QPushButton*>(QStringLiteral(
+                   "xqImagePreprocessingRefreshButton")) != nullptr,
+               "image preprocessing page should restore original image refresh button"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindWorkbenchGroup(window,
+                                  QStringLiteral("xqImagePreprocessingOperationGroup")) !=
+                   nullptr,
+               "image preprocessing page should restore original Operation group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindWorkbenchGroup(window,
+                                  QStringLiteral("xqImagePreprocessingThresholdGroup")) !=
+                   nullptr,
+               "image preprocessing page should restore Threshold Parameters group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindWorkbenchGroup(window,
+                                  QStringLiteral("xqImagePreprocessingSeedGroup")) !=
+                   nullptr,
+               "image preprocessing page should restore Seed group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindWorkbenchGroup(window,
+                                  QStringLiteral("xqImagePreprocessingCropGroup")) !=
+                   nullptr,
+               "image preprocessing page should restore Crop Region group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindWorkbenchGroup(window,
+                                  QStringLiteral("xqImagePreprocessingResampleGroup")) !=
+                   nullptr,
+               "image preprocessing page should restore Resample / Surface group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(window.findChild<QTextEdit*>(QStringLiteral(
+                   "xqImagePreprocessingDiagnosticsText")) != nullptr,
+               "image preprocessing page should restore original diagnostics text area"))
     {
         delete context;
         return 1;

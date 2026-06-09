@@ -24,13 +24,20 @@ int Expect(bool condition, const char* message)
 
 QString StatusLabelObjectName(const QString& workflowId)
 {
+    if (workflowId == QStringLiteral("image-preprocessing"))
+        return QStringLiteral("xqImagePreprocessingContextLabel");
+
     return QStringLiteral("xqWorkflowContextStatus_%1").arg(workflowId);
 }
 
 QLabel* FindStatusLabel(xq::presentation::MainWindow& window,
                         const QString& workflowId)
 {
-    return window.findChild<QLabel*>(StatusLabelObjectName(workflowId));
+    if (auto* label = window.findChild<QLabel*>(StatusLabelObjectName(workflowId)))
+        return label;
+
+    return window.findChild<QLabel*>(
+        QStringLiteral("xqWorkflowContextStatus_%1").arg(workflowId));
 }
 
 xq::core::DataImportRequest MakeImport(const QString& id,

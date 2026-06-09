@@ -2389,7 +2389,121 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                 parameterLayout->setSpacing(8);
                 m_WorkflowParameterPanels.insert(id, parameterPanel);
 
-                if (id == QStringLiteral("flow-simulation"))
+                if (id == QStringLiteral("image-preprocessing"))
+                {
+                    auto* intro = new QLabel(
+                        QStringLiteral(
+                            "Run image processing operations on loaded image nodes. "
+                            "Outputs are added to DataStorage with source and parameter metadata."),
+                        page);
+                    intro->setWordWrap(true);
+                    layout->addWidget(intro);
+
+                    auto* contextLabel = new QLabel(page);
+                    contextLabel->setObjectName(
+                        QStringLiteral("xqImagePreprocessingContextLabel"));
+                    contextLabel->setWordWrap(true);
+                    contextLabel->setStyleSheet(QStringLiteral(
+                        "QLabel { background: #F8FAFC; border: 1px solid #B7C9F7; "
+                        "border-radius: 4px; padding: 6px; }"));
+                    m_WorkflowContextStatusLabels.insert(id, contextLabel);
+                    layout->addWidget(contextLabel);
+
+                    auto* inputGroup =
+                        new QGroupBox(QStringLiteral("Input"), page);
+                    inputGroup->setObjectName(
+                        QStringLiteral("xqImagePreprocessingInputGroup"));
+                    auto* inputLayout = new QFormLayout(inputGroup);
+                    auto* imageSelector = new QComboBox(inputGroup);
+                    imageSelector->setObjectName(QStringLiteral(
+                        "xqImagePreprocessingImageComboBox"));
+                    auto* refreshButton =
+                        new QPushButton(QStringLiteral("Refresh"), inputGroup);
+                    refreshButton->setObjectName(QStringLiteral(
+                        "xqImagePreprocessingRefreshButton"));
+                    auto* inputRow = new QHBoxLayout();
+                    inputRow->addWidget(imageSelector, 1);
+                    inputRow->addWidget(refreshButton);
+                    inputLayout->addRow(QStringLiteral("Image:"), inputRow);
+                    layout->addWidget(inputGroup);
+
+                    auto* operationGroup =
+                        new QGroupBox(QStringLiteral("Operation"), page);
+                    operationGroup->setObjectName(QStringLiteral(
+                        "xqImagePreprocessingOperationGroup"));
+                    auto* operationLayout = new QFormLayout(operationGroup);
+                    operationSelector->setParent(operationGroup);
+                    operationLayout->addRow(QStringLiteral("Tool:"),
+                                            operationSelector);
+                    layout->addWidget(operationGroup);
+
+                    auto* thresholdGroup = new QGroupBox(
+                        QStringLiteral("Threshold Parameters"), page);
+                    thresholdGroup->setObjectName(QStringLiteral(
+                        "xqImagePreprocessingThresholdGroup"));
+                    auto* thresholdLayout = new QVBoxLayout(thresholdGroup);
+                    thresholdLayout->setContentsMargins(8, 8, 8, 8);
+                    thresholdLayout->addWidget(new QLabel(
+                        QStringLiteral(
+                            "Lower/upper range and output values are edited "
+                            "below for threshold-based tools."),
+                        thresholdGroup));
+                    layout->addWidget(thresholdGroup);
+
+                    auto* seedGroup =
+                        new QGroupBox(QStringLiteral("Seed"), page);
+                    seedGroup->setObjectName(
+                        QStringLiteral("xqImagePreprocessingSeedGroup"));
+                    auto* seedLayout = new QVBoxLayout(seedGroup);
+                    seedLayout->setContentsMargins(8, 8, 8, 8);
+                    seedLayout->addWidget(new QLabel(
+                        QStringLiteral(
+                            "Connected threshold seeds use x,y,z entries separated by semicolons."),
+                        seedGroup));
+                    layout->addWidget(seedGroup);
+
+                    auto* cropGroup =
+                        new QGroupBox(QStringLiteral("Crop Region"), page);
+                    cropGroup->setObjectName(
+                        QStringLiteral("xqImagePreprocessingCropGroup"));
+                    auto* cropLayout = new QVBoxLayout(cropGroup);
+                    cropLayout->setContentsMargins(8, 8, 8, 8);
+                    cropLayout->addWidget(new QLabel(
+                        QStringLiteral(
+                            "Origin and size controls are available when Crop is selected."),
+                        cropGroup));
+                    layout->addWidget(cropGroup);
+
+                    auto* resampleGroup =
+                        new QGroupBox(QStringLiteral("Resample / Surface"),
+                                      page);
+                    resampleGroup->setObjectName(QStringLiteral(
+                        "xqImagePreprocessingResampleGroup"));
+                    auto* resampleLayout = new QVBoxLayout(resampleGroup);
+                    resampleLayout->setContentsMargins(8, 8, 8, 8);
+                    resampleLayout->addWidget(new QLabel(
+                        QStringLiteral(
+                            "Spacing controls are available for resampling tools."),
+                        resampleGroup));
+                    layout->addWidget(resampleGroup);
+
+                    parameterPanel->setParent(page);
+                    layout->addWidget(parameterPanel);
+
+                    auto* diagnosticsText = new QTextEdit(page);
+                    diagnosticsText->setObjectName(QStringLiteral(
+                        "xqImagePreprocessingDiagnosticsText"));
+                    diagnosticsText->setReadOnly(true);
+                    diagnosticsText->setMinimumHeight(90);
+                    layout->addWidget(diagnosticsText);
+                    connect(&m_Context,
+                            &xq::core::ApplicationContext::DiagnosticPosted,
+                            diagnosticsText,
+                            [diagnosticsText](const QString& message) {
+                                diagnosticsText->append(message);
+                            });
+                }
+                else if (id == QStringLiteral("flow-simulation"))
                 {
                     operationSelector->setVisible(false);
                     layout->addWidget(operationSelector);
@@ -4110,12 +4224,15 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                 }
             }
 
-            auto* statusLabel = new QLabel(page);
-            statusLabel->setObjectName(
-                QStringLiteral("xqWorkflowContextStatus_%1").arg(id));
-            statusLabel->setWordWrap(true);
-            m_WorkflowContextStatusLabels.insert(id, statusLabel);
-            layout->addWidget(statusLabel);
+            if (!m_WorkflowContextStatusLabels.contains(id))
+            {
+                auto* statusLabel = new QLabel(page);
+                statusLabel->setObjectName(
+                    QStringLiteral("xqWorkflowContextStatus_%1").arg(id));
+                statusLabel->setWordWrap(true);
+                m_WorkflowContextStatusLabels.insert(id, statusLabel);
+                layout->addWidget(statusLabel);
+            }
 
             auto* actionButton = new QPushButton(QStringLiteral("Run"), page);
             actionButton->setObjectName(

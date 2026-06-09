@@ -4079,6 +4079,55 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Final Update: Workbench UI and Direct Startup Runtime
+
+- User feedback:
+  - The monolith UI still looked too different from the original XQ/MITK
+    Workbench.
+  - Directly starting `XQ.exe` from Explorer produced Windows loader dialogs
+    for missing `MitkCore.dll`, `MitkQtWidgets.dll`, `ITKCommon-5.4.dll`,
+    `CppMicroServices.dll`, and then `zstd.dll`.
+- Image Preprocessing UI restoration:
+  - Added RED assertions for the original `xq_ImageProcessingView` structure:
+    context status, `Input`, `Operation`, `Threshold Parameters`, `Seed`,
+    `Crop Region`, `Resample / Surface`, and diagnostics text.
+  - Implemented the restored Workbench-style groups in the monolith page while
+    preserving the existing operation selector, dynamic parameter panel,
+    action button, and Core operation state.
+  - Updated workflow-context status coverage so Image Preprocessing can use
+    the restored `xqImagePreprocessingContextLabel`.
+- Runtime root cause:
+  - The earlier smoke test was misleading because it inherited the build/test
+    PATH.
+  - `build/windows-msvc-release/bin` only contained XQ module DLLs; external
+    MITK/ITK/VTK/Qt runtime DLLs were found only through `scripts/xq-env.ps1`.
+  - `Qt6Core.dll` imported `zstd.dll`; Qt's build cache showed
+    `zstd_DIR=C:/software/anaconda/Library/lib/cmake/zstd`, so the existing Qt
+    build had linked against a host Anaconda runtime.
+- Runtime implementation:
+  - Added `Code/CMake/XQStageWindowsRuntime.cmake`.
+  - Added a Windows `xqStageWindowsRuntime` build target to stage external
+    runtime DLLs and Qt `platforms/qwindows.dll` next to `XQ.exe` on every
+    build.
+  - Added explicit zstd runtime staging for the current Qt build, resolved
+    from Qt's build cache when Qt was built with host zstd support.
+  - Added `tests/test_windows_runtime_staging.ps1`.
+- Externals dependency hygiene:
+  - Added `tests/test_qt_windows_no_host_zstd.ps1`.
+  - Added `-no-feature-zstd` to the Qt recipe so future Qt rebuilds do not link
+    `Qt6Core.dll` against host Anaconda zstd.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - XQ PowerShell tests in `tests\*.ps1` passed: 19/19.
+  - Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - `Start-XQ.cmd` smoke passed; launcher stayed active for 10 seconds.
+  - Clean-PATH direct `build\windows-msvc-release\bin\XQ.exe` smoke passed;
+    process stayed alive for 10 seconds.
+
 ## Current Run Update: Workbench Workflow Toolbar Fidelity
 
 - Continued UI fidelity after the fresh Workbench panels and Tools dock

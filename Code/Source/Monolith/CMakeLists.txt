@@ -258,3 +258,60 @@ target_link_libraries(${XQ_MONOLITH_TARGET}
         Qt6::Widgets
         Qt6::OpenGLWidgets
 )
+
+if(WIN32)
+    set(XQ_WINDOWS_RUNTIME_DIRS
+        "${XQ_EXTERNALS_DIR}/python-3.11.0"
+        "${XQ_EXTERNALS_DIR}/hdf5-1.14.3/bin"
+        "${XQ_EXTERNALS_DIR}/gdcm-3.0.10/bin"
+        "${XQ_EXTERNALS_DIR}/vtk-9.3.0/bin"
+        "${XQ_EXTERNALS_DIR}/itk-5.4.0/bin"
+        "${XQ_EXTERNALS_DIR}/qt-6.7.0/bin"
+        "${XQ_EXTERNALS_DIR}/mitk-2024.06/bin"
+        "${XQ_EXTERNALS_DIR}/opencascade-7.6.0/bin"
+        "${XQ_EXTERNALS_DIR}/opencascade-7.6.0/win64/vc14/bin"
+        "${XQ_EXTERNALS_DIR}/freetype-2.13.0/bin"
+        "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/MITK/MITK-build/bin"
+        "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/MITK/MITK-build/bin/plugins"
+        "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/MITK/ep/src/CTK-build/CTK-build/bin"
+    )
+    set(XQ_WINDOWS_RUNTIME_FILES)
+    set(XQ_ZSTD_RUNTIME_DLL "" CACHE FILEPATH "Optional zstd.dll used by the Qt runtime when Qt was built with host zstd support")
+    set(_xq_qt_build_cache "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/Qt/CMakeCache.txt")
+    if(EXISTS "${_xq_qt_build_cache}")
+        file(STRINGS "${_xq_qt_build_cache}" _xq_qt_zstd_cache_entry
+            REGEX "^zstd_DIR:PATH="
+        )
+        if(_xq_qt_zstd_cache_entry)
+            string(REGEX REPLACE "^zstd_DIR:PATH=(.*)$" "\\1" _xq_qt_zstd_dir "${_xq_qt_zstd_cache_entry}")
+            if(EXISTS "${_xq_qt_zstd_dir}")
+                set(zstd_DIR "${_xq_qt_zstd_dir}" CACHE PATH "" FORCE)
+            endif()
+        endif()
+    endif()
+    find_package(zstd CONFIG QUIET)
+    if(TARGET zstd::libzstd_shared)
+        get_target_property(_xq_zstd_dll zstd::libzstd_shared IMPORTED_LOCATION_RELEASE)
+        if(EXISTS "${_xq_zstd_dll}")
+            list(APPEND XQ_WINDOWS_RUNTIME_FILES "${_xq_zstd_dll}")
+        endif()
+    endif()
+    if(NOT XQ_WINDOWS_RUNTIME_FILES)
+        if(EXISTS "${XQ_ZSTD_RUNTIME_DLL}")
+            list(APPEND XQ_WINDOWS_RUNTIME_FILES "${XQ_ZSTD_RUNTIME_DLL}")
+        elseif(DEFINED ENV{XQ_ZSTD_RUNTIME_DLL} AND EXISTS "$ENV{XQ_ZSTD_RUNTIME_DLL}")
+            list(APPEND XQ_WINDOWS_RUNTIME_FILES "$ENV{XQ_ZSTD_RUNTIME_DLL}")
+        endif()
+    endif()
+    add_custom_target(xqStageWindowsRuntime ALL
+        COMMAND ${CMAKE_COMMAND}
+            "-DXQ_STAGE_RUNTIME_DESTINATION=$<TARGET_FILE_DIR:${XQ_MONOLITH_TARGET}>"
+            "-DXQ_STAGE_RUNTIME_FILES=${XQ_WINDOWS_RUNTIME_FILES}"
+            "-DXQ_STAGE_RUNTIME_DIRS=${XQ_WINDOWS_RUNTIME_DIRS}"
+            "-DXQ_STAGE_QT_PLUGINS_DIR=${XQ_EXTERNALS_DIR}/qt-6.7.0/plugins"
+            -P "${XQ_CMAKE_DIR}/XQStageWindowsRuntime.cmake"
+        DEPENDS ${XQ_MONOLITH_TARGET}
+        COMMENT "Staging Windows runtime DLLs for direct XQ startup"
+        VERBATIM
+    )
+endif()

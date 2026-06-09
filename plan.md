@@ -5357,3 +5357,57 @@ The next monolith slice is grounded in these comparable systems:
 5. Verification gate:
    - targeted Python API/workflow/action tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Image Preprocessing Workbench Panel Restore
+
+1. Restore the monolith Image Preprocessing page toward the original
+   `xq_ImageProcessingView` structure.
+   - Add the original-style context status, `Input`, `Operation`,
+     `Threshold Parameters`, `Seed`, `Crop Region`, `Resample / Surface`,
+     and diagnostics panels.
+   - Keep the existing monolith operation selector and dynamic parameter
+     panel as the source of operation state.
+   - Preserve action routing through `WorkflowOperationService` and the
+     Infrastructure image-preprocessing handler.
+2. Keep behavior stable.
+   - Project/session operation persistence still refreshes selector and
+     parameter values.
+   - Invalid seed text still posts deterministic diagnostics without replacing
+     the last valid state.
+   - Context status uses the restored Workbench-style image preprocessing
+     label while other workflows keep the generic label.
+3. Add regression coverage.
+   - `test_monolith_image_preprocessing_operation_page` verifies the restored
+     Workbench groups, input selector anchors, diagnostics text, operation
+     selection, parameter editing, validation, and project roundtrip.
+   - `test_monolith_workflow_context_status_page` accepts the restored image
+     preprocessing context label while preserving generic labels elsewhere.
+4. Verification gate:
+   - targeted image preprocessing/workflow operation tests.
+   - full XQ and Externals test gates before commit.
+
+## Completed Phase: Windows Runtime Staging for Direct Startup
+
+1. Fix the direct `XQ.exe` startup blocker reported by Windows loader dialogs.
+   - Stage external runtime DLLs next to the monolith executable during every
+     build.
+   - Include MITK build-tree DLLs, ITK/VTK/Qt/GDCM/HDF5/OpenCascade runtimes,
+     CppMicroServices, and Qt `platforms/qwindows.dll`.
+   - Copy the zstd runtime that the current Qt build links to, because the
+     existing Qt build resolved zstd from the host Anaconda installation.
+2. Keep both startup modes valid.
+   - `Start-XQ.cmd` remains the developer "virtual environment" launcher that
+     initializes PATH through `scripts/run-xq.ps1`.
+   - App-local runtime staging makes `build/windows-msvc-release/bin/XQ.exe`
+     work under a clean PATH, matching Explorer double-click behavior.
+3. Add regression coverage.
+   - `test_windows_runtime_staging.ps1` verifies required staged DLLs and the
+     Qt platform plugin next to `XQ.exe`.
+4. Follow-up dependency hygiene.
+   - Externals Qt recipe now disables host zstd so future Qt rebuilds do not
+     link `Qt6Core.dll` against Anaconda `zstd.dll`.
+5. Verification gate:
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
