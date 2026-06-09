@@ -7,8 +7,12 @@
 
 #include <QApplication>
 #include <QDir>
+#include <QGroupBox>
 #include <QLabel>
+#include <QPushButton>
 #include <QTemporaryDir>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 #include <QWidget>
 
 #include <iostream>
@@ -67,6 +71,18 @@ int main(int argc, char** argv)
     auto* dataCountLabel =
         projectPage->findChild<QLabel*>(
             QStringLiteral("xqProjectPageDataCount"));
+    auto* infoGroup = projectPage->findChild<QGroupBox*>(
+        QStringLiteral("xqProjectInformationGroup"));
+    auto* projectTree = projectPage->findChild<QTreeWidget*>(
+        QStringLiteral("xqProjectStructureTree"));
+    auto* newProjectButton = projectPage->findChild<QPushButton*>(
+        QStringLiteral("xqProjectNewButton"));
+    auto* openProjectButton = projectPage->findChild<QPushButton*>(
+        QStringLiteral("xqProjectOpenButton"));
+    auto* refreshButton = projectPage->findChild<QPushButton*>(
+        QStringLiteral("xqProjectRefreshButton"));
+    auto* openFolderButton = projectPage->findChild<QPushButton*>(
+        QStringLiteral("xqProjectOpenFolderButton"));
 
     if (Expect(nameLabel != nullptr,
                "project page should expose a project name label"))
@@ -88,6 +104,60 @@ int main(int argc, char** argv)
     }
     if (Expect(dataCountLabel != nullptr,
                "project page should expose a data count label"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(infoGroup != nullptr &&
+                   infoGroup->title() == QStringLiteral("Project Information"),
+               "project page should restore the Workspace Explorer project information group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(projectTree != nullptr &&
+                   projectTree->headerItem()->text(0) ==
+                       QStringLiteral("Project Structure"),
+               "project page should restore the Workspace Explorer project structure tree"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(projectTree->topLevelItemCount() == 1 &&
+                   projectTree->topLevelItem(0)->text(0) ==
+                       QStringLiteral("(No project loaded)"),
+               "project structure tree should start with the original no-project root"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(newProjectButton != nullptr &&
+                   newProjectButton->text() == QStringLiteral("New Project"),
+               "project page should expose the original New Project command anchor"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(openProjectButton != nullptr &&
+                   openProjectButton->text() == QStringLiteral("Open Project"),
+               "project page should expose the original Open Project command anchor"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(refreshButton != nullptr &&
+                   refreshButton->text() == QStringLiteral("Refresh") &&
+                   !refreshButton->isEnabled(),
+               "project page should expose a disabled Refresh command before a project is loaded"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(openFolderButton != nullptr &&
+                   openFolderButton->text() ==
+                       QStringLiteral("Open Project Folder") &&
+                   !openFolderButton->isEnabled(),
+               "project page should expose a disabled Open Project Folder command before a project is loaded"))
     {
         delete context;
         return 1;
@@ -138,6 +208,21 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(refreshButton->isEnabled() &&
+                   openFolderButton->isEnabled(),
+               "project create should enable project refresh and folder commands"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(projectTree->topLevelItemCount() == 1 &&
+                   projectTree->topLevelItem(0)->text(0) ==
+                       QStringLiteral("WorkflowStudy"),
+               "project create should update the project structure root"))
+    {
+        delete context;
+        return 1;
+    }
 
     const auto importResult =
         context->DataImports()->Import(MakeImageImport(
@@ -156,6 +241,17 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(projectTree->topLevelItem(0)->childCount() >= 1 &&
+                   projectTree->topLevelItem(0)->child(0)->text(0) ==
+                       QStringLiteral("Images [1]") &&
+                   projectTree->topLevelItem(0)->child(0)->childCount() == 1 &&
+                   projectTree->topLevelItem(0)->child(0)->child(0)->text(0) ==
+                       QStringLiteral("image-001"),
+               "image import should populate the project structure tree"))
+    {
+        delete context;
+        return 1;
+    }
 
     if (Expect(context->DataManagement()->RemoveEntry(
                    QStringLiteral("image-001"),
@@ -169,6 +265,12 @@ int main(int argc, char** argv)
 
     if (Expect(dataCountLabel->text() == QStringLiteral("Data items: 0"),
                "data remove should update project page data count"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(projectTree->topLevelItem(0)->childCount() == 0,
+               "data remove should update the project structure tree"))
     {
         delete context;
         return 1;

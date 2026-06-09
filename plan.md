@@ -5275,3 +5275,29 @@ The next monolith slice is grounded in these comparable systems:
 5. Verification gate:
    - targeted workflow/layout/theme/page tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workspace Explorer Project Page Restore
+
+1. Restore the visible project-entry structure from the original
+   `xq_WorkspaceExplorer` inside the monolith Project workflow page.
+   - Add `Project Information` with project name, project file path, schema,
+     data count, and `Open Project Folder` command anchor.
+   - Add a `Project Structure` tree that starts with `(No project loaded)`.
+   - Add the original `New Project`, `Open Project`, and `Refresh` command
+     anchors.
+2. Keep Windows v1 scope honest.
+   - Do not reintroduce BlueBerry/CTK view runtime.
+   - Do not restore legacy import behavior or old project compatibility.
+   - Use the new schema 2.0 project/session services as the source of truth.
+3. Keep project/data state live.
+   - Project creation updates the information group, command enabled states,
+     and project tree root.
+   - Data imports add role-grouped children, for example `Images [1]`.
+   - Data removals update the tree and hide empty role folders.
+4. Add regression coverage.
+   - `test_monolith_project_workflow_page` verifies the restored group, tree,
+     command anchors, no-project state, project-created state, data import tree
+     population, and data removal tree refresh.
+5. Verification gate:
+   - targeted project/data/workbench UI tests.
+   - full XQ and Externals test gates before commit.

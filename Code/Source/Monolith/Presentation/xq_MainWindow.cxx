@@ -55,6 +55,8 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QTreeView>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 #include <QVBoxLayout>
 #include <QVariantList>
 #include <QWidget>
@@ -763,6 +765,13 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                 UpdateDataManagerSelection();
                 UpdateDataActions();
                 UpdateProjectPageDataCount();
+                UpdateProjectStructureTree();
+            });
+    connect(m_Context.DataHierarchy(),
+            &xq::core::DataHierarchyService::NodesChanged,
+            this,
+            [this]() {
+                UpdateProjectStructureTree();
             });
     connect(m_Context.DataNodes(),
             &xq::core::DataNodeRegistryService::BindingsChanged,
@@ -779,6 +788,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                 UpdateProjectPage(&project);
                 UpdateProjectWindowState(project);
                 UpdateProjectActions();
+                UpdateProjectStructureTree();
             });
     if (const auto* project = m_Context.Projects()->CurrentProject())
     {
@@ -1576,6 +1586,7 @@ void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)
         m_ProjectPathLabel->clear();
         m_ProjectSchemaLabel->setText(QStringLiteral("Schema: -"));
         UpdateProjectPageDataCount();
+        UpdateProjectStructureTree();
         return;
     }
 
@@ -1584,6 +1595,7 @@ void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)
     m_ProjectSchemaLabel->setText(
         QStringLiteral("Schema: %1").arg(project->SchemaVersion));
     UpdateProjectPageDataCount();
+    UpdateProjectStructureTree();
 }
 
 void MainWindow::UpdateProjectPageDataCount()
@@ -1594,6 +1606,55 @@ void MainWindow::UpdateProjectPageDataCount()
     m_ProjectDataCountLabel->setText(
         QStringLiteral("Data items: %1")
             .arg(m_Context.DataCatalog()->Entries().size()));
+}
+
+void MainWindow::UpdateProjectStructureTree()
+{
+    if (!m_ProjectStructureTree)
+        return;
+
+    m_ProjectStructureTree->clear();
+
+    const auto* project = m_Context.Projects()->CurrentProject();
+    if (!project)
+    {
+        auto* rootItem = new QTreeWidgetItem(m_ProjectStructureTree);
+        rootItem->setText(0, QStringLiteral("(No project loaded)"));
+        return;
+    }
+
+    auto* rootItem = new QTreeWidgetItem(m_ProjectStructureTree);
+    rootItem->setText(0, project->Name);
+    QFont rootFont = rootItem->font(0);
+    rootFont.setBold(true);
+    rootItem->setFont(0, rootFont);
+
+    const auto rootChildren =
+        m_Context.DataHierarchy()->ChildrenOf(m_Context.DataHierarchy()->RootId());
+    for (const auto& folder : rootChildren)
+    {
+        if (folder.Kind != xq::core::DataHierarchyNodeKind::Folder)
+            continue;
+
+        const auto dataChildren =
+            m_Context.DataHierarchy()->ChildrenOf(folder.Id);
+        if (dataChildren.isEmpty())
+            continue;
+
+        auto* folderItem = new QTreeWidgetItem(rootItem);
+        folderItem->setText(
+            0,
+            QStringLiteral("%1 [%2]").arg(folder.DisplayName).arg(
+                dataChildren.size()));
+
+        for (const auto& dataNode : dataChildren)
+        {
+            auto* dataItem = new QTreeWidgetItem(folderItem);
+            dataItem->setText(0, dataNode.DisplayName);
+        }
+    }
+
+    m_ProjectStructureTree->expandAll();
 }
 
 void MainWindow::UpdateProjectWindowState(
@@ -1610,6 +1671,11 @@ void MainWindow::UpdateProjectActions()
         return;
 
     m_SaveProjectAction->setEnabled(m_Context.Projects()->HasActiveProject());
+    const bool hasProject = m_Context.Projects()->HasActiveProject();
+    if (m_ProjectRefreshButton)
+        m_ProjectRefreshButton->setEnabled(hasProject);
+    if (m_ProjectOpenFolderButton)
+        m_ProjectOpenFolderButton->setEnabled(hasProject);
 }
 
 void MainWindow::ImportData()
@@ -2084,21 +2150,70 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
     layout->addWidget(heading);
     if (id == QStringLiteral("project"))
     {
-        m_ProjectNameLabel = new QLabel(page);
+        auto* infoGroup =
+            new QGroupBox(QStringLiteral("Project Information"), page);
+        infoGroup->setObjectName(
+            QStringLiteral("xqProjectInformationGroup"));
+        auto* infoLayout = new QVBoxLayout(infoGroup);
+        infoLayout->setContentsMargins(8, 8, 8, 8);
+        infoLayout->setSpacing(6);
+
+        m_ProjectNameLabel = new QLabel(infoGroup);
         m_ProjectNameLabel->setObjectName(QStringLiteral("xqProjectPageName"));
-        m_ProjectPathLabel = new QLabel(page);
+        QFont projectNameFont = m_ProjectNameLabel->font();
+        projectNameFont.setBold(true);
+        projectNameFont.setPointSize(projectNameFont.pointSize() + 2);
+        m_ProjectNameLabel->setFont(projectNameFont);
+
+        m_ProjectPathLabel = new QLabel(infoGroup);
         m_ProjectPathLabel->setObjectName(QStringLiteral("xqProjectPagePath"));
-        m_ProjectSchemaLabel = new QLabel(page);
+        m_ProjectPathLabel->setWordWrap(true);
+        m_ProjectSchemaLabel = new QLabel(infoGroup);
         m_ProjectSchemaLabel->setObjectName(
             QStringLiteral("xqProjectPageSchema"));
-        m_ProjectDataCountLabel = new QLabel(page);
+        m_ProjectDataCountLabel = new QLabel(infoGroup);
         m_ProjectDataCountLabel->setObjectName(
             QStringLiteral("xqProjectPageDataCount"));
+        m_ProjectOpenFolderButton =
+            new QPushButton(QStringLiteral("Open Project Folder"),
+                            infoGroup);
+        m_ProjectOpenFolderButton->setObjectName(
+            QStringLiteral("xqProjectOpenFolderButton"));
+        m_ProjectOpenFolderButton->setEnabled(false);
 
-        layout->addWidget(m_ProjectNameLabel);
-        layout->addWidget(m_ProjectPathLabel);
-        layout->addWidget(m_ProjectSchemaLabel);
-        layout->addWidget(m_ProjectDataCountLabel);
+        infoLayout->addWidget(m_ProjectNameLabel);
+        infoLayout->addWidget(m_ProjectPathLabel);
+        infoLayout->addWidget(m_ProjectSchemaLabel);
+        infoLayout->addWidget(m_ProjectDataCountLabel);
+        infoLayout->addWidget(m_ProjectOpenFolderButton);
+        layout->addWidget(infoGroup);
+
+        m_ProjectStructureTree = new QTreeWidget(page);
+        m_ProjectStructureTree->setObjectName(
+            QStringLiteral("xqProjectStructureTree"));
+        m_ProjectStructureTree->setColumnCount(1);
+        m_ProjectStructureTree->setHeaderLabel(
+            QStringLiteral("Project Structure"));
+        m_ProjectStructureTree->header()->setStretchLastSection(true);
+        layout->addWidget(m_ProjectStructureTree, 1);
+
+        auto* projectButtonLayout = new QHBoxLayout();
+        auto* newProjectButton =
+            new QPushButton(QStringLiteral("New Project"), page);
+        newProjectButton->setObjectName(QStringLiteral("xqProjectNewButton"));
+        auto* openProjectButton =
+            new QPushButton(QStringLiteral("Open Project"), page);
+        openProjectButton->setObjectName(QStringLiteral("xqProjectOpenButton"));
+        m_ProjectRefreshButton =
+            new QPushButton(QStringLiteral("Refresh"), page);
+        m_ProjectRefreshButton->setObjectName(
+            QStringLiteral("xqProjectRefreshButton"));
+        m_ProjectRefreshButton->setEnabled(false);
+
+        projectButtonLayout->addWidget(newProjectButton);
+        projectButtonLayout->addWidget(openProjectButton);
+        projectButtonLayout->addWidget(m_ProjectRefreshButton);
+        layout->addLayout(projectButtonLayout);
     }
     else if (id == QStringLiteral("data"))
     {

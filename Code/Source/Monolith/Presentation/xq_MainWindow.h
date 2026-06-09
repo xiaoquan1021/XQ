@@ -17,6 +17,7 @@ class QStackedWidget;
 class QTableWidget;
 class QTextEdit;
 class QTreeView;
+class QTreeWidget;
 class QWidget;
 
 namespace xq::core
@@ -74,6 +75,7 @@ private:
     void UpdateDataWorkflowPage();
     void UpdateProjectPage(const xq::core::ProjectMetadata* project);
     void UpdateProjectPageDataCount();
+    void UpdateProjectStructureTree();
     void UpdateProjectWindowState(const xq::core::ProjectMetadata& project);
     void UpdateProjectActions();
     void RenameSelectedData();
@@ -102,6 +104,9 @@ private:
     QLabel* m_ProjectPathLabel = nullptr;
     QLabel* m_ProjectSchemaLabel = nullptr;
     QLabel* m_ProjectDataCountLabel = nullptr;
+    QTreeWidget* m_ProjectStructureTree = nullptr;
+    QPushButton* m_ProjectOpenFolderButton = nullptr;
+    QPushButton* m_ProjectRefreshButton = nullptr;
     QLabel* m_DataSelectionLabel = nullptr;
     QLabel* m_DataCatalogIdLabel = nullptr;
     QLabel* m_DataDisplayNameLabel = nullptr;
