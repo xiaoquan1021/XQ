@@ -12,8 +12,10 @@
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QDir>
+#include <QGroupBox>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QTableView>
 #include <QTemporaryDir>
 
 #include <iostream>
@@ -114,6 +116,63 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto* pathsGroup =
+        window.findChild<QGroupBox*>(QStringLiteral("xqPathPlanningPathsGroup"));
+    auto* controlPointsGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqPathPlanningControlPointsGroup"));
+    auto* pathToolsGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqPathPlanningToolsGroup"));
+    auto* pathTable =
+        window.findChild<QTableView*>(
+            QStringLiteral("xqPathPlanningPathTableView"));
+    auto* pointTable =
+        window.findChild<QTableView*>(
+            QStringLiteral("xqPathPlanningPointTableView"));
+    auto* addPathButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqPathPlanningAddPathButton"));
+    auto* editPointsButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqPathPlanningEditControlPointsButton"));
+    auto* smoothPathButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqPathPlanningSmoothPathButton"));
+    if (Expect(pathsGroup != nullptr &&
+                   pathsGroup->title() == QStringLiteral("Paths") &&
+                   controlPointsGroup != nullptr &&
+                   controlPointsGroup->title() ==
+                       QStringLiteral("Control Points") &&
+                   pathToolsGroup != nullptr &&
+                   pathToolsGroup->title() == QStringLiteral("Path Tools"),
+               "Path page should restore legacy path planning panel groups"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(pathTable != nullptr && pointTable != nullptr,
+               "Path page should restore legacy path and point table anchors"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(addPathButton != nullptr &&
+                   editPointsButton != nullptr &&
+                   smoothPathButton != nullptr,
+               "Path page should restore legacy path operation buttons"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(addPathButton->isCheckable() &&
+                   editPointsButton->isCheckable() &&
+                   smoothPathButton->isCheckable(),
+               "Path operation buttons should be checkable"))
+    {
+        delete context;
+        return 1;
+    }
     auto* actionButton = FindActionButton(window);
     if (Expect(actionButton != nullptr &&
                    actionButton->text() ==
@@ -136,6 +195,12 @@ int main(int argc, char** argv)
         FindIntegerParameter(window, QStringLiteral("control-point-count"));
     if (Expect(controlPointCount != nullptr,
                "Create Centerline control point count editor should be visible"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(addPathButton->isChecked(),
+               "Path Add Path button should mirror selected create operation"))
     {
         delete context;
         return 1;
@@ -196,6 +261,12 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(editPointsButton->isChecked(),
+               "Path edit control points button should mirror selector changes"))
+    {
+        delete context;
+        return 1;
+    }
     if (Expect(actionButton->text() == QStringLiteral("Run Edit Control Points"),
                "Path action should update after selector change"))
     {
@@ -210,6 +281,26 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    smoothPathButton->click();
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("path")) ==
+                   QStringLiteral("smooth-path"),
+               "Path Smooth Path button should update Core operation state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(selector->currentData().toString() ==
+                   QStringLiteral("smooth-path") &&
+                   smoothPathButton->isChecked(),
+               "Path selector and tool button should stay synchronized"))
+    {
+        delete context;
+        return 1;
+    }
+    editPointsButton->click();
+    app.processEvents();
 
     const auto imageImportResult =
         context->DataImports()->Import(MakeImageImport(), &errorMessage);

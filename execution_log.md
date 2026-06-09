@@ -490,6 +490,53 @@
   - Runtime smoke passed: `build\windows-msvc-release\bin\XQ.exe` stayed
     running for 10 seconds and was then closed.
 
+## Current Run Update: Workbench Path Planning Tool Panel Restore
+
+- Compared the monolith Path page against the original
+  `xq_VesselPlanningView.ui`.
+  - Gap: the monolith page still exposed a generic selector/form instead of
+    the old path-oriented panels: `Paths`, `Control Points`, and
+    `Path Tools`.
+- RED test:
+  - Extended `test_monolith_path_operation_page` to require restored path
+    planning group boxes, path/point table anchors, path operation buttons,
+    and button-to-Core operation synchronization.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_path_operation_page"`
+    failed as expected with:
+    `Path page should restore legacy path planning panel groups`.
+- Implemented the UI slice:
+  - Added monolith Path group boxes:
+    `xqPathPlanningPathsGroup`,
+    `xqPathPlanningControlPointsGroup`, and
+    `xqPathPlanningToolsGroup`.
+  - Added `QTableView` anchors:
+    `xqPathPlanningPathTableView` and `xqPathPlanningPointTableView`.
+  - Added visible checkable path operation buttons:
+    `xqPathPlanningAddPathButton`,
+    `xqPathPlanningEditControlPointsButton`, and
+    `xqPathPlanningSmoothPathButton`.
+  - Kept the existing operation selector as the Core compatibility anchor and
+    synchronized it with the visible restored path buttons.
+  - Kept real execution routed through the existing workflow action handlers.
+- Targeted green verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_path_operation_page"`
+    passed: 1/1.
+- Related targeted verification:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(path_operation_page|main_window_workflow_selection|workflow_primary_action_page|application_import_wiring)"`
+    passed: 4/4.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Runtime smoke passed: `build\windows-msvc-release\bin\XQ.exe` stayed
+    running for 10 seconds and was then closed.
+
 ## Current Run Update: Workbench 2D Segmentation Tool Panel Restore
 
 - Compared the monolith 2D Segmentation page against the original

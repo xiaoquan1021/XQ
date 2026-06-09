@@ -48,6 +48,7 @@
 #include <QStatusBar>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QTableView>
 #include <QTextEdit>
 #include <QToolBar>
 #include <QTreeView>
@@ -1084,8 +1085,33 @@ void MainWindow::UpdateWorkflowOperationControls()
         }
     }
 
+    UpdatePathToolButtons();
     UpdateSegmentation2DToolButtons();
     UpdateSegmentation3DToolButtons();
+}
+
+void MainWindow::UpdatePathToolButtons()
+{
+    const QString selectedOperationId =
+        m_Context.WorkflowOperations()->SelectedOperationId(
+            QStringLiteral("path"));
+    const QStringList buttonObjectNames = {
+        QStringLiteral("xqPathPlanningAddPathButton"),
+        QStringLiteral("xqPathPlanningEditControlPointsButton"),
+        QStringLiteral("xqPathPlanningSmoothPathButton"),
+    };
+
+    for (const auto& objectName : buttonObjectNames)
+    {
+        auto* button = findChild<QPushButton*>(objectName);
+        if (!button)
+            continue;
+
+        QSignalBlocker blocker(button);
+        button->setChecked(
+            button->property("xqOperationId").toString() ==
+            selectedOperationId);
+    }
 }
 
 void MainWindow::UpdateSegmentation2DToolButtons()
@@ -2031,7 +2057,140 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                 parameterLayout->setSpacing(8);
                 m_WorkflowParameterPanels.insert(id, parameterPanel);
 
-                if (id == QStringLiteral("segmentation-2d"))
+                if (id == QStringLiteral("path"))
+                {
+                    operationSelector->setVisible(false);
+                    layout->addWidget(operationSelector);
+
+                    auto* pathsGroup =
+                        new QGroupBox(QStringLiteral("Paths"), page);
+                    pathsGroup->setObjectName(
+                        QStringLiteral("xqPathPlanningPathsGroup"));
+                    auto* pathsLayout = new QVBoxLayout(pathsGroup);
+                    pathsLayout->setContentsMargins(8, 8, 8, 8);
+                    auto* pathTable = new QTableView(pathsGroup);
+                    pathTable->setObjectName(
+                        QStringLiteral("xqPathPlanningPathTableView"));
+                    pathTable->setSelectionMode(
+                        QAbstractItemView::SingleSelection);
+                    pathTable->setSelectionBehavior(
+                        QAbstractItemView::SelectRows);
+                    pathsLayout->addWidget(pathTable);
+                    auto* pathButtonLayout = new QHBoxLayout();
+                    auto* addPathButton =
+                        new QPushButton(QStringLiteral("Add Path"),
+                                        pathsGroup);
+                    addPathButton->setObjectName(
+                        QStringLiteral("xqPathPlanningAddPathButton"));
+                    addPathButton->setCheckable(true);
+                    addPathButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("create-centerline"));
+                    auto* deletePathButton =
+                        new QPushButton(QStringLiteral("Delete Path"),
+                                        pathsGroup);
+                    deletePathButton->setObjectName(
+                        QStringLiteral("xqPathPlanningDeletePathButton"));
+                    deletePathButton->setEnabled(false);
+                    auto* smartPointButton =
+                        new QPushButton(QStringLiteral("Smart"), pathsGroup);
+                    smartPointButton->setObjectName(
+                        QStringLiteral("xqPathPlanningSmartPointButton"));
+                    smartPointButton->setEnabled(false);
+                    pathButtonLayout->addWidget(addPathButton);
+                    pathButtonLayout->addWidget(deletePathButton);
+                    pathButtonLayout->addWidget(smartPointButton);
+                    pathsLayout->addLayout(pathButtonLayout);
+                    layout->addWidget(pathsGroup);
+
+                    auto* pointsGroup =
+                        new QGroupBox(QStringLiteral("Control Points"), page);
+                    pointsGroup->setObjectName(QStringLiteral(
+                        "xqPathPlanningControlPointsGroup"));
+                    auto* pointsLayout = new QVBoxLayout(pointsGroup);
+                    pointsLayout->setContentsMargins(8, 8, 8, 8);
+                    auto* pointTable = new QTableView(pointsGroup);
+                    pointTable->setObjectName(
+                        QStringLiteral("xqPathPlanningPointTableView"));
+                    pointTable->setSelectionMode(
+                        QAbstractItemView::SingleSelection);
+                    pointTable->setSelectionBehavior(
+                        QAbstractItemView::SelectRows);
+                    pointsLayout->addWidget(pointTable);
+                    auto* pointButtonLayout = new QHBoxLayout();
+                    auto* addPointButton =
+                        new QPushButton(QStringLiteral("Add Point"),
+                                        pointsGroup);
+                    addPointButton->setObjectName(
+                        QStringLiteral("xqPathPlanningAddPointButton"));
+                    addPointButton->setEnabled(false);
+                    auto* editPointsButton =
+                        new QPushButton(QStringLiteral("Edit Points"),
+                                        pointsGroup);
+                    editPointsButton->setObjectName(QStringLiteral(
+                        "xqPathPlanningEditControlPointsButton"));
+                    editPointsButton->setCheckable(true);
+                    editPointsButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("edit-control-points"));
+                    pointButtonLayout->addWidget(addPointButton);
+                    pointButtonLayout->addWidget(editPointsButton);
+                    pointsLayout->addLayout(pointButtonLayout);
+                    layout->addWidget(pointsGroup);
+
+                    auto* toolsGroup =
+                        new QGroupBox(QStringLiteral("Path Tools"), page);
+                    toolsGroup->setObjectName(
+                        QStringLiteral("xqPathPlanningToolsGroup"));
+                    auto* toolsLayout = new QVBoxLayout(toolsGroup);
+                    toolsLayout->setContentsMargins(8, 8, 8, 8);
+                    auto* toolButtonLayout = new QHBoxLayout();
+                    auto* smoothPathButton =
+                        new QPushButton(QStringLiteral("Smooth Path"),
+                                        toolsGroup);
+                    smoothPathButton->setObjectName(
+                        QStringLiteral("xqPathPlanningSmoothPathButton"));
+                    smoothPathButton->setCheckable(true);
+                    smoothPathButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("smooth-path"));
+                    toolButtonLayout->addWidget(smoothPathButton);
+                    toolsLayout->addLayout(toolButtonLayout);
+                    toolsLayout->addWidget(parameterPanel);
+                    layout->addWidget(toolsGroup);
+
+                    auto* toolButtons = new QButtonGroup(page);
+                    toolButtons->setExclusive(true);
+                    toolButtons->addButton(addPathButton);
+                    toolButtons->addButton(editPointsButton);
+                    toolButtons->addButton(smoothPathButton);
+
+                    auto connectPathButton = [this](QPushButton* button,
+                                                    const QString& operationId) {
+                        connect(button,
+                                &QPushButton::clicked,
+                                this,
+                                [this, operationId]() {
+                                    QString message;
+                                    if (!m_Context.WorkflowOperations()
+                                             ->SelectOperation(
+                                                 QStringLiteral("path"),
+                                                 operationId,
+                                                 &message))
+                                    {
+                                        m_Context.PostDiagnostic(message);
+                                    }
+                                    UpdateWorkflowOperationControls();
+                                });
+                    };
+                    connectPathButton(addPathButton,
+                                      QStringLiteral("create-centerline"));
+                    connectPathButton(editPointsButton,
+                                      QStringLiteral("edit-control-points"));
+                    connectPathButton(smoothPathButton,
+                                      QStringLiteral("smooth-path"));
+                }
+                else if (id == QStringLiteral("segmentation-2d"))
                 {
                     auto* pathGroup =
                         new QGroupBox(QStringLiteral("Path Selection"), page);

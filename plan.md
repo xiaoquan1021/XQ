@@ -5064,3 +5064,32 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted segmentation/workflow UI tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Path Planning Tool Panel Restore
+
+1. Restore the visible panel structure of the original
+   `xq_VesselPlanningView` inside the monolith Path page.
+   - Add `Paths`, `Control Points`, and `Path Tools` group boxes with stable
+     object names.
+   - Add path and point table anchors using `QTableView`.
+   - Add visible buttons for Add Path, Edit Points, and Smooth Path, mapped to
+     the monolith path operations.
+   - Keep the existing hidden monolith operation selector so current tests and
+     Core operation state remain compatible.
+2. Keep Core workflow operations authoritative.
+   - Path buttons call `WorkflowOperationService::SelectOperation()`.
+   - Core-driven operation changes still update the hidden selector.
+   - Selector-driven operation changes update the restored path tool buttons.
+3. Keep scope honest.
+   - Do not reintroduce BlueBerry/CTK view runtime.
+   - Do not implement the full path/point table models in this slice.
+   - Real path execution continues through the existing monolith action
+     handlers.
+4. Add regression coverage.
+   - `test_monolith_path_operation_page` verifies the restored panel groups,
+     table anchors, path buttons, checkable state, operation synchronization,
+     parameter persistence, and existing run validation.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted path/workflow UI tests.
+   - full XQ and Externals test gates before commit.

@@ -53,6 +53,7 @@ private:
     void SaveProject();
     void SyncWorkflowNavigationFromCore(const QString& workflowId);
     void UpdateWorkflowToolbarSelection(const QString& workflowId);
+    void UpdatePathToolButtons();
     void UpdateSegmentation2DToolButtons();
     void UpdateSegmentation3DToolButtons();
     void UpdateWorkflowContextStatusPage();
