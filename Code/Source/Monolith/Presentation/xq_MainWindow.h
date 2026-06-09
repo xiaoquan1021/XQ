@@ -25,6 +25,8 @@ namespace xq::core
 class ApplicationContext;
 class DataImportCommand;
 class ProjectFilePathProvider;
+class SceneExportService;
+class SceneFilePathProvider;
 class ScreenshotFilePathProvider;
 struct ProjectMetadata;
 struct TaskRecord;
@@ -45,6 +47,9 @@ public:
     void SetDataImportCommand(xq::core::DataImportCommand* command);
     void SetProjectFilePathProvider(
         xq::core::ProjectFilePathProvider* provider);
+    void SetSceneFilePathProvider(
+        xq::core::SceneFilePathProvider* provider);
+    void SetSceneExportService(xq::core::SceneExportService* service);
     void SetScreenshotFilePathProvider(
         xq::core::ScreenshotFilePathProvider* provider);
     void SetRenderHost(QWidget* renderHost);
@@ -62,6 +67,7 @@ private:
     void OpenPreferencesDialog();
     void RemoveSelectedData();
     void SaveProjectAsFromProvider();
+    void SaveMitkScene();
     void SetCrosshairEnabled(bool enabled);
     void SetSelectedDataVolumeRendering(bool enabled);
     void RunActiveWorkflowAction();
@@ -155,6 +161,8 @@ private:
     QAction* m_PointsRepresentationAction = nullptr;
     xq::core::DataImportCommand* m_DataImportCommand = nullptr;
     xq::core::ProjectFilePathProvider* m_ProjectFilePathProvider = nullptr;
+    xq::core::SceneFilePathProvider* m_SceneFilePathProvider = nullptr;
+    xq::core::SceneExportService* m_SceneExportService = nullptr;
     xq::core::ScreenshotFilePathProvider* m_ScreenshotFilePathProvider =
         nullptr;
     QListWidget* m_Navigation = nullptr;

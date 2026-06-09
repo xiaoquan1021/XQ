@@ -3,6 +3,7 @@
 #include "Core/xq_DataImportCommand.h"
 #include "Infrastructure/xq_MitkFileDataImportCommand.h"
 #include "Infrastructure/xq_MitkRenderRefreshService.h"
+#include "Infrastructure/xq_MitkSceneExportService.h"
 #include "Infrastructure/xq_ImagePreprocessingWorkflowActionHandler.h"
 #include "Infrastructure/xq_PathWorkflowActionHandler.h"
 #include "Infrastructure/xq_SegmentationWorkflowActionHandler.h"
@@ -15,6 +16,7 @@
 #include "Presentation/xq_MainWindow.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
 #include "Presentation/xq_QtProjectFilePathProvider.h"
+#include "Presentation/xq_QtSceneFilePathProvider.h"
 #include "Presentation/xq_QtScreenshotFilePathProvider.h"
 
 #include <QApplication>
@@ -140,6 +142,14 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
             configured->Window.get());
     configured->Window->SetProjectFilePathProvider(
         configured->OwnedProjectPathProvider.get());
+    configured->OwnedScenePathProvider =
+        std::make_unique<xq::presentation::QtSceneFilePathProvider>(
+            configured->Window.get());
+    configured->Window->SetSceneFilePathProvider(
+        configured->OwnedScenePathProvider.get());
+    configured->SceneExport =
+        std::make_unique<xq::infrastructure::MitkSceneExportService>();
+    configured->Window->SetSceneExportService(configured->SceneExport.get());
     configured->OwnedScreenshotPathProvider =
         std::make_unique<xq::presentation::QtScreenshotFilePathProvider>(
             configured->Window.get());

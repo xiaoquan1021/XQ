@@ -11,6 +11,8 @@
 #include "Core/xq_ProjectFilePathProvider.h"
 #include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_ProjectService.h"
+#include "Core/xq_SceneExportService.h"
+#include "Core/xq_SceneFilePathProvider.h"
 #include "Core/xq_ScreenshotFilePathProvider.h"
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowContextService.h"
@@ -496,8 +498,9 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     connect(saveSceneAction,
             &QAction::triggered,
             this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "MITK scene export is not available in Windows monolith v1.")));
+            [this]() {
+                SaveMitkScene();
+            });
     connect(exitAction, &QAction::triggered, this, [this]() { close(); });
     connect(undoAction,
             &QAction::triggered,
@@ -1133,6 +1136,18 @@ void MainWindow::SetProjectFilePathProvider(
     m_ProjectFilePathProvider = provider;
 }
 
+void MainWindow::SetSceneFilePathProvider(
+    xq::core::SceneFilePathProvider* provider)
+{
+    m_SceneFilePathProvider = provider;
+}
+
+void MainWindow::SetSceneExportService(
+    xq::core::SceneExportService* service)
+{
+    m_SceneExportService = service;
+}
+
 void MainWindow::SetScreenshotFilePathProvider(
     xq::core::ScreenshotFilePathProvider* provider)
 {
@@ -1329,6 +1344,44 @@ void MainWindow::CaptureScreenshot()
     }
 
     m_Context.PostDiagnostic(QStringLiteral("Screenshot saved."));
+}
+
+void MainWindow::SaveMitkScene()
+{
+    if (!m_SceneFilePathProvider)
+    {
+        m_Context.PostDiagnostic(QStringLiteral(
+            "MITK scene export failed: No scene file path provider is configured."));
+        return;
+    }
+    if (!m_SceneExportService)
+    {
+        m_Context.PostDiagnostic(QStringLiteral(
+            "MITK scene export failed: No scene export service is configured."));
+        return;
+    }
+
+    QString filePath = m_SceneFilePathProvider->SceneFilePath().trimmed();
+    if (filePath.isEmpty())
+        return;
+
+    if (!filePath.endsWith(QStringLiteral(".mitk"), Qt::CaseInsensitive))
+        filePath += QStringLiteral(".mitk");
+
+    QString errorMessage;
+    if (!m_SceneExportService->SaveScene(m_Context.DataStorage(),
+                                         filePath,
+                                         &errorMessage))
+    {
+        m_Context.PostDiagnostic(
+            errorMessage.trimmed().isEmpty()
+                ? QStringLiteral("MITK scene export failed.")
+                : QStringLiteral("MITK scene export failed: %1")
+                      .arg(errorMessage));
+        return;
+    }
+
+    m_Context.PostDiagnostic(QStringLiteral("MITK scene saved."));
 }
 
 void MainWindow::CloseWorkspace()

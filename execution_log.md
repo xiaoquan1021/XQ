@@ -4132,6 +4132,55 @@
   - Clean-PATH direct startup smoke passed for
     `build\windows-msvc-release\bin\XQ.exe`.
 
+## Current Run Update: Workbench MITK Scene Export Action
+
+- Continued restoring high-visibility Workbench File/View actions after
+  Screenshot.
+- Selected File -> Save All as MITK Scene before DICOM import because scene
+  export is a smaller, directly verifiable DataStorage feature, while DICOM
+  import needs series discovery and selection UX.
+- Local MITK API check:
+  - Found `mitk::SceneIO` in MITK SceneSerialization.
+  - Confirmed the save shape from MITK tests and persistence code:
+    `SaveScene(storage->GetAll(), storage, filename)`.
+- RED test observed:
+  - Added `test_monolith_save_scene_action`.
+  - `scripts\build-xq.ps1 configure` passed.
+  - `scripts\build-xq.ps1 build` failed because
+    `Core/xq_SceneFilePathProvider.h` did not exist yet, proving the test
+    covered the missing scene export abstraction.
+- Implemented MITK scene export:
+  - Added `SceneFilePathProvider` and `SceneExportService` Core interfaces.
+  - Added `QtSceneFilePathProvider` for the production `.mitk` save dialog.
+  - Added `MitkSceneExportService` using MITK `SceneIO`.
+  - Linked `xqMonolithInfrastructure` to `MitkSceneSerialization`.
+  - Added `MainWindow::SetSceneFilePathProvider()`,
+    `MainWindow::SetSceneExportService()`, and `MainWindow::SaveMitkScene()`.
+  - Replaced the File -> Save All as MITK Scene unavailable diagnostic with the
+    real export action.
+  - Installed the Qt scene path provider and MITK scene export service in
+    `CreateConfiguredMainWindow()`.
+- Added real Infrastructure coverage:
+  - `test_monolith_mitk_scene_export_service` verifies empty storage rejection
+    and non-empty `.mitk` file creation through the actual MITK SceneIO-backed
+    service.
+- Targeted verification so far:
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(save_scene_action|workbench_menu_toolbar|screenshot_action)"`
+    passed: 3/3.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(mitk_scene_export_service|save_scene_action)"`
+    passed: 2/2.
+- Full verification:
+  - `scripts\build-xq.ps1 configure` passed using `.env`.
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - Full `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 84/84.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+
 ## Current Run Update: Workbench Screenshot Action
 
 - Continued the UI restoration loop after Close Workspace.

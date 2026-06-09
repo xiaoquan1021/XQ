@@ -5656,3 +5656,34 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench MITK Scene Export Action
+
+1. Replace the restored File -> Save All as MITK Scene guard with real Windows
+   v1 export behavior.
+   - Add `SceneFilePathProvider` so tests and Qt dialogs can select a `.mitk`
+     destination without modal automation.
+   - Add `SceneExportService` so Presentation does not depend directly on MITK
+     serialization internals.
+   - Add `MitkSceneExportService` backed by `mitk::SceneIO`.
+   - Save all current `DataStorage` nodes to a MITK `.mitk` scene archive.
+2. Keep scope honest.
+   - This is MITK scene export, not legacy XQ project save.
+   - Empty `DataStorage` fails with a deterministic diagnostic.
+   - Legacy BlueBerry workspace/provisioning state is not exported.
+3. Wire production composition.
+   - `CreateConfiguredMainWindow()` installs the Qt scene path provider and
+     MITK scene export service.
+4. Add regression coverage.
+   - `test_monolith_save_scene_action` verifies the File menu action requests a
+     path, calls the scene export service, creates a non-empty file, and no
+     longer reports a v1 unavailable diagnostic.
+   - `test_monolith_mitk_scene_export_service` verifies the real MITK SceneIO
+     service saves non-empty `DataStorage` and rejects empty storage
+     deterministically.
+5. Verification gate:
+   - targeted Scene export/menu/screenshot tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.

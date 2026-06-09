@@ -33,6 +33,8 @@ set(XQ_MONOLITH_CORE_HDRS
     Core/xq_ProjectService.h
     Core/xq_ProjectSessionService.h
     Core/xq_RenderRefreshService.h
+    Core/xq_SceneExportService.h
+    Core/xq_SceneFilePathProvider.h
     Core/xq_ScreenshotFilePathProvider.h
     Core/xq_TaskRunner.h
     Core/xq_WorkflowActionService.h
@@ -99,6 +101,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
     Infrastructure/xq_MitkFileDataImportCommand.cxx
     Infrastructure/xq_MitkFileImportService.cxx
     Infrastructure/xq_MitkRenderRefreshService.cxx
+    Infrastructure/xq_MitkSceneExportService.cxx
     Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.cxx
     Infrastructure/xq_ImagePreprocessingApplicationCommitService.cxx
     Infrastructure/xq_ImagePreprocessingCatalogCommitService.cxx
@@ -122,6 +125,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
     Infrastructure/xq_MitkFileDataImportCommand.h
     Infrastructure/xq_MitkFileImportService.h
     Infrastructure/xq_MitkRenderRefreshService.h
+    Infrastructure/xq_MitkSceneExportService.h
     Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.h
     Infrastructure/xq_ImagePreprocessingApplicationCommitService.h
     Infrastructure/xq_ImagePreprocessingCatalogCommitService.h
@@ -168,6 +172,7 @@ target_link_libraries(xqMonolithInfrastructure
         xqModuleROMSimulation
         xqModuleMultiPhysics
         xqModulePythonApi
+        MitkSceneSerialization
         Qt6::Core
 )
 
@@ -177,6 +182,7 @@ set(XQ_MONOLITH_PRESENTATION_SRCS
     Presentation/xq_PreferencesDialog.cxx
     Presentation/xq_QtFileImportPathProvider.cxx
     Presentation/xq_QtProjectFilePathProvider.cxx
+    Presentation/xq_QtSceneFilePathProvider.cxx
     Presentation/xq_QtScreenshotFilePathProvider.cxx
     ../ImagingWorkbench/Plugins/org.xq.core.application/resources/xqApplication.qrc
 )
@@ -187,6 +193,7 @@ set(XQ_MONOLITH_PRESENTATION_HDRS
     Presentation/xq_PreferencesDialog.h
     Presentation/xq_QtFileImportPathProvider.h
     Presentation/xq_QtProjectFilePathProvider.h
+    Presentation/xq_QtSceneFilePathProvider.h
     Presentation/xq_QtScreenshotFilePathProvider.h
 )
 
