@@ -273,6 +273,14 @@ bool ReadProjectJson(const QString& projectFilePath,
                      QJsonObject* projectObject,
                      QString* errorMessage)
 {
+    const QFileInfo projectInfo(projectFilePath);
+    if (!projectInfo.exists())
+    {
+        if (errorMessage)
+            *errorMessage = QStringLiteral("Project file does not exist.");
+        return false;
+    }
+
     QFile projectFile(projectFilePath);
     if (!projectFile.open(QIODevice::ReadOnly))
     {

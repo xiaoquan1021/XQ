@@ -14,6 +14,7 @@
 #include "Infrastructure/xq_PythonApiWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
+#include "Presentation/xq_QtProjectFilePathProvider.h"
 
 #include <QApplication>
 #include <QDoubleSpinBox>
@@ -133,6 +134,11 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
         std::make_unique<xq::presentation::MainWindow>(context);
     configured->Window->SetDataImportCommand(
         configured->ImportCommand.get());
+    configured->OwnedProjectPathProvider =
+        std::make_unique<xq::presentation::QtProjectFilePathProvider>(
+            configured->Window.get());
+    configured->Window->SetProjectFilePathProvider(
+        configured->OwnedProjectPathProvider.get());
     return configured;
 }
 

@@ -5477,3 +5477,29 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench Project Menu Actions Wiring
+
+1. Make restored Project entry points usable in the monolith shell.
+   - Route `New Project` from the File menu and Project workflow page through
+     the schema 2.0 `ProjectService`.
+   - Route `Open Project` from the File menu and Project workflow page through
+     the `ProjectSessionService`.
+   - Keep `Save` and `Open Data File` on the existing monolith services.
+2. Add a testable path-provider seam for native Qt dialogs.
+   - Core owns the `ProjectFilePathProvider` interface.
+   - Presentation owns the Qt `QFileDialog` / `QInputDialog` implementation.
+   - Tests inject a deterministic provider instead of driving modal dialogs.
+3. Keep failure behavior explicit.
+   - Missing dialog provider reports a deterministic diagnostic.
+   - Missing project files report `Project file does not exist.`
+   - Existing but unreadable project files keep the generic read failure.
+4. Keep environment execution deterministic.
+   - Use `.env` and `scripts\build-xq.ps1` as the normal Windows activation
+     path, so build and test commands do not depend on ad hoc shell state.
+5. Verification gate:
+   - targeted Project menu/workflow/save/import/workbench tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.

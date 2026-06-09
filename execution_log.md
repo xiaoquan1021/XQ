@@ -4079,6 +4079,49 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Workbench Project Menu Actions Wiring
+
+- User environment note:
+  - `.env` is present and now used by the Windows build/run scripts as the
+    project-local activation layer for Externals, build directory, platform,
+    Visual Studio, and CMake.
+  - This behaves like a native C++/Qt/MITK "virtual environment": it stabilizes
+    toolchain and runtime paths, while the compiled dependency stack still lives
+    under `Externals/install/windows-x64`.
+- Red test observed:
+  - `test_monolith_project_menu_actions` was added first.
+  - The first build failed because `ProjectFilePathProvider` and
+    `MainWindow::SetProjectFilePathProvider()` did not exist.
+- Implemented Project menu action wiring:
+  - Added Core `ProjectFilePathProvider`.
+  - Added Presentation `QtProjectFilePathProvider` using native Qt project file
+    dialogs.
+  - Wired File menu `New Project` / `Open Project` and the Project workflow page
+    anchors into the same monolith project/session services.
+  - Kept deterministic diagnostics for missing provider and service failures.
+- Debugging note:
+  - The first green attempt still failed because missing project files returned
+    `Unable to read project file.` from `ProjectService::ReadProjectJson()`.
+  - Root cause was a missing existence branch, not a Windows environment
+    problem.
+  - `ReadProjectJson()` now returns `Project file does not exist.` for absent
+    paths and keeps the generic read diagnostic for existing unreadable files.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(project_menu_actions|project_workflow_page|main_window_project_save_action|workbench_menu_toolbar|application_import_wiring)"`
+    passed: 5/5.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure` passed using `.env`.
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 77/77.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+- Promoted Workbench Project Menu Actions Wiring to completed in `plan.md`.
+
 ## Current Run Update: Windows Dotenv Environment Activation
 
 - User asked why there are so many environment bugs and whether a `.env`-style

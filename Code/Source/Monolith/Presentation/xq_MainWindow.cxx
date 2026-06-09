@@ -7,6 +7,7 @@
 #include "Core/xq_DataManagementService.h"
 #include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_DataSelectionService.h"
+#include "Core/xq_ProjectFilePathProvider.h"
 #include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_ProjectService.h"
 #include "Core/xq_WorkflowActionService.h"
@@ -444,13 +445,15 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     connect(newProjectAction,
             &QAction::triggered,
             this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "New Project dialog is not available in Windows monolith v1.")));
+            [this]() {
+                CreateProjectFromProvider();
+            });
     connect(openProjectAction,
             &QAction::triggered,
             this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "Open Project dialog is not available in Windows monolith v1.")));
+            [this]() {
+                OpenProjectFromProvider();
+            });
     connect(saveAsProjectAction,
             &QAction::triggered,
             this,
@@ -1094,6 +1097,12 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
 void MainWindow::SetDataImportCommand(xq::core::DataImportCommand* command)
 {
     m_DataImportCommand = command;
+}
+
+void MainWindow::SetProjectFilePathProvider(
+    xq::core::ProjectFilePathProvider* provider)
+{
+    m_ProjectFilePathProvider = provider;
 }
 
 void MainWindow::SetRenderHost(QWidget* renderHost)
@@ -1808,6 +1817,65 @@ void MainWindow::RunActiveWorkflowAction()
         m_Context.PostDiagnostic(message);
 }
 
+void MainWindow::CreateProjectFromProvider()
+{
+    if (!m_ProjectFilePathProvider)
+    {
+        m_Context.PostDiagnostic(QStringLiteral(
+            "No project file path provider is configured."));
+        return;
+    }
+
+    const auto projectFile = m_ProjectFilePathProvider->NewProjectFilePath();
+    if (projectFile.ProjectFilePath.trimmed().isEmpty() ||
+        projectFile.ProjectName.trimmed().isEmpty())
+    {
+        return;
+    }
+
+    QString message;
+    if (!m_Context.Projects()->CreateProject(projectFile.ProjectName,
+                                             projectFile.ProjectFilePath,
+                                             &message))
+    {
+        m_Context.PostDiagnostic(
+            QStringLiteral("New Project failed: %1").arg(message));
+        UpdateProjectActions();
+        return;
+    }
+
+    UpdateProjectActions();
+}
+
+void MainWindow::OpenProjectFromProvider()
+{
+    if (!m_ProjectFilePathProvider)
+    {
+        m_Context.PostDiagnostic(QStringLiteral(
+            "No project file path provider is configured."));
+        return;
+    }
+
+    const QString projectFilePath =
+        m_ProjectFilePathProvider->OpenProjectFilePath();
+    if (projectFilePath.trimmed().isEmpty())
+        return;
+
+    QString message;
+    if (!m_Context.ProjectSession()->Open(projectFilePath, &message))
+    {
+        m_Context.PostDiagnostic(
+            QStringLiteral("Open Project failed: %1").arg(message));
+        UpdateProjectActions();
+        return;
+    }
+
+    UpdateDataWorkflowPage();
+    UpdateProjectActions();
+    UpdateProjectPageDataCount();
+    UpdateProjectStructureTree();
+}
+
 void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)
 {
     if (!m_ProjectNameLabel || !m_ProjectPathLabel || !m_ProjectSchemaLabel)
@@ -2455,6 +2523,19 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
         projectButtonLayout->addWidget(openProjectButton);
         projectButtonLayout->addWidget(m_ProjectRefreshButton);
         layout->addLayout(projectButtonLayout);
+
+        connect(newProjectButton,
+                &QPushButton::clicked,
+                this,
+                [this]() {
+                    CreateProjectFromProvider();
+                });
+        connect(openProjectButton,
+                &QPushButton::clicked,
+                this,
+                [this]() {
+                    OpenProjectFromProvider();
+                });
     }
     else if (id == QStringLiteral("data"))
     {

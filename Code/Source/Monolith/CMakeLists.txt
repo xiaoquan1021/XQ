@@ -29,6 +29,7 @@ set(XQ_MONOLITH_CORE_HDRS
     Core/xq_DataNodeRegistryService.h
     Core/xq_DataSelectionService.h
     Core/xq_PreferencesService.h
+    Core/xq_ProjectFilePathProvider.h
     Core/xq_ProjectService.h
     Core/xq_ProjectSessionService.h
     Core/xq_RenderRefreshService.h
@@ -173,6 +174,7 @@ set(XQ_MONOLITH_PRESENTATION_SRCS
     Presentation/xq_DataHierarchyModel.cxx
     Presentation/xq_MainWindow.cxx
     Presentation/xq_QtFileImportPathProvider.cxx
+    Presentation/xq_QtProjectFilePathProvider.cxx
     ../ImagingWorkbench/Plugins/org.xq.core.application/resources/xqApplication.qrc
 )
 
@@ -180,6 +182,7 @@ set(XQ_MONOLITH_PRESENTATION_HDRS
     Presentation/xq_DataHierarchyModel.h
     Presentation/xq_MainWindow.h
     Presentation/xq_QtFileImportPathProvider.h
+    Presentation/xq_QtProjectFilePathProvider.h
 )
 
 add_library(xqMonolithPresentation STATIC
