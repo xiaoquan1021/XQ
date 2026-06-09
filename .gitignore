@@ -33,4 +33,4 @@ Thumbs.db
 CMakeUserPresets.json
 
 # Test artifacts
-Testing/
+/Testing/

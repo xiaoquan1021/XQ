@@ -5442,3 +5442,38 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench Menu and Toolbar Skeleton Restore
+
+1. Restore the original XQ Workbench top-level entry points in the monolith
+   shell without reintroducing BlueBerry/CTK runtime.
+   - Add File, Edit, View, and Tools menus with stable object names.
+   - Restore File actions for New Project, Open Project, Save, Save As,
+     Close Workspace, Open Data File, Import DICOM, Save All as MITK Scene,
+     Recent Projects, and Exit.
+   - Restore Edit actions for Undo and Redo.
+   - Restore View actions for Screenshot, Volume Rendering, Crosshair, and
+     View Presets.
+   - Restore Tools actions for Preferences and measurement utilities.
+2. Keep Windows v1 behavior honest.
+   - Existing migrated actions still call current monolith services:
+     Open Data File, Save, and Remove Data.
+   - Unmigrated Workbench actions post deterministic diagnostics instead of
+     pretending to run legacy BlueBerry behavior.
+3. Restore first-viewport toolbar fidelity.
+   - Main toolbar now exposes project open/save, undo/redo, screenshot, data
+     import, and remove-data entries with original XQ resource icons where
+     available.
+4. Fix test tracking hygiene.
+   - Scope `.gitignore` test-artifact ignore to `/Testing/` so new source
+     tests under `Code/Testing` are not accidentally ignored.
+5. Add regression coverage.
+   - `test_monolith_workbench_menu_toolbar` verifies menu titles, action
+     object names/text, menu ownership, toolbar ownership, icons, checkable
+     render toggles, View Presets, and v1 diagnostic guards.
+6. Verification gate:
+   - targeted Workbench menu/layout/import/save/data/theme tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.

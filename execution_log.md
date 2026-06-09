@@ -4134,6 +4134,56 @@
     `build\windows-msvc-release\bin\XQ.exe` passed.
 - Promoted Windows Dotenv Environment Activation to completed in `plan.md`.
 
+## Current Run Update: Workbench Menu and Toolbar Skeleton Restore
+
+- Continued the active XQ Windows monolith goal after the dotenv environment
+  slice.
+- Next visible fidelity gap:
+  - The monolith had substantial workflow pages and a real MITK render host,
+    but its top-level Workbench shell still exposed only a minimal File/View
+    menu and a small action toolbar.
+  - Original XQ Workbench had File/Edit/View/Tools menus and a project/
+    undo-redo/screenshot/workflow toolbar skeleton, so the first-viewport UI
+    still looked too unlike the original application.
+- RED test:
+  - Added `test_monolith_workbench_menu_toolbar`.
+  - First run failed as expected with
+    `Workbench menu bar should expose the original Edit menu`.
+- Additional hygiene found during RED:
+  - `.gitignore` used `Testing/`, which also ignored new source tests under
+    `Code/Testing`.
+  - Changed it to `/Testing/` so only root CTest artifacts are ignored.
+- Implementation:
+  - Restored File, Edit, View, and Tools top-level menus with stable object
+    names.
+  - Restored File actions for New Project, Open Project, Save, Save As,
+    Close Workspace, Open Data File, Import DICOM, Save All as MITK Scene,
+    Recent Projects, and Exit.
+  - Restored Edit Undo/Redo, View Screenshot/Volume Rendering/Crosshair/View
+    Presets, and Tools Preferences/measurement entries.
+  - Restored main toolbar entries for Open Project, Save, Undo, Redo,
+    Screenshot, Open Data File, and Remove Data.
+  - Existing migrated Save/Open Data/Remove Data behavior remains wired to
+    current monolith services.
+  - Unmigrated Workbench actions post deterministic Windows v1 diagnostics
+    rather than invoking BlueBerry/CTK legacy behavior.
+- Targeted verification:
+  - `scripts\build-xq.ps1 build` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workbench_menu_toolbar|main_window_workbench_layout|main_window_import_action|main_window_project_save_action|main_window_data_actions|workbench_theme)"`
+    passed, 6/6.
+- Full verification:
+  - `scripts\build-xq.ps1 configure` passed.
+  - `scripts\build-xq.ps1 build` passed.
+  - XQ PowerShell tests passed, 20/20.
+  - Externals PowerShell tests passed, 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed, 76/76.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Clean-PATH direct startup smoke for
+    `build\windows-msvc-release\bin\XQ.exe` passed.
+- Promoted Workbench Menu and Toolbar Skeleton Restore to completed in
+  `plan.md`.
+
 ## Current Run Final Update: Workbench UI and Direct Startup Runtime
 
 - User feedback:

@@ -252,27 +252,181 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     menuBar()->setNativeMenuBar(false);
     auto* fileMenu = menuBar()->addMenu(QStringLiteral("&File"));
     fileMenu->setObjectName(QStringLiteral("FileMenu"));
+    auto* editMenu = menuBar()->addMenu(QStringLiteral("&Edit"));
+    editMenu->setObjectName(QStringLiteral("EditMenu"));
     auto* viewMenu = menuBar()->addMenu(QStringLiteral("&View"));
     viewMenu->setObjectName(QStringLiteral("ViewMenu"));
+    auto* toolsMenu = menuBar()->addMenu(QStringLiteral("&Tools"));
+    toolsMenu->setObjectName(QStringLiteral("ToolsMenu"));
 
     auto* mainToolbar = new QToolBar(QStringLiteral("Main Actions"), this);
     mainToolbar->setObjectName(QStringLiteral("mainActionsToolBar"));
     mainToolbar->setMovable(false);
     mainToolbar->setFloatable(false);
     mainToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    mainToolbar->setIconSize(QSize(24, 24));
+
+    auto* newProjectAction =
+        new QAction(QIcon(QStringLiteral(":/xq/document-new.svg")),
+                    QStringLiteral("New Project"),
+                    this);
+    newProjectAction->setObjectName(QStringLiteral("xqNewProjectAction"));
+    newProjectAction->setShortcut(QKeySequence::New);
+    fileMenu->addAction(newProjectAction);
+
+    auto* openProjectAction =
+        new QAction(QIcon(QStringLiteral(":/xq/document-open.svg")),
+                    QStringLiteral("Open Project"),
+                    this);
+    openProjectAction->setObjectName(QStringLiteral("xqOpenProjectAction"));
+    openProjectAction->setShortcut(QKeySequence::Open);
+    fileMenu->addAction(openProjectAction);
+
+    m_SaveProjectAction =
+        new QAction(QIcon(QStringLiteral(":/xq/document-save.svg")),
+                    QStringLiteral("Save"),
+                    this);
+    m_SaveProjectAction->setObjectName(
+        QStringLiteral("xqSaveProjectAction"));
+    m_SaveProjectAction->setShortcut(QKeySequence::Save);
+    m_SaveProjectAction->setEnabled(false);
+    fileMenu->addAction(m_SaveProjectAction);
+
+    auto* saveAsProjectAction =
+        new QAction(QStringLiteral("Save As..."), this);
+    saveAsProjectAction->setObjectName(
+        QStringLiteral("xqSaveAsProjectAction"));
+    saveAsProjectAction->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+S")));
+    fileMenu->addAction(saveAsProjectAction);
+
+    auto* closeProjectAction =
+        new QAction(QStringLiteral("Close Workspace"), this);
+    closeProjectAction->setObjectName(QStringLiteral("xqCloseProjectAction"));
+    closeProjectAction->setShortcut(QKeySequence(QStringLiteral("Ctrl+W")));
+    fileMenu->addAction(closeProjectAction);
+    fileMenu->addSeparator();
 
     m_ImportDataAction =
         new QAction(QStringLiteral("Open Data File..."), this);
     m_ImportDataAction->setObjectName(QStringLiteral("xqImportDataAction"));
     fileMenu->addAction(m_ImportDataAction);
-    mainToolbar->addAction(m_ImportDataAction);
 
-    m_SaveProjectAction = new QAction(QStringLiteral("Save"), this);
-    m_SaveProjectAction->setObjectName(
-        QStringLiteral("xqSaveProjectAction"));
-    m_SaveProjectAction->setEnabled(false);
-    fileMenu->addAction(m_SaveProjectAction);
+    auto* importDicomAction =
+        new QAction(QStringLiteral("Import DICOM..."), this);
+    importDicomAction->setObjectName(QStringLiteral("xqImportDicomAction"));
+    fileMenu->addAction(importDicomAction);
+
+    auto* saveSceneAction =
+        new QAction(QStringLiteral("Save All as MITK Scene..."), this);
+    saveSceneAction->setObjectName(QStringLiteral("xqSaveSceneAction"));
+    fileMenu->addAction(saveSceneAction);
+    fileMenu->addSeparator();
+
+    auto* recentProjectsMenu =
+        fileMenu->addMenu(QStringLiteral("Recent Projects"));
+    recentProjectsMenu->setObjectName(
+        QStringLiteral("xqRecentProjectsMenu"));
+    auto* noRecentProjectsAction =
+        recentProjectsMenu->addAction(QStringLiteral("(No recent projects)"));
+    noRecentProjectsAction->setEnabled(false);
+    fileMenu->addSeparator();
+
+    auto* exitAction = new QAction(QStringLiteral("Exit"), this);
+    exitAction->setObjectName(QStringLiteral("xqExitAction"));
+    exitAction->setShortcut(QKeySequence::Quit);
+    fileMenu->addAction(exitAction);
+
+    auto* undoAction =
+        new QAction(QIcon(QStringLiteral(":/xq/edit-undo.svg")),
+                    QStringLiteral("Undo"),
+                    this);
+    undoAction->setObjectName(QStringLiteral("xqUndoAction"));
+    undoAction->setShortcut(QKeySequence(QStringLiteral("Ctrl+Z")));
+    editMenu->addAction(undoAction);
+
+    auto* redoAction =
+        new QAction(QIcon(QStringLiteral(":/xq/edit-redo.svg")),
+                    QStringLiteral("Redo"),
+                    this);
+    redoAction->setObjectName(QStringLiteral("xqRedoAction"));
+    redoAction->setShortcut(QKeySequence(QStringLiteral("Ctrl+Y")));
+    editMenu->addAction(redoAction);
+
+    auto* screenshotAction =
+        new QAction(QIcon(QStringLiteral(":/xq/camera-photo.svg")),
+                    QStringLiteral("Screenshot..."),
+                    this);
+    screenshotAction->setObjectName(QStringLiteral("xqScreenshotAction"));
+    screenshotAction->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+P")));
+    viewMenu->addAction(screenshotAction);
+
+    auto* volumeRenderingAction =
+        new QAction(QStringLiteral("Volume Rendering"), this);
+    volumeRenderingAction->setObjectName(
+        QStringLiteral("xqVolumeRenderingAction"));
+    volumeRenderingAction->setCheckable(true);
+    viewMenu->addAction(volumeRenderingAction);
+
+    auto* crosshairAction =
+        new QAction(QStringLiteral("Crosshair"), this);
+    crosshairAction->setObjectName(QStringLiteral("xqCrosshairAction"));
+    crosshairAction->setCheckable(true);
+    crosshairAction->setChecked(true);
+    viewMenu->addAction(crosshairAction);
+    viewMenu->addSeparator();
+
+    auto* viewPresetMenu = viewMenu->addMenu(QStringLiteral("View Presets"));
+    viewPresetMenu->setObjectName(QStringLiteral("xqViewPresetsMenu"));
+    for (const auto& presetName :
+         {QStringLiteral("Default"),
+          QStringLiteral("Viewer"),
+          QStringLiteral("Analysis")})
+    {
+        auto* presetAction = viewPresetMenu->addAction(presetName);
+        presetAction->setObjectName(
+            QStringLiteral("xqViewPreset_%1").arg(presetName));
+    }
+
+    auto* preferencesAction =
+        new QAction(QStringLiteral("Preferences..."), this);
+    preferencesAction->setObjectName(
+        QStringLiteral("xqOpenPreferencesAction"));
+    toolsMenu->addAction(preferencesAction);
+    toolsMenu->addSeparator();
+
+    auto* measureDistanceAction =
+        new QAction(QStringLiteral("Measure Distance"), this);
+    measureDistanceAction->setObjectName(
+        QStringLiteral("xqMeasureDistanceAction"));
+    toolsMenu->addAction(measureDistanceAction);
+
+    auto* measureAngleAction =
+        new QAction(QStringLiteral("Measure Angle"), this);
+    measureAngleAction->setObjectName(
+        QStringLiteral("xqMeasureAngleAction"));
+    toolsMenu->addAction(measureAngleAction);
+
+    auto* measureAreaAction =
+        new QAction(QStringLiteral("Measure Surface Area"), this);
+    measureAreaAction->setObjectName(
+        QStringLiteral("xqMeasureAreaAction"));
+    toolsMenu->addAction(measureAreaAction);
+
+    auto* measureVolumeAction =
+        new QAction(QStringLiteral("Measure Volume"), this);
+    measureVolumeAction->setObjectName(
+        QStringLiteral("xqMeasureVolumeAction"));
+    toolsMenu->addAction(measureVolumeAction);
+
+    mainToolbar->addAction(openProjectAction);
     mainToolbar->addAction(m_SaveProjectAction);
+    mainToolbar->addSeparator();
+    mainToolbar->addAction(undoAction);
+    mainToolbar->addAction(redoAction);
+    mainToolbar->addSeparator();
+    mainToolbar->addAction(screenshotAction);
+    mainToolbar->addSeparator();
+    mainToolbar->addAction(m_ImportDataAction);
 
     m_RemoveDataAction =
         new QAction(QStringLiteral("Remove Data"), this);
@@ -280,6 +434,85 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     m_RemoveDataAction->setEnabled(false);
     mainToolbar->addAction(m_RemoveDataAction);
     addToolBar(Qt::TopToolBarArea, mainToolbar);
+
+    const auto postUnavailableDiagnostic = [this](const QString& message) {
+        return [this, message]() {
+            m_Context.PostDiagnostic(message);
+        };
+    };
+
+    connect(newProjectAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "New Project dialog is not available in Windows monolith v1.")));
+    connect(openProjectAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "Open Project dialog is not available in Windows monolith v1.")));
+    connect(saveAsProjectAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "Save As is not available in Windows monolith v1.")));
+    connect(closeProjectAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "Close Workspace is not available in Windows monolith v1.")));
+    connect(importDicomAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "Import DICOM is not available in Windows monolith v1.")));
+    connect(saveSceneAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "MITK scene export is not available in Windows monolith v1.")));
+    connect(exitAction, &QAction::triggered, this, [this]() { close(); });
+    connect(undoAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "Undo is not available in Windows monolith v1.")));
+    connect(redoAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "Redo is not available in Windows monolith v1.")));
+    connect(screenshotAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "Screenshot is not available in Windows monolith v1.")));
+    connect(volumeRenderingAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "Volume Rendering is not available in Windows monolith v1.")));
+    connect(crosshairAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "Crosshair toggle is not available in Windows monolith v1.")));
+    connect(preferencesAction,
+            &QAction::triggered,
+            this,
+            postUnavailableDiagnostic(QStringLiteral(
+                "Preferences dialog is not available in Windows monolith v1.")));
+    for (auto* action : {measureDistanceAction,
+                         measureAngleAction,
+                         measureAreaAction,
+                         measureVolumeAction})
+    {
+        connect(action,
+                &QAction::triggered,
+                this,
+                postUnavailableDiagnostic(QStringLiteral(
+                    "Measurement tools are not available in Windows monolith v1.")));
+    }
 
     auto* viewToolbar = new QToolBar(QStringLiteral("XQ Views"), this);
     viewToolbar->setObjectName(QStringLiteral("xqViewToolBar"));
