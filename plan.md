@@ -5503,3 +5503,34 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench Preferences Dialog Restore
+
+1. Replace the restored Tools -> Preferences guard with a real monolith Qt
+   preferences dialog.
+   - Keep this as a normal Qt dialog, not a BlueBerry preference page.
+   - Use `PreferencesService` as the single source of truth.
+   - Keep the dialog non-modal so automated and manual smoke tests do not
+     block the main shell.
+2. Restore the original XQ preference categories as tabs.
+   - Path: 2D point size, 3D point size, path color.
+   - Segmentation: contour defaults, lofting defaults, display colors.
+   - Modeling: default model type, sampling points, fillet radius, auto-update.
+   - Meshing: mesh type, global edge size, boundary layers, auto-run.
+   - Simulation: solver path, MPI path, processor count, custom MPI flag, with
+     an explicit Windows v1 note that solver execution remains disabled.
+3. Keep unmigrated Workbench tools honest.
+   - DICOM import, MITK scene export, undo/redo, screenshots, render toggles,
+     and measurements keep deterministic v1 diagnostics until implemented.
+4. Add regression coverage.
+   - `test_monolith_preferences_dialog` verifies the dialog opens from Tools,
+     exposes restored tabs/controls, loads existing preference values, and
+     stores Apply/OK edits into `PreferencesService`.
+   - `test_monolith_workbench_menu_toolbar` now treats Preferences as migrated
+     while keeping DICOM and measurement diagnostics guarded.
+5. Verification gate:
+   - targeted preferences/menu tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.

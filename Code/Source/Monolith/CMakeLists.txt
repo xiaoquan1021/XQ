@@ -173,6 +173,7 @@ target_link_libraries(xqMonolithInfrastructure
 set(XQ_MONOLITH_PRESENTATION_SRCS
     Presentation/xq_DataHierarchyModel.cxx
     Presentation/xq_MainWindow.cxx
+    Presentation/xq_PreferencesDialog.cxx
     Presentation/xq_QtFileImportPathProvider.cxx
     Presentation/xq_QtProjectFilePathProvider.cxx
     ../ImagingWorkbench/Plugins/org.xq.core.application/resources/xqApplication.qrc
@@ -181,6 +182,7 @@ set(XQ_MONOLITH_PRESENTATION_SRCS
 set(XQ_MONOLITH_PRESENTATION_HDRS
     Presentation/xq_DataHierarchyModel.h
     Presentation/xq_MainWindow.h
+    Presentation/xq_PreferencesDialog.h
     Presentation/xq_QtFileImportPathProvider.h
     Presentation/xq_QtProjectFilePathProvider.h
 )

@@ -4122,6 +4122,43 @@
     `build\windows-msvc-release\bin\XQ.exe`.
 - Promoted Workbench Project Menu Actions Wiring to completed in `plan.md`.
 
+## Current Run Update: Workbench Preferences Dialog Restore
+
+- Red test observed:
+  - Added `test_monolith_preferences_dialog`.
+  - Targeted test first failed with
+    `Preferences action should open a visible monolith dialog`, confirming the
+    Tools -> Preferences entry was still only a v1 diagnostic guard.
+- Implemented Preferences dialog restore:
+  - Added `xq::presentation::PreferencesDialog` as a normal Qt dialog.
+  - Restored Path, Segmentation, Modeling, Meshing, and Simulation preference
+    categories from the old XQ Workbench pages into monolith tabs.
+  - Wired Apply and OK into `PreferencesService`.
+  - Changed Tools -> Preferences to open the dialog instead of posting the
+    previous unavailable diagnostic.
+  - Kept the Simulation page honest: runtime path preferences can be stored,
+    but Windows v1 still does not expose solver execution.
+- Test update:
+  - `test_monolith_workbench_menu_toolbar` no longer expects Preferences to be
+    an unmigrated action.
+  - The same test still verifies DICOM import and measurement tools report
+    deterministic v1 diagnostics.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(preferences_dialog|workbench_menu_toolbar|preferences_service)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure` passed using `.env`.
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 78/78.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+- Promoted Workbench Preferences Dialog Restore to completed in `plan.md`.
+
 ## Current Run Update: Windows Dotenv Environment Activation
 
 - User asked why there are so many environment bugs and whether a `.env`-style

@@ -263,14 +263,14 @@ int main(int argc, char** argv)
                      &xq::core::ApplicationContext::DiagnosticPosted,
                      [&diagnostics](const QString& message) {
                          diagnostics.append(message);
-                     });
+    });
     FindAction(window, QStringLiteral("xqImportDicomAction"))->trigger();
-    FindAction(window, QStringLiteral("xqOpenPreferencesAction"))->trigger();
+    FindAction(window, QStringLiteral("xqMeasureDistanceAction"))->trigger();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
                    "Import DICOM is not available in Windows monolith v1.")) &&
                    diagnostics.contains(QStringLiteral(
-                       "Preferences dialog is not available in Windows monolith v1.")),
+                       "Measurement tools are not available in Windows monolith v1.")),
                "Unmigrated Workbench actions should report honest v1 diagnostics"))
     {
         delete context;

@@ -17,6 +17,7 @@
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Core/xq_TaskRunner.h"
 #include "xq_DataHierarchyModel.h"
+#include "xq_PreferencesDialog.h"
 
 #include <QAction>
 #include <QActionGroup>
@@ -503,8 +504,9 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     connect(preferencesAction,
             &QAction::triggered,
             this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "Preferences dialog is not available in Windows monolith v1.")));
+            [this]() {
+                OpenPreferencesDialog();
+            });
     for (auto* action : {measureDistanceAction,
                          measureAngleAction,
                          measureAreaAction,
@@ -1874,6 +1876,21 @@ void MainWindow::OpenProjectFromProvider()
     UpdateProjectActions();
     UpdateProjectPageDataCount();
     UpdateProjectStructureTree();
+}
+
+void MainWindow::OpenPreferencesDialog()
+{
+    auto* existingDialog =
+        findChild<PreferencesDialog*>(QStringLiteral("xqPreferencesDialog"));
+    if (existingDialog)
+    {
+        existingDialog->raise();
+        existingDialog->activateWindow();
+        return;
+    }
+
+    auto* dialog = new PreferencesDialog(*m_Context.Preferences(), this);
+    dialog->show();
 }
 
 void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)

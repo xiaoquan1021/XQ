@@ -54,6 +54,7 @@ private:
     void CreateProjectFromProvider();
     void ImportData();
     void OpenProjectFromProvider();
+    void OpenPreferencesDialog();
     void RemoveSelectedData();
     void RunActiveWorkflowAction();
     void SaveProject();
