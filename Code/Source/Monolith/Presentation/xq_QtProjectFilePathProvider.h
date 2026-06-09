@@ -15,6 +15,8 @@ public:
 
     xq::core::ProjectFilePath NewProjectFilePath() override;
     QString OpenProjectFilePath() override;
+    xq::core::ProjectFilePath SaveAsProjectFilePath(
+        const xq::core::ProjectMetadata& currentProject) override;
 
 private:
     QWidget* m_Parent = nullptr;

@@ -80,6 +80,34 @@ bool ProjectSessionService::Save(QString* errorMessage)
     return succeeded;
 }
 
+bool ProjectSessionService::SaveAs(const QString& name,
+                                   const QString& projectFilePath,
+                                   QString* errorMessage)
+{
+    if (!m_WorkflowOperations)
+    {
+        SetError(errorMessage,
+                 QStringLiteral("Workflow operation state is unavailable."));
+        return false;
+    }
+
+    QString taskMessage;
+    const bool succeeded = m_TaskRunner.RunBlocking(
+        QStringLiteral("Save Project As"),
+        [this, &name, &projectFilePath](QString* message) {
+            return m_ProjectService.SaveProjectAs(name,
+                                                  projectFilePath,
+                                                  m_DataCatalog,
+                                                  m_DataHierarchy,
+                                                  *m_WorkflowOperations,
+                                                  message);
+        },
+        &taskMessage);
+
+    SetError(errorMessage, taskMessage);
+    return succeeded;
+}
+
 bool ProjectSessionService::Open(const QString& projectFilePath,
                                  QString* errorMessage)
 {

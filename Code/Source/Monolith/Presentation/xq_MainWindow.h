@@ -56,6 +56,7 @@ private:
     void OpenProjectFromProvider();
     void OpenPreferencesDialog();
     void RemoveSelectedData();
+    void SaveProjectAsFromProvider();
     void SetCrosshairEnabled(bool enabled);
     void SetSelectedDataVolumeRendering(bool enabled);
     void RunActiveWorkflowAction();

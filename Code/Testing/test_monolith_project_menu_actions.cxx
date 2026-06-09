@@ -46,6 +46,12 @@ public:
         ++OpenRequests;
         return NextOpenProjectPath;
     }
+
+    xq::core::ProjectFilePath SaveAsProjectFilePath(
+        const xq::core::ProjectMetadata&) override
+    {
+        return {};
+    }
 };
 
 QAction* FindAction(xq::presentation::MainWindow& window,

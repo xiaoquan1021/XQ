@@ -39,6 +39,9 @@ public:
                           QObject* parent = nullptr);
 
     bool Save(QString* errorMessage = nullptr);
+    bool SaveAs(const QString& name,
+                const QString& projectFilePath,
+                QString* errorMessage = nullptr);
     bool Open(const QString& projectFilePath,
               QString* errorMessage = nullptr);
 

@@ -12,6 +12,8 @@ struct ProjectFilePath
     QString ProjectFilePath;
 };
 
+struct ProjectMetadata;
+
 class ProjectFilePathProvider
 {
 public:
@@ -19,6 +21,8 @@ public:
 
     virtual ProjectFilePath NewProjectFilePath() = 0;
     virtual QString OpenProjectFilePath() = 0;
+    virtual ProjectFilePath SaveAsProjectFilePath(
+        const ProjectMetadata& currentProject) = 0;
 };
 
 } // namespace xq::core

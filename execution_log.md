@@ -4196,6 +4196,42 @@
     `build\windows-msvc-release\bin\XQ.exe`.
 - Promoted Workbench View Menu Display Actions to completed in `plan.md`.
 
+## Current Run Update: Workbench Save As Project Action
+
+- Red test observed:
+  - Added `test_monolith_project_save_as_action`.
+  - The first build failed because `ProjectFilePathProvider` had no
+    `SaveAsProjectFilePath()` method, confirming Save As had no testable
+    monolith path provider contract yet.
+- Implemented Save As:
+  - Added `ProjectFilePathProvider::SaveAsProjectFilePath()`.
+  - Added Qt provider support for `Save XQ Project As`.
+  - Added `ProjectService::SaveProjectAs()` that writes the target first and
+    updates active project metadata only after a successful write.
+  - Added `ProjectSessionService::SaveAs()` so Save As persists catalog,
+    hierarchy, and workflow operation state through `TaskRunner`.
+  - Rewired File -> Save As from unavailable diagnostic to the monolith project
+    session service.
+- Scope note:
+  - Save As supports fresh schema 2.0 monolith projects.
+  - Legacy project migration and workspace directory copying are still outside
+    this slice.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(project_save_as_action|main_window_project_save_action|project_menu_actions)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure` passed using `.env`.
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 80/80.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+- Promoted Workbench Save As Project Action to completed in `plan.md`.
+
 ## Current Run Update: Windows Dotenv Environment Activation
 
 - User asked why there are so many environment bugs and whether a `.env`-style

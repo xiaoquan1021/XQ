@@ -5562,3 +5562,35 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench Save As Project Action
+
+1. Replace the restored File -> Save As guard with real schema 2.0 monolith
+   behavior.
+   - Add `ProjectFilePathProvider::SaveAsProjectFilePath()` so tests and Qt
+     dialogs can request a Save As target without reusing New Project semantics.
+   - Add `ProjectService::SaveProjectAs()` that writes the new file first and
+     only updates active project metadata after a successful write.
+   - Add `ProjectSessionService::SaveAs()` so Save As persists catalog,
+     hierarchy, and workflow operation state through the same task-runner path
+     as Save.
+2. Keep scope honest.
+   - Do not migrate legacy project formats.
+   - Do not copy legacy workspace directory contents in this slice.
+   - Do not implement Close Workspace yet.
+3. Wire Presentation.
+   - File -> Save As now opens the project path provider, saves the selected
+     target, updates the project page/window state, and keeps Save enabled.
+   - The Qt provider uses a `Save XQ Project As` file dialog and asks for the
+     project name.
+4. Add regression coverage.
+   - `test_monolith_project_save_as_action` verifies inactive-project
+     diagnostics, provider use, file creation, active metadata update, project
+     page refresh, catalog persistence, and reopen roundtrip.
+   - Existing Save and Project menu action tests remain green.
+5. Verification gate:
+   - targeted Project Save/Save As/menu tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.

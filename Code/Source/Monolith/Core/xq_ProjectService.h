@@ -46,6 +46,12 @@ public:
                      const DataHierarchyService& dataHierarchy,
                      const WorkflowOperationService& workflowOperations,
                      QString* errorMessage = nullptr) const;
+    bool SaveProjectAs(const QString& name,
+                       const QString& projectFilePath,
+                       const DataCatalogService& dataCatalog,
+                       const DataHierarchyService& dataHierarchy,
+                       const WorkflowOperationService& workflowOperations,
+                       QString* errorMessage = nullptr);
     bool OpenProject(const QString& projectFilePath,
                      QString* errorMessage = nullptr);
     bool OpenProject(const QString& projectFilePath,

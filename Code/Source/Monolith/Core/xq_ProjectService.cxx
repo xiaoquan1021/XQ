@@ -695,6 +695,54 @@ bool ProjectService::SaveProject(
                             errorMessage);
 }
 
+bool ProjectService::SaveProjectAs(
+    const QString& name,
+    const QString& projectFilePath,
+    const DataCatalogService& dataCatalog,
+    const DataHierarchyService& dataHierarchy,
+    const WorkflowOperationService& workflowOperations,
+    QString* errorMessage)
+{
+    if (!m_CurrentProject.has_value())
+    {
+        SetError(errorMessage, QStringLiteral("No active project to save."));
+        return false;
+    }
+
+    const QString trimmedName = name.trimmed();
+    if (trimmedName.isEmpty())
+    {
+        SetError(errorMessage, QStringLiteral("Project name is required."));
+        return false;
+    }
+
+    if (projectFilePath.trimmed().isEmpty())
+    {
+        SetError(errorMessage,
+                 QStringLiteral("Project file path is required."));
+        return false;
+    }
+
+    ProjectMetadata saveAsProject = *m_CurrentProject;
+    saveAsProject.Name = trimmedName;
+    saveAsProject.ProjectFilePath = AbsoluteFilePath(projectFilePath);
+    saveAsProject.SchemaVersion = SupportedSchemaVersion();
+
+    if (!WriteProjectJson(saveAsProject,
+                          &dataCatalog,
+                          &dataHierarchy,
+                          &workflowOperations,
+                          errorMessage))
+    {
+        return false;
+    }
+
+    m_CurrentProject = saveAsProject;
+    SetError(errorMessage, QString());
+    emit ProjectChanged(*m_CurrentProject);
+    return true;
+}
+
 bool ProjectService::OpenProject(const QString& projectFilePath,
                                  QString* errorMessage)
 {

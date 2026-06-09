@@ -477,8 +477,9 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     connect(saveAsProjectAction,
             &QAction::triggered,
             this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "Save As is not available in Windows monolith v1.")));
+            [this]() {
+                SaveProjectAsFromProvider();
+            });
     connect(closeProjectAction,
             &QAction::triggered,
             this,
@@ -1237,6 +1238,51 @@ void MainWindow::SaveProject()
 
     m_Context.PostDiagnostic(QStringLiteral("Project saved."));
     UpdateProjectActions();
+}
+
+void MainWindow::SaveProjectAsFromProvider()
+{
+    const auto* currentProject = m_Context.Projects()->CurrentProject();
+    if (!currentProject)
+    {
+        m_Context.PostDiagnostic(QStringLiteral(
+            "Save As failed: No active project to save."));
+        UpdateProjectActions();
+        return;
+    }
+
+    if (!m_ProjectFilePathProvider)
+    {
+        m_Context.PostDiagnostic(QStringLiteral(
+            "Save As failed: No project file path provider is configured."));
+        return;
+    }
+
+    const auto projectFile =
+        m_ProjectFilePathProvider->SaveAsProjectFilePath(*currentProject);
+    if (projectFile.ProjectFilePath.trimmed().isEmpty() ||
+        projectFile.ProjectName.trimmed().isEmpty())
+    {
+        return;
+    }
+
+    QString errorMessage;
+    if (!m_Context.ProjectSession()->SaveAs(projectFile.ProjectName,
+                                            projectFile.ProjectFilePath,
+                                            &errorMessage))
+    {
+        m_Context.PostDiagnostic(
+            QStringLiteral("Save As failed: %1").arg(errorMessage));
+        UpdateProjectActions();
+        return;
+    }
+
+    m_Context.PostDiagnostic(QStringLiteral("Project saved as %1.")
+                                 .arg(projectFile.ProjectFilePath));
+    UpdateProjectActions();
+    UpdateProjectPage(m_Context.Projects()->CurrentProject());
+    UpdateProjectPageDataCount();
+    UpdateProjectStructureTree();
 }
 
 void MainWindow::SyncWorkflowNavigationFromCore(const QString& workflowId)
