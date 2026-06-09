@@ -31,16 +31,6 @@ void SetMessage(QString* message, const QString& value)
         *message = value;
 }
 
-QString SelectedDataLabel(
-    const xq::core::WorkflowContextSnapshot& snapshot)
-{
-    const QString displayName = snapshot.SelectedDataDisplayName.trimmed();
-    if (!displayName.isEmpty())
-        return displayName;
-
-    return snapshot.SelectedCatalogEntryId;
-}
-
 QString OperationTitle(xq::core::WorkflowOperationService* operations,
                        const QString& workflowId,
                        const QString& operationId)
@@ -56,32 +46,6 @@ QString OperationTitle(xq::core::WorkflowOperationService* operations,
     }
 
     return {};
-}
-
-bool RunPlaceholderSegmentationOperation(
-    xq::core::WorkflowOperationService* operations,
-    const xq::core::WorkflowContextSnapshot& snapshot,
-    QString* message)
-{
-    const QString operationId =
-        operations ? operations->SelectedOperationId(snapshot.WorkflowId)
-                   : QString();
-    const QString operationTitle =
-        OperationTitle(operations, snapshot.WorkflowId, operationId);
-    if (operationTitle.trimmed().isEmpty())
-    {
-        SetMessage(message,
-                   QStringLiteral("%1 domain workflow accepted %2.")
-                       .arg(snapshot.WorkflowTitle,
-                            SelectedDataLabel(snapshot)));
-        return true;
-    }
-
-    SetMessage(message,
-               QStringLiteral("%1 segmentation operation accepted %2.")
-                   .arg(operationTitle,
-                        SelectedDataLabel(snapshot)));
-    return true;
 }
 
 bool RunUnsupportedSegmentationOperation(

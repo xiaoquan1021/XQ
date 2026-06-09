@@ -36,16 +36,6 @@ void SetMessage(QString* message, const QString& value)
         *message = value;
 }
 
-QString SelectedDataLabel(
-    const xq::core::WorkflowContextSnapshot& snapshot)
-{
-    const QString displayName = snapshot.SelectedDataDisplayName.trimmed();
-    if (!displayName.isEmpty())
-        return displayName;
-
-    return snapshot.SelectedCatalogEntryId;
-}
-
 QString OperationTitle(xq::core::WorkflowOperationService* operations,
                        const QString& workflowId,
                        const QString& operationId)
@@ -63,30 +53,21 @@ QString OperationTitle(xq::core::WorkflowOperationService* operations,
     return {};
 }
 
-bool RunPlaceholderFlowSimulationOperation(
+bool RunUnsupportedFlowSimulationOperation(
     xq::core::WorkflowOperationService* operations,
     const xq::core::WorkflowContextSnapshot& snapshot,
+    const QString& operationId,
     QString* message)
 {
-    const QString operationId =
-        operations ? operations->SelectedOperationId(snapshot.WorkflowId)
-                   : QString();
     const QString operationTitle =
         OperationTitle(operations, snapshot.WorkflowId, operationId);
-    if (operationTitle.trimmed().isEmpty())
-    {
-        SetMessage(message,
-                   QStringLiteral("%1 domain workflow accepted %2.")
-                       .arg(snapshot.WorkflowTitle,
-                            SelectedDataLabel(snapshot)));
-        return true;
-    }
-
+    const QString displayOperation =
+        operationTitle.trimmed().isEmpty() ? operationId : operationTitle;
     SetMessage(message,
-               QStringLiteral("%1 flow simulation operation accepted %2.")
-                   .arg(operationTitle,
-                        SelectedDataLabel(snapshot)));
-    return true;
+               QStringLiteral(
+                   "%1 is not wired to a native %2 runtime yet.")
+                   .arg(displayOperation, snapshot.WorkflowTitle));
+    return false;
 }
 
 QString ResultCatalogEntryId(
@@ -692,8 +673,9 @@ bool RegisterDynamicFlowSimulationWorkflowActionHandler(
                                             taskMessage);
             }
 
-            return RunPlaceholderFlowSimulationOperation(operations,
+            return RunUnsupportedFlowSimulationOperation(operations,
                                                          snapshot,
+                                                         operationId,
                                                          taskMessage);
         };
 

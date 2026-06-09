@@ -45,29 +45,21 @@ QString OperationTitle(xq::core::WorkflowOperationService* operations,
     return {};
 }
 
-bool RunPlaceholderPythonApiOperation(
+bool RunUnsupportedPythonApiOperation(
     xq::core::WorkflowOperationService* operations,
     const xq::core::WorkflowContextSnapshot& snapshot,
+    const QString& operationId,
     QString* message)
 {
-    const QString operationId =
-        operations ? operations->SelectedOperationId(snapshot.WorkflowId)
-                   : QString();
     const QString operationTitle =
         OperationTitle(operations, snapshot.WorkflowId, operationId);
-    if (operationTitle.trimmed().isEmpty())
-    {
-        SetMessage(message,
-                   QStringLiteral("%1 domain workflow accepted %2.")
-                       .arg(snapshot.WorkflowTitle,
-                            snapshot.SelectedDataDisplayName));
-        return true;
-    }
-
+    const QString displayOperation =
+        operationTitle.trimmed().isEmpty() ? operationId : operationTitle;
     SetMessage(message,
-               QStringLiteral("%1 python api operation accepted.")
-                   .arg(operationTitle));
-    return true;
+               QStringLiteral(
+                   "%1 is not wired to a native %2 runtime yet.")
+                   .arg(displayOperation, snapshot.WorkflowTitle));
+    return false;
 }
 
 bool RunOpenPythonConsole(xq::core::ApplicationContext& context,
@@ -194,8 +186,9 @@ bool RegisterDynamicPythonApiWorkflowActionHandler(
                                                taskMessage);
                 }
 
-                return RunPlaceholderPythonApiOperation(operations,
+                return RunUnsupportedPythonApiOperation(operations,
                                                         snapshot,
+                                                        operationId,
                                                         taskMessage);
             }
 

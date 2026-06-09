@@ -3250,6 +3250,45 @@
 - Promoted MultiPhysics Unsupported Operation Guard to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Infrastructure Placeholder Success Cleanup
+
+- Completed autonomous research refresh:
+  - Rechecked the configured monolith Infrastructure handler sources after the
+    unsupported-operation guard pass.
+  - Public unsupported operations now fail deterministically, but several
+    Infrastructure handlers still contain residual successful placeholder text
+    such as `operation accepted` and `domain workflow accepted`.
+  - Chosen next slice: add a regression scan and remove configured
+    Infrastructure placeholder success fallbacks while leaving Domain
+    placeholder tests intact.
+- Red test observed:
+  - Added `tests/test_monolith_infrastructure_no_placeholder_success.ps1`.
+  - The test failed and listed residual placeholder success text in Flow,
+    Meshing, Modeling, MultiPhysics, Path, Python API, ROM, and Segmentation
+    Infrastructure workflow handlers.
+- Implemented placeholder success cleanup:
+  - Removed unused `RunPlaceholder*Operation` helpers from guarded
+    Infrastructure handlers.
+  - Converted Flow Simulation and Python API unknown-operation fallbacks to
+    deterministic unsupported-operation failures.
+  - Left Domain placeholder handlers untouched.
+- Red/green target verification:
+  - `tests/test_monolith_infrastructure_no_placeholder_success.ps1` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(path_workflow_action_handler|segmentation_workflow_action_handler|modeling_workflow_action_handler|meshing_workflow_action_handler|flow_simulation_workflow_action_handler|rom_simulation_workflow_action_handler|multiphysics_workflow_action_handler|python_api_workflow_action_handler|application_import_wiring)"`
+    passed: 9/9.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Infrastructure Placeholder Success Cleanup to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Python API Availability Infrastructure Action Handler
 
 - Continued the requested unattended loop after the Python API phase was made
