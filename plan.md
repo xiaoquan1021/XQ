@@ -5156,3 +5156,37 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted meshing/workflow UI tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Flow Simulation Tool Panel Restore
+
+1. Restore the visible panel structure of the original
+   `xq_HemodynamicsView` inside the monolith Flow Simulation page.
+   - Add the legacy Job row, Create Job command anchor, Mesh selector row,
+     and six-tab Hemodynamics layout.
+   - Restore the Basic, Inlet/Outlet BCs, Wall Properties, Solver Parameters,
+     Run, and Results tabs with stable object names.
+   - Restore time stepping defaults, BC table, wall type/deformable controls,
+     solver preset/settings controls, run/export/log controls, and result
+     visualization controls.
+   - Keep the existing hidden monolith operation selector so current tests and
+     Core operation state remain compatible.
+2. Keep Core workflow operations authoritative.
+   - Configure CFD Job, Steady Flow Solve, and Review Results buttons call
+     `WorkflowOperationService::SelectOperation()`.
+   - Core-driven operation changes still update the hidden selector.
+   - Selector-driven operation changes update the restored flow buttons.
+3. Keep scope honest.
+   - Do not reintroduce BlueBerry/CTK view runtime.
+   - Do not wire external solver execution beyond the existing monolith
+     handler behavior.
+   - Existing Flow action handlers remain responsible for configure/solve
+     validation and result review.
+4. Add regression coverage.
+   - `test_monolith_simulation_operation_pages` verifies the restored Flow
+     rows, tabs, defaults, BC/wall/solver/run/results controls, operation
+     buttons, operation synchronization, parameter anchors, and existing run
+     validation.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted flow/workflow UI tests.
+   - full XQ and Externals test gates before commit.

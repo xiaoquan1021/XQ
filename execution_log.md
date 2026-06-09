@@ -4114,6 +4114,50 @@
   - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
   - Runtime smoke passed: `XQ.exe` launched and stayed running for 10 seconds.
 
+## Current Run Update: Workbench Flow Simulation Tool Panel Restore
+
+- Started the next UI fidelity slice after pushing Meshing.
+- Reviewed the original Flow Simulation plugin resources:
+  - `xq_HemodynamicsView.ui`
+  - `xq_SimJobCreate.ui`
+  - `xq_CapBCWidget.cxx`
+  - `xq_HemodynamicsView.cxx`
+- Red test observed:
+  - Extended `test_monolith_simulation_operation_pages` first.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_simulation_operation_pages"`
+    failed on `Flow Simulation page should restore legacy job row` because
+    the monolith Flow Simulation page still exposed only the generic workflow
+    operation shell.
+- Implemented the Flow Simulation panel restoration:
+  - Restored the legacy Job row, Create Job command anchor, and Mesh selector
+    row.
+  - Added the Basic, Inlet/Outlet BCs, Wall Properties, Solver Parameters,
+    Run, and Results tabs.
+  - Restored time stepping controls, BC table, wall/deformable controls,
+    solver presets/settings, run/export/log controls, and result visualization
+    controls.
+  - Added visible Configure CFD Job, Steady Flow Solve, and Review Results
+    operation buttons mapped to the monolith Flow operations.
+  - Kept the hidden generic operation selector so existing Core operation
+    state and tests remain compatible.
+  - Wired Flow buttons through `WorkflowOperationService` so selector and
+    button state stay synchronized.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_simulation_operation_pages"`
+    passed: 1/1.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(simulation_operation_pages|flow_simulation_workflow_action_handler|main_window_workflow_selection|workflow_primary_action_page|application_import_wiring|domain_workflow_action_handlers)"`
+    passed: 6/6.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Runtime smoke passed: `XQ.exe` launched and stayed running for 10 seconds.
+
 ## Current Run Update: Workbench Meshing Tool Panel Restore
 
 - Started the next UI fidelity slice after pushing Modeling.

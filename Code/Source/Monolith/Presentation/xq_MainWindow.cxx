@@ -37,6 +37,7 @@
 #include <QListWidget>
 #include <QMenu>
 #include <QMenuBar>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QResource>
 #include <QScopeGuard>
@@ -1087,11 +1088,36 @@ void MainWindow::UpdateWorkflowOperationControls()
         }
     }
 
+    UpdateFlowSimulationToolButtons();
     UpdateModelingToolButtons();
     UpdateMeshingToolButtons();
     UpdatePathToolButtons();
     UpdateSegmentation2DToolButtons();
     UpdateSegmentation3DToolButtons();
+}
+
+void MainWindow::UpdateFlowSimulationToolButtons()
+{
+    const QString selectedOperationId =
+        m_Context.WorkflowOperations()->SelectedOperationId(
+            QStringLiteral("flow-simulation"));
+    const QStringList buttonObjectNames = {
+        QStringLiteral("xqFlowConfigureJobButton"),
+        QStringLiteral("xqFlowSteadyFlowButton"),
+        QStringLiteral("xqFlowReviewResultsButton"),
+    };
+
+    for (const auto& objectName : buttonObjectNames)
+    {
+        auto* button = findChild<QPushButton*>(objectName);
+        if (!button)
+            continue;
+
+        QSignalBlocker blocker(button);
+        button->setChecked(
+            button->property("xqOperationId").toString() ==
+            selectedOperationId);
+    }
 }
 
 void MainWindow::UpdateMeshingToolButtons()
@@ -2109,7 +2135,523 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                 parameterLayout->setSpacing(8);
                 m_WorkflowParameterPanels.insert(id, parameterPanel);
 
-                if (id == QStringLiteral("modeling"))
+                if (id == QStringLiteral("flow-simulation"))
+                {
+                    operationSelector->setVisible(false);
+                    layout->addWidget(operationSelector);
+
+                    auto* jobLayout = new QHBoxLayout();
+                    auto* jobTitleLabel =
+                        new QLabel(QStringLiteral("Job:"), page);
+                    jobTitleLabel->setObjectName(
+                        QStringLiteral("xqFlowJobTitleLabel"));
+                    auto* jobNameLabel =
+                        new QLabel(QStringLiteral("(none)"), page);
+                    jobNameLabel->setObjectName(
+                        QStringLiteral("xqFlowJobNameLabel"));
+                    auto* createJobButton =
+                        new QPushButton(QStringLiteral("Create Job..."),
+                                        page);
+                    createJobButton->setObjectName(
+                        QStringLiteral("xqFlowCreateJobButton"));
+                    createJobButton->setEnabled(false);
+                    jobLayout->addWidget(jobTitleLabel);
+                    jobLayout->addWidget(jobNameLabel, 1);
+                    jobLayout->addWidget(createJobButton);
+                    layout->addLayout(jobLayout);
+
+                    auto* meshLayout = new QHBoxLayout();
+                    auto* meshLabel =
+                        new QLabel(QStringLiteral("Mesh:"), page);
+                    meshLabel->setObjectName(
+                        QStringLiteral("xqFlowMeshLabel"));
+                    auto* meshSelector = new QComboBox(page);
+                    meshSelector->setObjectName(
+                        QStringLiteral("xqFlowMeshSelector"));
+                    meshLayout->addWidget(meshLabel);
+                    meshLayout->addWidget(meshSelector, 1);
+                    layout->addLayout(meshLayout);
+
+                    auto* flowTabs = new QTabWidget(page);
+                    flowTabs->setObjectName(QStringLiteral("xqFlowTabs"));
+
+                    auto* basicTab = new QWidget(flowTabs);
+                    auto* basicLayout = new QVBoxLayout(basicTab);
+                    auto* timeGroup =
+                        new QGroupBox(QStringLiteral("Time Stepping"),
+                                      basicTab);
+                    timeGroup->setObjectName(
+                        QStringLiteral("xqFlowTimeSteppingGroup"));
+                    auto* timeForm = new QFormLayout(timeGroup);
+                    auto* startTimeSpin = new QDoubleSpinBox(timeGroup);
+                    startTimeSpin->setObjectName(
+                        QStringLiteral("xqFlowStartTimeSpinBox"));
+                    startTimeSpin->setRange(0.0, 1.0e10);
+                    startTimeSpin->setDecimals(6);
+                    startTimeSpin->setSingleStep(0.001);
+                    startTimeSpin->setValue(0.0);
+                    auto* endTimeSpin = new QDoubleSpinBox(timeGroup);
+                    endTimeSpin->setObjectName(
+                        QStringLiteral("xqFlowEndTimeSpinBox"));
+                    endTimeSpin->setRange(0.0, 1.0e10);
+                    endTimeSpin->setDecimals(6);
+                    endTimeSpin->setSingleStep(0.001);
+                    endTimeSpin->setValue(1.0);
+                    auto* timeStepSizeSpin =
+                        new QDoubleSpinBox(timeGroup);
+                    timeStepSizeSpin->setObjectName(
+                        QStringLiteral("xqFlowTimeStepSizeSpinBox"));
+                    timeStepSizeSpin->setRange(1.0e-12, 1.0e6);
+                    timeStepSizeSpin->setDecimals(8);
+                    timeStepSizeSpin->setSingleStep(0.0001);
+                    timeStepSizeSpin->setValue(0.001);
+                    auto* numTimeStepsSpin = new QSpinBox(timeGroup);
+                    numTimeStepsSpin->setObjectName(
+                        QStringLiteral("xqFlowNumTimeStepsSpinBox"));
+                    numTimeStepsSpin->setRange(1, 1000000000);
+                    numTimeStepsSpin->setValue(1000);
+                    timeForm->addRow(QStringLiteral("Start Time:"),
+                                     startTimeSpin);
+                    timeForm->addRow(QStringLiteral("End Time:"),
+                                     endTimeSpin);
+                    timeForm->addRow(QStringLiteral("Time Step Size:"),
+                                     timeStepSizeSpin);
+                    timeForm->addRow(QStringLiteral("Num Time Steps:"),
+                                     numTimeStepsSpin);
+                    auto* saveJobButton =
+                        new QPushButton(QStringLiteral("Save Job"),
+                                        basicTab);
+                    saveJobButton->setObjectName(
+                        QStringLiteral("xqFlowSaveJobButton"));
+                    saveJobButton->setEnabled(false);
+                    basicLayout->addWidget(timeGroup);
+                    basicLayout->addWidget(saveJobButton);
+                    basicLayout->addStretch(1);
+                    flowTabs->addTab(basicTab, QStringLiteral("Basic"));
+
+                    auto* bcTab = new QWidget(flowTabs);
+                    auto* bcLayout = new QVBoxLayout(bcTab);
+                    auto* bcTable = new QTableWidget(bcTab);
+                    bcTable->setObjectName(
+                        QStringLiteral("xqFlowBCTable"));
+                    bcTable->setMinimumHeight(200);
+                    bcTable->setSelectionMode(
+                        QAbstractItemView::SingleSelection);
+                    bcTable->setSelectionBehavior(
+                        QAbstractItemView::SelectRows);
+                    bcTable->setColumnCount(3);
+                    bcTable->setHorizontalHeaderLabels(
+                        {QStringLiteral("Face"),
+                         QStringLiteral("Type"),
+                         QStringLiteral("Values")});
+                    bcTable->horizontalHeader()->setStretchLastSection(true);
+                    bcLayout->addWidget(bcTable);
+                    auto* bcButtonLayout = new QHBoxLayout();
+                    auto* addBcButton =
+                        new QPushButton(QStringLiteral("Add BC"), bcTab);
+                    addBcButton->setObjectName(
+                        QStringLiteral("xqFlowAddBCButton"));
+                    auto* removeBcButton =
+                        new QPushButton(QStringLiteral("Remove BC"), bcTab);
+                    removeBcButton->setObjectName(
+                        QStringLiteral("xqFlowRemoveBCButton"));
+                    removeBcButton->setEnabled(false);
+                    bcButtonLayout->addWidget(addBcButton);
+                    bcButtonLayout->addWidget(removeBcButton);
+                    bcButtonLayout->addStretch(1);
+                    bcLayout->addLayout(bcButtonLayout);
+                    bcLayout->addStretch(1);
+                    flowTabs->addTab(bcTab,
+                                     QStringLiteral("Inlet/Outlet BCs"));
+
+                    auto* wallTab = new QWidget(flowTabs);
+                    auto* wallLayout = new QVBoxLayout(wallTab);
+                    auto* wallTypeLayout = new QHBoxLayout();
+                    auto* wallTypeLabel =
+                        new QLabel(QStringLiteral("Wall Type:"), wallTab);
+                    auto* wallTypeCombo = new QComboBox(wallTab);
+                    wallTypeCombo->setObjectName(
+                        QStringLiteral("xqFlowWallTypeCombo"));
+                    wallTypeCombo->addItems(
+                        {QStringLiteral("Rigid"),
+                         QStringLiteral("Deformable")});
+                    wallTypeLayout->addWidget(wallTypeLabel);
+                    wallTypeLayout->addWidget(wallTypeCombo, 1);
+                    wallLayout->addLayout(wallTypeLayout);
+                    auto* deformableGroup =
+                        new QGroupBox(QStringLiteral(
+                                          "Deformable Wall Properties"),
+                                      wallTab);
+                    deformableGroup->setObjectName(
+                        QStringLiteral("xqFlowDeformableWallGroup"));
+                    deformableGroup->setEnabled(false);
+                    auto* deformableForm =
+                        new QFormLayout(deformableGroup);
+                    auto* wallThicknessSpin =
+                        new QDoubleSpinBox(deformableGroup);
+                    wallThicknessSpin->setObjectName(
+                        QStringLiteral("xqFlowWallThicknessSpinBox"));
+                    wallThicknessSpin->setRange(0.0, 100.0);
+                    wallThicknessSpin->setDecimals(4);
+                    wallThicknessSpin->setSingleStep(0.01);
+                    wallThicknessSpin->setValue(0.5);
+                    auto* elasticModulusSpin =
+                        new QDoubleSpinBox(deformableGroup);
+                    elasticModulusSpin->setObjectName(
+                        QStringLiteral("xqFlowElasticModulusSpinBox"));
+                    elasticModulusSpin->setRange(0.0, 1.0e12);
+                    elasticModulusSpin->setDecimals(2);
+                    elasticModulusSpin->setSingleStep(1000.0);
+                    elasticModulusSpin->setValue(4.0e6);
+                    auto* poissonRatioSpin =
+                        new QDoubleSpinBox(deformableGroup);
+                    poissonRatioSpin->setObjectName(
+                        QStringLiteral("xqFlowPoissonRatioSpinBox"));
+                    poissonRatioSpin->setRange(0.0, 0.5);
+                    poissonRatioSpin->setDecimals(4);
+                    poissonRatioSpin->setSingleStep(0.01);
+                    poissonRatioSpin->setValue(0.5);
+                    deformableForm->addRow(QStringLiteral("Thickness:"),
+                                           wallThicknessSpin);
+                    deformableForm->addRow(QStringLiteral("Elastic Modulus:"),
+                                           elasticModulusSpin);
+                    deformableForm->addRow(QStringLiteral("Poisson Ratio:"),
+                                           poissonRatioSpin);
+                    auto* variableWallCheckBox =
+                        new QCheckBox(QStringLiteral(
+                                          "Variable Wall Properties"),
+                                      wallTab);
+                    variableWallCheckBox->setObjectName(
+                        QStringLiteral("xqFlowVariableWallCheckBox"));
+                    wallLayout->addWidget(deformableGroup);
+                    wallLayout->addWidget(variableWallCheckBox);
+                    wallLayout->addStretch(1);
+                    connect(wallTypeCombo,
+                            &QComboBox::currentIndexChanged,
+                            deformableGroup,
+                            [deformableGroup](int index) {
+                                deformableGroup->setEnabled(index == 1);
+                            });
+                    flowTabs->addTab(wallTab,
+                                     QStringLiteral("Wall Properties"));
+
+                    auto* solverTab = new QWidget(flowTabs);
+                    auto* solverLayout = new QVBoxLayout(solverTab);
+                    auto* presetLayout = new QHBoxLayout();
+                    auto* presetLabel =
+                        new QLabel(QStringLiteral("Preset:"), solverTab);
+                    auto* solverPresetCombo = new QComboBox(solverTab);
+                    solverPresetCombo->setObjectName(
+                        QStringLiteral("xqFlowSolverPresetCombo"));
+                    solverPresetCombo->addItems(
+                        {QStringLiteral("Custom"),
+                         QStringLiteral("Steady Flow"),
+                         QStringLiteral("Pulsatile Flow"),
+                         QStringLiteral("Deformable Wall"),
+                         QStringLiteral("High Accuracy")});
+                    auto* applyPresetButton =
+                        new QPushButton(QStringLiteral("Apply Preset"),
+                                        solverTab);
+                    applyPresetButton->setObjectName(
+                        QStringLiteral("xqFlowApplyPresetButton"));
+                    presetLayout->addWidget(presetLabel);
+                    presetLayout->addWidget(solverPresetCombo, 1);
+                    presetLayout->addWidget(applyPresetButton);
+                    solverLayout->addLayout(presetLayout);
+
+                    auto* solverSettingsGroup =
+                        new QGroupBox(QStringLiteral("Solver Settings"),
+                                      solverTab);
+                    solverSettingsGroup->setObjectName(
+                        QStringLiteral("xqFlowSolverSettingsGroup"));
+                    auto* solverForm = new QFormLayout(solverSettingsGroup);
+                    auto* residualTolSpin =
+                        new QDoubleSpinBox(solverSettingsGroup);
+                    residualTolSpin->setObjectName(
+                        QStringLiteral("xqFlowResidualToleranceSpinBox"));
+                    residualTolSpin->setRange(1.0e-15, 1.0);
+                    residualTolSpin->setDecimals(10);
+                    residualTolSpin->setSingleStep(0.0001);
+                    residualTolSpin->setValue(0.001);
+                    auto* stepConstructionCombo =
+                        new QComboBox(solverSettingsGroup);
+                    stepConstructionCombo->setObjectName(
+                        QStringLiteral("xqFlowStepConstructionCombo"));
+                    stepConstructionCombo->addItems(
+                        {QStringLiteral("0 1 0 1"),
+                         QStringLiteral("0 1 0 1 0 1"),
+                         QStringLiteral("0 1 0 1 0 1 0 1")});
+                    auto* pressureCouplingCombo =
+                        new QComboBox(solverSettingsGroup);
+                    pressureCouplingCombo->setObjectName(
+                        QStringLiteral("xqFlowPressureCouplingCombo"));
+                    pressureCouplingCombo->addItems(
+                        {QStringLiteral("Implicit"),
+                         QStringLiteral("Explicit")});
+                    auto* maxIterationsSpin =
+                        new QSpinBox(solverSettingsGroup);
+                    maxIterationsSpin->setObjectName(
+                        QStringLiteral("xqFlowMaxIterationsSpinBox"));
+                    maxIterationsSpin->setRange(1, 100000);
+                    maxIterationsSpin->setValue(10);
+                    auto* stabilizationCheckBox =
+                        new QCheckBox(solverSettingsGroup);
+                    stabilizationCheckBox->setObjectName(
+                        QStringLiteral("xqFlowStabilizationCheckBox"));
+                    stabilizationCheckBox->setChecked(true);
+                    solverForm->addRow(QStringLiteral("Residual Tolerance:"),
+                                       residualTolSpin);
+                    solverForm->addRow(QStringLiteral("Step Construction:"),
+                                       stepConstructionCombo);
+                    solverForm->addRow(QStringLiteral("Pressure Coupling:"),
+                                       pressureCouplingCombo);
+                    solverForm->addRow(QStringLiteral("Max Iterations:"),
+                                       maxIterationsSpin);
+                    solverForm->addRow(QStringLiteral("Stabilization:"),
+                                       stabilizationCheckBox);
+                    solverLayout->addWidget(solverSettingsGroup);
+                    solverLayout->addWidget(parameterPanel);
+                    solverLayout->addStretch(1);
+                    flowTabs->addTab(solverTab,
+                                     QStringLiteral("Solver Parameters"));
+
+                    auto* runTab = new QWidget(flowTabs);
+                    auto* runLayout = new QVBoxLayout(runTab);
+                    auto* procLayout = new QHBoxLayout();
+                    procLayout->addWidget(
+                        new QLabel(QStringLiteral("Num Processors:"),
+                                   runTab));
+                    auto* numProcessorsSpin = new QSpinBox(runTab);
+                    numProcessorsSpin->setObjectName(
+                        QStringLiteral("xqFlowNumProcessorsSpinBox"));
+                    numProcessorsSpin->setRange(1, 256);
+                    numProcessorsSpin->setValue(1);
+                    procLayout->addWidget(numProcessorsSpin, 1);
+                    runLayout->addLayout(procLayout);
+
+                    auto* runButtonLayout = new QHBoxLayout();
+                    auto* configureJobButton =
+                        new QPushButton(QStringLiteral("Configure CFD Job"),
+                                        runTab);
+                    configureJobButton->setObjectName(
+                        QStringLiteral("xqFlowConfigureJobButton"));
+                    configureJobButton->setCheckable(true);
+                    configureJobButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("configure-cfd-job"));
+                    auto* steadyFlowButton =
+                        new QPushButton(QStringLiteral("Steady Flow Solve"),
+                                        runTab);
+                    steadyFlowButton->setObjectName(
+                        QStringLiteral("xqFlowSteadyFlowButton"));
+                    steadyFlowButton->setCheckable(true);
+                    steadyFlowButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("run-steady-flow"));
+                    auto* runSimulationButton =
+                        new QPushButton(QStringLiteral("Run Simulation"),
+                                        runTab);
+                    runSimulationButton->setObjectName(
+                        QStringLiteral("xqFlowRunSimulationButton"));
+                    runSimulationButton->setEnabled(false);
+                    auto* stopSimulationButton =
+                        new QPushButton(QStringLiteral("Stop"), runTab);
+                    stopSimulationButton->setObjectName(
+                        QStringLiteral("xqFlowStopSimulationButton"));
+                    stopSimulationButton->setEnabled(false);
+                    runButtonLayout->addWidget(configureJobButton);
+                    runButtonLayout->addWidget(steadyFlowButton);
+                    runButtonLayout->addWidget(runSimulationButton);
+                    runButtonLayout->addWidget(stopSimulationButton);
+                    runLayout->addLayout(runButtonLayout);
+
+                    auto* exportButtonLayout = new QHBoxLayout();
+                    auto* exportOnlyButton =
+                        new QPushButton(QStringLiteral("Export Only"),
+                                        runTab);
+                    exportOnlyButton->setObjectName(
+                        QStringLiteral("xqFlowExportOnlyButton"));
+                    exportOnlyButton->setEnabled(false);
+                    auto* exportAndRunButton =
+                        new QPushButton(QStringLiteral("Export and Run"),
+                                        runTab);
+                    exportAndRunButton->setObjectName(
+                        QStringLiteral("xqFlowExportAndRunButton"));
+                    exportAndRunButton->setEnabled(false);
+                    auto* exportResultsButton =
+                        new QPushButton(QStringLiteral("Export Results..."),
+                                        runTab);
+                    exportResultsButton->setObjectName(
+                        QStringLiteral("xqFlowExportResultsButton"));
+                    exportResultsButton->setEnabled(false);
+                    exportButtonLayout->addWidget(exportOnlyButton);
+                    exportButtonLayout->addWidget(exportAndRunButton);
+                    exportButtonLayout->addWidget(exportResultsButton);
+                    exportButtonLayout->addStretch(1);
+                    runLayout->addLayout(exportButtonLayout);
+                    auto* progressBar = new QProgressBar(runTab);
+                    progressBar->setObjectName(
+                        QStringLiteral("xqFlowProgressBar"));
+                    progressBar->setValue(0);
+                    auto* logText = new QTextEdit(runTab);
+                    logText->setObjectName(
+                        QStringLiteral("xqFlowLogTextEdit"));
+                    logText->setReadOnly(true);
+                    logText->setMinimumHeight(150);
+                    runLayout->addWidget(progressBar);
+                    runLayout->addWidget(logText);
+                    flowTabs->addTab(runTab, QStringLiteral("Run"));
+
+                    auto* resultsTab = new QWidget(flowTabs);
+                    auto* resultsLayout = new QVBoxLayout(resultsTab);
+                    auto* resultFieldLayout = new QHBoxLayout();
+                    resultFieldLayout->addWidget(
+                        new QLabel(QStringLiteral("Result Field:"),
+                                   resultsTab));
+                    auto* resultFieldCombo = new QComboBox(resultsTab);
+                    resultFieldCombo->setObjectName(
+                        QStringLiteral("xqFlowResultFieldCombo"));
+                    resultFieldCombo->addItems(
+                        {QStringLiteral("Pressure"),
+                         QStringLiteral("Velocity Magnitude"),
+                         QStringLiteral("Wall Shear Stress"),
+                         QStringLiteral("Vorticity"),
+                         QStringLiteral("Oscillatory Shear Index")});
+                    resultFieldLayout->addWidget(resultFieldCombo, 1);
+                    resultsLayout->addLayout(resultFieldLayout);
+                    auto* scalarRangeGroup =
+                        new QGroupBox(QStringLiteral("Scalar Range"),
+                                      resultsTab);
+                    scalarRangeGroup->setObjectName(
+                        QStringLiteral("xqFlowScalarRangeGroup"));
+                    auto* rangeForm = new QFormLayout(scalarRangeGroup);
+                    auto* resultMinSpin =
+                        new QDoubleSpinBox(scalarRangeGroup);
+                    resultMinSpin->setObjectName(
+                        QStringLiteral("xqFlowResultMinSpinBox"));
+                    resultMinSpin->setRange(-1.0e12, 1.0e12);
+                    resultMinSpin->setDecimals(2);
+                    resultMinSpin->setValue(0.0);
+                    auto* resultMaxSpin =
+                        new QDoubleSpinBox(scalarRangeGroup);
+                    resultMaxSpin->setObjectName(
+                        QStringLiteral("xqFlowResultMaxSpinBox"));
+                    resultMaxSpin->setRange(-1.0e12, 1.0e12);
+                    resultMaxSpin->setDecimals(2);
+                    resultMaxSpin->setValue(100.0);
+                    auto* autoRangeCheckBox =
+                        new QCheckBox(QStringLiteral("Auto Range"),
+                                      scalarRangeGroup);
+                    autoRangeCheckBox->setObjectName(
+                        QStringLiteral("xqFlowAutoRangeCheckBox"));
+                    autoRangeCheckBox->setChecked(true);
+                    rangeForm->addRow(QStringLiteral("Range Min:"),
+                                      resultMinSpin);
+                    rangeForm->addRow(QStringLiteral("Range Max:"),
+                                      resultMaxSpin);
+                    rangeForm->addRow(autoRangeCheckBox);
+                    resultsLayout->addWidget(scalarRangeGroup);
+                    auto* colorMapLayout = new QHBoxLayout();
+                    colorMapLayout->addWidget(
+                        new QLabel(QStringLiteral("Color Map:"),
+                                   resultsTab));
+                    auto* colorMapCombo = new QComboBox(resultsTab);
+                    colorMapCombo->setObjectName(
+                        QStringLiteral("xqFlowColorMapCombo"));
+                    colorMapCombo->addItems(
+                        {QStringLiteral("Rainbow"),
+                         QStringLiteral("Cool-Warm"),
+                         QStringLiteral("Grayscale"),
+                         QStringLiteral("Red-Blue"),
+                         QStringLiteral("Viridis")});
+                    colorMapLayout->addWidget(colorMapCombo, 1);
+                    resultsLayout->addLayout(colorMapLayout);
+                    auto* applyColorMapButton =
+                        new QPushButton(QStringLiteral("Apply Color Map"),
+                                        resultsTab);
+                    applyColorMapButton->setObjectName(
+                        QStringLiteral("xqFlowApplyColorMapButton"));
+                    auto* showLegendButton =
+                        new QPushButton(QStringLiteral("Show/Hide Legend"),
+                                        resultsTab);
+                    showLegendButton->setObjectName(
+                        QStringLiteral("xqFlowShowLegendButton"));
+                    showLegendButton->setCheckable(true);
+                    auto* timeStepLayout = new QHBoxLayout();
+                    timeStepLayout->addWidget(
+                        new QLabel(QStringLiteral("Time Step:"),
+                                   resultsTab));
+                    auto* timeStepSpin = new QSpinBox(resultsTab);
+                    timeStepSpin->setObjectName(
+                        QStringLiteral("xqFlowTimeStepSpinBox"));
+                    timeStepSpin->setRange(0, 10000);
+                    timeStepSpin->setValue(0);
+                    timeStepLayout->addWidget(timeStepSpin, 1);
+                    auto* animateButton =
+                        new QPushButton(QStringLiteral("Animate"),
+                                        resultsTab);
+                    animateButton->setObjectName(
+                        QStringLiteral("xqFlowAnimateButton"));
+                    animateButton->setCheckable(true);
+                    auto* resultSummary = new QTextEdit(resultsTab);
+                    resultSummary->setObjectName(
+                        QStringLiteral("xqFlowResultSummaryTextEdit"));
+                    resultSummary->setReadOnly(true);
+                    resultSummary->setMaximumHeight(100);
+                    auto* reviewResultsButton =
+                        new QPushButton(QStringLiteral("Review Results"),
+                                        resultsTab);
+                    reviewResultsButton->setObjectName(
+                        QStringLiteral("xqFlowReviewResultsButton"));
+                    reviewResultsButton->setCheckable(true);
+                    reviewResultsButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("review-flow-results"));
+                    resultsLayout->addWidget(applyColorMapButton);
+                    resultsLayout->addWidget(showLegendButton);
+                    resultsLayout->addLayout(timeStepLayout);
+                    resultsLayout->addWidget(animateButton);
+                    resultsLayout->addWidget(reviewResultsButton);
+                    resultsLayout->addWidget(resultSummary);
+                    resultsLayout->addStretch(1);
+                    flowTabs->addTab(resultsTab, QStringLiteral("Results"));
+
+                    layout->addWidget(flowTabs);
+
+                    auto* toolButtons = new QButtonGroup(page);
+                    toolButtons->setExclusive(true);
+                    toolButtons->addButton(configureJobButton);
+                    toolButtons->addButton(steadyFlowButton);
+                    toolButtons->addButton(reviewResultsButton);
+
+                    auto connectFlowButton =
+                        [this](QPushButton* button,
+                               const QString& operationId) {
+                            connect(button,
+                                    &QPushButton::clicked,
+                                    this,
+                                    [this, operationId]() {
+                                        QString message;
+                                        if (!m_Context.WorkflowOperations()
+                                                 ->SelectOperation(
+                                                     QStringLiteral(
+                                                         "flow-simulation"),
+                                                     operationId,
+                                                     &message))
+                                        {
+                                            m_Context.PostDiagnostic(message);
+                                        }
+                                        UpdateWorkflowOperationControls();
+                                    });
+                        };
+                    connectFlowButton(configureJobButton,
+                                      QStringLiteral("configure-cfd-job"));
+                    connectFlowButton(steadyFlowButton,
+                                      QStringLiteral("run-steady-flow"));
+                    connectFlowButton(reviewResultsButton,
+                                      QStringLiteral("review-flow-results"));
+                }
+                else if (id == QStringLiteral("modeling"))
                 {
                     operationSelector->setVisible(false);
                     layout->addWidget(operationSelector);

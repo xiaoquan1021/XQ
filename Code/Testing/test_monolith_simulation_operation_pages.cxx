@@ -17,10 +17,17 @@
 #include <xq_TetGenGrid.h>
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QTabWidget>
+#include <QTableWidget>
+#include <QTextEdit>
 
 #include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
@@ -239,9 +246,234 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto* flowJobTitle =
+        window.findChild<QLabel*>(QStringLiteral("xqFlowJobTitleLabel"));
+    auto* flowJobLabel =
+        window.findChild<QLabel*>(QStringLiteral("xqFlowJobNameLabel"));
+    auto* flowCreateJobButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqFlowCreateJobButton"));
+    auto* flowMeshLabel =
+        window.findChild<QLabel*>(QStringLiteral("xqFlowMeshLabel"));
+    auto* flowMeshSelector =
+        window.findChild<QComboBox*>(
+            QStringLiteral("xqFlowMeshSelector"));
+    auto* flowTabs =
+        window.findChild<QTabWidget*>(QStringLiteral("xqFlowTabs"));
+    auto* timeSteppingGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqFlowTimeSteppingGroup"));
+    auto* startTimeSpin =
+        window.findChild<QDoubleSpinBox*>(
+            QStringLiteral("xqFlowStartTimeSpinBox"));
+    auto* timeStepSizeSpin =
+        window.findChild<QDoubleSpinBox*>(
+            QStringLiteral("xqFlowTimeStepSizeSpinBox"));
+    auto* bcTable =
+        window.findChild<QTableWidget*>(QStringLiteral("xqFlowBCTable"));
+    auto* wallTypeCombo =
+        window.findChild<QComboBox*>(QStringLiteral("xqFlowWallTypeCombo"));
+    auto* deformableGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqFlowDeformableWallGroup"));
+    auto* solverPresetCombo =
+        window.findChild<QComboBox*>(
+            QStringLiteral("xqFlowSolverPresetCombo"));
+    auto* solverSettingsGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqFlowSolverSettingsGroup"));
+    auto* configureJobButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqFlowConfigureJobButton"));
+    auto* steadyFlowButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqFlowSteadyFlowButton"));
+    auto* reviewResultsButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqFlowReviewResultsButton"));
+    auto* runSimulationButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqFlowRunSimulationButton"));
+    auto* exportOnlyButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqFlowExportOnlyButton"));
+    auto* flowProgress =
+        window.findChild<QProgressBar*>(
+            QStringLiteral("xqFlowProgressBar"));
+    auto* flowLog =
+        window.findChild<QTextEdit*>(QStringLiteral("xqFlowLogTextEdit"));
+    auto* resultFieldCombo =
+        window.findChild<QComboBox*>(
+            QStringLiteral("xqFlowResultFieldCombo"));
+    auto* autoRangeCheckBox =
+        window.findChild<QCheckBox*>(
+            QStringLiteral("xqFlowAutoRangeCheckBox"));
+    auto* showLegendButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqFlowShowLegendButton"));
+    auto* resultSummary =
+        window.findChild<QTextEdit*>(
+            QStringLiteral("xqFlowResultSummaryTextEdit"));
+    if (Expect(flowJobTitle != nullptr &&
+                   flowJobTitle->text() == QStringLiteral("Job:") &&
+                   flowJobLabel != nullptr &&
+                   flowJobLabel->text() == QStringLiteral("(none)") &&
+                   flowCreateJobButton != nullptr &&
+                   flowCreateJobButton->text() ==
+                       QStringLiteral("Create Job..."),
+               "Flow Simulation page should restore legacy job row"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(flowMeshLabel != nullptr &&
+                   flowMeshLabel->text() == QStringLiteral("Mesh:") &&
+                   flowMeshSelector != nullptr,
+               "Flow Simulation page should restore legacy mesh selector row"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(flowTabs != nullptr &&
+                   flowTabs->count() == 6 &&
+                   flowTabs->tabText(0) == QStringLiteral("Basic") &&
+                   flowTabs->tabText(1) ==
+                       QStringLiteral("Inlet/Outlet BCs") &&
+                   flowTabs->tabText(2) ==
+                       QStringLiteral("Wall Properties") &&
+                   flowTabs->tabText(3) ==
+                       QStringLiteral("Solver Parameters") &&
+                   flowTabs->tabText(4) == QStringLiteral("Run") &&
+                   flowTabs->tabText(5) == QStringLiteral("Results"),
+               "Flow Simulation page should restore legacy tab set"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(timeSteppingGroup != nullptr &&
+                   timeSteppingGroup->title() ==
+                       QStringLiteral("Time Stepping") &&
+                   startTimeSpin != nullptr &&
+                   startTimeSpin->value() == 0.0 &&
+                   timeStepSizeSpin != nullptr &&
+                   timeStepSizeSpin->value() == 0.001,
+               "Flow Basic tab should expose time stepping defaults"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(bcTable != nullptr &&
+                   bcTable->columnCount() == 3 &&
+                   bcTable->horizontalHeaderItem(0)->text() ==
+                       QStringLiteral("Face") &&
+                   bcTable->horizontalHeaderItem(1)->text() ==
+                       QStringLiteral("Type") &&
+                   bcTable->horizontalHeaderItem(2)->text() ==
+                       QStringLiteral("Values"),
+               "Flow BC tab should restore boundary condition table"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(wallTypeCombo != nullptr &&
+                   wallTypeCombo->count() == 2 &&
+                   wallTypeCombo->itemText(0) == QStringLiteral("Rigid") &&
+                   deformableGroup != nullptr &&
+                   !deformableGroup->isEnabled(),
+               "Flow Wall tab should default to rigid wall"))
+    {
+        delete context;
+        return 1;
+    }
+    wallTypeCombo->setCurrentIndex(1);
+    app.processEvents();
+    if (Expect(deformableGroup->isEnabled(),
+               "Flow Wall tab should enable deformable parameters"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(solverPresetCombo != nullptr &&
+                   solverPresetCombo->count() == 5 &&
+                   solverPresetCombo->itemText(0) ==
+                       QStringLiteral("Custom") &&
+                   solverPresetCombo->itemText(4) ==
+                       QStringLiteral("High Accuracy") &&
+                   solverSettingsGroup != nullptr &&
+                   solverSettingsGroup->title() ==
+                       QStringLiteral("Solver Settings"),
+               "Flow Solver tab should restore solver presets"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(configureJobButton != nullptr &&
+                   steadyFlowButton != nullptr &&
+                   reviewResultsButton != nullptr &&
+                   configureJobButton->isCheckable() &&
+                   steadyFlowButton->isCheckable() &&
+                   reviewResultsButton->isCheckable(),
+               "Flow Simulation page should restore operation buttons"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(runSimulationButton != nullptr &&
+                   !runSimulationButton->isEnabled() &&
+                   exportOnlyButton != nullptr &&
+                   !exportOnlyButton->isEnabled() &&
+                   flowProgress != nullptr &&
+                   flowProgress->value() == 0 &&
+                   flowLog != nullptr &&
+                   flowLog->isReadOnly(),
+               "Flow Run tab should restore run controls in disabled state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(resultFieldCombo != nullptr &&
+                   resultFieldCombo->itemText(0) ==
+                       QStringLiteral("Pressure") &&
+                   autoRangeCheckBox != nullptr &&
+                   autoRangeCheckBox->isChecked() &&
+                   showLegendButton != nullptr &&
+                   showLegendButton->isCheckable() &&
+                   resultSummary != nullptr &&
+                   resultSummary->isReadOnly(),
+               "Flow Results tab should restore visualization controls"))
+    {
+        delete context;
+        return 1;
+    }
 
     flowSelector->setCurrentIndex(
         flowSelector->findData(QStringLiteral("run-steady-flow")));
+    app.processEvents();
+    if (Expect(steadyFlowButton->isChecked(),
+               "Flow steady button should mirror selector changes"))
+    {
+        delete context;
+        return 1;
+    }
+    configureJobButton->click();
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("flow-simulation")) ==
+                   QStringLiteral("configure-cfd-job"),
+               "Flow Configure Job button should update Core operation state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(flowSelector->currentData().toString() ==
+                   QStringLiteral("configure-cfd-job") &&
+                   configureJobButton->isChecked(),
+               "Flow selector and tool button should stay synchronized"))
+    {
+        delete context;
+        return 1;
+    }
+    steadyFlowButton->click();
     app.processEvents();
     auto* flowButton =
         FindActionButton(window, QStringLiteral("flow-simulation"));
