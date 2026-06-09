@@ -7,6 +7,7 @@
 #include "Core/xq_DataManagementService.h"
 #include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_DataSelectionService.h"
+#include "Core/xq_PreferencesService.h"
 #include "Core/xq_ProjectFilePathProvider.h"
 #include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_ProjectService.h"
@@ -207,6 +208,21 @@ QString ColorButtonStyle(const float rgb[3])
         .arg(color.name());
 }
 
+QString DataManagerPropertyValue(const mitk::BaseProperty* property)
+{
+    if (!property)
+        return QStringLiteral("<null>");
+
+    if (const auto* boolProperty =
+            dynamic_cast<const mitk::BoolProperty*>(property))
+    {
+        return boolProperty->GetValue() ? QStringLiteral("true")
+                                        : QStringLiteral("false");
+    }
+
+    return QString::fromStdString(property->GetValueAsString());
+}
+
 bool ShouldShowDataManagerProperty(const std::string& key)
 {
     if (key == "name" || key == "visible" || key == "opacity" ||
@@ -373,7 +389,10 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         new QAction(QStringLiteral("Crosshair"), this);
     crosshairAction->setObjectName(QStringLiteral("xqCrosshairAction"));
     crosshairAction->setCheckable(true);
-    crosshairAction->setChecked(true);
+    crosshairAction->setChecked(
+        m_Context.Preferences()->BoolValue(
+            QStringLiteral("view.crosshair.enabled"),
+            true));
     viewMenu->addAction(crosshairAction);
     viewMenu->addSeparator();
 
@@ -494,13 +513,15 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     connect(volumeRenderingAction,
             &QAction::triggered,
             this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "Volume Rendering is not available in Windows monolith v1.")));
+            [this](bool checked) {
+                SetSelectedDataVolumeRendering(checked);
+            });
     connect(crosshairAction,
             &QAction::triggered,
             this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "Crosshair toggle is not available in Windows monolith v1.")));
+            [this](bool checked) {
+                SetCrosshairEnabled(checked);
+            });
     connect(preferencesAction,
             &QAction::triggered,
             this,
@@ -2319,10 +2340,7 @@ void MainWindow::UpdateDataManagerPropertiesTable()
                         continue;
 
                     addRow(QString::fromStdString(it->first),
-                           it->second
-                               ? QString::fromStdString(
-                                     it->second->GetValueAsString())
-                               : QStringLiteral("<null>"));
+                           DataManagerPropertyValue(it->second.GetPointer()));
                 }
             }
         }
@@ -2366,6 +2384,34 @@ void MainWindow::ToggleSelectedDataVisibility()
     node->GetBoolProperty("visible", visible);
     node->SetBoolProperty("visible", !visible);
     RefreshDataManagerAfterVisibilityChange();
+}
+
+void MainWindow::SetSelectedDataVolumeRendering(bool enabled)
+{
+    const QString catalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+    if (node.IsNull())
+    {
+        m_Context.PostDiagnostic(QStringLiteral(
+            "Select image data before changing Volume Rendering."));
+        return;
+    }
+
+    node->SetBoolProperty("volumerendering", enabled);
+    UpdateDataManagerSelection();
+    if (auto* renderingManager = mitk::RenderingManager::GetInstance())
+        renderingManager->RequestUpdateAll();
+}
+
+void MainWindow::SetCrosshairEnabled(bool enabled)
+{
+    m_Context.Preferences()->SetBoolValue(
+        QStringLiteral("view.crosshair.enabled"),
+        enabled);
+    m_Context.PostDiagnostic(
+        enabled ? QStringLiteral("Crosshair enabled.")
+                : QStringLiteral("Crosshair disabled."));
 }
 
 void MainWindow::ShowOnlySelectedData()

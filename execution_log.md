@@ -4159,6 +4159,43 @@
     `build\windows-msvc-release\bin\XQ.exe`.
 - Promoted Workbench Preferences Dialog Restore to completed in `plan.md`.
 
+## Current Run Update: Workbench View Menu Display Actions
+
+- Red test observed:
+  - Added `test_monolith_view_menu_actions`.
+  - After fixing the test include for MITK `IntProperty`, the test failed with
+    `Volume Rendering action should enable selected node volume rendering`,
+    confirming the restored View action still only posted the v1 unavailable
+    guard.
+- Implemented View menu display actions:
+  - `Volume Rendering` now toggles the selected MITK node's
+    `volumerendering` property and refreshes the Data Manager property table.
+  - `Crosshair` now persists `view.crosshair.enabled` in `PreferencesService`.
+  - Crosshair remains a state preference in this slice; full MITK
+    crosshair-controller behavior is still future work.
+  - MITK bool properties in the Data Manager table are normalized to
+    `true` / `false` for stable UI and tests.
+- Debugging note:
+  - The first implementation wrote the node property but failed the table
+    assertion because `BaseProperty::GetValueAsString()` did not provide the
+    expected user-facing bool string for `volumerendering`.
+  - The fix was to format `mitk::BoolProperty` explicitly in the property table.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(view_menu_actions|workbench_menu_toolbar|main_window_data_panel)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure` passed using `.env`.
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 79/79.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+- Promoted Workbench View Menu Display Actions to completed in `plan.md`.
+
 ## Current Run Update: Windows Dotenv Environment Activation
 
 - User asked why there are so many environment bugs and whether a `.env`-style

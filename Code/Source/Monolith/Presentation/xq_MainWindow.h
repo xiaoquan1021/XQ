@@ -56,6 +56,8 @@ private:
     void OpenProjectFromProvider();
     void OpenPreferencesDialog();
     void RemoveSelectedData();
+    void SetCrosshairEnabled(bool enabled);
+    void SetSelectedDataVolumeRendering(bool enabled);
     void RunActiveWorkflowAction();
     void SaveProject();
     void SyncWorkflowNavigationFromCore(const QString& workflowId);

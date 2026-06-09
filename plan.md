@@ -5534,3 +5534,31 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench View Menu Display Actions
+
+1. Replace the restored View menu guards for display state with real monolith
+   behavior.
+   - `Volume Rendering` now toggles the selected MITK node's
+     `volumerendering` property.
+   - `Crosshair` now persists `view.crosshair.enabled` in
+     `PreferencesService`.
+2. Keep the first slice scoped and honest.
+   - Do not claim a full MITK multi-render-window crosshair controller yet.
+   - Do not implement screenshot capture or view preset layouts in this slice.
+   - Keep screenshot and remaining unmigrated View/File/Tools entries guarded.
+3. Keep Data Manager feedback readable.
+   - Refresh selected data properties after Volume Rendering changes.
+   - Normalize MITK bool properties in the properties table to `true` /
+     `false`.
+4. Add regression coverage.
+   - `test_monolith_view_menu_actions` verifies Volume Rendering writes the
+     selected node property, updates the properties table, persists Crosshair
+     state, and no longer posts unavailable diagnostics.
+   - Existing Workbench menu and Data Manager tests remain green.
+5. Verification gate:
+   - targeted view/menu/data-manager tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
