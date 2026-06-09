@@ -160,12 +160,9 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    segmentation2dSelector->setCurrentIndex(
-        segmentation2dSelector->findData(QStringLiteral("threshold-contour")));
-    app.processEvents();
     if (Expect(segmentation2dButton->text() ==
-                   QStringLiteral("Run Threshold Contour"),
-               "2D segmentation action should update back to threshold contour"))
+                   QStringLiteral("Run Loft Profiles"),
+               "2D segmentation action should update to loft profiles"))
     {
         delete context;
         return 1;
@@ -202,8 +199,8 @@ int main(int argc, char** argv)
     segmentation2dButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run 2D Segmentation failed: Active path node is required for threshold contour segmentation.")),
-               "2D segmentation action should report native threshold validation"))
+                   "Run 2D Segmentation failed: Active contour/profile segmentation node is required for loft profiles.")),
+               "2D segmentation action should report native loft validation"))
     {
         delete context;
         return 1;

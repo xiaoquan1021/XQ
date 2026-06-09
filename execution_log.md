@@ -1,6 +1,61 @@
 # XQ Execution Log
 
-## Current Run: Threshold Contour Segmentation Infrastructure Action
+## Current Run: Loft Profiles Segmentation Infrastructure Action
+
+- Continued from clean pushed `feature/windows-monolith-foundation` state after
+  `threshold-contour` was pushed as `ad3237d`.
+- Completed the active autonomous research refresh:
+  - Remaining exposed 2D Segmentation gap is `loft-profiles`.
+  - ROM/MultiPhysics still have solver/review gaps that should not be faked
+    without a real backend/result path.
+  - XQ already ships `xq_ContourGroupMigration`, canonical `xq_ProfileGroup`,
+    and `xq_SegmentationUtils::LoftProfileGroup`, so the narrow native slice is
+    to finalize contour/profile segmentations for downstream Modeling.
+- Added next executable phase to `plan.md`: Loft Profiles Segmentation
+  Infrastructure Action.
+- Starting RED tests first:
+  - `loft-profiles` should require a real contour/profile segmentation node.
+  - A valid contour group should migrate to a canonical `xq_ProfileGroup`,
+    attach a non-empty loft surface cache, register catalog/hierarchy/data-node
+    bindings, select it, and refresh rendering.
+  - Production composition and the 2D Segmentation page should validate
+    `loft-profiles` through the Infrastructure handler rather than the
+    unsupported-operation guard.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - Targeted `ctest` failed because `loft-profiles` still returned
+    `Loft Profiles is not wired to a native 2D Segmentation runtime yet.`
+    and production/page tests still expected unsupported behavior.
+- Implemented Loft Profiles Segmentation Infrastructure action:
+  - The dynamic Segmentation handler now routes `loft-profiles` to a native
+    path.
+  - The handler accepts canonical `xq_ProfileGroup` nodes or migrates legacy
+    unbound `xq_ContourGroup` nodes through `xq_ContourGroupMigration`.
+  - Successful runs generate a loft surface cache with
+    `xq_SegmentationUtils::LoftProfileGroup`, commit a generated
+    Segmentation/ProfileGroup result, select it, and refresh rendering.
+  - Metadata records whether the result migrated from contours and clarifies
+    that this is not Model-stage solid generation.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(segmentation_workflow_action_handler|segmentation_operation_page|application_import_wiring)"`
+    passed: 3/3.
+- Full-gate verification before commit:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - XQ `tests\*.ps1` passed.
+  - Full XQ `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - XQ `git diff --check` passed.
+  - Externals `tests\*.ps1` passed.
+  - Externals `git diff --check` passed.
+- Marked Loft Profiles Segmentation Infrastructure Action completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Previous Run: Threshold Contour Segmentation Infrastructure Action
 
 - Continued from clean pushed `feature/windows-monolith-foundation` state after
   `trim-branches` was pushed as `c63a15b`.

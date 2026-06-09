@@ -30,6 +30,7 @@
 #include <vtkSphereSource.h>
 #include <vtkSmartPointer.h>
 
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -220,6 +221,53 @@ mitk::DataNode::Pointer MakeSegmentation3DNode(const std::string& name)
     return node;
 }
 
+std::vector<mitk::Point3D> MakeCircularContour(double z, double radius)
+{
+    std::vector<mitk::Point3D> points;
+    for (int i = 0; i < 24; ++i)
+    {
+        const double angle =
+            6.2831853071795864769 * static_cast<double>(i) / 24.0;
+        points.push_back(Point(radius * std::cos(angle),
+                               radius * std::sin(angle),
+                               z));
+    }
+    return points;
+}
+
+mitk::DataNode::Pointer MakeContourGroupNode(const std::string& name)
+{
+    auto contourGroup = xq_ContourGroup::New();
+
+    ContourSlice first;
+    first.slicePosition = 0.0;
+    first.isClosed = true;
+    first.method = "threshold";
+    first.points = MakeCircularContour(0.0, 3.0);
+    contourGroup->AddContour(first);
+
+    ContourSlice second;
+    second.slicePosition = 1.0;
+    second.isClosed = true;
+    second.method = "threshold";
+    second.points = MakeCircularContour(5.0, 3.5);
+    contourGroup->AddContour(second);
+
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    node->SetData(contourGroup);
+    xq::pipeline::MarkNode(node, xq::pipeline::Stage::ContourGroup);
+    xq::pipeline::SetStringProperty(
+        node,
+        xq::pipeline::kSourceImageProperty,
+        "CTA Image");
+    xq::pipeline::SetStringProperty(
+        node,
+        xq::pipeline::kAlgorithmProperty,
+        "threshold");
+    return node;
+}
+
 xq::core::DataImportRequest MakePathImport()
 {
     xq::core::DataImportRequest request;
@@ -384,6 +432,34 @@ bool PrepareThresholdContourWorkflow(xq::core::ApplicationContext& context)
                                                        &message);
 }
 
+bool PrepareLoftProfilesWorkflow(xq::core::ApplicationContext& context)
+{
+    QString message;
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *context.WorkflowActions(),
+        context.WorkflowOperations());
+    if (!context.WorkflowSelection()->SelectWorkflow(
+            QStringLiteral("segmentation-2d")))
+    {
+        return false;
+    }
+    if (!context.WorkflowOperations()->SelectOperation(
+            QStringLiteral("segmentation-2d"),
+            QStringLiteral("loft-profiles"),
+            &message))
+    {
+        return false;
+    }
+
+    auto segmentationImport = MakeSegmentationImport();
+    segmentationImport.RequestedId = QStringLiteral("seg-001");
+    segmentationImport.DisplayName = QStringLiteral("Threshold Contours");
+    segmentationImport.SourcePath = QStringLiteral("C:/studies/seg-001.xqcontours");
+    const auto result = context.DataImports()->Import(segmentationImport,
+                                                      &message);
+    return result.Succeeded;
+}
+
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
 {
 public:
@@ -420,6 +496,119 @@ int main(int argc, char** argv)
         if (Expect(context->WorkflowActions()->HasHandler(
                        QStringLiteral("segmentation-2d")),
                    "dynamic segmentation handler should be discoverable"))
+        {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareLoftProfilesWorkflow(*context),
+                   "loft profiles fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        auto contourNode = MakeContourGroupNode("Threshold Contours");
+        context->DataStorage()->Add(contourNode);
+        context->DataNodes()->BindNode(QStringLiteral("seg-001"),
+                                       contourNode);
+
+        QString message;
+        FakeRenderRefreshService refresh;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicSegmentationWorkflowActionHandler(
+                        *context,
+                        &refresh,
+                        &message),
+                "loft profiles fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "loft profiles should create canonical profile result"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Registered segmentation result catalog entry."),
+                   "loft profiles should report catalog commit success"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+
+        const auto* entry = context->DataCatalog()->FindById(
+            QStringLiteral("seg-001-loft-profiles"));
+        if (Expect(entry != nullptr &&
+                       entry->WorkflowRole ==
+                           xq::core::DataWorkflowRole::Segmentation &&
+                       entry->SourcePath ==
+                           QStringLiteral(
+                               "xq://generated/segmentation/seg-001-loft-profiles"),
+                   "loft profiles should register generated catalog entry"))
+        {
+            return 1;
+        }
+
+        auto resultNode = context->DataNodes()->FindNode(
+            QStringLiteral("seg-001-loft-profiles"));
+        auto* profileGroup = resultNode.IsNotNull()
+                                 ? dynamic_cast<xq_ProfileGroup*>(
+                                       resultNode->GetData())
+                                 : nullptr;
+        auto loftSurface = profileGroup ? profileGroup->GetLoftedMesh(0)
+                                        : nullptr;
+        if (Expect(profileGroup != nullptr &&
+                       profileGroup->GetProfileCount() == 2 &&
+                       loftSurface != nullptr &&
+                       loftSurface->GetNumberOfPoints() > 0 &&
+                       loftSurface->GetNumberOfCells() > 0,
+                   "loft profiles should bind lofted canonical profile group"))
+        {
+            return 1;
+        }
+
+        std::string operation;
+        bool migrated = false;
+        int sourceContourCount = 0;
+        if (Expect(
+                resultNode.IsNotNull() &&
+                    resultNode->GetStringProperty("xq.segmentation.operation",
+                                                  operation) &&
+                    operation == "loft-profiles" &&
+                    resultNode->GetBoolProperty(
+                        "xq.segmentation.loft.migrated_from_contours",
+                        migrated) &&
+                    migrated &&
+                    resultNode->GetIntProperty(
+                        "xq.segmentation.loft.source_contour_count",
+                        sourceContourCount) &&
+                    sourceContourCount == 2 &&
+                    xq::pipeline::GetStringProperty(
+                        resultNode.GetPointer(),
+                        xq::pipeline::kSourceImageProperty) == "CTA Image",
+                "loft profiles should record migration and source metadata"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("seg-001-loft-profiles"),
+                   "loft profiles should select generated segmentation"))
+        {
+            return 1;
+        }
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "loft profiles should refresh rendering after success"))
         {
             return 1;
         }

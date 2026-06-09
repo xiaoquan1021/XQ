@@ -9,11 +9,15 @@
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowOperationService.h"
 
+#include <xq_ContourGroup.h>
+#include <xq_ContourGroupMigration.h>
 #include <xq_LumenSurface.h>
 #include <xq_MitkSeg3D.h>
 #include <xq_PipelineDataUtils.h>
+#include <xq_ProfileGroup.h>
 #include <xq_Seg3DUtils.h>
 #include <xq_SegmentationPipeline.h>
+#include <xq_SegmentationUtils.h>
 
 #include <QStringList>
 
@@ -34,6 +38,7 @@ constexpr const char* kSegmentation2DWorkflowId = "segmentation-2d";
 constexpr const char* kSegmentation3DWorkflowId = "segmentation-3d";
 constexpr const char* kThresholdContourOperationId = "threshold-contour";
 constexpr const char* kManualContourOperationId = "manual-contour";
+constexpr const char* kLoftProfilesOperationId = "loft-profiles";
 constexpr const char* kThresholdRegionOperationId = "threshold-region";
 constexpr const char* kRegionGrowingOperationId = "region-growing";
 constexpr const char* kSurfacePreviewOperationId = "surface-preview";
@@ -128,6 +133,20 @@ mitk::DataNode::Pointer ResolveImageNode(
 }
 
 mitk::DataNode::Pointer ResolveSegmentation3DNode(
+    xq::core::ApplicationContext& context,
+    const xq::core::WorkflowContextSnapshot& snapshot)
+{
+    if (auto* dataNodes = context.DataNodes())
+    {
+        auto node = dataNodes->FindNode(snapshot.SelectedCatalogEntryId);
+        if (node.IsNotNull())
+            return node;
+    }
+
+    return context.ActiveNode();
+}
+
+mitk::DataNode::Pointer ResolveSegmentationNode(
     xq::core::ApplicationContext& context,
     const xq::core::WorkflowContextSnapshot& snapshot)
 {
@@ -512,6 +531,151 @@ bool RunThresholdContour(xq::core::ApplicationContext& context,
     commitResult.ok = result.ok;
     commitResult.diagnostics = result.diagnostics;
     commitResult.node = result.node;
+    if (!CommitSegmentationResult(context, entryId, commitResult, message))
+        return false;
+
+    QString selectionMessage;
+    context.DataSelection()->SelectCatalogEntry(entryId, &selectionMessage);
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    return true;
+}
+
+bool RunLoftProfiles(xq::core::ApplicationContext& context,
+                     xq::core::RenderRefreshService* renderRefresh,
+                     const xq::core::WorkflowContextSnapshot& snapshot,
+                     const QString& operationId,
+                     QString* message)
+{
+    const auto segmentationNode = ResolveSegmentationNode(context, snapshot);
+    auto* sourceProfileGroup =
+        segmentationNode.IsNotNull()
+            ? dynamic_cast<xq_ProfileGroup*>(segmentationNode->GetData())
+            : nullptr;
+    auto* sourceContourGroup =
+        segmentationNode.IsNotNull()
+            ? dynamic_cast<xq_ContourGroup*>(segmentationNode->GetData())
+            : nullptr;
+    if (segmentationNode.IsNull() ||
+        (!sourceProfileGroup && !sourceContourGroup) ||
+        !xq::pipeline::HasStage(segmentationNode.GetPointer(),
+                                xq::pipeline::Stage::ContourGroup))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active contour/profile segmentation node is required for loft profiles."));
+        return false;
+    }
+
+    const QString entryId = ResultCatalogEntryId(snapshot, operationId);
+    const QString preflightMessage = PreflightCommitTarget(context, entryId);
+    if (!preflightMessage.isEmpty())
+    {
+        SetMessage(message, preflightMessage);
+        return false;
+    }
+
+    xq_ProfileGroup::Pointer profileGroup;
+    bool migratedFromContours = false;
+    int sourceContourCount = 0;
+    if (sourceProfileGroup)
+    {
+        profileGroup = dynamic_cast<xq_ProfileGroup*>(
+            sourceProfileGroup->Clone().GetPointer());
+    }
+    else
+    {
+        profileGroup = xq_ContourGroupMigration::ToProfileGroup(
+            sourceContourGroup);
+        migratedFromContours = true;
+        sourceContourCount = sourceContourGroup
+                                 ? sourceContourGroup->GetContourCount()
+                                 : 0;
+    }
+
+    if (profileGroup.IsNull() || profileGroup->GetProfileCount(0) < 2)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "At least two profiles are required before lofting."));
+        return false;
+    }
+
+    auto surface = xq_SegmentationUtils::LoftProfileGroup(profileGroup, 0);
+    if (!surface || surface->GetNumberOfPoints() == 0)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Profile group could not produce loft surface geometry."));
+        return false;
+    }
+    profileGroup->SetLoftedMesh(surface, 0);
+
+    const QString sourceName =
+        QString::fromStdString(segmentationNode->GetName()).trimmed();
+    auto resultNode = mitk::DataNode::New();
+    resultNode->SetName(
+        QStringLiteral("%1_loft_profiles").arg(sourceName).toStdString());
+    resultNode->SetData(profileGroup);
+    resultNode->SetColor(0.0f, 0.9f, 0.55f);
+    resultNode->SetOpacity(0.55f);
+    xq::pipeline::MarkNode(resultNode,
+                           xq::pipeline::Stage::ContourGroup);
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        xq::pipeline::kAlgorithmProperty,
+        "loft-profiles");
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        "xq.segmentation.method",
+        "loft-profiles");
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        "xq.params.segmentation2d.method",
+        "loft-profiles");
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        "xq.segmentation.loft.source",
+        sourceName.toStdString());
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        xq::pipeline::kSourceImageProperty,
+        xq::pipeline::GetStringProperty(segmentationNode.GetPointer(),
+                                        xq::pipeline::kSourceImageProperty));
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        xq::pipeline::kSourcePathProperty,
+        xq::pipeline::GetStringProperty(segmentationNode.GetPointer(),
+                                        xq::pipeline::kSourcePathProperty));
+    resultNode->SetStringProperty("xq.segmentation.operation",
+                                  "loft-profiles");
+    resultNode->SetBoolProperty("xq.segmentation.loft.finalized", true);
+    resultNode->SetBoolProperty(
+        "xq.segmentation.loft.migrated_from_contours",
+        migratedFromContours);
+    resultNode->SetIntProperty("xq.segmentation.loft.source_contour_count",
+                               sourceContourCount);
+    resultNode->SetIntProperty("xq.segmentation.loft.profile_count",
+                               profileGroup->GetProfileCount(0));
+    resultNode->SetStringProperty(
+        "xq.segmentation.capability.diagnostic",
+        "Loft Profiles finalized a profile-group loft surface for downstream "
+        "modeling. It did not create a Model-stage solid.");
+
+    auto folder = xq::pipeline::FindCategoryFolder(
+        context.DataStorage().GetPointer(),
+        xq::pipeline::Stage::ContourGroup,
+        segmentationNode.GetPointer());
+    if (folder.IsNotNull())
+        context.DataStorage()->Add(resultNode, folder);
+    else
+        context.DataStorage()->Add(resultNode, segmentationNode);
+
+    xq_CreateContourGroupResult commitResult;
+    commitResult.ok = true;
+    commitResult.node = resultNode;
+    commitResult.profileGroup = profileGroup.GetPointer();
     if (!CommitSegmentationResult(context, entryId, commitResult, message))
         return false;
 
@@ -1005,7 +1169,17 @@ bool RegisterDynamicSegmentationWorkflowActionHandler(
                                            renderRefresh,
                                            snapshot,
                                            operationId,
-                                           taskMessage);
+                                            taskMessage);
+            }
+
+            if (operationId ==
+                QString::fromLatin1(kLoftProfilesOperationId))
+            {
+                return RunLoftProfiles(context,
+                                       renderRefresh,
+                                       snapshot,
+                                       operationId,
+                                       taskMessage);
             }
 
             if (operationId !=

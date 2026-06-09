@@ -321,6 +321,20 @@ int main(int argc, char** argv)
                               "Active path node with source image metadata is required for threshold contour segmentation."),
                "configured threshold contour action should require source image metadata"))
         return 1;
+    if (Expect(segmentationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("segmentation-2d"),
+                   QStringLiteral("loft-profiles"),
+                   &message),
+               "configured segmentation workflow should select loft profiles"))
+        return 1;
+    if (Expect(!segmentationContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured loft profiles action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active contour/profile segmentation node is required for loft profiles."),
+               "configured loft profiles action should require segmentation node"))
+        return 1;
     if (Expect(segmentationContext->WorkflowSelection()->SelectWorkflow(
                    QStringLiteral("segmentation-3d")),
                "configured 3D segmentation workflow should be selectable"))
