@@ -5035,3 +5035,32 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted segmentation/workflow UI tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench 2D Segmentation Tool Panel Restore
+
+1. Restore the visible panel structure of the original
+   `xq_LumenContouringView` inside the monolith 2D Segmentation page.
+   - Add `Path Selection`, `Contour Groups`, and `Contour Tools` group boxes
+     with stable object names.
+   - Add a contour tool stack anchor and visible tool buttons for Threshold
+     Contour, Manual Contour, and Loft Profiles.
+   - Keep the existing hidden monolith operation selector so current tests and
+     Core operation state remain compatible.
+2. Keep Core workflow operations authoritative.
+   - Contour tool buttons call `WorkflowOperationService::SelectOperation()`.
+   - Core-driven operation changes still update the hidden selector.
+   - Selector-driven operation changes update the restored contour tool
+     buttons.
+3. Keep scope honest.
+   - Do not reintroduce BlueBerry/CTK view runtime.
+   - Do not implement the full contour editing table/model in this slice.
+   - Real 2D segmentation execution continues through the existing monolith
+     action handlers.
+4. Add regression coverage.
+   - `test_monolith_segmentation_operation_page` verifies the restored 2D
+     panel groups, contour tool buttons, checkable state, operation
+     synchronization, parameter anchors, and existing run validation.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted segmentation/workflow UI tests.
+   - full XQ and Externals test gates before commit.

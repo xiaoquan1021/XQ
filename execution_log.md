@@ -490,6 +490,51 @@
   - Runtime smoke passed: `build\windows-msvc-release\bin\XQ.exe` stayed
     running for 10 seconds and was then closed.
 
+## Current Run Update: Workbench 2D Segmentation Tool Panel Restore
+
+- Compared the monolith 2D Segmentation page against the original
+  `xq_LumenContouringView.ui`.
+  - Gap: the monolith page still exposed a generic selector/form instead of
+    the old contour-oriented panels: `Path Selection`, `Contour Groups`, and
+    `Contour Tools`.
+- RED test:
+  - Extended `test_monolith_segmentation_operation_page` to require restored
+    2D Segmentation group boxes, visible contour tool buttons, a contour-tool
+    stack anchor, and tool-button-to-Core operation synchronization.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_segmentation_operation_page"`
+    failed as expected with:
+    `2D segmentation page should restore legacy contour panel groups`.
+- Implemented the UI slice:
+  - Added monolith 2D Segmentation group boxes:
+    `xqSegmentation2DPathSelectionGroup`,
+    `xqSegmentation2DContourGroupsGroup`, and
+    `xqSegmentation2DContourToolsGroup`.
+  - Added visible checkable contour operation buttons:
+    `xqSegmentation2DThresholdContourButton`,
+    `xqSegmentation2DManualContourButton`, and
+    `xqSegmentation2DLoftProfilesButton`.
+  - Kept the existing operation selector as the Core compatibility anchor and
+    synchronized it with the visible restored contour buttons.
+  - Kept real execution routed through the existing workflow action handlers.
+- Targeted green verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_segmentation_operation_page"`
+    passed: 1/1.
+- Related targeted verification:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(segmentation_operation_page|main_window_workflow_selection|workflow_primary_action_page|application_import_wiring)"`
+    passed: 4/4.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Runtime smoke passed: `build\windows-msvc-release\bin\XQ.exe` stayed
+    running for 10 seconds and was then closed.
+
 ## Current Run Update: Workbench 3D Segmentation Tool Panel Restore
 
 - Compared the monolith 3D Segmentation page against the original

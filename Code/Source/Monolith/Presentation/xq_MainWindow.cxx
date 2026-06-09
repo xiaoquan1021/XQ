@@ -1084,7 +1084,32 @@ void MainWindow::UpdateWorkflowOperationControls()
         }
     }
 
+    UpdateSegmentation2DToolButtons();
     UpdateSegmentation3DToolButtons();
+}
+
+void MainWindow::UpdateSegmentation2DToolButtons()
+{
+    const QString selectedOperationId =
+        m_Context.WorkflowOperations()->SelectedOperationId(
+            QStringLiteral("segmentation-2d"));
+    const QStringList buttonObjectNames = {
+        QStringLiteral("xqSegmentation2DThresholdContourButton"),
+        QStringLiteral("xqSegmentation2DManualContourButton"),
+        QStringLiteral("xqSegmentation2DLoftProfilesButton"),
+    };
+
+    for (const auto& objectName : buttonObjectNames)
+    {
+        auto* button = findChild<QPushButton*>(objectName);
+        if (!button)
+            continue;
+
+        QSignalBlocker blocker(button);
+        button->setChecked(
+            button->property("xqOperationId").toString() ==
+            selectedOperationId);
+    }
 }
 
 void MainWindow::UpdateSegmentation3DToolButtons()
@@ -2006,7 +2031,129 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                 parameterLayout->setSpacing(8);
                 m_WorkflowParameterPanels.insert(id, parameterPanel);
 
-                if (id == QStringLiteral("segmentation-3d"))
+                if (id == QStringLiteral("segmentation-2d"))
+                {
+                    auto* pathGroup =
+                        new QGroupBox(QStringLiteral("Path Selection"), page);
+                    pathGroup->setObjectName(QStringLiteral(
+                        "xqSegmentation2DPathSelectionGroup"));
+                    auto* pathLayout = new QVBoxLayout(pathGroup);
+                    pathLayout->setContentsMargins(8, 8, 8, 8);
+                    operationSelector->setVisible(false);
+                    layout->addWidget(operationSelector);
+                    auto* pathComboBox = new QComboBox(pathGroup);
+                    pathComboBox->setObjectName(QStringLiteral(
+                        "xqSegmentation2DPathComboBox"));
+                    pathLayout->addWidget(pathComboBox);
+                    layout->addWidget(pathGroup);
+
+                    auto* contourGroups =
+                        new QGroupBox(QStringLiteral("Contour Groups"), page);
+                    contourGroups->setObjectName(QStringLiteral(
+                        "xqSegmentation2DContourGroupsGroup"));
+                    auto* contourGroupsLayout =
+                        new QVBoxLayout(contourGroups);
+                    contourGroupsLayout->setContentsMargins(8, 8, 8, 8);
+                    auto* contourToolButtons =
+                        new QHBoxLayout();
+                    auto* createGroupButton =
+                        new QPushButton(QStringLiteral("Create Group"),
+                                        contourGroups);
+                    createGroupButton->setObjectName(QStringLiteral(
+                        "xqSegmentation2DCreateGroupButton"));
+                    auto* contourGroupLoftButton =
+                        new QPushButton(QStringLiteral("Loft"),
+                                        contourGroups);
+                    contourGroupLoftButton->setObjectName(QStringLiteral(
+                        "xqSegmentation2DContourGroupLoftButton"));
+                    contourGroupLoftButton->setEnabled(false);
+                    contourToolButtons->addWidget(createGroupButton);
+                    contourToolButtons->addWidget(contourGroupLoftButton);
+                    contourGroupsLayout->addLayout(contourToolButtons);
+                    layout->addWidget(contourGroups);
+
+                    auto* contourTools =
+                        new QGroupBox(QStringLiteral("Contour Tools"), page);
+                    contourTools->setObjectName(QStringLiteral(
+                        "xqSegmentation2DContourToolsGroup"));
+                    auto* contourToolsLayout =
+                        new QVBoxLayout(contourTools);
+                    contourToolsLayout->setContentsMargins(8, 8, 8, 8);
+                    auto* contourToolStack =
+                        new QStackedWidget(contourTools);
+                    contourToolStack->setObjectName(QStringLiteral(
+                        "xqSegmentation2DContourToolStack"));
+                    auto* contourButtonPage =
+                        new QWidget(contourToolStack);
+                    auto* contourButtonLayout =
+                        new QHBoxLayout(contourButtonPage);
+                    contourButtonLayout->setContentsMargins(0, 0, 0, 0);
+                    auto* thresholdButton =
+                        new QPushButton(QStringLiteral("Threshold"),
+                                        contourButtonPage);
+                    thresholdButton->setObjectName(QStringLiteral(
+                        "xqSegmentation2DThresholdContourButton"));
+                    thresholdButton->setCheckable(true);
+                    thresholdButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("threshold-contour"));
+                    auto* manualButton =
+                        new QPushButton(QStringLiteral("Manual"),
+                                        contourButtonPage);
+                    manualButton->setObjectName(QStringLiteral(
+                        "xqSegmentation2DManualContourButton"));
+                    manualButton->setCheckable(true);
+                    manualButton->setProperty("xqOperationId",
+                                              QStringLiteral("manual-contour"));
+                    auto* loftButton =
+                        new QPushButton(QStringLiteral("Loft Profiles"),
+                                        contourButtonPage);
+                    loftButton->setObjectName(QStringLiteral(
+                        "xqSegmentation2DLoftProfilesButton"));
+                    loftButton->setCheckable(true);
+                    loftButton->setProperty("xqOperationId",
+                                            QStringLiteral("loft-profiles"));
+                    contourButtonLayout->addWidget(thresholdButton);
+                    contourButtonLayout->addWidget(manualButton);
+                    contourButtonLayout->addWidget(loftButton);
+                    contourToolStack->addWidget(contourButtonPage);
+                    contourToolsLayout->addWidget(contourToolStack);
+                    contourToolsLayout->addWidget(parameterPanel);
+                    layout->addWidget(contourTools);
+
+                    auto* toolButtons = new QButtonGroup(contourTools);
+                    toolButtons->setExclusive(true);
+                    toolButtons->addButton(thresholdButton);
+                    toolButtons->addButton(manualButton);
+                    toolButtons->addButton(loftButton);
+
+                    auto connectToolButton = [this](QPushButton* button,
+                                                    const QString& operationId) {
+                        connect(button,
+                                &QPushButton::clicked,
+                                this,
+                                [this, operationId]() {
+                                    QString message;
+                                    if (!m_Context.WorkflowOperations()
+                                             ->SelectOperation(
+                                                 QStringLiteral(
+                                                     "segmentation-2d"),
+                                                 operationId,
+                                                 &message))
+                                    {
+                                        m_Context.PostDiagnostic(message);
+                                    }
+                                    UpdateWorkflowOperationControls();
+                                });
+                    };
+                    connectToolButton(thresholdButton,
+                                      QStringLiteral("threshold-contour"));
+                    connectToolButton(manualButton,
+                                      QStringLiteral("manual-contour"));
+                    connectToolButton(loftButton,
+                                      QStringLiteral("loft-profiles"));
+                }
+                else if (id == QStringLiteral("segmentation-3d"))
                 {
                     auto* referenceGroup =
                         new QGroupBox(QStringLiteral("Reference Image"), page);

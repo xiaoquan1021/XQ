@@ -105,6 +105,63 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto* pathSelectionGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqSegmentation2DPathSelectionGroup"));
+    auto* contourGroupsGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqSegmentation2DContourGroupsGroup"));
+    auto* contourToolsGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqSegmentation2DContourToolsGroup"));
+    auto* thresholdContourToolButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqSegmentation2DThresholdContourButton"));
+    auto* manualContourToolButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqSegmentation2DManualContourButton"));
+    auto* loftProfilesToolButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqSegmentation2DLoftProfilesButton"));
+    auto* contourToolStack =
+        window.findChild<QStackedWidget*>(
+            QStringLiteral("xqSegmentation2DContourToolStack"));
+    if (Expect(pathSelectionGroup != nullptr &&
+                   pathSelectionGroup->title() ==
+                       QStringLiteral("Path Selection") &&
+                   contourGroupsGroup != nullptr &&
+                   contourGroupsGroup->title() ==
+                       QStringLiteral("Contour Groups") &&
+                   contourToolsGroup != nullptr &&
+                   contourToolsGroup->title() ==
+                       QStringLiteral("Contour Tools"),
+               "2D segmentation page should restore legacy contour panel groups"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(thresholdContourToolButton != nullptr &&
+                   manualContourToolButton != nullptr &&
+                   loftProfilesToolButton != nullptr,
+               "2D segmentation page should restore legacy contour tool buttons"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(thresholdContourToolButton->isCheckable() &&
+                   manualContourToolButton->isCheckable() &&
+                   loftProfilesToolButton->isCheckable(),
+               "2D contour tool buttons should be checkable"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(contourToolStack != nullptr,
+               "2D segmentation page should restore contour tool stack anchor"))
+    {
+        delete context;
+        return 1;
+    }
     auto* segmentation2dButton =
         FindActionButton(window, QStringLiteral("segmentation-2d"));
     if (Expect(segmentation2dButton != nullptr &&
@@ -142,6 +199,12 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(thresholdContourToolButton->isChecked(),
+               "2D threshold contour tool button should mirror selected operation"))
+    {
+        delete context;
+        return 1;
+    }
 
     segmentation2dSelector->setCurrentIndex(
         segmentation2dSelector->findData(QStringLiteral("loft-profiles")));
@@ -161,6 +224,33 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(loftProfilesToolButton->isChecked(),
+               "2D loft profiles tool button should mirror selector changes"))
+    {
+        delete context;
+        return 1;
+    }
+
+    manualContourToolButton->click();
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("segmentation-2d")) ==
+                   QStringLiteral("manual-contour"),
+               "2D Manual Contour tool button should update Core operation state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation2dSelector->currentData().toString() ==
+                   QStringLiteral("manual-contour") &&
+                   manualContourToolButton->isChecked(),
+               "2D selector and contour tool button should stay synchronized"))
+    {
+        delete context;
+        return 1;
+    }
+    loftProfilesToolButton->click();
+    app.processEvents();
 
     if (Expect(segmentation2dButton->text() ==
                    QStringLiteral("Run Loft Profiles"),
