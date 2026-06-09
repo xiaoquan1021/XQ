@@ -3093,6 +3093,63 @@
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: 3D Region Growing Infrastructure Action
+
+- Completed autonomous research refresh:
+  - Re-scanned remaining non-Domain placeholder and unsupported-operation
+    behavior after the page wiring cleanup.
+  - Page-level placeholder success has been removed; remaining `operation accepted`
+    diagnostics are intentional Domain service/unit coverage.
+  - The next high-value native gap is 3D Segmentation `region-growing`: the
+    legacy module already provides `xq_Seg3DUtils::RegionGrowingSegmentation`
+    and `xq_MitkSeg3D`, while the monolith Infrastructure handler still reports
+    unsupported.
+- Added next executable phase to `plan.md`: 3D Region Growing Infrastructure
+  Action.
+- Started the next unattended loop iteration:
+  - Adding a failing 3D Region Growing Infrastructure action test first.
+- Red test observed:
+  - Extended `test_monolith_segmentation_workflow_action_handler` with a real
+    synthetic MITK image, region-growing parameters, and expectations for a
+    generated `xq_MitkSeg3D` result node.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_segmentation_workflow_action_handler"`
+    failed because `region-growing` still returned
+    `Region Growing is not wired to a native 3D Segmentation runtime yet.`
+- Implemented 3D Region Growing Infrastructure action:
+  - The dynamic Segmentation handler now routes `segmentation-3d` /
+    `region-growing` to a native path.
+  - It resolves the selected MITK image node, reads `seed-x`, `seed-y`, and
+    `threshold-upper` parameters, derives the seed value as the lower
+    threshold, and calls `xq_Seg3DUtils::RegionGrowingSegmentation`.
+  - Successful runs create an `xq_MitkSeg3D` node, stamp
+    `segmentation_3d` pipeline metadata, add generated catalog/hierarchy
+    entries, select the result, and refresh rendering.
+  - Existing 2D unsupported operation and other 3D unsupported operation guards
+    remain deterministic.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_segmentation_workflow_action_handler"`
+    passed: 1/1.
+  - Related integration/page tests first failed because they still expected the
+    old unsupported-operation diagnostic for `region-growing`.
+  - Updated those tests to expect the new Infrastructure missing-image
+    validation when no real MITK image node is bound.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(application_import_wiring|segmentation_operation_page|segmentation_workflow_action_handler)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted 3D Region Growing Infrastructure Action to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Update: Path Unsupported Operation Guard
 
 - Completed autonomous research refresh:

@@ -277,11 +277,11 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(!segmentationContext->WorkflowActions()
                     ->RunActiveWorkflowAction(&message),
-               "configured 3D segmentation action should use unsupported-operation guard"))
+               "configured 3D segmentation action should use infrastructure validation"))
         return 1;
     if (Expect(message == QStringLiteral(
-                              "Region Growing is not wired to a native 3D Segmentation runtime yet."),
-               "configured 3D segmentation action should report unsupported operation"))
+                              "Active image node is required for 3D segmentation."),
+               "configured 3D segmentation action should require an image node"))
         return 1;
 
     auto modelingContext =

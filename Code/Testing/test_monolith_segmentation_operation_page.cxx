@@ -253,8 +253,8 @@ int main(int argc, char** argv)
     segmentation3dButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run 3D Segmentation failed: Region Growing is not wired to a native 3D Segmentation runtime yet.")),
-               "3D segmentation action should report unsupported operation"))
+                   "Run 3D Segmentation failed: Active image node is required for 3D segmentation.")),
+               "3D segmentation action should report infrastructure validation"))
     {
         delete context;
         return 1;

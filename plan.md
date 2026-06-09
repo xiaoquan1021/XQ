@@ -3986,12 +3986,53 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 4. Commit and push the verified XQ iteration.
 
-## Active Phase: Autonomous Research Refresh
+## Completed Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
    again.
 2. Re-scan the monolith tests and product composition for the next highest-value
    legacy placeholder or workflow gap.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: 3D Region Growing Infrastructure Action
+
+1. Replace the `region-growing` 3D Segmentation unsupported guard with a native
+   Infrastructure action.
+   - Resolve the selected MITK image node from `DataNodeRegistryService` or the
+     active node.
+   - Read `seed-x`, `seed-y`, and `threshold-upper` from
+     `WorkflowOperationService`; use the selected voxel value as the lower
+     bound for the region-growing band.
+   - Run `xq_Seg3DUtils::RegionGrowingSegmentation`.
+   - Commit an `xq_MitkSeg3D` node with generated catalog/hierarchy entries,
+     select it, and refresh rendering on success.
+2. Keep unsupported guards for remaining 3D Segmentation operations.
+   - `threshold-region` and `surface-preview` stay deterministic failures until
+     they receive their own native handlers.
+3. Add RED C++ tests before implementation:
+   - `region-growing` with a real MITK image should no longer return the
+     unsupported-operation diagnostic.
+   - A successful run should register a 3D segmentation catalog entry, bind an
+     `xq_MitkSeg3D` node, record method/seed/threshold metadata, select the
+     result, and refresh rendering.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for
+     `test_monolith_segmentation_workflow_action_handler`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   native workflow gap.
 3. Write the next executable phase into this plan.
 4. Immediately return to plan execution.
 
