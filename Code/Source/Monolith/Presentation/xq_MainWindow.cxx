@@ -202,6 +202,8 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     menuBar()->setNativeMenuBar(false);
     auto* fileMenu = menuBar()->addMenu(QStringLiteral("&File"));
     fileMenu->setObjectName(QStringLiteral("FileMenu"));
+    auto* viewMenu = menuBar()->addMenu(QStringLiteral("&View"));
+    viewMenu->setObjectName(QStringLiteral("ViewMenu"));
 
     auto* mainToolbar = new QToolBar(QStringLiteral("Main Actions"), this);
     mainToolbar->setObjectName(QStringLiteral("mainActionsToolBar"));
@@ -277,6 +279,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                                      Qt::RightDockWidgetArea);
     m_DataHierarchyModel =
         new DataHierarchyModel(*m_Context.DataHierarchy(), dataManagerDock);
+    m_DataManagerDock = dataManagerDock;
 
     m_DataHierarchyView = new QTreeView(dataManagerDock);
     m_DataHierarchyView->setObjectName(
@@ -307,6 +310,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     workflowDock->setObjectName(QStringLiteral("xqWorkflowToolsDock"));
     workflowDock->setAllowedAreas(Qt::RightDockWidgetArea |
                                   Qt::LeftDockWidgetArea);
+    m_WorkflowToolsDock = workflowDock;
 
     auto* workflowPanel = new QWidget(workflowDock);
     workflowPanel->setObjectName(QStringLiteral("xqWorkflowToolsPanel"));
@@ -331,6 +335,20 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
 
     workflowDock->setWidget(workflowPanel);
     addDockWidget(Qt::RightDockWidgetArea, workflowDock);
+
+    auto addDockToggleAction = [viewMenu](QDockWidget* dock,
+                                          const QString& objectName) {
+        auto* action = dock->toggleViewAction();
+        action->setObjectName(objectName);
+        viewMenu->addAction(action);
+        return action;
+    };
+    addDockToggleAction(m_DataManagerDock,
+                        QStringLiteral("xqToggleDataManagerDockAction"));
+    addDockToggleAction(m_ImageNavigatorDock,
+                        QStringLiteral("xqToggleImageNavigatorDockAction"));
+    addDockToggleAction(m_WorkflowToolsDock,
+                        QStringLiteral("xqToggleWorkflowToolsDockAction"));
 
     for (const auto& workflow : xq::core::DefaultWorkflowRegistry())
         AddWorkflowPage(workflow.Id, workflow.Title);
@@ -476,7 +494,11 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     auto* diagnosticsDock = new QDockWidget(QStringLiteral("Diagnostics"), this);
     diagnosticsDock->setObjectName(QStringLiteral("xqDiagnosticsDock"));
     diagnosticsDock->setWidget(m_Diagnostics);
+    m_DiagnosticsDock = diagnosticsDock;
     addDockWidget(Qt::BottomDockWidgetArea, diagnosticsDock);
+    viewMenu->addSeparator();
+    addDockToggleAction(m_DiagnosticsDock,
+                        QStringLiteral("xqToggleDiagnosticsDockAction"));
 
     connect(&m_Context, &xq::core::ApplicationContext::DiagnosticPosted,
             this, [this](const QString& message) {
@@ -499,7 +521,10 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         new QDockWidget(QStringLiteral("Task History"), this);
     taskHistoryDock->setObjectName(QStringLiteral("xqTaskHistoryDock"));
     taskHistoryDock->setWidget(m_TaskHistoryTable);
+    m_TaskHistoryDock = taskHistoryDock;
     addDockWidget(Qt::BottomDockWidgetArea, taskHistoryDock);
+    addDockToggleAction(m_TaskHistoryDock,
+                        QStringLiteral("xqToggleTaskHistoryDockAction"));
 
     for (const auto& task : m_Context.Tasks()->History())
         AppendTaskHistoryRow(task);

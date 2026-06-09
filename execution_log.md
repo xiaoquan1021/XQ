@@ -1,5 +1,50 @@
 # XQ Execution Log
 
+## Current Run: Workbench View Menu Dock Toggles
+
+- Continued after `5c42b89` with the next Workbench fidelity gap:
+  - The monolith had the correct dock layout and top workflow toolbar, but no
+    `View` menu for restoring/hiding Workbench panes.
+  - Original Workbench users expect panel visibility to be recoverable through
+    the menu rather than only by dragging docks.
+- RED test observed before production code:
+  - Extended `test_monolith_main_window_workbench_layout` to require
+    `ViewMenu` and dock toggle actions for Data Manager, Image Navigator,
+    Tools, Diagnostics, and Task History.
+  - The test first failed because `ViewMenu` did not exist.
+- Implemented the slice:
+  - Added `ViewMenu`.
+  - Stored Data Manager, Image Navigator, Workflow Tools, Diagnostics, and
+    Task History docks as `MainWindow` members.
+  - Added stable toggle action object names:
+    `xqToggleDataManagerDockAction`,
+    `xqToggleImageNavigatorDockAction`,
+    `xqToggleWorkflowToolsDockAction`,
+    `xqToggleDiagnosticsDockAction`, and
+    `xqToggleTaskHistoryDockAction`.
+  - Toggle actions reuse `QDockWidget::toggleViewAction()` so visibility and
+    checked state stay synchronized.
+- Debugging note:
+  - The first toggle test failed because the test window was never shown, so
+    Qt dock/action visibility state was not synchronized the same way it is in
+    a real window.
+  - Updated the test to show the `MainWindow` before asserting dock toggle
+    behavior.
+- Targeted verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release -R "test_monolith_main_window_workbench_layout|test_monolith_main_window_workflow_selection" --output-on-failure --timeout 120`
+    passed: 2/2.
+- Full verification before commit:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - Full XQ `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - View-menu runtime smoke launched `build\windows-msvc-release\bin\XQ.exe`,
+    kept it alive for 10 seconds, and closed it cleanly.
+  - `git diff --check` passed in both XQ and Externals.
+
 ## Current Run: Workbench Workflow Toolbar Restore
 
 - Continued after `790214a` with the next UI-fidelity gap:

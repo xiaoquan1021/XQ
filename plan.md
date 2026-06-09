@@ -4848,3 +4848,23 @@ The next monolith slice is grounded in these comparable systems:
    - targeted `ctest` for workflow selection, Workbench layout, theme, and
      composition.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench View Menu Dock Toggles
+
+1. Restore a Workbench-style `View` menu in the monolith shell.
+   - Add stable `ViewMenu` object name.
+   - Add dock toggle actions for Data Manager, Image Navigator, Tools,
+     Diagnostics, and Task History.
+   - Keep the actions bound to Qt `QDockWidget::toggleViewAction()` so checked
+     state and visibility stay synchronized.
+2. Preserve Workbench pane anchors.
+   - Store the major dock widgets as `MainWindow` members so later UI
+     migration can add more menu/toolbar affordances without hunting for
+     anonymous dock instances.
+3. Add regression coverage.
+   - `test_monolith_main_window_workbench_layout` verifies the View menu,
+     each toggle action, and hide/show behavior for all core Workbench panes.
+4. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for Workbench layout and workflow selection.
+   - full XQ and Externals test gates before commit.

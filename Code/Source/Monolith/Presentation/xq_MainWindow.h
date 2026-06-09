@@ -88,6 +88,7 @@ private:
     QHash<QString, QPushButton*> m_WorkflowPrimaryActionButtons;
     QHash<QString, QAction*> m_WorkflowToolbarActions;
     QActionGroup* m_WorkflowToolbarActionGroup = nullptr;
+    QDockWidget* m_DataManagerDock = nullptr;
     QAction* m_SaveProjectAction = nullptr;
     QAction* m_ImportDataAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
@@ -95,6 +96,9 @@ private:
     QListWidget* m_Navigation = nullptr;
     QStackedWidget* m_Pages = nullptr;
     QDockWidget* m_ImageNavigatorDock = nullptr;
+    QDockWidget* m_WorkflowToolsDock = nullptr;
+    QDockWidget* m_DiagnosticsDock = nullptr;
+    QDockWidget* m_TaskHistoryDock = nullptr;
     QWidget* m_RenderHostContainer = nullptr;
     QWidget* m_RenderHost = nullptr;
     QTextEdit* m_Diagnostics = nullptr;
