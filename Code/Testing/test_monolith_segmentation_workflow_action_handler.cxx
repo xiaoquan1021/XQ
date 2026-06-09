@@ -13,6 +13,7 @@
 #include "Domain/xq_WorkflowActionHandlers.h"
 
 #include <xq_CenterlineSegment.h>
+#include <xq_ContourGroup.h>
 #include <xq_LumenSurface.h>
 #include <xq_MitkSeg3D.h>
 #include <xq_PipelineDataUtils.h>
@@ -76,6 +77,27 @@ mitk::DataNode::Pointer MakePathNode(const std::string& name)
     return node;
 }
 
+mitk::DataNode::Pointer MakeThresholdPathNode(const std::string& name)
+{
+    auto* segment = new xq_CenterlineSegment();
+    segment->SetSampleDensity(9);
+    segment->ReplaceAnchors({Point(0.0, 0.0, -5.0),
+                             Point(0.0, 0.0, 5.0)});
+
+    auto centerline = xq_VesselCenterline::New();
+    centerline->SetSegment(segment);
+
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    node->SetData(centerline);
+    xq::pipeline::MarkNode(node, xq::pipeline::Stage::Path);
+    xq::pipeline::SetStringProperty(
+        node,
+        xq::pipeline::kSourceImageProperty,
+        "CTA Image");
+    return node;
+}
+
 vtkSmartPointer<vtkImageData> MakeRegionGrowingVtkImage()
 {
     auto image = vtkSmartPointer<vtkImageData>::New();
@@ -104,6 +126,43 @@ vtkSmartPointer<vtkImageData> MakeRegionGrowingVtkImage()
     return image;
 }
 
+mitk::Image::Pointer MakeThresholdContourMitkImage()
+{
+    auto source = vtkSmartPointer<vtkImageData>::New();
+    source->SetDimensions(25, 25, 25);
+    source->SetSpacing(1.0, 1.0, 1.0);
+    source->SetOrigin(-12.0, -12.0, -12.0);
+    source->AllocateScalars(VTK_DOUBLE, 1);
+
+    for (int z = 0; z < 25; ++z)
+    {
+        for (int y = 0; y < 25; ++y)
+        {
+            for (int x = 0; x < 25; ++x)
+            {
+                const double worldX = -12.0 + static_cast<double>(x);
+                const double worldY = -12.0 + static_cast<double>(y);
+                const double worldZ = -12.0 + static_cast<double>(z);
+                const double radiusSquared =
+                    worldX * worldX + worldY * worldY + worldZ * worldZ;
+                source->SetScalarComponentFromDouble(
+                    x,
+                    y,
+                    z,
+                    0,
+                    radiusSquared <= 36.0 ? 100.0 : 0.0);
+            }
+        }
+    }
+
+    auto image = mitk::Image::New();
+    image->Initialize(source);
+    auto* output = image->GetVtkImageData();
+    if (output)
+        output->DeepCopy(source);
+    return image;
+}
+
 mitk::Image::Pointer MakeRegionGrowingMitkImage()
 {
     auto source = MakeRegionGrowingVtkImage();
@@ -120,6 +179,15 @@ mitk::DataNode::Pointer MakeImageNode(const std::string& name)
     auto node = mitk::DataNode::New();
     node->SetName(name);
     node->SetData(MakeRegionGrowingMitkImage());
+    xq::pipeline::MarkNode(node, xq::pipeline::Stage::Image);
+    return node;
+}
+
+mitk::DataNode::Pointer MakeThresholdImageNode(const std::string& name)
+{
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    node->SetData(MakeThresholdContourMitkImage());
     xq::pipeline::MarkNode(node, xq::pipeline::Stage::Image);
     return node;
 }
@@ -279,6 +347,41 @@ bool PrepareSegmentationWorkflow(xq::core::ApplicationContext& context,
     const auto importResult = context.DataImports()->Import(MakePathImport(),
                                                             &message);
     return importResult.Succeeded;
+}
+
+bool PrepareThresholdContourWorkflow(xq::core::ApplicationContext& context)
+{
+    QString message;
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *context.WorkflowActions(),
+        context.WorkflowOperations());
+    if (!context.WorkflowSelection()->SelectWorkflow(
+            QStringLiteral("segmentation-2d")))
+    {
+        return false;
+    }
+    if (!context.WorkflowOperations()->SelectOperation(
+            QStringLiteral("segmentation-2d"),
+            QStringLiteral("threshold-contour"),
+            &message))
+    {
+        return false;
+    }
+
+    auto pathImport = MakePathImport();
+    pathImport.DisplayName = QStringLiteral("Threshold Path");
+    const auto pathResult = context.DataImports()->Import(pathImport,
+                                                          &message);
+    if (!pathResult.Succeeded)
+        return false;
+
+    const auto imageResult = context.DataImports()->Import(MakeImageImport(),
+                                                           &message);
+    if (!imageResult.Succeeded)
+        return false;
+
+    return context.DataSelection()->SelectCatalogEntry(pathResult.EntryId,
+                                                       &message);
 }
 
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
@@ -455,7 +558,7 @@ int main(int argc, char** argv)
                        *context,
                        QStringLiteral("segmentation-2d"),
                        QStringLiteral("threshold-contour")),
-                   "unsupported 2D segmentation fixture should prepare workflow"))
+                   "missing threshold source image fixture should prepare workflow"))
         {
             return 1;
         }
@@ -467,22 +570,174 @@ int main(int argc, char** argv)
                         *context,
                         nullptr,
                         &message),
-                "unsupported 2D segmentation fixture should install handler"))
+                "missing threshold source image fixture should install handler"))
         {
             return 1;
         }
 
+        auto pathNode = MakePathNode("Main Path");
+        pathNode->SetStringProperty(xq::pipeline::kSourceImageProperty, "");
+        context->DataStorage()->Add(pathNode);
+        context->DataNodes()->BindNode(QStringLiteral("path-001"), pathNode);
+
         if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
                        &message),
-                   "unsupported 2D segmentation should fail"))
+                   "threshold contour should reject missing source image metadata"))
         {
             return 1;
         }
-        if (Expect(message == QStringLiteral(
-                                  "Threshold Contour is not wired to a native 2D Segmentation runtime yet."),
-                   "unsupported 2D segmentation diagnostic should name operation"))
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Active path node with source image metadata is required for threshold contour segmentation."),
+                   "missing threshold source image diagnostic should be specific"))
         {
             std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareThresholdContourWorkflow(*context),
+                   "threshold contour fixture should prepare workflow"))
+        {
+            return 1;
+        }
+        QString message;
+        if (Expect(context->WorkflowOperations()->SetParameterValue(
+                       QStringLiteral("segmentation-2d"),
+                       QStringLiteral("threshold-contour"),
+                       QStringLiteral("threshold-lower"),
+                       25.0,
+                       &message),
+                   "threshold contour fixture should set lower threshold"))
+        {
+            return 1;
+        }
+        if (Expect(context->WorkflowOperations()->SetParameterValue(
+                       QStringLiteral("segmentation-2d"),
+                       QStringLiteral("threshold-contour"),
+                       QStringLiteral("threshold-upper"),
+                       50.0,
+                       &message),
+                   "threshold contour fixture should set upper threshold"))
+        {
+            return 1;
+        }
+
+        auto pathNode = MakeThresholdPathNode("Threshold Path");
+        context->DataStorage()->Add(pathNode);
+        context->DataNodes()->BindNode(QStringLiteral("path-001"), pathNode);
+
+        auto imageNode = MakeThresholdImageNode("CTA Image");
+        context->DataStorage()->Add(imageNode);
+        context->DataNodes()->BindNode(QStringLiteral("image-001"), imageNode);
+
+        FakeRenderRefreshService refresh;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicSegmentationWorkflowActionHandler(
+                        *context,
+                        &refresh,
+                        &message),
+                "threshold contour fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "threshold contour should create contour group result"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Registered segmentation result catalog entry."),
+                   "threshold contour should report catalog commit success"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+
+        const auto* entry = context->DataCatalog()->FindById(
+            QStringLiteral("path-001-threshold-contour"));
+        if (Expect(entry != nullptr &&
+                       entry->WorkflowRole ==
+                           xq::core::DataWorkflowRole::Segmentation &&
+                       entry->SourcePath ==
+                           QStringLiteral(
+                               "xq://generated/segmentation/path-001-threshold-contour"),
+                   "threshold contour should register generated catalog entry"))
+        {
+            return 1;
+        }
+
+        auto resultNode = context->DataNodes()->FindNode(
+            QStringLiteral("path-001-threshold-contour"));
+        auto* contourGroup = resultNode.IsNotNull()
+                                 ? dynamic_cast<xq_ContourGroup*>(
+                                       resultNode->GetData())
+                                 : nullptr;
+        if (Expect(contourGroup != nullptr &&
+                       contourGroup->GetContourCount() > 0,
+                   "threshold contour should bind non-empty contour group"))
+        {
+            return 1;
+        }
+
+        double lowerThreshold = 0.0;
+        double upperThreshold = 0.0;
+        bool rangeCollapsed = false;
+        std::string algorithm;
+        std::string sourceImage;
+        std::string sourcePath;
+        if (Expect(
+                xq::pipeline::HasStage(resultNode,
+                                       xq::pipeline::Stage::ContourGroup) &&
+                    xq::pipeline::GetStringProperty(
+                        resultNode.GetPointer(),
+                        xq::pipeline::kAlgorithmProperty) == "threshold" &&
+                    xq::pipeline::GetStringProperty(
+                        resultNode.GetPointer(),
+                        xq::pipeline::kSourceImageProperty) == "CTA Image" &&
+                    xq::pipeline::GetStringProperty(
+                        resultNode.GetPointer(),
+                        xq::pipeline::kSourcePathProperty) ==
+                        "Threshold Path" &&
+                    resultNode->GetStringProperty("xq.segmentation.method",
+                                                  algorithm) &&
+                    algorithm == "threshold-contour" &&
+                    resultNode->GetDoubleProperty(
+                        "xq.segmentation.threshold.lower",
+                        lowerThreshold) &&
+                    lowerThreshold == 25.0 &&
+                    resultNode->GetDoubleProperty(
+                        "xq.segmentation.threshold.upper",
+                        upperThreshold) &&
+                    upperThreshold == 50.0 &&
+                    resultNode->GetBoolProperty(
+                        "xq.segmentation.threshold.range_collapsed",
+                        rangeCollapsed) &&
+                    rangeCollapsed,
+                "threshold contour should record source and threshold metadata"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("path-001-threshold-contour"),
+                   "threshold contour should select generated segmentation"))
+        {
+            return 1;
+        }
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "threshold contour should refresh rendering after success"))
+        {
             return 1;
         }
     }

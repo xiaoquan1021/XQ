@@ -32,6 +32,7 @@ namespace
 
 constexpr const char* kSegmentation2DWorkflowId = "segmentation-2d";
 constexpr const char* kSegmentation3DWorkflowId = "segmentation-3d";
+constexpr const char* kThresholdContourOperationId = "threshold-contour";
 constexpr const char* kManualContourOperationId = "manual-contour";
 constexpr const char* kThresholdRegionOperationId = "threshold-region";
 constexpr const char* kRegionGrowingOperationId = "region-growing";
@@ -138,6 +139,41 @@ mitk::DataNode::Pointer ResolveSegmentation3DNode(
     }
 
     return context.ActiveNode();
+}
+
+mitk::DataNode::Pointer FindImageNodeByName(xq::core::ApplicationContext& context,
+                                            const std::string& imageName)
+{
+    if (imageName.empty())
+        return nullptr;
+
+    auto node = xq::pipeline::FindNodeByNameAndStage(
+        context.DataStorage().GetPointer(),
+        imageName,
+        xq::pipeline::Stage::Image);
+    if (node.IsNotNull())
+        return node;
+
+    return xq::pipeline::FindNodeByNameAndStage(
+        context.DataStorage().GetPointer(),
+        imageName,
+        xq::pipeline::Stage::ImageProcessing);
+}
+
+mitk::DataNode::Pointer ResolveSingleImageNode(
+    xq::core::ApplicationContext& context)
+{
+    auto imageNodes = xq::pipeline::GetNodesByStage(
+        context.DataStorage().GetPointer(),
+        xq::pipeline::Stage::Image);
+    auto processedImageNodes = xq::pipeline::GetNodesByStage(
+        context.DataStorage().GetPointer(),
+        xq::pipeline::Stage::ImageProcessing);
+    imageNodes.insert(imageNodes.end(),
+                      processedImageNodes.begin(),
+                      processedImageNodes.end());
+
+    return imageNodes.size() == 1 ? imageNodes.front() : nullptr;
 }
 
 QString FirstDiagnosticMessage(const xq::pipeline::OperationStatus& status)
@@ -341,6 +377,142 @@ bool RunManualContour(xq::core::ApplicationContext& context,
     }
 
     if (!CommitSegmentationResult(context, entryId, result, message))
+        return false;
+
+    QString selectionMessage;
+    context.DataSelection()->SelectCatalogEntry(entryId, &selectionMessage);
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    return true;
+}
+
+bool RunThresholdContour(xq::core::ApplicationContext& context,
+                         xq::core::RenderRefreshService* renderRefresh,
+                         const xq::core::WorkflowContextSnapshot& snapshot,
+                         const QString& operationId,
+                         QString* message)
+{
+    const auto pathNode = ResolvePathNode(context, snapshot);
+    if (pathNode.IsNull() ||
+        !xq::pipeline::IsPathNode(pathNode.GetPointer()))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active path node is required for threshold contour segmentation."));
+        return false;
+    }
+
+    const std::string sourceImageName =
+        xq::pipeline::GetStringProperty(pathNode.GetPointer(),
+                                        xq::pipeline::kSourceImageProperty);
+    auto imageNode = FindImageNodeByName(context, sourceImageName);
+    if (imageNode.IsNull() && sourceImageName.empty())
+        imageNode = ResolveSingleImageNode(context);
+
+    auto* image = imageNode.IsNotNull()
+                      ? dynamic_cast<mitk::Image*>(imageNode->GetData())
+                      : nullptr;
+    vtkImageData* vtkImage = image ? image->GetVtkImageData() : nullptr;
+    if (!vtkImage)
+    {
+        SetMessage(message,
+                   sourceImageName.empty()
+                       ? QStringLiteral(
+                             "Active path node with source image metadata is required for threshold contour segmentation.")
+                       : QStringLiteral(
+                             "Path source image node is required for threshold contour segmentation."));
+        return false;
+    }
+
+    const QString entryId = ResultCatalogEntryId(snapshot, operationId);
+    const QString preflightMessage = PreflightCommitTarget(context, entryId);
+    if (!preflightMessage.isEmpty())
+    {
+        SetMessage(message, preflightMessage);
+        return false;
+    }
+
+    const QVariantMap parameters =
+        context.WorkflowOperations()
+            ? context.WorkflowOperations()->ParameterValues(snapshot.WorkflowId,
+                                                            operationId)
+            : QVariantMap();
+    const double lowerThreshold =
+        parameters.value(QStringLiteral("threshold-lower"), 0.0).toDouble();
+    const double upperThreshold =
+        parameters.value(QStringLiteral("threshold-upper"),
+                         lowerThreshold)
+            .toDouble();
+    if (upperThreshold < lowerThreshold)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "2D segmentation upper threshold must be greater than or equal to lower threshold."));
+        return false;
+    }
+
+    const QString pathName =
+        QString::fromStdString(pathNode->GetName()).trimmed();
+    const QString imageName =
+        QString::fromStdString(imageNode->GetName()).trimmed();
+    xq_ExtractContoursRequest request;
+    request.groupName =
+        QStringLiteral("%1_threshold_contours")
+            .arg(pathName)
+            .toStdString();
+    request.pathName = pathNode->GetName();
+    request.imageNodeName = imageNode->GetName();
+    request.algorithm = "threshold";
+    request.threshold = upperThreshold;
+    request.strideAlongPath = 10;
+    request.sliceSizeMm = 16.0;
+    request.pixelSpacing = 0.5;
+    request.outputPoints = 64;
+
+    auto result =
+        xq_SegmentationPipelineService::ExtractContours(
+            context.DataStorage().GetPointer(),
+            request);
+    if (!result.ok)
+    {
+        SetMessage(message, FirstDiagnosticMessage(result));
+        return false;
+    }
+
+    if (result.node.IsNotNull())
+    {
+        result.node->SetStringProperty("xq.segmentation.operation",
+                                       "threshold-contour");
+        result.node->SetStringProperty("xq.segmentation.method",
+                                       "threshold-contour");
+        result.node->SetDoubleProperty("xq.segmentation.threshold.lower",
+                                       lowerThreshold);
+        result.node->SetDoubleProperty("xq.segmentation.threshold.upper",
+                                       upperThreshold);
+        result.node->SetBoolProperty(
+            "xq.segmentation.threshold.range_collapsed",
+            lowerThreshold != upperThreshold);
+        result.node->SetStringProperty(
+            "xq.segmentation.capability.diagnostic",
+            "Threshold Contour extracted path-slice contours using the upper "
+            "threshold value. It did not run a full lower/upper range-mask "
+            "editing backend.");
+        xq::pipeline::SetStringProperty(
+            result.node,
+            xq::pipeline::kSourceImageProperty,
+            imageName.toStdString());
+        xq::pipeline::SetStringProperty(
+            result.node,
+            xq::pipeline::kSourcePathProperty,
+            pathName.toStdString());
+    }
+
+    xq_CreateContourGroupResult commitResult;
+    commitResult.ok = result.ok;
+    commitResult.diagnostics = result.diagnostics;
+    commitResult.node = result.node;
+    if (!CommitSegmentationResult(context, entryId, commitResult, message))
         return false;
 
     QString selectionMessage;
@@ -824,6 +996,16 @@ bool RegisterDynamicSegmentationWorkflowActionHandler(
                                                            snapshot,
                                                            operationId,
                                                            taskMessage);
+            }
+
+            if (operationId ==
+                QString::fromLatin1(kThresholdContourOperationId))
+            {
+                return RunThresholdContour(context,
+                                           renderRefresh,
+                                           snapshot,
+                                           operationId,
+                                           taskMessage);
             }
 
             if (operationId !=

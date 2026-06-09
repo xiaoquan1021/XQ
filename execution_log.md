@@ -1,6 +1,62 @@
 # XQ Execution Log
 
-## Current Run: Trim Branches Modeling Infrastructure Action
+## Current Run: Threshold Contour Segmentation Infrastructure Action
+
+- Continued from clean pushed `feature/windows-monolith-foundation` state after
+  `trim-branches` was pushed as `c63a15b`.
+- Completed the active autonomous research refresh:
+  - Remaining exposed 2D Segmentation gaps are `threshold-contour` and
+    `loft-profiles`; ROM/MultiPhysics still have solver/review gaps that
+    should not be faked without a real backend.
+  - 3D Slicer Segment Editor and MITK segmentation documentation both treat
+    thresholding as a standard segmentation operation.
+  - SimVascular documentation describes vessel workflows as path-based 2D
+    contour extraction followed by lofting/modeling, matching XQ's existing
+    `xq_SegmentationPipelineService::ExtractContours` route.
+- Added next executable phase to `plan.md`: Threshold Contour Segmentation
+  Infrastructure Action.
+- Starting RED tests first:
+  - `threshold-contour` should require a real Path plus a resolvable source
+    Image.
+  - A valid Path + Image should create a generated contour/profile result,
+    record source/threshold metadata, register catalog/hierarchy/data-node
+    bindings, select it, and refresh rendering.
+  - Production composition and the 2D Segmentation page should validate
+    `threshold-contour` through the Infrastructure handler rather than the
+    unsupported-operation guard.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - Targeted `ctest` failed because `threshold-contour` still returned
+    `Threshold Contour is not wired to a native 2D Segmentation runtime yet.`
+    and production/page tests still expected unsupported behavior.
+- Implemented Threshold Contour Segmentation Infrastructure action:
+  - The dynamic Segmentation handler now routes `threshold-contour` to a native
+    path.
+  - The handler resolves a selected Path node, resolves its source Image node,
+    calls `xq_SegmentationPipelineService::ExtractContours`, and commits the
+    generated contour group into catalog/hierarchy/data-node services.
+  - Successful runs stamp source image/path metadata, threshold lower/upper
+    metadata, and an honest range-collapsed capability diagnostic.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(segmentation_workflow_action_handler|segmentation_operation_page|application_import_wiring)"`
+    passed: 3/3.
+- Full-gate verification before commit:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - XQ `tests\*.ps1` passed.
+  - Full XQ `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - XQ `git diff --check` passed.
+  - Externals `tests\*.ps1` passed.
+  - Externals `git diff --check` passed.
+- Marked Threshold Contour Segmentation Infrastructure Action completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Previous Run: Trim Branches Modeling Infrastructure Action
 
 - Continued from clean pushed `feature/windows-monolith-foundation` state after
   `edit-control-points` was pushed as `b351f61`.

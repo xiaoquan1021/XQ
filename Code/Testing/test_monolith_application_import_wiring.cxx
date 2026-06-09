@@ -2,6 +2,7 @@
 #include "Core/xq_DataCatalogService.h"
 #include "Core/xq_DataImportCommand.h"
 #include "Core/xq_DataImportService.h"
+#include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_TaskRunner.h"
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowOperationService.h"
@@ -10,8 +11,14 @@
 #include "Presentation/xq_MainWindow.h"
 #include "xq_MonolithApplication.h"
 
+#include <xq_CenterlineSegment.h>
+#include <xq_PipelineDataUtils.h>
+#include <xq_VesselCenterline.h>
+
 #include <QAction>
 #include <QApplication>
+
+#include <mitkDataNode.h>
 
 #include <iostream>
 #include <memory>
@@ -39,6 +46,32 @@ public:
         return {};
     }
 };
+
+mitk::Point3D Point(double x, double y, double z)
+{
+    mitk::Point3D point;
+    point[0] = x;
+    point[1] = y;
+    point[2] = z;
+    return point;
+}
+
+mitk::DataNode::Pointer MakePathNode(const std::string& name)
+{
+    auto* segment = new xq_CenterlineSegment();
+    segment->ReplaceAnchors({Point(0.0, 0.0, 0.0),
+                             Point(5.0, 0.0, 0.0),
+                             Point(10.0, 0.0, 0.0)});
+
+    auto centerline = xq_VesselCenterline::New();
+    centerline->SetSegment(segment);
+
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    node->SetData(centerline);
+    xq::pipeline::MarkNode(node, xq::pipeline::Stage::Path);
+    return node;
+}
 
 xq::core::DataImportRequest MakeImageImport()
 {
@@ -264,9 +297,9 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(segmentationContext->WorkflowOperations()->SelectOperation(
                    QStringLiteral("segmentation-2d"),
-                   QStringLiteral("manual-contour"),
+                   QStringLiteral("threshold-contour"),
                    &message),
-               "configured segmentation workflow should select manual contour"))
+               "configured segmentation workflow should select threshold contour"))
         return 1;
 
     const auto segmentationImportResult =
@@ -275,14 +308,18 @@ int main(int argc, char** argv)
     if (Expect(segmentationImportResult.Succeeded,
                "configured segmentation path import should succeed"))
         return 1;
+    auto segmentationPathNode = MakePathNode("Main Path");
+    segmentationContext->DataStorage()->Add(segmentationPathNode);
+    segmentationContext->DataNodes()->BindNode(QStringLiteral("path-001"),
+                                               segmentationPathNode);
 
     if (Expect(!segmentationContext->WorkflowActions()
                     ->RunActiveWorkflowAction(&message),
                "configured segmentation action should use infrastructure validation"))
         return 1;
     if (Expect(message == QStringLiteral(
-                              "Active path node is required for 2D segmentation."),
-               "configured segmentation action should require a path node"))
+                              "Active path node with source image metadata is required for threshold contour segmentation."),
+               "configured threshold contour action should require source image metadata"))
         return 1;
     if (Expect(segmentationContext->WorkflowSelection()->SelectWorkflow(
                    QStringLiteral("segmentation-3d")),

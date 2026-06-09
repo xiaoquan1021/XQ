@@ -125,6 +125,22 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("segmentation-2d")) ==
+                   QStringLiteral("threshold-contour"),
+               "2D segmentation should keep threshold contour selected by default"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation2dButton->text() ==
+                   QStringLiteral("Run Threshold Contour"),
+               "2D segmentation action should keep threshold contour action text"))
+    {
+        delete context;
+        return 1;
+    }
+
     segmentation2dSelector->setCurrentIndex(
         segmentation2dSelector->findData(QStringLiteral("loft-profiles")));
     app.processEvents();
@@ -136,16 +152,20 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
-    if (Expect(segmentation2dButton->text() ==
-                   QStringLiteral("Run Loft Profiles"),
-               "2D segmentation action should update after selector change"))
+    if (Expect(FindIntegerParameter(window,
+                                    QStringLiteral("sample-count")) != nullptr,
+               "2D loft profiles should expose sample count control"))
     {
         delete context;
         return 1;
     }
-    if (Expect(FindIntegerParameter(window,
-                                    QStringLiteral("sample-count")) != nullptr,
-               "2D loft profiles should expose sample count control"))
+
+    segmentation2dSelector->setCurrentIndex(
+        segmentation2dSelector->findData(QStringLiteral("threshold-contour")));
+    app.processEvents();
+    if (Expect(segmentation2dButton->text() ==
+                   QStringLiteral("Run Threshold Contour"),
+               "2D segmentation action should update back to threshold contour"))
     {
         delete context;
         return 1;
@@ -182,8 +202,8 @@ int main(int argc, char** argv)
     segmentation2dButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run 2D Segmentation failed: Loft Profiles is not wired to a native 2D Segmentation runtime yet.")),
-               "2D segmentation action should report unsupported operation"))
+                   "Run 2D Segmentation failed: Active path node is required for threshold contour segmentation.")),
+               "2D segmentation action should report native threshold validation"))
     {
         delete context;
         return 1;

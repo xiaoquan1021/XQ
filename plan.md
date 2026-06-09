@@ -4366,6 +4366,53 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   native workflow gap.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Threshold Contour Segmentation Infrastructure Action
+
+1. Replace the `threshold-contour` 2D Segmentation unsupported guard with a
+   native Infrastructure action.
+   - Resolve a selected Path node from `DataNodeRegistryService` or the active
+     node.
+   - Resolve the source Image node from the Path `xq.source.image` metadata,
+     then fall back to a single available image node when unambiguous.
+   - Use `xq_SegmentationPipelineService::ExtractContours` with the selected
+     path, source image, threshold parameters, and conservative sampling
+     defaults.
+   - Commit a generated Segmentation catalog/hierarchy entry, select it, and
+     refresh rendering on success.
+2. Keep the action honest about scope.
+   - Record threshold lower/upper parameter metadata even though the current
+     pipeline threshold extractor consumes one threshold value.
+   - Record a capability diagnostic when the lower/upper range is collapsed to
+     the upper contour threshold.
+   - Do not claim manual interactive contour editing or full range-mask editing
+     beyond the existing path-slice extraction pipeline.
+3. Add RED C++ tests before implementation:
+   - `threshold-contour` with a real Path + Image should no longer return the
+     unsupported-operation diagnostic.
+   - A successful run should register a Segmentation result, bind a non-empty
+     contour/profile group, record source image/path and threshold metadata,
+     select the result, and refresh rendering.
+   - Production composition and the 2D Segmentation page should validate
+     `threshold-contour` through the Infrastructure handler.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for segmentation handler/page/composition tests
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation
