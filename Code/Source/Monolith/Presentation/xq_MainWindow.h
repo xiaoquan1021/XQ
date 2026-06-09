@@ -12,6 +12,7 @@ class QFormLayout;
 class QLabel;
 class QListWidget;
 class QPushButton;
+class QSlider;
 class QStackedWidget;
 class QTableWidget;
 class QTextEdit;
@@ -72,6 +73,9 @@ private:
     void ApplyDataManagerSearch(const QString& text);
     bool ApplyDataManagerSearch(const QModelIndex& parent,
                                 const QString& normalizedText);
+    void UpdateDataManagerSelection();
+    void UpdateDataManagerPropertiesTable();
+    void ApplySelectedDataOpacity(int value);
 
     xq::core::ApplicationContext& m_Context;
     DataHierarchyModel* m_DataHierarchyModel = nullptr;
@@ -85,7 +89,10 @@ private:
     QLabel* m_DataDisplayNameLabel = nullptr;
     QLabel* m_DataSourcePathLabel = nullptr;
     QLabel* m_DataWorkflowRoleLabel = nullptr;
+    QSlider* m_DataOpacitySlider = nullptr;
     QLabel* m_DataOpacityValueLabel = nullptr;
+    QPushButton* m_DataColorButton = nullptr;
+    QTableWidget* m_DataPropertiesTable = nullptr;
     QHash<QString, QWidget*> m_WorkflowParameterPanels;
     QHash<QString, QComboBox*> m_WorkflowOperationSelectors;
     QHash<QString, QLabel*> m_WorkflowContextStatusLabels;
@@ -108,6 +115,7 @@ private:
     QTextEdit* m_Diagnostics = nullptr;
     QTableWidget* m_TaskHistoryTable = nullptr;
     bool m_SyncingSelectionFromCore = false;
+    bool m_InternalDataManagerUpdate = false;
 };
 
 } // namespace xq::presentation

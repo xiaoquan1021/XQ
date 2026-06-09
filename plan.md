@@ -4895,3 +4895,29 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted `ctest` for Data Manager, selection sync, and data actions.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Data Manager MITK Property Sync
+
+1. Connect the restored monolith Data Manager panel to MITK-backed selected
+   data.
+   - Listen for both monolith selection changes and DataNode registry binding
+     changes.
+   - Resolve the selected catalog entry to its bound `mitk::DataNode`.
+   - Load node opacity and color into the Workbench-style controls.
+2. Restore first-pass Data Explorer behavior without reintroducing the
+   BlueBerry Data Manager plugin.
+   - The opacity slider writes the selected node's `opacity` property.
+   - Opacity changes refresh the MITK rendering manager.
+   - The properties panel shows catalog metadata plus MITK node name,
+     visibility, opacity, color, data type, and common XQ/DICOM properties.
+3. Add regression coverage.
+   - `test_monolith_main_window_data_panel` now verifies selection-to-node
+     opacity/color sync, catalog metadata rows, node property rows, and
+     slider-to-node opacity writes.
+4. Verification gate:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for Data Manager, selection sync, data actions,
+     Workbench layout, import action, data workflow page, and application
+     import wiring.
+   - full XQ and Externals test gates before commit.

@@ -3912,6 +3912,47 @@
 - Promoted Workbench Data Manager Panel Restore to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Final Update: Workbench Data Manager MITK Property Sync
+
+- Started the next UI fidelity slice after restoring the Data Manager panel
+  shape: make the panel behave more like the original XQ Data Explorer when
+  selecting MITK-backed data.
+- Red test observed:
+  - Extended `test_monolith_main_window_data_panel` to bind the imported
+    catalog entry to a `mitk::DataNode` with opacity/color/visibility.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release -R test_monolith_main_window_data_panel --output-on-failure --timeout 120`
+    failed because selecting a MITK-backed data row did not load node opacity.
+- Implemented Data Manager MITK property sync:
+  - MainWindow now keeps member pointers for the restored opacity slider,
+    color button, and properties table.
+  - Selection changes, catalog changes, and DataNode registry binding changes
+    update the Data Manager controls.
+  - The opacity slider loads the selected node opacity and writes back to the
+    selected node's `opacity` property.
+  - The color button reflects the selected node color.
+  - The properties table shows catalog metadata plus node name, visibility,
+    opacity, color, data type, and common XQ/DICOM property rows.
+  - Opacity edits request a MITK rendering update.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release -R test_monolith_main_window_data_panel --output-on-failure --timeout 120`
+    passed: 1/1.
+  - Related targeted window/data tests passed: 7/7.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Runtime smoke launched `build\windows-msvc-release\bin\XQ.exe`; the
+    application stayed running for 10 seconds and was then closed.
+- Promoted Workbench Data Manager MITK Property Sync to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Final Update: Workbench-Style Monolith Shell Correction
 
 - User review corrected the Presentation direction:

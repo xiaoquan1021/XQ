@@ -5,6 +5,7 @@
 #include "Core/xq_DataImportCommand.h"
 #include "Core/xq_DataHierarchyService.h"
 #include "Core/xq_DataManagementService.h"
+#include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_DataSelectionService.h"
 #include "Core/xq_ProjectSessionService.h"
 #include "Core/xq_ProjectService.h"
@@ -50,6 +51,10 @@
 #include <QVBoxLayout>
 #include <QVariantList>
 #include <QWidget>
+
+#include <mitkBaseProperty.h>
+#include <mitkPropertyList.h>
+#include <mitkRenderingManager.h>
 
 #include <utility>
 
@@ -170,6 +175,38 @@ QString FormatIntegerPointList(const QVariant& value)
     }
 
     return pointTexts.join(QStringLiteral("; "));
+}
+
+QString FormatMitkColor(const float rgb[3])
+{
+    return QStringLiteral("(%1, %2, %3)")
+        .arg(QString::number(rgb[0], 'f', 2),
+             QString::number(rgb[1], 'f', 2),
+             QString::number(rgb[2], 'f', 2));
+}
+
+QString ColorButtonStyle(const float rgb[3])
+{
+    QColor color;
+    color.setRgbF(rgb[0], rgb[1], rgb[2]);
+    return QStringLiteral(
+               "QPushButton { background-color: %1; border: 1px solid #555; }")
+        .arg(color.name());
+}
+
+bool ShouldShowDataManagerProperty(const std::string& key)
+{
+    if (key == "name" || key == "visible" || key == "opacity" ||
+        key == "color")
+    {
+        return false;
+    }
+
+    return key.rfind("xq.", 0) == 0 || key == "binary" ||
+           key == "volumerendering" || key == "material.representation" ||
+           key == "layer" || key == "show contour" ||
+           key == "levelwindow" || key.find("DICOM") != std::string::npos ||
+           key.find("dicom") != std::string::npos;
 }
 
 struct WorkflowToolDescriptor
@@ -307,22 +344,22 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     dataControlLayout->setContentsMargins(0, 0, 0, 0);
     dataControlLayout->setSpacing(6);
     auto* opacityLabel = new QLabel(QStringLiteral("Opacity:"), dataManagerPanel);
-    auto* opacitySlider = new QSlider(Qt::Horizontal, dataManagerPanel);
-    opacitySlider->setObjectName(QStringLiteral("xqDataOpacitySlider"));
-    opacitySlider->setRange(0, 100);
-    opacitySlider->setValue(100);
+    m_DataOpacitySlider = new QSlider(Qt::Horizontal, dataManagerPanel);
+    m_DataOpacitySlider->setObjectName(QStringLiteral("xqDataOpacitySlider"));
+    m_DataOpacitySlider->setRange(0, 100);
+    m_DataOpacitySlider->setValue(100);
     m_DataOpacityValueLabel = new QLabel(QStringLiteral("100%"), dataManagerPanel);
     m_DataOpacityValueLabel->setObjectName(
         QStringLiteral("xqDataOpacityValueLabel"));
     m_DataOpacityValueLabel->setMinimumWidth(40);
     m_DataOpacityValueLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    auto* colorButton = new QPushButton(QStringLiteral("Color"), dataManagerPanel);
-    colorButton->setObjectName(QStringLiteral("xqDataColorButton"));
-    colorButton->setMaximumWidth(60);
+    m_DataColorButton = new QPushButton(QStringLiteral("Color"), dataManagerPanel);
+    m_DataColorButton->setObjectName(QStringLiteral("xqDataColorButton"));
+    m_DataColorButton->setMaximumWidth(60);
     dataControlLayout->addWidget(opacityLabel);
-    dataControlLayout->addWidget(opacitySlider, 1);
+    dataControlLayout->addWidget(m_DataOpacitySlider, 1);
     dataControlLayout->addWidget(m_DataOpacityValueLabel);
-    dataControlLayout->addWidget(colorButton);
+    dataControlLayout->addWidget(m_DataColorButton);
     dataManagerLayout->addLayout(dataControlLayout);
 
     auto* propertiesToggle =
@@ -332,18 +369,18 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     propertiesToggle->setCheckable(true);
     dataManagerLayout->addWidget(propertiesToggle);
 
-    auto* propertiesTable = new QTableWidget(dataManagerPanel);
-    propertiesTable->setObjectName(QStringLiteral("xqDataPropertiesTable"));
-    propertiesTable->setColumnCount(2);
-    propertiesTable->setHorizontalHeaderLabels(
+    m_DataPropertiesTable = new QTableWidget(dataManagerPanel);
+    m_DataPropertiesTable->setObjectName(QStringLiteral("xqDataPropertiesTable"));
+    m_DataPropertiesTable->setColumnCount(2);
+    m_DataPropertiesTable->setHorizontalHeaderLabels(
         {QStringLiteral("Property"), QStringLiteral("Value")});
-    propertiesTable->setAlternatingRowColors(true);
-    propertiesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    propertiesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    propertiesTable->setMaximumHeight(200);
-    propertiesTable->setVisible(false);
-    propertiesTable->horizontalHeader()->setStretchLastSection(true);
-    dataManagerLayout->addWidget(propertiesTable);
+    m_DataPropertiesTable->setAlternatingRowColors(true);
+    m_DataPropertiesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_DataPropertiesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_DataPropertiesTable->setMaximumHeight(200);
+    m_DataPropertiesTable->setVisible(false);
+    m_DataPropertiesTable->horizontalHeader()->setStretchLastSection(true);
+    dataManagerLayout->addWidget(m_DataPropertiesTable);
 
     connect(dataSearchBox,
             &QLineEdit::textChanged,
@@ -351,20 +388,21 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             [this](const QString& text) {
                 ApplyDataManagerSearch(text);
             });
-    connect(opacitySlider,
+    connect(m_DataOpacitySlider,
             &QSlider::valueChanged,
             this,
             [this](int value) {
-                if (m_DataOpacityValueLabel)
-                {
-                    m_DataOpacityValueLabel->setText(
-                        QStringLiteral("%1%").arg(value));
-                }
+                ApplySelectedDataOpacity(value);
             });
     connect(propertiesToggle,
             &QPushButton::toggled,
-            propertiesTable,
-            &QTableWidget::setVisible);
+            this,
+            [this](bool visible) {
+                if (m_DataPropertiesTable)
+                    m_DataPropertiesTable->setVisible(visible);
+                if (visible)
+                    UpdateDataManagerPropertiesTable();
+            });
 
     dataManagerDock->setWidget(dataManagerPanel);
     addDockWidget(Qt::LeftDockWidgetArea, dataManagerDock);
@@ -532,6 +570,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             [this](const QString& hierarchyNodeId, const QString&) {
                 SyncTreeSelectionFromCore(hierarchyNodeId);
                 UpdateDataWorkflowPage();
+                UpdateDataManagerSelection();
                 UpdateDataActions();
             });
 
@@ -542,8 +581,15 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this]() {
                 UpdateDataWorkflowPage();
+                UpdateDataManagerSelection();
                 UpdateDataActions();
                 UpdateProjectPageDataCount();
+            });
+    connect(m_Context.DataNodes(),
+            &xq::core::DataNodeRegistryService::BindingsChanged,
+            this,
+            [this]() {
+                UpdateDataManagerSelection();
             });
 
     connect(m_Context.Projects(),
@@ -565,6 +611,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         UpdateDataWorkflowPage();
         UpdateProjectPage(nullptr);
     }
+    UpdateDataManagerSelection();
     UpdateProjectActions();
 
     m_Diagnostics = new QTextEdit(this);
@@ -697,6 +744,7 @@ void MainWindow::UpdateDataWorkflowPage()
         m_DataDisplayNameLabel->clear();
         m_DataSourcePathLabel->clear();
         m_DataWorkflowRoleLabel->clear();
+        UpdateDataManagerSelection();
         return;
     }
 
@@ -709,6 +757,7 @@ void MainWindow::UpdateDataWorkflowPage()
         QStringLiteral("Source: %1").arg(entry->SourcePath));
     m_DataWorkflowRoleLabel->setText(
         QStringLiteral("Role: %1").arg(RoleDisplayName(entry->WorkflowRole)));
+    UpdateDataManagerSelection();
 }
 
 void MainWindow::SaveProject()
@@ -1301,6 +1350,159 @@ bool MainWindow::ApplyDataManagerSearch(const QModelIndex& parent,
     }
 
     return anyVisibleChild;
+}
+
+void MainWindow::UpdateDataManagerSelection()
+{
+    if (!m_DataOpacitySlider || !m_DataOpacityValueLabel)
+        return;
+
+    const QString catalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+
+    m_InternalDataManagerUpdate = true;
+    const auto resetInternalUpdate = qScopeGuard([this]() {
+        m_InternalDataManagerUpdate = false;
+    });
+
+    float opacity = 1.0f;
+    if (node.IsNotNull())
+        node->GetFloatProperty("opacity", opacity);
+    const int opacityValue =
+        qBound(0, static_cast<int>(opacity * 100.0f + 0.5f), 100);
+    m_DataOpacitySlider->setValue(opacityValue);
+    m_DataOpacityValueLabel->setText(
+        QStringLiteral("%1%").arg(opacityValue));
+
+    if (m_DataColorButton)
+    {
+        if (node.IsNotNull())
+        {
+            float rgb[3] = {1.0f, 1.0f, 1.0f};
+            node->GetColor(rgb);
+            m_DataColorButton->setStyleSheet(ColorButtonStyle(rgb));
+        }
+        else
+        {
+            m_DataColorButton->setStyleSheet(QString());
+        }
+    }
+
+    UpdateDataManagerPropertiesTable();
+}
+
+void MainWindow::UpdateDataManagerPropertiesTable()
+{
+    if (!m_DataPropertiesTable || !m_DataPropertiesTable->isVisible())
+        return;
+
+    m_DataPropertiesTable->setRowCount(0);
+
+    const QString catalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    const auto* entry = m_Context.DataCatalog()->FindById(catalogEntryId);
+    auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+    if (!entry && node.IsNull())
+        return;
+
+    auto addRow = [this](const QString& key, const QString& value) {
+        const int row = m_DataPropertiesTable->rowCount();
+        m_DataPropertiesTable->insertRow(row);
+        m_DataPropertiesTable->setItem(row,
+                                       0,
+                                       new QTableWidgetItem(key));
+        m_DataPropertiesTable->setItem(row,
+                                       1,
+                                       new QTableWidgetItem(value));
+    };
+
+    if (node.IsNotNull())
+    {
+        addRow(QStringLiteral("Name"),
+               QString::fromStdString(node->GetName()));
+    }
+    else if (entry)
+    {
+        addRow(QStringLiteral("Name"), entry->DisplayName);
+    }
+
+    if (entry)
+    {
+        addRow(QStringLiteral("Catalog Id"), entry->Id);
+        addRow(QStringLiteral("Source"), entry->SourcePath);
+        if (!entry->Modality.trimmed().isEmpty())
+            addRow(QStringLiteral("Modality"), entry->Modality);
+        addRow(QStringLiteral("Role"), RoleDisplayName(entry->WorkflowRole));
+    }
+
+    if (node.IsNotNull())
+    {
+        if (node->GetData())
+        {
+            addRow(QStringLiteral("Data Type"),
+                   QString::fromStdString(node->GetData()->GetNameOfClass()));
+        }
+
+        bool visible = true;
+        node->GetBoolProperty("visible", visible);
+        addRow(QStringLiteral("Visible"),
+               visible ? QStringLiteral("true") : QStringLiteral("false"));
+
+        float opacity = 1.0f;
+        node->GetFloatProperty("opacity", opacity);
+        addRow(QStringLiteral("Opacity"),
+               QString::number(opacity, 'f', 2));
+
+        float rgb[3] = {1.0f, 1.0f, 1.0f};
+        node->GetColor(rgb);
+        addRow(QStringLiteral("Color"), FormatMitkColor(rgb));
+
+        if (auto* propertyList = node->GetPropertyList())
+        {
+            if (auto* propertyMap = propertyList->GetMap())
+            {
+                for (auto it = propertyMap->begin();
+                     it != propertyMap->end();
+                     ++it)
+                {
+                    if (!ShouldShowDataManagerProperty(it->first))
+                        continue;
+
+                    addRow(QString::fromStdString(it->first),
+                           it->second
+                               ? QString::fromStdString(
+                                     it->second->GetValueAsString())
+                               : QStringLiteral("<null>"));
+                }
+            }
+        }
+    }
+
+    m_DataPropertiesTable->resizeColumnsToContents();
+}
+
+void MainWindow::ApplySelectedDataOpacity(int value)
+{
+    if (m_DataOpacityValueLabel)
+    {
+        m_DataOpacityValueLabel->setText(
+            QStringLiteral("%1%").arg(value));
+    }
+
+    if (m_InternalDataManagerUpdate)
+        return;
+
+    const QString catalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+    if (node.IsNull())
+        return;
+
+    node->SetFloatProperty("opacity", static_cast<float>(value) / 100.0f);
+    UpdateDataManagerPropertiesTable();
+    if (auto* renderingManager = mitk::RenderingManager::GetInstance())
+        renderingManager->RequestUpdateAll();
 }
 
 QWidget* MainWindow::CreateWorkflowPage(const QString& id,

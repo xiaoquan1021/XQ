@@ -1,5 +1,6 @@
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataImportService.h"
+#include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_DataSelectionService.h"
 #include "Core/xq_WorkflowRegistry.h"
 #include "Presentation/xq_DataHierarchyModel.h"
@@ -15,6 +16,8 @@
 #include <QStackedWidget>
 #include <QTableWidget>
 #include <QTreeView>
+
+#include <mitkDataNode.h>
 
 #include <iostream>
 
@@ -40,6 +43,22 @@ xq::core::DataImportRequest MakeImageImport(const QString& id,
     request.Modality = QStringLiteral("CT");
     request.WorkflowRole = xq::core::DataWorkflowRole::Image;
     return request;
+}
+
+QString TableValue(QTableWidget* table, const QString& key)
+{
+    if (!table)
+        return QString();
+
+    for (int row = 0; row < table->rowCount(); ++row)
+    {
+        auto* keyItem = table->item(row, 0);
+        auto* valueItem = table->item(row, 1);
+        if (keyItem && valueItem && keyItem->text() == key)
+            return valueItem->text();
+    }
+
+    return QString();
 }
 
 } // namespace
@@ -172,6 +191,19 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto mitkNode = mitk::DataNode::New();
+    mitkNode->SetName("CTA A node");
+    mitkNode->SetFloatProperty("opacity", 0.42f);
+    mitkNode->SetColor(0.25f, 0.5f, 0.75f);
+    mitkNode->SetBoolProperty("visible", true);
+    if (Expect(context->DataNodes()->BindNode(QStringLiteral("image-001"),
+                                              mitkNode,
+                                              &errorMessage),
+               "test should bind imported catalog data to a MITK node"))
+    {
+        delete context;
+        return 1;
+    }
 
     app.processEvents();
 
@@ -252,6 +284,77 @@ int main(int argc, char** argv)
     if (Expect(context->DataSelection()->SelectedHierarchyNodeId() ==
                    QStringLiteral("data-image-001"),
                "selecting a data row should update selected hierarchy node"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(opacitySlider->value() == 42 &&
+                   opacityValue->text() == QStringLiteral("42%"),
+               "selecting a MITK-backed data row should load node opacity"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(colorButton->styleSheet().contains(QStringLiteral("#4080bf")),
+               "selecting a MITK-backed data row should reflect node color"))
+    {
+        delete context;
+        return 1;
+    }
+    if (!propertiesTable->isVisible())
+    {
+        propertiesToggle->setChecked(true);
+        app.processEvents();
+    }
+    if (Expect(TableValue(propertiesTable, QStringLiteral("Name")) ==
+                   QStringLiteral("CTA A node"),
+               "Data Manager properties should include MITK node name"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(TableValue(propertiesTable, QStringLiteral("Catalog Id")) ==
+                   QStringLiteral("image-001"),
+               "Data Manager properties should include catalog id"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(TableValue(propertiesTable, QStringLiteral("Source")) ==
+                   QStringLiteral("C:/studies/image-001"),
+               "Data Manager properties should include catalog source path"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(TableValue(propertiesTable, QStringLiteral("Role")) ==
+                   QStringLiteral("Image"),
+               "Data Manager properties should include workflow role"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(TableValue(propertiesTable, QStringLiteral("Opacity")) ==
+                   QStringLiteral("0.42"),
+               "Data Manager properties should include node opacity"))
+    {
+        delete context;
+        return 1;
+    }
+
+    opacitySlider->setValue(64);
+    app.processEvents();
+    float opacity = 0.0f;
+    mitkNode->GetFloatProperty("opacity", opacity);
+    if (Expect(opacity > 0.63f && opacity < 0.65f,
+               "Data Manager opacity slider should write selected MITK node"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(TableValue(propertiesTable, QStringLiteral("Opacity")) ==
+                   QStringLiteral("0.64"),
+               "Data Manager properties should refresh after opacity changes"))
     {
         delete context;
         return 1;
