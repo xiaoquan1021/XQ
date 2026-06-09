@@ -67,6 +67,17 @@ xq::core::DataImportRequest MakeImageImport()
     return request;
 }
 
+xq::core::DataImportRequest MakePathImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("path-001");
+    request.SourcePath = QStringLiteral("C:/studies/path-001");
+    request.DisplayName = QStringLiteral("Main Path");
+    request.Modality = QStringLiteral("Path");
+    request.WorkflowRole = xq::core::DataWorkflowRole::Path;
+    return request;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -203,10 +214,18 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    const auto importResult =
+    const auto imageImportResult =
         context->DataImports()->Import(MakeImageImport(), &errorMessage);
-    if (Expect(importResult.Succeeded,
+    if (Expect(imageImportResult.Succeeded,
                "Path image import should succeed"))
+    {
+        delete context;
+        return 1;
+    }
+    const auto pathImportResult =
+        context->DataImports()->Import(MakePathImport(), &errorMessage);
+    if (Expect(pathImportResult.Succeeded,
+               "Smooth Path path import should succeed"))
     {
         delete context;
         return 1;
@@ -235,8 +254,8 @@ int main(int argc, char** argv)
     actionButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Path failed: Smooth Path is not wired to a native Path runtime yet.")),
-               "Path action should report unsupported operation"))
+                   "Run Path failed: Active path node is required for path smoothing.")),
+               "Path action should report native smoothing validation"))
     {
         delete context;
         return 1;

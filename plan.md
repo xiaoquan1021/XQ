@@ -4234,6 +4234,52 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   native workflow gap.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Smooth Path Infrastructure Action
+
+1. Replace the `smooth-path` Path unsupported guard with a native
+   Infrastructure action.
+   - Let the Path workflow accept already-generated Path catalog entries.
+   - Resolve the selected Path node from `DataNodeRegistryService` or the
+     active node.
+   - Require a real `xq_VesselCenterline` payload with at least two geometry
+     points.
+   - Use `xq_PathPipelineService::ExtractPathFromCenterline` with smoothing
+     enabled to generate a new smoothed Path result.
+   - Commit a generated Path catalog/hierarchy entry, select it, and refresh
+     rendering on success.
+2. Keep the action honest about scope.
+   - Do not mutate the source path node.
+   - Do not implement interactive `edit-control-points` in this slice.
+   - Record metadata as path extraction/spline smoothing, not a new centerline
+     solve.
+3. Add RED C++ tests before implementation:
+   - Path workflow accepts Path role selections.
+   - `smooth-path` with a real `xq_VesselCenterline` should no longer return
+     the unsupported-operation diagnostic.
+   - A successful run should register a Path result, bind an
+     `xq_VesselCenterline`, record smoothing metadata, select the result, and
+     refresh rendering.
+   - Production composition should validate `smooth-path` through the
+     Infrastructure handler.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for path handler/context/composition tests
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

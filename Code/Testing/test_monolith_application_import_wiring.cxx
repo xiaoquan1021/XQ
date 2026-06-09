@@ -219,13 +219,18 @@ int main(int argc, char** argv)
                    &message),
                "configured path workflow should select smooth path"))
         return 1;
+    const auto smoothPathImportResult =
+        pathContext->DataImports()->Import(MakePathImport(), &message);
+    if (Expect(smoothPathImportResult.Succeeded,
+               "configured smooth path path import should succeed"))
+        return 1;
     if (Expect(!pathContext->WorkflowActions()->RunActiveWorkflowAction(
                    &message),
-               "configured smooth path action should use unsupported-operation guard"))
+               "configured smooth path action should use infrastructure validation"))
         return 1;
     if (Expect(message == QStringLiteral(
-                              "Smooth Path is not wired to a native Path runtime yet."),
-               "configured smooth path action should report unsupported operation"))
+                              "Active path node is required for path smoothing."),
+               "configured smooth path action should require a path node"))
         return 1;
 
     auto segmentationContext =

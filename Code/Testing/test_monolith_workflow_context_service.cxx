@@ -266,6 +266,51 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    const auto pathImport =
+        context->DataImports()->Import(MakeImport(
+                                           QStringLiteral("path-001"),
+                                           QStringLiteral("Main Path"),
+                                           xq::core::DataWorkflowRole::Path),
+                                       &errorMessage);
+    if (Expect(pathImport.Succeeded, "path import should succeed"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(workflowSelection->SelectWorkflow(QStringLiteral("path")),
+               "path workflow should be selectable"))
+    {
+        delete context;
+        return 1;
+    }
+    snapshot = workflowContext->Snapshot();
+    if (Expect(contextChanges == 6,
+               "selecting path workflow with selected path should emit context change"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(snapshot.SelectedCatalogEntryId ==
+                   QStringLiteral("path-001"),
+               "workflow context should track selected path id"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(snapshot.SelectedDataRole ==
+                   xq::core::DataWorkflowRole::Path,
+               "workflow context should track selected path role"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(snapshot.HasCompatibleSelection,
+               "path data should be compatible with path workflow"))
+    {
+        delete context;
+        return 1;
+    }
+
     const auto modelImport =
         context->DataImports()->Import(MakeImport(
                                            QStringLiteral("model-001"),
@@ -277,8 +322,14 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(workflowSelection->SelectWorkflow(QStringLiteral("meshing")),
+               "meshing workflow should be selectable after path workflow"))
+    {
+        delete context;
+        return 1;
+    }
     snapshot = workflowContext->Snapshot();
-    if (Expect(contextChanges == 5,
+    if (Expect(contextChanges == 8,
                "selecting imported model should emit one context change"))
     {
         delete context;
@@ -312,7 +363,7 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
-    if (Expect(contextChanges == 5,
+    if (Expect(contextChanges == 8,
                "invalid workflow should not emit context change"))
     {
         delete context;

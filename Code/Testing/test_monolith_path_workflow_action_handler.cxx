@@ -13,6 +13,10 @@
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
 
+#include <xq_CenterlineSegment.h>
+#include <xq_PipelineDataUtils.h>
+#include <xq_VesselCenterline.h>
+
 #include <QCoreApplication>
 #include <QVariantList>
 
@@ -97,9 +101,38 @@ QVariantList Point(double x, double y, double z)
     return QVariantList{x, y, z};
 }
 
+mitk::Point3D PathPoint(double x, double y, double z)
+{
+    mitk::Point3D point;
+    point[0] = x;
+    point[1] = y;
+    point[2] = z;
+    return point;
+}
+
 QVariantList SeedPoints()
 {
     return QVariantList{Point(2.0, 10.0, 0.0), Point(18.0, 18.0, 0.0)};
+}
+
+mitk::DataNode::Pointer MakePathNode(const std::string& name)
+{
+    auto* segment = new xq_CenterlineSegment();
+    segment->ReplaceAnchors({PathPoint(0.0, 0.0, 0.0),
+                             PathPoint(5.0, 3.0, 0.0),
+                             PathPoint(10.0, 0.0, 0.0)});
+
+    auto centerline = xq_VesselCenterline::New();
+    centerline->SetSegment(segment);
+
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    node->SetData(centerline);
+    xq::pipeline::MarkNode(node, xq::pipeline::Stage::Path);
+    xq::pipeline::SetStringProperty(node,
+                                    xq::pipeline::kSourceImageProperty,
+                                    "Path CTA");
+    return node;
 }
 
 bool PreparePathWorkflow(xq::core::ApplicationContext& context)
@@ -114,6 +147,57 @@ bool PreparePathWorkflow(xq::core::ApplicationContext& context)
     const auto importResult = context.DataImports()->Import(MakeImport(),
                                                             &message);
     return importResult.Succeeded;
+}
+
+xq::core::DataImportRequest MakePathImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("path-001");
+    request.SourcePath = QStringLiteral("C:/studies/path-001.xqpth");
+    request.DisplayName = QStringLiteral("Main Path");
+    request.Modality = QStringLiteral("Path");
+    request.WorkflowRole = xq::core::DataWorkflowRole::Path;
+    return request;
+}
+
+bool PrepareSmoothPathWorkflow(xq::core::ApplicationContext& context)
+{
+    QString message;
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *context.WorkflowActions(),
+        context.WorkflowOperations());
+    if (!context.WorkflowSelection()->SelectWorkflow(QStringLiteral("path")))
+        return false;
+
+    const auto importResult = context.DataImports()->Import(MakePathImport(),
+                                                            &message);
+    if (!importResult.Succeeded)
+        return false;
+
+    if (!context.WorkflowOperations()->SelectOperation(
+            QStringLiteral("path"),
+            QStringLiteral("smooth-path"),
+            &message))
+    {
+        return false;
+    }
+
+    if (!context.WorkflowOperations()->SetParameterValue(
+            QStringLiteral("path"),
+            QStringLiteral("smooth-path"),
+            QStringLiteral("smoothing-factor"),
+            0.75,
+            &message))
+    {
+        return false;
+    }
+
+    return context.WorkflowOperations()->SetParameterValue(
+        QStringLiteral("path"),
+        QStringLiteral("smooth-path"),
+        QStringLiteral("iteration-count"),
+        16,
+        &message);
 }
 
 bool PreparePathWorkflow(xq::core::ApplicationContext& context,
@@ -305,9 +389,102 @@ int main(int argc, char** argv)
     {
         std::unique_ptr<xq::core::ApplicationContext> context(
             xq::core::ApplicationContext::CreateDefault());
-        if (Expect(PreparePathWorkflow(*context,
-                                       QStringLiteral("smooth-path")),
-                   "unsupported path smoothing fixture should prepare workflow"))
+        if (Expect(PrepareSmoothPathWorkflow(*context),
+                   "smooth path fixture should prepare workflow"))
+            return 1;
+
+        auto pathNode = MakePathNode("Main Path");
+        context->DataStorage()->Add(pathNode);
+        context->DataNodes()->BindNode(QStringLiteral("path-001"),
+                                       pathNode);
+
+        QString message;
+        FakeRenderRefreshService refresh;
+        if (Expect(xq::infrastructure::RegisterDynamicPathWorkflowActionHandler(
+                       *context,
+                       &refresh,
+                       &message),
+                   "smooth path fixture should install handler"))
+            return 1;
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "smooth path should create generated path"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral("Registered path result catalog entry."),
+                   "smooth path should report catalog commit success"))
+            return 1;
+
+        const auto* entry = context->DataCatalog()->FindById(
+            QStringLiteral("path-001-smooth-path"));
+        if (Expect(entry != nullptr &&
+                       entry->WorkflowRole ==
+                           xq::core::DataWorkflowRole::Path &&
+                       entry->SourcePath ==
+                           QStringLiteral(
+                               "xq://generated/path/path-001-smooth-path"),
+                   "smooth path should register generated catalog entry"))
+            return 1;
+
+        const auto* hierarchyNode = context->DataHierarchy()->FindNode(
+            QStringLiteral("data-path-001-smooth-path"));
+        if (Expect(hierarchyNode != nullptr &&
+                       hierarchyNode->DataCatalogEntryId ==
+                           QStringLiteral("path-001-smooth-path"),
+                   "smooth path should register generated hierarchy entry"))
+            return 1;
+
+        auto resultNode = context->DataNodes()->FindNode(
+            QStringLiteral("path-001-smooth-path"));
+        auto* path = resultNode.IsNotNull()
+                         ? dynamic_cast<xq_VesselCenterline*>(
+                               resultNode->GetData())
+                         : nullptr;
+        auto* segment = path ? path->GetSegment() : nullptr;
+        if (Expect(path != nullptr &&
+                       segment != nullptr &&
+                       segment->GetTraceVertexCount() >= 2,
+                   "smooth path should bind generated centerline geometry"))
+            return 1;
+
+        std::string smoothing;
+        std::string operation;
+        int sampleCount = 0;
+        if (Expect(resultNode.IsNotNull() &&
+                       resultNode->GetStringProperty(
+                           "xq.params.path.smoothing",
+                           smoothing) &&
+                       smoothing == "spline" &&
+                       resultNode->GetStringProperty("xq.path.operation",
+                                                     operation) &&
+                       operation == "smooth-path" &&
+                       resultNode->GetIntProperty(
+                           "xq.path.calculation_number",
+                           sampleCount) &&
+                       sampleCount == 16,
+                   "smooth path should record smoothing metadata"))
+            return 1;
+
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("path-001-smooth-path"),
+                   "smooth path should select generated path"))
+            return 1;
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "smooth path should refresh rendering after success"))
+            return 1;
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareSmoothPathWorkflow(*context),
+                   "missing smooth path node fixture should prepare workflow"))
             return 1;
 
         QString message;
@@ -315,16 +492,16 @@ int main(int argc, char** argv)
                        *context,
                        nullptr,
                        &message),
-                   "unsupported path smoothing fixture should install handler"))
+                   "missing smooth path node fixture should install handler"))
             return 1;
 
         if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
                        &message),
-                   "unsupported path smoothing should fail"))
+                   "smooth path should reject missing path node"))
             return 1;
         if (Expect(message == QStringLiteral(
-                                  "Smooth Path is not wired to a native Path runtime yet."),
-                   "unsupported path smoothing diagnostic should name operation"))
+                                  "Active path node is required for path smoothing."),
+                   "missing smooth path node diagnostic should be specific"))
         {
             std::cerr << message.toStdString() << '\n';
             return 1;

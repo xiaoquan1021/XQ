@@ -1,6 +1,61 @@
 # XQ Execution Log
 
-## Current Run: Loft Surface Modeling Infrastructure Action
+## Current Run: Smooth Path Infrastructure Action
+
+- Continued from clean pushed `feature/windows-monolith-foundation` state after
+  `loft-surface` was pushed as `1bb8e0d`.
+- Completed the active autonomous research refresh:
+  - Remaining exposed unsupported operations include Path `smooth-path` and
+    `edit-control-points`, Modeling `trim-branches`, ROM/MultiPhysics solver
+    follow-ups, and review actions.
+  - `smooth-path` is the next narrow native slice because
+    `xq_PathPipelineService::ExtractPathFromCenterline` already turns an
+    existing `xq_VesselCenterline` into a smoothed Path node with real
+    metadata.
+  - `edit-control-points` remains later work because it needs interactive
+    editing semantics rather than a batch generated result.
+- Added next executable phase to `plan.md`: Smooth Path Infrastructure Action.
+- Starting RED tests first:
+  - Path workflow should accept selected Path catalog entries.
+  - `smooth-path` should require a real Path DataNode.
+  - A valid `xq_VesselCenterline` should generate a smoothed Path result,
+    register catalog/hierarchy/data-node bindings, select it, and refresh
+    rendering.
+  - Production composition should validate `smooth-path` through the
+    Infrastructure handler rather than the unsupported-operation guard.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - Targeted `ctest` failed because Path workflow did not accept Path catalog
+    entries yet, so `smooth-path` failed at `Select compatible data before
+    running Path.` before reaching the native handler.
+- Implemented Smooth Path Infrastructure action:
+  - `WorkflowContextService` now lets the Path workflow accept generated Path
+    catalog entries.
+  - The dynamic Path handler now routes `smooth-path` to a native path.
+  - The handler resolves the selected `xq_VesselCenterline`, calls
+    `xq_PathPipelineService::ExtractPathFromCenterline` with smoothing enabled,
+    and stamps `smooth-path` preservation metadata.
+  - Successful runs register catalog/hierarchy/data-node bindings, select the
+    smoothed Path result, and refresh rendering.
+  - `edit-control-points` remains on the unsupported-operation guard.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(path_operation_page|workflow_context_service|path_workflow_action_handler|application_import_wiring)"`
+    passed: 4/4.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Smooth Path Infrastructure Action to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Previous Run: Loft Surface Modeling Infrastructure Action
 
 - Continued from clean `feature/windows-monolith-foundation` checkouts after
   `generate-surface-mesh` was pushed.

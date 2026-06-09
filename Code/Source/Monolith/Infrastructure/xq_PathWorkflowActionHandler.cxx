@@ -10,6 +10,8 @@
 #include "Core/xq_WorkflowOperationService.h"
 
 #include <xq_PathPipeline.h>
+#include <xq_PipelineDataUtils.h>
+#include <xq_VesselCenterline.h>
 
 #include <mitkImage.h>
 
@@ -26,6 +28,7 @@ namespace
 
 constexpr const char* kPathWorkflowId = "path";
 constexpr const char* kCreateCenterlineOperationId = "create-centerline";
+constexpr const char* kSmoothPathOperationId = "smooth-path";
 constexpr const char* kPathsFolderId = "paths";
 constexpr const char* kPathsFolderTitle = "Paths";
 
@@ -169,6 +172,19 @@ QString ResultDisplayName(const xq_PathPlanResult& pathResult)
     return QStringLiteral("Path result");
 }
 
+QString ResultDisplayName(const xq_PathExtractResult& pathResult)
+{
+    if (pathResult.node.IsNotNull())
+    {
+        const QString nodeName =
+            QString::fromStdString(pathResult.node->GetName()).trimmed();
+        if (!nodeName.isEmpty())
+            return nodeName;
+    }
+
+    return QStringLiteral("Path result");
+}
+
 QString PreflightCommitTarget(xq::core::ApplicationContext& context,
                               const QString& entryId)
 {
@@ -198,6 +214,53 @@ QString PreflightCommitTarget(xq::core::ApplicationContext& context,
 bool CommitPathResult(xq::core::ApplicationContext& context,
                       const QString& entryId,
                       const xq_PathPlanResult& pathResult,
+                      QString* message)
+{
+    xq::core::DataCatalogEntry entry;
+    entry.Id = entryId;
+    entry.DisplayName = ResultDisplayName(pathResult);
+    entry.SourcePath = VirtualSourcePath(entryId);
+    entry.Modality = QStringLiteral("Generated");
+    entry.WorkflowRole = xq::core::DataWorkflowRole::Path;
+
+    if (!context.DataCatalog()->RegisterEntry(entry, message))
+        return false;
+
+    if (!context.DataHierarchy()->FindNode(QString::fromLatin1(kPathsFolderId)))
+    {
+        if (!context.DataHierarchy()->AddFolder(
+                QString::fromLatin1(kPathsFolderId),
+                context.DataHierarchy()->RootId(),
+                QString::fromLatin1(kPathsFolderTitle),
+                message))
+        {
+            return false;
+        }
+    }
+
+    if (!context.DataHierarchy()->AddDataEntry(HierarchyNodeId(entryId),
+                                               QString::fromLatin1(kPathsFolderId),
+                                               entryId,
+                                               entry.DisplayName,
+                                               message))
+    {
+        return false;
+    }
+
+    if (context.DataNodes() &&
+        !context.DataNodes()->BindNode(entryId, pathResult.node, message))
+    {
+        return false;
+    }
+
+    SetMessage(message,
+               QStringLiteral("Registered path result catalog entry."));
+    return true;
+}
+
+bool CommitPathResult(xq::core::ApplicationContext& context,
+                      const QString& entryId,
+                      const xq_PathExtractResult& pathResult,
                       QString* message)
 {
     xq::core::DataCatalogEntry entry;
@@ -317,6 +380,87 @@ bool RunCreateCenterline(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool RunSmoothPath(xq::core::ApplicationContext& context,
+                   xq::core::RenderRefreshService* renderRefresh,
+                   const xq::core::WorkflowContextSnapshot& snapshot,
+                   const QString& operationId,
+                   QString* message)
+{
+    auto* operations = context.WorkflowOperations();
+    if (!operations)
+    {
+        SetMessage(message, QStringLiteral("Path operation service is required."));
+        return false;
+    }
+
+    const auto sourceNode = ResolveSourceNode(context, snapshot);
+    if (sourceNode.IsNull() ||
+        !xq::pipeline::HasStage(sourceNode.GetPointer(),
+                                xq::pipeline::Stage::Path) ||
+        dynamic_cast<xq_VesselCenterline*>(sourceNode->GetData()) == nullptr)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active path node is required for path smoothing."));
+        return false;
+    }
+
+    const QString entryId = ResultCatalogEntryId(snapshot, operationId);
+    const QString preflightMessage = PreflightCommitTarget(context, entryId);
+    if (!preflightMessage.isEmpty())
+    {
+        SetMessage(message, preflightMessage);
+        return false;
+    }
+
+    const QVariantMap parameters =
+        operations->ParameterValues(snapshot.WorkflowId, operationId);
+    const int sampleCount =
+        std::max(2,
+                 parameters.value(QStringLiteral("iteration-count"), 64)
+                     .toInt());
+
+    const QString sourceName =
+        QString::fromStdString(sourceNode->GetName()).trimmed();
+    xq_PathExtractRequest request;
+    request.pathName =
+        QStringLiteral("%1_smoothed").arg(sourceName).toStdString();
+    request.centerlineNodeName = sourceName.toStdString();
+    request.sampleCount = sampleCount;
+    request.smoothCurve = true;
+
+    auto pathResult =
+        xq_PathPipelineService::ExtractPathFromCenterline(
+            context.DataStorage().GetPointer(),
+            request);
+    if (!pathResult.ok)
+    {
+        SetMessage(message, FirstDiagnosticMessage(pathResult));
+        return false;
+    }
+
+    if (pathResult.node.IsNotNull())
+    {
+        pathResult.node->SetStringProperty("xq.path.operation",
+                                           "smooth-path");
+        pathResult.node->SetBoolProperty("xq.path.source_preserved", true);
+        pathResult.node->SetStringProperty(
+            "xq.path.capability.diagnostic",
+            "Smooth Path generated a new spline-smoothed Path from the "
+            "selected centerline. The source path node was not mutated.");
+    }
+
+    if (!CommitPathResult(context, entryId, pathResult, message))
+        return false;
+
+    QString selectionMessage;
+    context.DataSelection()->SelectCatalogEntry(entryId, &selectionMessage);
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicPathWorkflowActionHandler(
@@ -340,12 +484,22 @@ bool RegisterDynamicPathWorkflowActionHandler(
             }
 
             if (operationId !=
-                QString::fromLatin1(kCreateCenterlineOperationId))
+                    QString::fromLatin1(kCreateCenterlineOperationId) &&
+                operationId != QString::fromLatin1(kSmoothPathOperationId))
             {
                 return RunUnsupportedPathOperation(operations,
                                                    snapshot,
                                                    operationId,
                                                    taskMessage);
+            }
+
+            if (operationId == QString::fromLatin1(kSmoothPathOperationId))
+            {
+                return RunSmoothPath(context,
+                                     renderRefresh,
+                                     snapshot,
+                                     operationId,
+                                     taskMessage);
             }
 
             return RunCreateCenterline(context,

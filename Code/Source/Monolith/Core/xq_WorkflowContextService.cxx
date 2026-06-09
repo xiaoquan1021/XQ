@@ -89,7 +89,8 @@ QVector<DataWorkflowRole> WorkflowContextService::AcceptedDataRolesForWorkflow(
 
     if (workflowId == QStringLiteral("path"))
     {
-        return {DataWorkflowRole::Image};
+        return {DataWorkflowRole::Image,
+                DataWorkflowRole::Path};
     }
 
     if (workflowId == QStringLiteral("segmentation-2d") ||
