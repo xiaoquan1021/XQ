@@ -222,7 +222,9 @@ target_link_libraries(xqMonolithApplication
     PUBLIC
         xqMonolithInfrastructure
         xqMonolithPresentation
+        MitkQtWidgets
         Qt6::Core
+        Qt6::OpenGLWidgets
         Qt6::Widgets
 )
 

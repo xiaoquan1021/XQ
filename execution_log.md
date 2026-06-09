@@ -1,5 +1,51 @@
 # XQ Execution Log
 
+## Current Run: MITK Image Navigator Dock
+
+- Continued from pushed `f927c25` after the Workbench-style shell correction.
+- Current UI fidelity gap:
+  - `xqImageNavigatorDock` existed in the correct left-bottom Workbench
+    position, but still contained only a placeholder widget.
+  - The original XQ/MITK Workbench expectation is a real Image Navigator tied
+    to the active MITK multi-widget render windows.
+- RED test observed before production code:
+  - `test_monolith_main_window_workbench_layout` was extended to require
+    `MainWindow::SetImageNavigatorWidget()` and verify that the dock accepts
+    an installed navigator widget.
+  - The first build failed because `SetImageNavigatorWidget()` did not exist.
+- Implemented the slice:
+  - Added `MainWindow::SetImageNavigatorWidget()` and stored the
+    `xqImageNavigatorDock` pointer for production composition.
+  - Added `CreateMitkImageNavigator()` in the monolith composition layer.
+  - The navigator creates axial, sagittal, coronal, and time
+    `QmitkSliceNavigationWidget` controls.
+  - Axial/sagittal/coronal controls are wired to `QmitkStdMultiWidget`
+    render-window steppers; time is wired to MITK's time navigation
+    controller.
+  - `main.cxx` now installs the real MITK Image Navigator after creating the
+    `QmitkStdMultiWidget` render host.
+- Debugging note:
+  - The first full build failed with
+    `fatal error C1083: Cannot open include file: 'QmitkRenderWindow.h'`
+    because `xqMonolithApplication` used MITK QtWidgets headers but did not
+    link the `MitkQtWidgets` target.
+  - Fixed the build graph by adding `MitkQtWidgets` and
+    `Qt6::OpenGLWidgets` to `xqMonolithApplication`.
+- Targeted verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release -R "test_monolith_main_window_workbench_layout|test_monolith_simulation_operation_pages|test_monolith_application_import_wiring" --output-on-failure --timeout 120`
+    passed: 3/3.
+- Full verification before commit:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - Full XQ `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 74/74.
+  - Runtime smoke launched `build\windows-msvc-release\bin\XQ.exe`, kept it
+    alive for 10 seconds, and closed it cleanly.
+  - `git diff --check` passed in both XQ and Externals.
+
 ## Current Run: Windows V1 Solver Execution Scope Decision
 
 - Continued from `006b652` with the user's clarified decision:

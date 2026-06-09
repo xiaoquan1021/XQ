@@ -6,6 +6,7 @@
 
 class QAction;
 class QComboBox;
+class QDockWidget;
 class QFormLayout;
 class QLabel;
 class QListWidget;
@@ -38,6 +39,7 @@ public:
                         QWidget* parent = nullptr);
     void SetDataImportCommand(xq::core::DataImportCommand* command);
     void SetRenderHost(QWidget* renderHost);
+    void SetImageNavigatorWidget(QWidget* imageNavigator);
 
 private:
     QWidget* CreateWorkflowPage(const QString& id, const QString& title);
@@ -88,6 +90,7 @@ private:
     xq::core::DataImportCommand* m_DataImportCommand = nullptr;
     QListWidget* m_Navigation = nullptr;
     QStackedWidget* m_Pages = nullptr;
+    QDockWidget* m_ImageNavigatorDock = nullptr;
     QWidget* m_RenderHostContainer = nullptr;
     QWidget* m_RenderHost = nullptr;
     QTextEdit* m_Diagnostics = nullptr;

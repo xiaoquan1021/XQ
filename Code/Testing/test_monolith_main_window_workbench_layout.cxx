@@ -102,6 +102,18 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    auto* injectedNavigator = new QWidget;
+    injectedNavigator->setObjectName(
+        QStringLiteral("xqInjectedImageNavigator"));
+    window.SetImageNavigatorWidget(injectedNavigator);
+    app.processEvents();
+    if (Expect(imageNavigatorDock->widget() == injectedNavigator,
+               "Image Navigator dock should allow the monolith app to install the real MITK navigator widget"))
+    {
+        delete context;
+        return 1;
+    }
+
     auto* workflowDock =
         FindDock(window, QStringLiteral("xqWorkflowToolsDock"));
     if (Expect(workflowDock != nullptr,

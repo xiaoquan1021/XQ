@@ -235,6 +235,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     imageNavigatorDock->setObjectName(QStringLiteral("xqImageNavigatorDock"));
     imageNavigatorDock->setAllowedAreas(Qt::LeftDockWidgetArea |
                                         Qt::RightDockWidgetArea);
+    m_ImageNavigatorDock = imageNavigatorDock;
     auto* imageNavigatorPlaceholder = new QWidget(imageNavigatorDock);
     imageNavigatorPlaceholder->setObjectName(
         QStringLiteral("xqImageNavigatorPlaceholder"));
@@ -479,6 +480,21 @@ void MainWindow::SetRenderHost(QWidget* renderHost)
     m_RenderHost = renderHost;
     m_RenderHost->setParent(m_RenderHostContainer);
     layout->addWidget(m_RenderHost);
+}
+
+void MainWindow::SetImageNavigatorWidget(QWidget* imageNavigator)
+{
+    if (!imageNavigator || !m_ImageNavigatorDock)
+        return;
+
+    if (auto* currentWidget = m_ImageNavigatorDock->widget())
+    {
+        currentWidget->setParent(nullptr);
+        currentWidget->deleteLater();
+    }
+
+    imageNavigator->setParent(m_ImageNavigatorDock);
+    m_ImageNavigatorDock->setWidget(imageNavigator);
 }
 
 void MainWindow::AppendTaskHistoryRow(const xq::core::TaskRecord& task)

@@ -4773,3 +4773,27 @@ The next monolith slice is grounded in these comparable systems:
      `CTKWidgets.dll` is available at runtime.
    - `Start-XQ.cmd` provides a double-click launcher that routes through
      `scripts\run-xq.ps1` instead of launching `XQ.exe` directly.
+
+## Completed Phase: MITK Image Navigator Dock
+
+1. Replace the temporary Image Navigator placeholder with a MITK-backed
+   navigator widget in the monolith Workbench shell.
+   - Keep the original left-bottom Workbench dock placement.
+   - Provide axial, sagittal, coronal, and time slice controls.
+   - Attach axial/sagittal/coronal controls to the corresponding
+     `QmitkStdMultiWidget` render-window slice steppers.
+   - Attach the time control to MITK's time navigation controller.
+2. Keep Presentation testable.
+   - `MainWindow` exposes `SetImageNavigatorWidget()` so production
+     composition can install the MITK widget while layout tests can inject a
+     lightweight QWidget.
+   - `xqImageNavigatorDock` remains the stable object-name anchor for future
+     UI migration.
+3. Add regression coverage.
+   - `test_monolith_main_window_workbench_layout` verifies that the Image
+     Navigator dock accepts the installed widget and stays in the Workbench
+     left column.
+4. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for the Workbench layout and production composition
+   - full XQ and Externals test gates before commit.

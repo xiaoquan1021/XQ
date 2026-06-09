@@ -35,6 +35,8 @@ int main(int argc, char* argv[])
     renderHost->InitializeMultiWidget();
     renderHost->AddPlanesToDataStorage();
     window.SetRenderHost(renderHost);
+    window.SetImageNavigatorWidget(
+        xq::CreateMitkImageNavigator(*renderHost, &window));
 
     window.show();
 

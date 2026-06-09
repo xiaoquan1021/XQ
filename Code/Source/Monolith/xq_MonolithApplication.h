@@ -3,6 +3,9 @@
 
 #include <memory>
 
+class QWidget;
+class QmitkStdMultiWidget;
+
 namespace xq::core
 {
 class ApplicationContext;
@@ -40,6 +43,9 @@ struct ConfiguredMainWindow
 std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
     xq::core::ApplicationContext& context,
     xq::core::FileImportPathProvider* pathProvider = nullptr);
+
+QWidget* CreateMitkImageNavigator(QmitkStdMultiWidget& multiWidget,
+                                  QWidget* parent = nullptr);
 
 } // namespace xq
 
