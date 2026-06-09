@@ -5093,3 +5093,33 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted path/workflow UI tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Modeling Tool Panel Restore
+
+1. Restore the visible panel structure of the original
+   `xq_VascularModelingView` inside the monolith Modeling page.
+   - Add the legacy `Model:` selector row.
+   - Add the faces table anchor using `QTableWidget`.
+   - Add Create/Edit/Export operation tabs with stable object names.
+   - Add visible buttons for Loft Surface, Build Solid Model, and Trim
+     Branches, mapped to the monolith modeling operations.
+   - Keep the existing hidden monolith operation selector so current tests and
+     Core operation state remain compatible.
+2. Keep Core workflow operations authoritative.
+   - Modeling buttons call `WorkflowOperationService::SelectOperation()`.
+   - Core-driven operation changes still update the hidden selector.
+   - Selector-driven operation changes update the restored modeling buttons.
+3. Keep scope honest.
+   - Do not reintroduce BlueBerry/CTK view runtime.
+   - Do not implement the full face-table model or OCCT editing tools in this
+     slice.
+   - Real modeling execution continues through the existing monolith action
+     handlers.
+4. Add regression coverage.
+   - `test_monolith_modeling_meshing_operation_pages` verifies the restored
+     selector row, faces table, operation tabs, modeling buttons, operation
+     synchronization, parameter anchors, and existing run validation.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted modeling/workflow UI tests.
+   - full XQ and Externals test gates before commit.

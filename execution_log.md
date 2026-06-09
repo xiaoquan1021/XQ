@@ -4079,6 +4079,41 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Workbench Modeling Tool Panel Restore
+
+- Continued UI fidelity work from the fresh
+  `feature/windows-monolith-foundation` clone at
+  `C:\Users\OCEAN\Desktop\XIAOQUAN\XQ-fresh-ui`.
+- Red test observed:
+  - `test_monolith_modeling_meshing_operation_pages` failed on
+    `Modeling page should restore legacy model selector row` because the
+    monolith Modeling page still exposed only the generic workflow operation
+    shell.
+- Implemented the Modeling panel restoration:
+  - Restored the legacy `Model:` selector row.
+  - Added the faces table anchor.
+  - Added Create/Edit/Export operation tabs.
+  - Added visible Modeling buttons for Loft Surface, Build Solid Model, and
+    Trim Branches.
+  - Kept the hidden generic operation selector so existing Core operation
+    state and tests remain compatible.
+  - Wired Modeling buttons through `WorkflowOperationService` so toolbar,
+    selector, and button state stay synchronized.
+- Red/green target verification:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_modeling_meshing_operation_pages"`
+    passed: 1/1.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(modeling_meshing_operation_pages|main_window_workflow_selection|workflow_primary_action_page|application_import_wiring)"`
+    passed: 4/4.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Runtime smoke passed: `XQ.exe` launched and stayed running for 10 seconds.
+
 ## Current Run Final Update: Workbench Data Manager Panel Restore
 
 - Restored the monolith Data Manager dock to the original XQ Data Explorer

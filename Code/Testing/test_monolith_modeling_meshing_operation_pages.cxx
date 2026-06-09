@@ -10,8 +10,11 @@
 #include <QApplication>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QLabel>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QTabWidget>
+#include <QTableWidget>
 
 #include <iostream>
 
@@ -107,10 +110,78 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto* modelLabel =
+        window.findChild<QLabel*>(QStringLiteral("xqModelingModelLabel"));
+    auto* modelCombo =
+        window.findChild<QComboBox*>(
+            QStringLiteral("xqModelingModelSelector"));
+    auto* facesTable =
+        window.findChild<QTableWidget*>(
+            QStringLiteral("xqModelingFacesTable"));
+    auto* operationTabs =
+        window.findChild<QTabWidget*>(
+            QStringLiteral("xqModelingOperationTabs"));
+    auto* loftSurfaceButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqModelingLoftSurfaceButton"));
+    auto* buildSolidButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqModelingBuildSolidModelButton"));
+    auto* trimBranchesButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqModelingTrimBranchesButton"));
+    if (Expect(modelLabel != nullptr &&
+                   modelLabel->text() == QStringLiteral("Model:") &&
+                   modelCombo != nullptr,
+               "Modeling page should restore legacy model selector row"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(facesTable != nullptr &&
+                   facesTable->selectionMode() ==
+                       QAbstractItemView::SingleSelection,
+               "Modeling page should restore legacy faces table anchor"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(operationTabs != nullptr &&
+                   operationTabs->count() == 3 &&
+                   operationTabs->tabText(0) == QStringLiteral("Create") &&
+                   operationTabs->tabText(1) == QStringLiteral("Edit") &&
+                   operationTabs->tabText(2) == QStringLiteral("Export"),
+               "Modeling page should restore legacy operation tabs"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(loftSurfaceButton != nullptr &&
+                   buildSolidButton != nullptr &&
+                   trimBranchesButton != nullptr,
+               "Modeling page should restore legacy operation buttons"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(loftSurfaceButton->isCheckable() &&
+                   buildSolidButton->isCheckable() &&
+                   trimBranchesButton->isCheckable(),
+               "Modeling operation buttons should be checkable"))
+    {
+        delete context;
+        return 1;
+    }
 
     modelingSelector->setCurrentIndex(
         modelingSelector->findData(QStringLiteral("trim-branches")));
     app.processEvents();
+    if (Expect(trimBranchesButton->isChecked(),
+               "Modeling trim button should mirror selector changes"))
+    {
+        delete context;
+        return 1;
+    }
     auto* modelingButton =
         FindActionButton(window, QStringLiteral("modeling"));
     if (Expect(modelingButton != nullptr &&
@@ -129,6 +200,26 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    buildSolidButton->click();
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("modeling")) ==
+                   QStringLiteral("build-solid-model"),
+               "Modeling Build Solid button should update Core operation state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(modelingSelector->currentData().toString() ==
+                   QStringLiteral("build-solid-model") &&
+                   buildSolidButton->isChecked(),
+               "Modeling selector and tool button should stay synchronized"))
+    {
+        delete context;
+        return 1;
+    }
+    trimBranchesButton->click();
+    app.processEvents();
 
     QString errorMessage;
     const auto segmentationImport =

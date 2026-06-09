@@ -49,6 +49,7 @@
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QTableView>
+#include <QTabWidget>
 #include <QTextEdit>
 #include <QToolBar>
 #include <QTreeView>
@@ -1085,9 +1086,34 @@ void MainWindow::UpdateWorkflowOperationControls()
         }
     }
 
+    UpdateModelingToolButtons();
     UpdatePathToolButtons();
     UpdateSegmentation2DToolButtons();
     UpdateSegmentation3DToolButtons();
+}
+
+void MainWindow::UpdateModelingToolButtons()
+{
+    const QString selectedOperationId =
+        m_Context.WorkflowOperations()->SelectedOperationId(
+            QStringLiteral("modeling"));
+    const QStringList buttonObjectNames = {
+        QStringLiteral("xqModelingLoftSurfaceButton"),
+        QStringLiteral("xqModelingBuildSolidModelButton"),
+        QStringLiteral("xqModelingTrimBranchesButton"),
+    };
+
+    for (const auto& objectName : buttonObjectNames)
+    {
+        auto* button = findChild<QPushButton*>(objectName);
+        if (!button)
+            continue;
+
+        QSignalBlocker blocker(button);
+        button->setChecked(
+            button->property("xqOperationId").toString() ==
+            selectedOperationId);
+    }
 }
 
 void MainWindow::UpdatePathToolButtons()
@@ -2057,7 +2083,150 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                 parameterLayout->setSpacing(8);
                 m_WorkflowParameterPanels.insert(id, parameterPanel);
 
-                if (id == QStringLiteral("path"))
+                if (id == QStringLiteral("modeling"))
+                {
+                    operationSelector->setVisible(false);
+                    layout->addWidget(operationSelector);
+
+                    auto* selectorLayout = new QHBoxLayout();
+                    auto* modelLabel =
+                        new QLabel(QStringLiteral("Model:"), page);
+                    modelLabel->setObjectName(
+                        QStringLiteral("xqModelingModelLabel"));
+                    auto* modelSelector = new QComboBox(page);
+                    modelSelector->setObjectName(
+                        QStringLiteral("xqModelingModelSelector"));
+                    selectorLayout->addWidget(modelLabel);
+                    selectorLayout->addWidget(modelSelector, 1);
+                    layout->addLayout(selectorLayout);
+
+                    auto* facesTable = new QTableWidget(page);
+                    facesTable->setObjectName(
+                        QStringLiteral("xqModelingFacesTable"));
+                    facesTable->setMinimumHeight(150);
+                    facesTable->setSelectionMode(
+                        QAbstractItemView::SingleSelection);
+                    facesTable->setSelectionBehavior(
+                        QAbstractItemView::SelectRows);
+                    facesTable->setColumnCount(3);
+                    facesTable->setHorizontalHeaderLabels(
+                        {QStringLiteral("Face"),
+                         QStringLiteral("Type"),
+                         QStringLiteral("Visible")});
+                    layout->addWidget(facesTable);
+
+                    auto* operationTabs = new QTabWidget(page);
+                    operationTabs->setObjectName(
+                        QStringLiteral("xqModelingOperationTabs"));
+
+                    auto* createTab = new QWidget(operationTabs);
+                    auto* createLayout = new QVBoxLayout(createTab);
+                    auto* loftButton =
+                        new QPushButton(QStringLiteral("Create Model..."),
+                                        createTab);
+                    loftButton->setObjectName(
+                        QStringLiteral("xqModelingLoftSurfaceButton"));
+                    loftButton->setCheckable(true);
+                    loftButton->setProperty("xqOperationId",
+                                            QStringLiteral("loft-surface"));
+                    auto* deleteModelButton =
+                        new QPushButton(QStringLiteral("Delete Model"),
+                                        createTab);
+                    deleteModelButton->setObjectName(
+                        QStringLiteral("xqModelingDeleteModelButton"));
+                    deleteModelButton->setEnabled(false);
+                    createLayout->addWidget(loftButton);
+                    createLayout->addWidget(deleteModelButton);
+                    createLayout->addStretch(1);
+                    operationTabs->addTab(createTab, QStringLiteral("Create"));
+
+                    auto* editTab = new QWidget(operationTabs);
+                    auto* editLayout = new QVBoxLayout(editTab);
+                    auto* faceOpsGroup =
+                        new QGroupBox(QStringLiteral("Face Operations"),
+                                      editTab);
+                    faceOpsGroup->setObjectName(
+                        QStringLiteral("xqModelingFaceOperationsGroup"));
+                    auto* faceOpsLayout = new QVBoxLayout(faceOpsGroup);
+                    auto* buildSolidButton =
+                        new QPushButton(QStringLiteral("Build Solid Model"),
+                                        faceOpsGroup);
+                    buildSolidButton->setObjectName(QStringLiteral(
+                        "xqModelingBuildSolidModelButton"));
+                    buildSolidButton->setCheckable(true);
+                    buildSolidButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("build-solid-model"));
+                    auto* trimBranchesButton =
+                        new QPushButton(QStringLiteral("Trim Branches"),
+                                        faceOpsGroup);
+                    trimBranchesButton->setObjectName(
+                        QStringLiteral("xqModelingTrimBranchesButton"));
+                    trimBranchesButton->setCheckable(true);
+                    trimBranchesButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("trim-branches"));
+                    faceOpsLayout->addWidget(buildSolidButton);
+                    faceOpsLayout->addWidget(trimBranchesButton);
+                    editLayout->addWidget(faceOpsGroup);
+                    editLayout->addWidget(parameterPanel);
+                    editLayout->addStretch(1);
+                    operationTabs->addTab(editTab, QStringLiteral("Edit"));
+
+                    auto* exportTab = new QWidget(operationTabs);
+                    auto* exportLayout = new QVBoxLayout(exportTab);
+                    auto* exportButton =
+                        new QPushButton(QStringLiteral("Export Model (VTP/STL)..."),
+                                        exportTab);
+                    exportButton->setObjectName(
+                        QStringLiteral("xqModelingExportModelButton"));
+                    exportButton->setEnabled(false);
+                    auto* statsButton =
+                        new QPushButton(QStringLiteral("Model Statistics"),
+                                        exportTab);
+                    statsButton->setObjectName(
+                        QStringLiteral("xqModelingModelStatsButton"));
+                    statsButton->setEnabled(false);
+                    exportLayout->addWidget(exportButton);
+                    exportLayout->addWidget(statsButton);
+                    exportLayout->addStretch(1);
+                    operationTabs->addTab(exportTab, QStringLiteral("Export"));
+
+                    layout->addWidget(operationTabs);
+
+                    auto* toolButtons = new QButtonGroup(page);
+                    toolButtons->setExclusive(true);
+                    toolButtons->addButton(loftButton);
+                    toolButtons->addButton(buildSolidButton);
+                    toolButtons->addButton(trimBranchesButton);
+
+                    auto connectModelingButton =
+                        [this](QPushButton* button,
+                               const QString& operationId) {
+                            connect(button,
+                                    &QPushButton::clicked,
+                                    this,
+                                    [this, operationId]() {
+                                        QString message;
+                                        if (!m_Context.WorkflowOperations()
+                                                 ->SelectOperation(
+                                                     QStringLiteral("modeling"),
+                                                     operationId,
+                                                     &message))
+                                        {
+                                            m_Context.PostDiagnostic(message);
+                                        }
+                                        UpdateWorkflowOperationControls();
+                                    });
+                        };
+                    connectModelingButton(loftButton,
+                                          QStringLiteral("loft-surface"));
+                    connectModelingButton(buildSolidButton,
+                                          QStringLiteral("build-solid-model"));
+                    connectModelingButton(trimBranchesButton,
+                                          QStringLiteral("trim-branches"));
+                }
+                else if (id == QStringLiteral("path"))
                 {
                     operationSelector->setVisible(false);
                     layout->addWidget(operationSelector);
