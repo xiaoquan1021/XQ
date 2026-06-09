@@ -1,5 +1,37 @@
 # XQ Execution Log
 
+## Current Run: Native ROM and Coupled Solver Runtime Blocker
+
+- Continued from clean pushed `feature/windows-monolith-foundation` state after
+  `183c6c2`.
+- Re-scanned remaining unsupported/runtime guards:
+  - Active solver gaps are `rom-simulation/run-rom-solver` and
+    `multiphysics/run-coupled-solve`.
+  - `calibrate-boundary-conditions` and `review-coupled-results` are already
+    wired through native non-solver Infrastructure actions.
+- Re-scanned XQ source for real backend candidates:
+  - ROM code provides `xq_ROMJob`, `xq_MitkROMJob`, XML/project IO, job
+    creation, network/configuration metadata, and boundary-condition
+    calibration.
+  - MultiPhysics code provides `xq_MultiPhysicsJob`, XML/project IO, coupling
+    configuration metadata, and review for existing SimulationResult nodes.
+  - Legacy ROM and MultiPhysics views explicitly state native solver execution
+    is unavailable/disabled and that fake run/result nodes must not be
+    created.
+  - Flow Simulation remains the only current monolith workflow with a native
+    solver/run/import backend.
+- Re-scanned Externals recipes/manifests:
+  - No Windows-buildable ROM 1D/0D solver, coupled/FSI solver, or matching
+    result-import dependency is present.
+- Decision:
+  - Keep `run-rom-solver` and `run-coupled-solve` on deterministic
+    unsupported-operation guards.
+  - Do not create fake solver outputs or mark jobs as solver-run.
+  - Resume implementation only after a real solver backend and result import
+    contract are added to Externals/XQ with tests.
+- Added `Blocked Phase: Native ROM and Coupled Solver Runtime Integration` to
+  `plan.md`.
+
 ## Current Run: ROM Boundary Calibration Infrastructure Action
 
 - Continued from clean pushed `feature/windows-monolith-foundation` state after
