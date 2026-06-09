@@ -4079,6 +4079,43 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Workbench Tools Dock Readability Correction
+
+- Runtime screenshot QA after restoring workflow panels showed a real UI
+  regression:
+  - The right-side `Tools` dock still showed the workflow navigation list next
+    to the selected page.
+  - The selected tool page was squeezed to the right edge and was not readable
+    on startup.
+- Red tests observed:
+  - Extended `test_monolith_main_window_workbench_layout` first.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_main_window_workbench_layout"`
+    failed on `Workflow navigation should stay hidden so the right Tools dock shows the selected tool page`.
+  - After hiding navigation and making the page stack primary, the same test
+    failed on `Workflow Tools dock should be wide enough to show the selected tool page on startup`.
+- Implemented the Tools dock correction:
+  - Removed the visible horizontal workflow splitter from the Tools dock.
+  - Kept `xqWorkflowNavigation` alive but hidden for existing Core/list/page
+    synchronization behavior.
+  - Made `xqWorkflowPages` the primary visible content in
+    `xqWorkflowToolsPanel`.
+  - Set practical minimum widths for the Tools panel/page stack.
+  - Initialized the right dock width with `resizeDocks`.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(main_window_workbench_layout|main_window_workflow_selection|workflow_primary_action_page|simulation_operation_pages|modeling_meshing_operation_pages|path_operation_page|segmentation_operation_page)"`
+    passed: 7/7.
+- Final verification for this slice:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Runtime smoke started `build\windows-msvc-release\bin\XQ.exe`, kept it
+    alive for 10 seconds, and closed it successfully.
+
 ## Current Run Update: Workbench Modeling Tool Panel Restore
 
 - Continued UI fidelity work from the fresh

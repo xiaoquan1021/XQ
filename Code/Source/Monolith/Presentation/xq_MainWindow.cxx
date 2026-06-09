@@ -44,7 +44,6 @@
 #include <QSignalBlocker>
 #include <QSize>
 #include <QSlider>
-#include <QSplitter>
 #include <QSpinBox>
 #include <QStackedWidget>
 #include <QStatusBar>
@@ -602,27 +601,23 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
 
     auto* workflowPanel = new QWidget(workflowDock);
     workflowPanel->setObjectName(QStringLiteral("xqWorkflowToolsPanel"));
+    workflowPanel->setMinimumWidth(360);
     auto* workflowLayout = new QVBoxLayout(workflowPanel);
     workflowLayout->setContentsMargins(0, 0, 0, 0);
     workflowLayout->setSpacing(0);
 
-    auto* workflowSplitter = new QSplitter(Qt::Horizontal, workflowPanel);
-    workflowLayout->addWidget(workflowSplitter);
-
-    m_Navigation = new QListWidget(workflowSplitter);
+    m_Navigation = new QListWidget(workflowPanel);
     m_Navigation->setObjectName(QStringLiteral("xqWorkflowNavigation"));
-    m_Navigation->setMinimumWidth(140);
-    m_Navigation->setMaximumWidth(220);
+    m_Navigation->setVisible(false);
 
-    m_Pages = new QStackedWidget(workflowSplitter);
+    m_Pages = new QStackedWidget(workflowPanel);
     m_Pages->setObjectName(QStringLiteral("xqWorkflowPages"));
-    workflowSplitter->addWidget(m_Navigation);
-    workflowSplitter->addWidget(m_Pages);
-    workflowSplitter->setStretchFactor(0, 0);
-    workflowSplitter->setStretchFactor(1, 1);
+    m_Pages->setMinimumWidth(340);
+    workflowLayout->addWidget(m_Pages);
 
     workflowDock->setWidget(workflowPanel);
     addDockWidget(Qt::RightDockWidgetArea, workflowDock);
+    resizeDocks({workflowDock}, {380}, Qt::Horizontal);
 
     auto addDockToggleAction = [viewMenu](QDockWidget* dock,
                                           const QString& objectName) {

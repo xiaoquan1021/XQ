@@ -11,6 +11,7 @@
 #include <QStackedWidget>
 #include <QToolBar>
 #include <QTreeView>
+#include <QVBoxLayout>
 #include <QWidget>
 
 #include <iostream>
@@ -175,9 +176,34 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
-    if (Expect(workflowDock->findChild<QStackedWidget*>(
-                   QStringLiteral("xqWorkflowPages")) != nullptr,
+    auto* workflowNavigation = workflowDock->findChild<QListWidget*>(
+        QStringLiteral("xqWorkflowNavigation"));
+    auto* workflowPages = workflowDock->findChild<QStackedWidget*>(
+        QStringLiteral("xqWorkflowPages"));
+    if (Expect(workflowPages != nullptr,
                "Workflow dock should keep discoverable workflow pages"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(workflowNavigation != nullptr &&
+                   !workflowNavigation->isVisible(),
+               "Workflow navigation should stay hidden so the right Tools dock shows the selected tool page"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(workflowDock->widget() != nullptr &&
+                   workflowDock->widget()->layout() != nullptr &&
+                   workflowDock->widget()->layout()->indexOf(workflowPages) >=
+                       0,
+               "Workflow pages should be the primary visible Tools dock content"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(workflowDock->width() >= 320,
+               "Workflow Tools dock should be wide enough to show the selected tool page on startup"))
     {
         delete context;
         return 1;

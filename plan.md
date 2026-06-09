@@ -5223,3 +5223,27 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted ROM/MultiPhysics workflow UI tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Tools Dock Readability Correction
+
+1. Correct the right-side Tools dock after runtime screenshot QA.
+   - The previous monolith Tools dock displayed a horizontal navigation list
+     beside the selected page, which squeezed the real tool panel off screen.
+   - The original Workbench-style workflow entry point is the top toolbar, so
+     the Tools dock should show the selected tool page directly.
+2. Keep Core workflow selection intact.
+   - Preserve `xqWorkflowNavigation` as a hidden internal synchronization
+     widget for existing Core/list/page tests.
+   - Keep `xqWorkflowPages` as the active visible Tools dock content.
+   - Continue using the top `xqViewToolBar` actions as the visible workflow
+     switcher.
+3. Improve startup readability.
+   - Give the Tools dock/page stack a practical minimum width.
+   - Initialize the right dock width so selected workflow pages are readable
+     on startup instead of showing only a sliver.
+4. Add regression coverage.
+   - `test_monolith_main_window_workbench_layout` verifies hidden workflow
+     navigation, primary page-stack placement, and minimum startup width.
+5. Verification gate:
+   - targeted Workbench layout/workflow/page tests.
+   - full XQ and Externals test gates before commit.
