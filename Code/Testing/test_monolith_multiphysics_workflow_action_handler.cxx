@@ -119,6 +119,19 @@ bool PrepareMultiPhysicsWorkflow(xq::core::ApplicationContext& context)
     return importResult.Succeeded;
 }
 
+bool PrepareMultiPhysicsWorkflow(xq::core::ApplicationContext& context,
+                                 const QString& operationId)
+{
+    if (!PrepareMultiPhysicsWorkflow(context))
+        return false;
+
+    QString message;
+    return context.WorkflowOperations()->SelectOperation(
+        QStringLiteral("multiphysics"),
+        operationId,
+        &message);
+}
+
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
 {
 public:
@@ -309,6 +322,82 @@ int main(int argc, char** argv)
                            context->DataStorage().GetPointer(),
                    "MultiPhysics handler should refresh rendering after success"))
         {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareMultiPhysicsWorkflow(
+                       *context,
+                       QStringLiteral("run-coupled-solve")),
+                   "unsupported coupled solve fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicMultiPhysicsWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "unsupported coupled solve fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported coupled solve should fail"))
+        {
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "Coupled Solve is not wired to a native Multi-Physics runtime yet."),
+                   "unsupported coupled solve diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareMultiPhysicsWorkflow(
+                       *context,
+                       QStringLiteral("review-coupled-results")),
+                   "unsupported coupled review fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        QString message;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicMultiPhysicsWorkflowActionHandler(
+                        *context,
+                        nullptr,
+                        &message),
+                "unsupported coupled review fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "unsupported coupled review should fail"))
+        {
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "Review Coupled Results is not wired to a native Multi-Physics runtime yet."),
+                   "unsupported coupled review diagnostic should name operation"))
+        {
+            std::cerr << message.toStdString() << '\n';
             return 1;
         }
     }

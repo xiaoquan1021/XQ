@@ -3,6 +3,7 @@
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
+#include "Infrastructure/xq_MultiPhysicsWorkflowActionHandler.h"
 #include "Infrastructure/xq_RomSimulationWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 
@@ -84,6 +85,9 @@ int main(int argc, char** argv)
         *context->WorkflowActions(),
         context->WorkflowOperations());
     xq::infrastructure::RegisterDynamicRomSimulationWorkflowActionHandler(
+        *context,
+        nullptr);
+    xq::infrastructure::RegisterDynamicMultiPhysicsWorkflowActionHandler(
         *context,
         nullptr);
     xq::presentation::MainWindow window(*context);
@@ -373,8 +377,8 @@ int main(int argc, char** argv)
     multiphysicsButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Multi-Physics succeeded: Coupled Solve multiphysics operation accepted Coupled Mesh.")),
-               "MultiPhysics action should report selected operation"))
+                   "Run Multi-Physics failed: Coupled Solve is not wired to a native Multi-Physics runtime yet.")),
+               "MultiPhysics action should report unsupported operation"))
     {
         delete context;
         return 1;

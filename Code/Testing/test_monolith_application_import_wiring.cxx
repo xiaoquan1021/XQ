@@ -539,6 +539,20 @@ int main(int argc, char** argv)
                               "Active ROM or simulation prep node is required for multiphysics coupling."),
                "configured MultiPhysics action should require a MITK ROM or simulation prep node"))
         return 1;
+    if (Expect(multiphysicsContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("multiphysics"),
+                   QStringLiteral("review-coupled-results"),
+                   &message),
+               "configured MultiPhysics workflow should select coupled review"))
+        return 1;
+    if (Expect(!multiphysicsContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured MultiPhysics review should use unsupported-operation guard"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Review Coupled Results is not wired to a native Multi-Physics runtime yet."),
+               "configured MultiPhysics review should report unsupported operation"))
+        return 1;
 
     auto pythonApiContext =
         std::unique_ptr<xq::core::ApplicationContext>(

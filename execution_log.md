@@ -3208,6 +3208,48 @@
 - Promoted ROM Unsupported Operation Guard to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: MultiPhysics Unsupported Operation Guard
+
+- Completed autonomous research refresh:
+  - Rechecked the remaining configured monolith Infrastructure placeholders.
+  - `multiphysics/configure-coupling` already creates a generated
+    `xq_MitkMultiPhysicsJob`, but `multiphysics/run-coupled-solve` and
+    `multiphysics/review-coupled-results` still report successful placeholder
+    execution.
+  - Chosen next slice: keep `configure-coupling` real and guard unsupported
+    MultiPhysics operations with deterministic failure diagnostics.
+- Red tests observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed after
+    adding the new MultiPhysics guard tests.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(multiphysics_workflow_action_handler|simulation_operation_pages|application_import_wiring)"`
+    failed: 0/3, because unsupported MultiPhysics operations still returned
+    placeholder success.
+- Implemented MultiPhysics unsupported-operation guard:
+  - `multiphysics/configure-coupling` continues to create a generated
+    `xq_MitkMultiPhysicsJob`.
+  - `multiphysics/run-coupled-solve` and
+    `multiphysics/review-coupled-results` now return failure with diagnostics
+    naming the selected operation and Multi-Physics workflow.
+  - The Simulation operation page test now registers the Infrastructure
+    MultiPhysics handler so UI diagnostics cover production composition
+    instead of Domain placeholder behavior.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(multiphysics_workflow_action_handler|simulation_operation_pages|application_import_wiring)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 17/17.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted MultiPhysics Unsupported Operation Guard to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run: Python API Availability Infrastructure Action Handler
 
 - Continued the requested unattended loop after the Python API phase was made

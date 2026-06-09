@@ -87,6 +87,23 @@ bool RunPlaceholderMultiPhysicsOperation(
     return true;
 }
 
+bool RunUnsupportedMultiPhysicsOperation(
+    xq::core::WorkflowOperationService* operations,
+    const xq::core::WorkflowContextSnapshot& snapshot,
+    const QString& operationId,
+    QString* message)
+{
+    const QString operationTitle =
+        OperationTitle(operations, snapshot.WorkflowId, operationId);
+    const QString displayOperation =
+        operationTitle.trimmed().isEmpty() ? operationId : operationTitle;
+    SetMessage(message,
+               QStringLiteral(
+                   "%1 is not wired to a native %2 runtime yet.")
+                   .arg(displayOperation, snapshot.WorkflowTitle));
+    return false;
+}
+
 QString ResultCatalogEntryId(
     const xq::core::WorkflowContextSnapshot& snapshot,
     const QString& operationId)
@@ -474,8 +491,9 @@ bool RegisterDynamicMultiPhysicsWorkflowActionHandler(
             if (operationId !=
                 QString::fromLatin1(kConfigureCouplingOperationId))
             {
-                return RunPlaceholderMultiPhysicsOperation(operations,
+                return RunUnsupportedMultiPhysicsOperation(operations,
                                                            snapshot,
+                                                           operationId,
                                                            taskMessage);
             }
 
