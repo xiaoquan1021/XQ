@@ -19,11 +19,13 @@
 
 #include <QAction>
 #include <QActionGroup>
+#include <QButtonGroup>
 #include <QComboBox>
 #include <QDockWidget>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QFrame>
+#include <QGroupBox>
 #include <QHeaderView>
 #include <QHBoxLayout>
 #include <QIcon>
@@ -1081,6 +1083,32 @@ void MainWindow::UpdateWorkflowOperationControls()
             selector->setCurrentIndex(index);
         }
     }
+
+    UpdateSegmentation3DToolButtons();
+}
+
+void MainWindow::UpdateSegmentation3DToolButtons()
+{
+    const QString selectedOperationId =
+        m_Context.WorkflowOperations()->SelectedOperationId(
+            QStringLiteral("segmentation-3d"));
+    const QStringList buttonObjectNames = {
+        QStringLiteral("xqSegmentation3DThresholdButton"),
+        QStringLiteral("xqSegmentation3DRegionGrowButton"),
+        QStringLiteral("xqSegmentation3DSurfacePreviewButton"),
+    };
+
+    for (const auto& objectName : buttonObjectNames)
+    {
+        auto* button = findChild<QPushButton*>(objectName);
+        if (!button)
+            continue;
+
+        QSignalBlocker blocker(button);
+        button->setChecked(
+            button->property("xqOperationId").toString() ==
+            selectedOperationId);
+    }
 }
 
 void MainWindow::RebuildWorkflowParameterPanel(const QString& workflowId)
@@ -1961,7 +1989,6 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                         });
 
                 m_WorkflowOperationSelectors.insert(id, operationSelector);
-                layout->addWidget(operationSelector);
 
                 auto* parameterPanel = new QWidget(page);
                 if (id == QStringLiteral("image-preprocessing"))
@@ -1978,7 +2005,110 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                 parameterLayout->setContentsMargins(0, 0, 0, 0);
                 parameterLayout->setSpacing(8);
                 m_WorkflowParameterPanels.insert(id, parameterPanel);
-                layout->addWidget(parameterPanel);
+
+                if (id == QStringLiteral("segmentation-3d"))
+                {
+                    auto* referenceGroup =
+                        new QGroupBox(QStringLiteral("Reference Image"), page);
+                    referenceGroup->setObjectName(QStringLiteral(
+                        "xqSegmentation3DReferenceImageGroup"));
+                    auto* referenceLayout = new QHBoxLayout(referenceGroup);
+                    referenceLayout->setContentsMargins(8, 8, 8, 8);
+                    operationSelector->setVisible(false);
+                    layout->addWidget(operationSelector);
+                    auto* imageComboBox = new QComboBox(referenceGroup);
+                    imageComboBox->setObjectName(QStringLiteral(
+                        "xqSegmentation3DImageComboBox"));
+                    referenceLayout->addWidget(imageComboBox, 1);
+                    auto* refreshButton =
+                        new QPushButton(QStringLiteral("Refresh"),
+                                        referenceGroup);
+                    refreshButton->setObjectName(QStringLiteral(
+                        "xqSegmentation3DRefreshButton"));
+                    referenceLayout->addWidget(refreshButton);
+                    layout->addWidget(referenceGroup);
+
+                    auto* toolsGroup =
+                        new QGroupBox(QStringLiteral("Segmentation Tools"),
+                                      page);
+                    toolsGroup->setObjectName(QStringLiteral(
+                        "xqSegmentation3DSegmentationToolsGroup"));
+                    auto* toolsLayout = new QHBoxLayout(toolsGroup);
+                    toolsLayout->setContentsMargins(8, 8, 8, 8);
+                    auto* toolButtons = new QButtonGroup(toolsGroup);
+                    toolButtons->setExclusive(true);
+
+                    auto addToolButton = [this, toolsGroup, toolsLayout,
+                                          toolButtons](const QString& text,
+                                                       const QString& objectName,
+                                                       const QString& operationId) {
+                        auto* button = new QPushButton(text, toolsGroup);
+                        button->setObjectName(objectName);
+                        button->setCheckable(true);
+                        button->setProperty("xqOperationId", operationId);
+                        toolButtons->addButton(button);
+                        toolsLayout->addWidget(button);
+                        connect(button,
+                                &QPushButton::clicked,
+                                this,
+                                [this, operationId]() {
+                                    QString message;
+                                    if (!m_Context.WorkflowOperations()
+                                             ->SelectOperation(
+                                                 QStringLiteral(
+                                                     "segmentation-3d"),
+                                                 operationId,
+                                                 &message))
+                                    {
+                                        m_Context.PostDiagnostic(message);
+                                    }
+                                    UpdateWorkflowOperationControls();
+                                });
+                        return button;
+                    };
+
+                    addToolButton(QStringLiteral("Threshold"),
+                                  QStringLiteral(
+                                      "xqSegmentation3DThresholdButton"),
+                                  QStringLiteral("threshold-region"));
+                    addToolButton(QStringLiteral("Region Grow"),
+                                  QStringLiteral(
+                                      "xqSegmentation3DRegionGrowButton"),
+                                  QStringLiteral("region-growing"));
+                    addToolButton(QStringLiteral("Surface Preview"),
+                                  QStringLiteral(
+                                      "xqSegmentation3DSurfacePreviewButton"),
+                                  QStringLiteral("surface-preview"));
+                    layout->addWidget(toolsGroup);
+
+                    auto* parametersGroup =
+                        new QGroupBox(QStringLiteral("Tool Parameters"),
+                                      page);
+                    parametersGroup->setObjectName(QStringLiteral(
+                        "xqSegmentation3DToolParametersGroup"));
+                    auto* parametersLayout =
+                        new QVBoxLayout(parametersGroup);
+                    parametersLayout->setContentsMargins(8, 8, 8, 8);
+                    auto* parameterStack =
+                        new QStackedWidget(parametersGroup);
+                    parameterStack->setObjectName(QStringLiteral(
+                        "xqSegmentation3DToolParameterStack"));
+                    auto* parameterStackPage =
+                        new QWidget(parameterStack);
+                    auto* parameterStackLayout =
+                        new QVBoxLayout(parameterStackPage);
+                    parameterStackLayout->setContentsMargins(0, 0, 0, 0);
+                    parameterPanel->setParent(parameterStackPage);
+                    parameterStackLayout->addWidget(parameterPanel);
+                    parameterStack->addWidget(parameterStackPage);
+                    parametersLayout->addWidget(parameterStack);
+                    layout->addWidget(parametersGroup);
+                }
+                else
+                {
+                    layout->addWidget(operationSelector);
+                    layout->addWidget(parameterPanel);
+                }
             }
 
             auto* statusLabel = new QLabel(page);

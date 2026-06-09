@@ -5008,3 +5008,30 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted Data Manager/DataManagement tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench 3D Segmentation Tool Panel Restore
+
+1. Restore the visible panel structure of the original
+   `xq_MitkSegmentationView` inside the monolith 3D Segmentation page.
+   - Add `Reference Image`, `Segmentation Tools`, and `Tool Parameters`
+     group boxes with stable object names.
+   - Add visible tool buttons for Threshold, Region Grow, and Surface Preview.
+   - Keep the existing hidden monolith operation selector so current tests and
+     Core operation state remain compatible.
+2. Keep Core workflow operations authoritative.
+   - Tool buttons call `WorkflowOperationService::SelectOperation()`.
+   - Core-driven operation changes still update the hidden selector.
+   - Selector-driven operation changes update the restored tool buttons.
+3. Keep scope honest.
+   - Do not reintroduce BlueBerry/CTK view runtime.
+   - Do not wire new solver or placeholder execution.
+   - Real segmentation execution continues through the existing monolith
+     action handlers.
+4. Add regression coverage.
+   - `test_monolith_segmentation_operation_page` verifies the restored 3D
+     panel groups, tool buttons, checkable state, operation synchronization,
+     parameter anchors, and existing run validation.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted segmentation/workflow UI tests.
+   - full XQ and Externals test gates before commit.

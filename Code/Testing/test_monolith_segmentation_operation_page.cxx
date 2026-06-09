@@ -9,8 +9,10 @@
 #include <QApplication>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QGroupBox>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QStackedWidget>
 
 #include <iostream>
 
@@ -229,10 +231,73 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto* referenceImageGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqSegmentation3DReferenceImageGroup"));
+    auto* segmentationToolsGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqSegmentation3DSegmentationToolsGroup"));
+    auto* toolParametersGroup =
+        window.findChild<QGroupBox*>(
+            QStringLiteral("xqSegmentation3DToolParametersGroup"));
+    auto* thresholdToolButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqSegmentation3DThresholdButton"));
+    auto* regionGrowToolButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqSegmentation3DRegionGrowButton"));
+    auto* surfacePreviewToolButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqSegmentation3DSurfacePreviewButton"));
+    auto* parameterStack =
+        window.findChild<QStackedWidget*>(
+            QStringLiteral("xqSegmentation3DToolParameterStack"));
+    if (Expect(referenceImageGroup != nullptr &&
+                   referenceImageGroup->title() ==
+                       QStringLiteral("Reference Image") &&
+                   segmentationToolsGroup != nullptr &&
+                   segmentationToolsGroup->title() ==
+                       QStringLiteral("Segmentation Tools") &&
+                   toolParametersGroup != nullptr &&
+                   toolParametersGroup->title() ==
+                       QStringLiteral("Tool Parameters"),
+               "3D segmentation page should restore legacy tool panel groups"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(thresholdToolButton != nullptr &&
+                   regionGrowToolButton != nullptr &&
+                   surfacePreviewToolButton != nullptr,
+               "3D segmentation page should restore legacy tool buttons"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(thresholdToolButton->isCheckable() &&
+                   regionGrowToolButton->isCheckable() &&
+                   surfacePreviewToolButton->isCheckable(),
+               "3D segmentation tool buttons should be checkable"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(parameterStack != nullptr,
+               "3D segmentation page should restore parameter stack anchor"))
+    {
+        delete context;
+        return 1;
+    }
 
     segmentation3dSelector->setCurrentIndex(
         segmentation3dSelector->findData(QStringLiteral("threshold-region")));
     app.processEvents();
+    if (Expect(thresholdToolButton->isChecked(),
+               "3D threshold tool button should mirror selected operation"))
+    {
+        delete context;
+        return 1;
+    }
     auto* segmentation3dButton =
         FindActionButton(window, QStringLiteral("segmentation-3d"));
     if (Expect(segmentation3dButton != nullptr &&
@@ -254,6 +319,43 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    regionGrowToolButton->click();
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("segmentation-3d")) ==
+                   QStringLiteral("region-growing"),
+               "3D Region Grow tool button should update Core operation state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation3dSelector->currentData().toString() ==
+                   QStringLiteral("region-growing") &&
+                   regionGrowToolButton->isChecked(),
+               "3D selector and tool button should stay synchronized"))
+    {
+        delete context;
+        return 1;
+    }
+    surfacePreviewToolButton->click();
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("segmentation-3d")) ==
+                   QStringLiteral("surface-preview"),
+               "3D Surface Preview tool button should update Core operation state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(segmentation3dButton->text() ==
+                   QStringLiteral("Run Surface Preview"),
+               "3D action should update from restored tool buttons"))
+    {
+        delete context;
+        return 1;
+    }
+    thresholdToolButton->click();
+    app.processEvents();
     if (Expect(context->WorkflowSelection()->SelectWorkflow(
                    QStringLiteral("segmentation-3d")),
                "3D segmentation workflow should be selectable before run"))
