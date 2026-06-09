@@ -13,6 +13,7 @@
 #include "Domain/xq_WorkflowActionHandlers.h"
 
 #include <xq_CenterlineSegment.h>
+#include <xq_LumenSurface.h>
 #include <xq_MitkSeg3D.h>
 #include <xq_PipelineDataUtils.h>
 #include <xq_ProfileGroup.h>
@@ -24,6 +25,8 @@
 #include <mitkImage.h>
 
 #include <vtkImageData.h>
+#include <vtkPolyData.h>
+#include <vtkSphereSource.h>
 #include <vtkSmartPointer.h>
 
 #include <iostream>
@@ -121,6 +124,34 @@ mitk::DataNode::Pointer MakeImageNode(const std::string& name)
     return node;
 }
 
+mitk::DataNode::Pointer MakeSegmentation3DNode(const std::string& name)
+{
+    auto sphere = vtkSmartPointer<vtkSphereSource>::New();
+    sphere->SetRadius(4.0);
+    sphere->SetThetaResolution(16);
+    sphere->SetPhiResolution(12);
+    sphere->Update();
+
+    auto surface = vtkSmartPointer<vtkPolyData>::New();
+    surface->DeepCopy(sphere->GetOutput());
+
+    auto segmentation = xq_MitkSeg3D::New();
+    segmentation->SetMethod(xq_MitkSeg3D::Seg3DMethod::THRESHOLD);
+    segmentation->SetLowerThreshold(50.0);
+    segmentation->SetUpperThreshold(150.0);
+    segmentation->SetSurfaceMesh(surface);
+
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    node->SetData(segmentation);
+    xq::pipeline::MarkNode(node, xq::pipeline::Stage::Segmentation3D);
+    xq::pipeline::SetStringProperty(
+        node,
+        xq::pipeline::kSourceImageProperty,
+        "CTA Image");
+    return node;
+}
+
 xq::core::DataImportRequest MakePathImport()
 {
     xq::core::DataImportRequest request;
@@ -140,6 +171,17 @@ xq::core::DataImportRequest MakeImageImport()
     request.DisplayName = QStringLiteral("CTA Image");
     request.Modality = QStringLiteral("CT");
     request.WorkflowRole = xq::core::DataWorkflowRole::Image;
+    return request;
+}
+
+xq::core::DataImportRequest MakeSegmentationImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("seg3d-001");
+    request.SourcePath = QStringLiteral("C:/studies/seg3d-001.xqseg3d");
+    request.DisplayName = QStringLiteral("CTA Threshold Segmentation");
+    request.Modality = QStringLiteral("Segmentation");
+    request.WorkflowRole = xq::core::DataWorkflowRole::Segmentation;
     return request;
 }
 
@@ -189,6 +231,31 @@ bool PrepareSegmentation3DWorkflow(xq::core::ApplicationContext& context,
 
     const auto importResult = context.DataImports()->Import(MakeImageImport(),
                                                             &message);
+    return importResult.Succeeded;
+}
+
+bool PrepareSegmentation3DPreviewWorkflow(
+    xq::core::ApplicationContext& context)
+{
+    QString message;
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *context.WorkflowActions(),
+        context.WorkflowOperations());
+    if (!context.WorkflowSelection()->SelectWorkflow(
+            QStringLiteral("segmentation-3d")))
+    {
+        return false;
+    }
+    if (!context.WorkflowOperations()->SelectOperation(
+            QStringLiteral("segmentation-3d"),
+            QStringLiteral("surface-preview"),
+            &message))
+    {
+        return false;
+    }
+
+    const auto importResult =
+        context.DataImports()->Import(MakeSegmentationImport(), &message);
     return importResult.Succeeded;
 }
 
@@ -696,6 +763,137 @@ int main(int argc, char** argv)
                        refresh.LastDataStorage.GetPointer() ==
                            context->DataStorage().GetPointer(),
                    "3D region growing should refresh rendering after success"))
+        {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareSegmentation3DPreviewWorkflow(*context),
+                   "3D surface preview fixture should prepare workflow"))
+        {
+            return 1;
+        }
+        QString message;
+        if (Expect(context->WorkflowOperations()->SetParameterValue(
+                       QStringLiteral("segmentation-3d"),
+                       QStringLiteral("surface-preview"),
+                       QStringLiteral("smoothing-iterations"),
+                       8,
+                       &message),
+                   "3D surface preview fixture should set smoothing iterations"))
+        {
+            return 1;
+        }
+
+        auto segmentationNode =
+            MakeSegmentation3DNode("CTA Threshold Segmentation");
+        context->DataStorage()->Add(segmentationNode);
+        context->DataNodes()->BindNode(QStringLiteral("seg3d-001"),
+                                       segmentationNode);
+
+        FakeRenderRefreshService refresh;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicSegmentationWorkflowActionHandler(
+                        *context,
+                        &refresh,
+                        &message),
+                "3D surface preview fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "3D surface preview should create preview result"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Registered 3D segmentation result catalog entry."),
+                   "3D surface preview should report catalog commit success"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        const auto* entry = context->DataCatalog()->FindById(
+            QStringLiteral("seg3d-001-surface-preview"));
+        if (Expect(entry != nullptr &&
+                       entry->WorkflowRole ==
+                           xq::core::DataWorkflowRole::Segmentation &&
+                       entry->SourcePath ==
+                           QStringLiteral(
+                               "xq://generated/segmentation/seg3d-001-surface-preview"),
+                   "3D surface preview should register generated catalog entry"))
+        {
+            return 1;
+        }
+        const auto* hierarchyNode = context->DataHierarchy()->FindNode(
+            QStringLiteral("data-seg3d-001-surface-preview"));
+        if (Expect(hierarchyNode != nullptr &&
+                       hierarchyNode->DataCatalogEntryId ==
+                           QStringLiteral("seg3d-001-surface-preview"),
+                   "3D surface preview should register hierarchy entry"))
+        {
+            return 1;
+        }
+        auto resultNode = context->DataNodes()->FindNode(
+            QStringLiteral("seg3d-001-surface-preview"));
+        auto* preview = resultNode.IsNotNull()
+                            ? dynamic_cast<xq_LumenSurface*>(
+                                  resultNode->GetData())
+                            : nullptr;
+        if (Expect(preview != nullptr,
+                   "3D surface preview should bind xq_LumenSurface data"))
+        {
+            return 1;
+        }
+        auto previewSurface = preview->GetSurfaceMesh();
+        if (Expect(previewSurface != nullptr &&
+                       previewSurface->GetNumberOfPoints() > 0 &&
+                       previewSurface->GetNumberOfCells() > 0,
+                   "3D surface preview should attach processed surface mesh"))
+        {
+            return 1;
+        }
+        if (Expect(xq::pipeline::HasStage(resultNode,
+                                          xq::pipeline::Stage::Segmentation3D) &&
+                       xq::pipeline::GetStringProperty(
+                           resultNode.GetPointer(),
+                           xq::pipeline::kAlgorithmProperty) ==
+                           "surface-preview" &&
+                       xq::pipeline::GetStringProperty(
+                           resultNode.GetPointer(),
+                           xq::pipeline::kSourceImageProperty) ==
+                           "CTA Image",
+                   "3D surface preview should mark pipeline metadata"))
+        {
+            return 1;
+        }
+        int smoothingIterations = 0;
+        if (Expect(resultNode->GetIntProperty(
+                       "xq.segmentation.surface_preview.smoothing_iterations",
+                       smoothingIterations) &&
+                       smoothingIterations == 8,
+                   "3D surface preview should record smoothing metadata"))
+        {
+            return 1;
+        }
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("seg3d-001-surface-preview"),
+                   "3D surface preview should select generated preview"))
+        {
+            return 1;
+        }
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "3D surface preview should refresh rendering after success"))
         {
             return 1;
         }

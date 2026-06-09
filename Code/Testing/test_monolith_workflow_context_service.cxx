@@ -118,6 +118,17 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    const auto segmentation3dRoles =
+        xq::core::WorkflowContextService::AcceptedDataRolesForWorkflow(
+            QStringLiteral("segmentation-3d"));
+    if (Expect(segmentation3dRoles.contains(
+                   xq::core::DataWorkflowRole::Segmentation),
+               "3D segmentation should accept generated segmentation data"))
+    {
+        delete context;
+        return 1;
+    }
+
     int contextChanges = 0;
     QObject::connect(workflowContext,
                      &xq::core::WorkflowContextService::ContextChanged,

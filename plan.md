@@ -4103,6 +4103,51 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   native workflow gap.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: 3D Surface Preview Infrastructure Action
+
+1. Replace the `surface-preview` 3D Segmentation unsupported guard with a
+   native Infrastructure action.
+   - Let the 3D Segmentation workflow accept selected Segmentation entries so
+     generated 3D segmentation nodes can be previewed.
+   - Resolve the selected `xq_MitkSeg3D` node from `DataNodeRegistryService` or
+     the active node.
+   - Read `smoothing-iterations` from `WorkflowOperationService`.
+   - Reuse the segmentation surface mesh, run `xq_Seg3DUtils::SmoothSurface`
+     and `xq_Seg3DUtils::ComputeNormals`, and store the preview as
+     `xq_LumenSurface`.
+   - Commit a generated catalog/hierarchy entry, select it, and refresh
+     rendering on success.
+2. Keep the action scoped to preview generation.
+   - Do not modify the source `xq_MitkSeg3D` node.
+   - Do not promote preview output to Model/Mesh or simulation input.
+3. Add RED C++ tests before implementation:
+   - 3D Segmentation workflow accepts Segmentation role selections.
+   - `surface-preview` with a real `xq_MitkSeg3D` should no longer return the
+     unsupported-operation diagnostic.
+   - A successful run should register a preview catalog entry, bind
+     `xq_LumenSurface`, stamp preview metadata, select the result, and refresh
+     rendering.
+   - Production composition should validate `surface-preview` through the
+     Infrastructure handler.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for segmentation handler/context/composition tests
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

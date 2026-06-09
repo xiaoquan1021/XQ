@@ -9,6 +9,7 @@
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowOperationService.h"
 
+#include <xq_LumenSurface.h>
 #include <xq_MitkSeg3D.h>
 #include <xq_PipelineDataUtils.h>
 #include <xq_Seg3DUtils.h>
@@ -19,6 +20,7 @@
 #include <mitkImage.h>
 
 #include <vtkImageData.h>
+#include <vtkPolyData.h>
 
 #include <algorithm>
 
@@ -33,6 +35,7 @@ constexpr const char* kSegmentation3DWorkflowId = "segmentation-3d";
 constexpr const char* kManualContourOperationId = "manual-contour";
 constexpr const char* kThresholdRegionOperationId = "threshold-region";
 constexpr const char* kRegionGrowingOperationId = "region-growing";
+constexpr const char* kSurfacePreviewOperationId = "surface-preview";
 constexpr const char* kSegmentationsFolderId = "segmentations";
 constexpr const char* kSegmentationsFolderTitle = "Segmentations";
 
@@ -110,6 +113,20 @@ mitk::DataNode::Pointer ResolvePathNode(
 }
 
 mitk::DataNode::Pointer ResolveImageNode(
+    xq::core::ApplicationContext& context,
+    const xq::core::WorkflowContextSnapshot& snapshot)
+{
+    if (auto* dataNodes = context.DataNodes())
+    {
+        auto node = dataNodes->FindNode(snapshot.SelectedCatalogEntryId);
+        if (node.IsNotNull())
+            return node;
+    }
+
+    return context.ActiveNode();
+}
+
+mitk::DataNode::Pointer ResolveSegmentation3DNode(
     xq::core::ApplicationContext& context,
     const xq::core::WorkflowContextSnapshot& snapshot)
 {
@@ -615,6 +632,135 @@ bool RunThresholdRegion3D(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool RunSurfacePreview3D(xq::core::ApplicationContext& context,
+                         xq::core::RenderRefreshService* renderRefresh,
+                         const xq::core::WorkflowContextSnapshot& snapshot,
+                         const QString& operationId,
+                         QString* message)
+{
+    const auto segmentationNode = ResolveSegmentation3DNode(context,
+                                                            snapshot);
+    auto* segmentation =
+        segmentationNode.IsNotNull()
+            ? dynamic_cast<xq_MitkSeg3D*>(segmentationNode->GetData())
+            : nullptr;
+    if (!segmentation)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active 3D segmentation node is required for surface preview."));
+        return false;
+    }
+
+    auto sourceSurface = segmentation->GetSurfaceMesh();
+    if (!sourceSurface || sourceSurface->GetNumberOfPoints() == 0)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active 3D segmentation has no surface mesh to preview."));
+        return false;
+    }
+
+    const QString entryId = ResultCatalogEntryId(snapshot, operationId);
+    const QString preflightMessage = PreflightCommitTarget(context, entryId);
+    if (!preflightMessage.isEmpty())
+    {
+        SetMessage(message, preflightMessage);
+        return false;
+    }
+
+    const QVariantMap parameters =
+        context.WorkflowOperations()
+            ? context.WorkflowOperations()->ParameterValues(snapshot.WorkflowId,
+                                                            operationId)
+            : QVariantMap();
+    const int smoothingIterations =
+        std::max(0,
+                 parameters.value(QStringLiteral("smoothing-iterations"), 0)
+                     .toInt());
+
+    vtkSmartPointer<vtkPolyData> previewSurface;
+    if (smoothingIterations > 0)
+    {
+        previewSurface = xq_Seg3DUtils::SmoothSurface(sourceSurface,
+                                                      smoothingIterations,
+                                                      0.12);
+    }
+    else
+    {
+        previewSurface = vtkSmartPointer<vtkPolyData>::New();
+        previewSurface->DeepCopy(sourceSurface);
+    }
+
+    previewSurface = xq_Seg3DUtils::ComputeNormals(previewSurface);
+    if (!previewSurface || previewSurface->GetNumberOfPoints() == 0)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "3D surface preview did not produce a surface."));
+        return false;
+    }
+
+    auto preview = xq_LumenSurface::New();
+    preview->SetSurfaceMesh(previewSurface);
+
+    const QString sourceName =
+        QString::fromStdString(segmentationNode->GetName()).trimmed();
+    auto resultNode = mitk::DataNode::New();
+    resultNode->SetName(
+        QStringLiteral("%1_surface_preview").arg(sourceName).toStdString());
+    resultNode->SetData(preview);
+    resultNode->SetColor(1.0f, 0.75f, 0.15f);
+    resultNode->SetOpacity(0.38f);
+    xq::pipeline::MarkNode(resultNode,
+                           xq::pipeline::Stage::Segmentation3D);
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        xq::pipeline::kAlgorithmProperty,
+        "surface-preview");
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        xq::pipeline::kSourceImageProperty,
+        xq::pipeline::GetStringProperty(segmentationNode.GetPointer(),
+                                        xq::pipeline::kSourceImageProperty));
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        "xq.segmentation.method",
+        "surface_preview");
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        "xq.params.segmentation3d.method",
+        "surface_preview");
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        "xq.segmentation.surface_preview.source",
+        sourceName.toStdString());
+    resultNode->SetBoolProperty("xq.segmentation.3d", true);
+    resultNode->SetBoolProperty("xq.segmentation.surface_preview", true);
+    resultNode->SetIntProperty(
+        "xq.segmentation.surface_preview.smoothing_iterations",
+        smoothingIterations);
+
+    auto folder = xq::pipeline::FindCategoryFolder(
+        context.DataStorage().GetPointer(),
+        xq::pipeline::Stage::Segmentation3D,
+        segmentationNode.GetPointer());
+    if (folder.IsNotNull())
+        context.DataStorage()->Add(resultNode, folder);
+    else
+        context.DataStorage()->Add(resultNode, segmentationNode);
+
+    if (!CommitSegmentation3DResult(context, entryId, resultNode, message))
+        return false;
+
+    QString selectionMessage;
+    context.DataSelection()->SelectCatalogEntry(entryId, &selectionMessage);
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicSegmentationWorkflowActionHandler(
@@ -658,6 +804,17 @@ bool RegisterDynamicSegmentationWorkflowActionHandler(
                                           snapshot,
                                           operationId,
                                           taskMessage);
+            }
+
+            if (snapshot.WorkflowId ==
+                    QString::fromLatin1(kSegmentation3DWorkflowId) &&
+                operationId == QString::fromLatin1(kSurfacePreviewOperationId))
+            {
+                return RunSurfacePreview3D(context,
+                                           renderRefresh,
+                                           snapshot,
+                                           operationId,
+                                           taskMessage);
             }
 
             if (snapshot.WorkflowId !=

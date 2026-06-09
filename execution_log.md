@@ -52,6 +52,55 @@
 - Promoted 3D Threshold Region Infrastructure Action to completed in
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
+- Completed autonomous research refresh:
+  - Comparable workstations keep 3D segmentation surface/closed-surface
+    preview close to the segmentation workflow before downstream modeling.
+  - The monolith now supports `threshold-region` and `region-growing`; the
+    remaining exposed 3D Segmentation operation is `surface-preview`.
+  - XQ already has `xq_LumenSurface` plus `xq_Seg3DUtils::SmoothSurface` and
+    `ComputeNormals`, so the next narrow native slice is preview generation
+    from an existing `xq_MitkSeg3D`.
+- Added next executable phase to `plan.md`: 3D Surface Preview Infrastructure
+  Action.
+- Starting RED tests first:
+  - 3D Segmentation workflow should accept selected Segmentation entries so
+    generated 3D segmentation nodes can be previewed.
+  - `surface-preview` should require a real `xq_MitkSeg3D` node.
+  - A valid `xq_MitkSeg3D` should create an `xq_LumenSurface` preview,
+    register catalog/hierarchy/data-node bindings, select it, and refresh
+    rendering.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - Targeted `ctest` failed because 3D Segmentation did not accept generated
+    Segmentation entries yet, so `surface-preview` failed at
+    `Select compatible data before running 3D Segmentation.`
+- Implemented 3D Surface Preview Infrastructure action:
+  - `WorkflowContextService` now lets `segmentation-3d` accept generated
+    Segmentation catalog entries.
+  - The dynamic Segmentation handler now routes `segmentation-3d` /
+    `surface-preview` to a native path.
+  - The handler resolves the selected `xq_MitkSeg3D`, reuses its surface mesh,
+    applies optional smoothing plus normal generation, and stores the preview
+    in `xq_LumenSurface`.
+  - Successful runs stamp preview metadata, register catalog/hierarchy/data-node
+    bindings, select the generated preview, and refresh rendering.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workflow_context_service|segmentation_workflow_action_handler|application_import_wiring)"`
+    passed: 3/3.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted 3D Surface Preview Infrastructure Action to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
 
 ## 2026-06-07
 

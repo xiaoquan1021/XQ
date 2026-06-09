@@ -283,6 +283,20 @@ int main(int argc, char** argv)
                               "Active image node is required for 3D segmentation."),
                "configured 3D segmentation action should require an image node"))
         return 1;
+    if (Expect(segmentationContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("segmentation-3d"),
+                   QStringLiteral("surface-preview"),
+                   &message),
+               "configured 3D segmentation workflow should select surface preview"))
+        return 1;
+    if (Expect(!segmentationContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured 3D surface preview action should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active 3D segmentation node is required for surface preview."),
+               "configured 3D surface preview action should require a segmentation node"))
+        return 1;
 
     auto modelingContext =
         std::unique_ptr<xq::core::ApplicationContext>(
