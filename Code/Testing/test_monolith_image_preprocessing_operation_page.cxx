@@ -5,6 +5,7 @@
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
+#include "Infrastructure/xq_ImagePreprocessingWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
@@ -91,6 +92,8 @@ int main(int argc, char** argv)
     xq::domain::RegisterDefaultWorkflowActionHandlers(
         *context->WorkflowActions(),
         context->WorkflowOperations());
+    xq::infrastructure::RegisterDynamicImagePreprocessingWorkflowActionHandler(
+        *context);
     xq::presentation::MainWindow window(*context);
 
     auto* operationSelector = FindOperationSelector(window);
@@ -324,8 +327,8 @@ int main(int argc, char** argv)
     actionButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Image Preprocessing succeeded: Gaussian Smoothing preprocessing operation accepted CTA Image.")),
-               "operation action should run the selected image preprocessing operation"))
+                   "Run Image Preprocessing failed: Active image node is required for image preprocessing.")),
+               "operation action should report infrastructure validation"))
     {
         delete context;
         return 1;

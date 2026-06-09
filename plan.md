@@ -3953,6 +3953,39 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   legacy placeholder or workflow gap.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Image Preprocessing Page Infrastructure Wiring
+
+1. Stop the Image Preprocessing operation page test from accepting Domain
+   placeholder success as UI behavior.
+   - Register `RegisterDynamicImagePreprocessingWorkflowActionHandler` in
+     `test_monolith_image_preprocessing_operation_page`.
+   - Expect the page to report deterministic Infrastructure validation when
+     no compatible MITK image node is bound.
+   - Preserve Domain placeholder behavior in tests that intentionally verify
+     generic operation routing.
+2. Add the RED expectation before wiring the handler:
+   - Image Preprocessing Run should expect the missing active image node
+     diagnostic instead of `Gaussian Smoothing preprocessing operation accepted`.
+3. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for
+     `test_monolith_image_preprocessing_operation_page`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+4. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

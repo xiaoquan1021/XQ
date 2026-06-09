@@ -3039,6 +3039,60 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Image Preprocessing Page Infrastructure Wiring
+
+- Completed autonomous research refresh:
+  - Rechecked comparable workstation expectations: mature imaging workstations
+    keep preprocessing actions tied to actual image data and rendering state,
+    not placeholder success messages.
+  - Scanned monolith tests for remaining `operation accepted` diagnostics.
+    Domain routing tests intentionally keep generic placeholder coverage, but
+    `test_monolith_image_preprocessing_operation_page` still accepted
+    `Gaussian Smoothing preprocessing operation accepted CTA Image.`
+  - Chosen next slice: wire the Image Preprocessing page test to the existing
+    dynamic Infrastructure handler and expect deterministic missing-node
+    validation.
+- Added next executable phase to `plan.md`: Image Preprocessing Page
+  Infrastructure Wiring.
+- Started the next unattended loop iteration:
+  - Adding failing Image Preprocessing operation page expectation first.
+- Red test observed:
+  - Updated the Image Preprocessing page action expectation to require
+    `Run Image Preprocessing failed: Active image node is required for image preprocessing.`
+    before registering the Infrastructure handler.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_image_preprocessing_operation_page"`
+    failed because the page test still used the Domain placeholder handler.
+- Implemented Image Preprocessing page Infrastructure wiring:
+  - `test_monolith_image_preprocessing_operation_page` now registers
+    `RegisterDynamicImagePreprocessingWorkflowActionHandler`.
+  - The test target now links `xqMonolithInfrastructure`, matching its direct
+    Infrastructure registrar dependency.
+  - The page assertion now covers the missing active MITK image node validation
+    path instead of placeholder success.
+- Red/green target verification:
+  - Initial build after registration failed with an unresolved
+    `RegisterDynamicImagePreprocessingWorkflowActionHandler` symbol.
+  - Root cause: the page test target linked Presentation/Domain/Core but not
+    `xqMonolithInfrastructure`.
+  - After adding the target dependency,
+    `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_image_preprocessing_operation_page"`
+    passed: 1/1.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Image Preprocessing Page Infrastructure Wiring to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Update: Path Unsupported Operation Guard
 
 - Completed autonomous research refresh:
