@@ -243,6 +243,34 @@ bool PrepareMultiPhysicsWorkflow(xq::core::ApplicationContext& context,
         &message);
 }
 
+bool PrepareHiddenCoupledSolveWorkflow(xq::core::ApplicationContext& context)
+{
+    if (!PrepareMultiPhysicsWorkflow(context))
+        return false;
+
+    QVector<xq::core::WorkflowOperationDescriptor> operations =
+        context.WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("multiphysics"));
+    xq::core::WorkflowOperationDescriptor hiddenSolver;
+    hiddenSolver.Id = QStringLiteral("run-coupled-solve");
+    hiddenSolver.Title = QStringLiteral("Coupled Solve");
+    operations.push_back(hiddenSolver);
+
+    QString message;
+    if (!context.WorkflowOperations()->RegisterOperations(
+            QStringLiteral("multiphysics"),
+            operations,
+            &message))
+    {
+        return false;
+    }
+
+    return context.WorkflowOperations()->SelectOperation(
+        QStringLiteral("multiphysics"),
+        QStringLiteral("run-coupled-solve"),
+        &message);
+}
+
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
 {
 public:
@@ -440,9 +468,7 @@ int main(int argc, char** argv)
     {
         std::unique_ptr<xq::core::ApplicationContext> context(
             xq::core::ApplicationContext::CreateDefault());
-        if (Expect(PrepareMultiPhysicsWorkflow(
-                       *context,
-                       QStringLiteral("run-coupled-solve")),
+        if (Expect(PrepareHiddenCoupledSolveWorkflow(*context),
                    "unsupported coupled solve fixture should prepare workflow"))
         {
             return 1;

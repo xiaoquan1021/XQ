@@ -1,5 +1,35 @@
 # XQ Execution Log
 
+## Current Run: Windows V1 Solver Execution Scope Decision
+
+- Continued from `006b652` with the user's clarified decision:
+  - Do not use SimVascular-related code, schemas, solvers, or dependencies.
+  - Do not wire ROM or MultiPhysics solver execution for Windows v1.
+  - Keep ROM/MultiPhysics configuration and existing-result review.
+- Started TDD from the existing blocker:
+  - Updated tests so default ROM operations expose only `build-1d-network` and
+    `calibrate-boundary-conditions`.
+  - Updated tests so default MultiPhysics operations expose only
+    `configure-coupling` and `review-coupled-results`.
+  - Updated operation page tests so `run-rom-solver` and `run-coupled-solve`
+    are not visible or user-selectable.
+  - Updated direct guard fixtures to manually inject hidden solver operation ids
+    and verify the Infrastructure handlers still fail honestly.
+- Red test observed:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - Targeted `ctest` failed because the default operation registry still
+    exposed `run-rom-solver` and `run-coupled-solve`.
+- Implemented the v1 scope decision:
+  - Removed solver-run descriptors from default ROM and MultiPhysics operation
+    registration.
+  - Kept Infrastructure fallback guards for stale/manual solver operation ids.
+- Targeted green verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(domain_workflow_action_handlers|simulation_operation_pages|rom_simulation_workflow_action_handler|multiphysics_workflow_action_handler)"`
+    passed: 4/4.
+- Updated `plan.md` from solver-runtime blocker to completed Windows v1 scope
+  decision.
+
 ## Current Run: Native ROM and Coupled Solver Runtime Blocker
 
 - Continued from clean pushed `feature/windows-monolith-foundation` state after

@@ -349,16 +349,22 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
-    if (Expect(romSelector->count() == 3,
-               "ROM Simulation selector should expose domain operations"))
+    if (Expect(romSelector->count() == 2,
+               "ROM Simulation selector should expose v1 operations"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(romSelector->findData(QStringLiteral("run-rom-solver")) == -1,
+               "ROM Simulation selector should hide solver execution"))
     {
         delete context;
         return 1;
     }
     if (Expect(romSelector->itemData(1).toString() ==
-                       QStringLiteral("run-rom-solver") &&
+                       QStringLiteral("calibrate-boundary-conditions") &&
                    romSelector->itemText(1) ==
-                       QStringLiteral("ROM Solver"),
+                       QStringLiteral("Calibrate Boundary Conditions"),
                "ROM Simulation selector should preserve operation order"))
     {
         delete context;
@@ -366,24 +372,26 @@ int main(int argc, char** argv)
     }
 
     romSelector->setCurrentIndex(
-        romSelector->findData(QStringLiteral("run-rom-solver")));
+        romSelector->findData(
+            QStringLiteral("calibrate-boundary-conditions")));
     app.processEvents();
     auto* romButton =
         FindActionButton(window, QStringLiteral("rom-simulation"));
     if (Expect(romButton != nullptr &&
-                   romButton->text() == QStringLiteral("Run ROM Solver"),
-               "ROM Simulation action should include selected operation"))
+                   romButton->text() ==
+                       QStringLiteral("Run Calibrate Boundary Conditions"),
+               "ROM Simulation action should include calibration operation"))
     {
         delete context;
         return 1;
     }
     if (Expect(FindNumericParameter(window,
-                                    QStringLiteral("rom-time-step")) !=
+                                    QStringLiteral("rom-time-step")) ==
                        nullptr &&
                    FindIntegerParameter(window,
-                                        QStringLiteral("cardiac-cycles")) !=
+                                        QStringLiteral("cardiac-cycles")) ==
                        nullptr,
-               "ROM Solver should expose solver parameters"))
+               "ROM Simulation page should not expose solver parameters"))
     {
         delete context;
         return 1;
@@ -416,21 +424,8 @@ int main(int argc, char** argv)
     romButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run ROM Simulation failed: ROM Solver is not wired to a native ROM Simulation runtime yet.")),
-               "ROM Simulation action should report unsupported operation"))
-    {
-        delete context;
-        return 1;
-    }
-
-    romSelector->setCurrentIndex(
-        romSelector->findData(
-            QStringLiteral("calibrate-boundary-conditions")));
-    app.processEvents();
-    if (Expect(romButton != nullptr &&
-                   romButton->text() ==
-                       QStringLiteral("Run Calibrate Boundary Conditions"),
-               "ROM Simulation action should include calibration operation"))
+                   "Run ROM Simulation failed: Active ROM job node is required for boundary calibration.")),
+               "ROM Simulation calibration should require a ROM job"))
     {
         delete context;
         return 1;
@@ -491,16 +486,23 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
-    if (Expect(multiphysicsSelector->count() == 3,
-               "MultiPhysics selector should expose domain operations"))
+    if (Expect(multiphysicsSelector->count() == 2,
+               "MultiPhysics selector should expose v1 operations"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(multiphysicsSelector->findData(
+                   QStringLiteral("run-coupled-solve")) == -1,
+               "MultiPhysics selector should hide coupled solver execution"))
     {
         delete context;
         return 1;
     }
     if (Expect(multiphysicsSelector->itemData(1).toString() ==
-                       QStringLiteral("run-coupled-solve") &&
+                       QStringLiteral("review-coupled-results") &&
                    multiphysicsSelector->itemText(1) ==
-                       QStringLiteral("Coupled Solve"),
+                       QStringLiteral("Review Coupled Results"),
                "MultiPhysics selector should preserve operation order"))
     {
         delete context;
@@ -509,25 +511,25 @@ int main(int argc, char** argv)
 
     multiphysicsSelector->setCurrentIndex(
         multiphysicsSelector->findData(
-            QStringLiteral("run-coupled-solve")));
+            QStringLiteral("review-coupled-results")));
     app.processEvents();
     auto* multiphysicsButton =
         FindActionButton(window, QStringLiteral("multiphysics"));
     if (Expect(multiphysicsButton != nullptr &&
                    multiphysicsButton->text() ==
-                       QStringLiteral("Run Coupled Solve"),
-               "MultiPhysics action should include selected operation"))
+                       QStringLiteral("Run Review Coupled Results"),
+               "MultiPhysics action should include review operation"))
     {
         delete context;
         return 1;
     }
     if (Expect(FindNumericParameter(window,
-                                    QStringLiteral("coupled-time-step")) !=
+                                    QStringLiteral("coupled-time-step")) ==
                        nullptr &&
                    FindIntegerParameter(window,
-                                        QStringLiteral("nonlinear-iterations")) !=
+                                        QStringLiteral("nonlinear-iterations")) ==
                        nullptr,
-               "Coupled Solve should expose multiphysics parameters"))
+               "MultiPhysics page should not expose solver parameters"))
     {
         delete context;
         return 1;
@@ -561,21 +563,8 @@ int main(int argc, char** argv)
     multiphysicsButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Multi-Physics failed: Coupled Solve is not wired to a native Multi-Physics runtime yet.")),
-               "MultiPhysics action should report unsupported operation"))
-    {
-        delete context;
-        return 1;
-    }
-
-    multiphysicsSelector->setCurrentIndex(
-        multiphysicsSelector->findData(
-            QStringLiteral("review-coupled-results")));
-    app.processEvents();
-    if (Expect(multiphysicsButton != nullptr &&
-                   multiphysicsButton->text() ==
-                       QStringLiteral("Run Review Coupled Results"),
-               "MultiPhysics action should include review operation"))
+                   "Run Multi-Physics failed: Active coupled result node is required for multiphysics review.")),
+               "MultiPhysics review should require a result node"))
     {
         delete context;
         return 1;

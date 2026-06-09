@@ -214,6 +214,34 @@ bool PrepareRomWorkflow(xq::core::ApplicationContext& context,
         &message);
 }
 
+bool PrepareHiddenRomSolverWorkflow(xq::core::ApplicationContext& context)
+{
+    if (!PrepareRomWorkflow(context))
+        return false;
+
+    QVector<xq::core::WorkflowOperationDescriptor> operations =
+        context.WorkflowOperations()->OperationsForWorkflow(
+            QStringLiteral("rom-simulation"));
+    xq::core::WorkflowOperationDescriptor hiddenSolver;
+    hiddenSolver.Id = QStringLiteral("run-rom-solver");
+    hiddenSolver.Title = QStringLiteral("ROM Solver");
+    operations.push_back(hiddenSolver);
+
+    QString message;
+    if (!context.WorkflowOperations()->RegisterOperations(
+            QStringLiteral("rom-simulation"),
+            operations,
+            &message))
+    {
+        return false;
+    }
+
+    return context.WorkflowOperations()->SelectOperation(
+        QStringLiteral("rom-simulation"),
+        QStringLiteral("run-rom-solver"),
+        &message);
+}
+
 class FakeRenderRefreshService : public xq::core::RenderRefreshService
 {
 public:
@@ -409,8 +437,7 @@ int main(int argc, char** argv)
     {
         std::unique_ptr<xq::core::ApplicationContext> context(
             xq::core::ApplicationContext::CreateDefault());
-        if (Expect(PrepareRomWorkflow(*context,
-                                      QStringLiteral("run-rom-solver")),
+        if (Expect(PrepareHiddenRomSolverWorkflow(*context),
                    "unsupported ROM solver fixture should prepare workflow"))
         {
             return 1;

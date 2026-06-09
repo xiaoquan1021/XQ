@@ -4717,31 +4717,30 @@ The next monolith slice is grounded in these comparable systems:
 3. Write the next executable phase into this plan.
 4. Immediately return to plan execution.
 
-## Blocked Phase: Native ROM and Coupled Solver Runtime Integration
+## Completed Phase: Windows V1 Solver Execution Scope Decision
 
-1. Remaining exposed solver operations require real runtime backends before
-   implementation can continue honestly.
-   - `rom-simulation/run-rom-solver` still has no native 1D/0D ROM solver,
-     result converter, or result import path in XQ or Externals.
-   - `multiphysics/run-coupled-solve` still has no native coupled/FSI solver,
-     coupled result writer, or result import path in XQ or Externals.
-   - Existing ROM and MultiPhysics modules provide job data models, XML IO,
-     project persistence, configuration actions, and review of already-present
-     result data only.
-2. Keep both solver actions on deterministic unsupported-operation guards.
-   - Do not synthesize solver output, fake result nodes, or mark jobs as run.
+1. Resolve the ROM/MultiPhysics solver blocker by explicitly deferring solver
+   execution from Windows v1.
+   - Do not use SimVascular code, solver binaries, schema, or build
+     dependencies.
+   - Do not add a ROM, 1D/0D, coupled, or FSI solver backend in this phase.
+   - Windows v1 keeps ROM and MultiPhysics as pre-solve configuration plus
+     review of already-present result data.
+2. Hide solver-run operations from default monolith workflow operation lists.
+   - `rom-simulation` exposes `build-1d-network` and
+     `calibrate-boundary-conditions`.
+   - `multiphysics` exposes `configure-coupling` and
+     `review-coupled-results`.
+   - `run-rom-solver` and `run-coupled-solve` must not be user-selectable from
+     the default operation pages.
+3. Keep defensive unsupported-operation guards.
+   - Direct or stale state selection of `run-rom-solver` must fail without
+     creating solver output.
+   - Direct or stale state selection of `run-coupled-solve` must fail without
+     creating coupled result data.
    - Continue using honest metadata such as `configured`, `calibrated`,
-     `ready`, and `not_solver_run` for non-solver actions.
-3. Resume criteria:
-   - Add or select a real Windows-buildable ROM solver backend plus result
-     import contract, then implement `run-rom-solver` TDD-first.
-   - Add or select a real Windows-buildable coupled solver backend plus result
-     import contract, then implement `run-coupled-solve` TDD-first.
-   - Add Externals recipes/tests for any new solver dependency before wiring
-     XQ runtime actions.
-4. Verification when this blocker was recorded:
-   - Re-scanned XQ handlers/tests/product wiring for unsupported operations.
-   - Re-scanned Externals recipes/manifests for ROM, 1D/0D, coupled, FSI, and
-     solver backends.
-   - Confirmed Flow Simulation is the only monolith workflow with an existing
-     native `RunSolverAndImportResults` style backend.
+     `ready`, and `not_solver_run`.
+4. Future resume criteria:
+   - Use only self-owned or explicitly licensed solver backends.
+   - Add Externals recipes/tests and a result import contract before exposing
+     any solver-run operation again.

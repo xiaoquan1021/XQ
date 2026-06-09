@@ -234,7 +234,7 @@ int main(int argc, char** argv)
     const auto romOperations =
         operationContext->WorkflowOperations()->OperationsForWorkflow(
             QStringLiteral("rom-simulation"));
-    if (Expect(romOperations.size() == 3,
+    if (Expect(romOperations.size() == 2,
                "ROM Simulation should register workflow operations"))
     {
         delete operationContext;
@@ -242,9 +242,9 @@ int main(int argc, char** argv)
         return 1;
     }
     if (Expect(romOperations.at(1).Id ==
-                       QStringLiteral("run-rom-solver") &&
+                       QStringLiteral("calibrate-boundary-conditions") &&
                    romOperations.at(1).Parameters.size() == 2,
-               "ROM Solver should expose solver parameters"))
+               "ROM calibration should expose calibration parameters"))
     {
         delete operationContext;
         delete context;
@@ -253,7 +253,7 @@ int main(int argc, char** argv)
     const auto multiphysicsOperations =
         operationContext->WorkflowOperations()->OperationsForWorkflow(
             QStringLiteral("multiphysics"));
-    if (Expect(multiphysicsOperations.size() == 3,
+    if (Expect(multiphysicsOperations.size() == 2,
                "MultiPhysics should register workflow operations"))
     {
         delete operationContext;
@@ -261,9 +261,9 @@ int main(int argc, char** argv)
         return 1;
     }
     if (Expect(multiphysicsOperations.at(1).Id ==
-                       QStringLiteral("run-coupled-solve") &&
-                   multiphysicsOperations.at(1).Parameters.size() == 2,
-               "Coupled Solve should expose multiphysics parameters"))
+                       QStringLiteral("review-coupled-results") &&
+                   multiphysicsOperations.at(1).Parameters.size() == 1,
+               "Coupled result review should expose review parameters"))
     {
         delete operationContext;
         delete context;
@@ -530,7 +530,7 @@ int main(int argc, char** argv)
     }
     if (Expect(operationContext->WorkflowOperations()->SelectOperation(
                    QStringLiteral("rom-simulation"),
-                   QStringLiteral("run-rom-solver"),
+                   QStringLiteral("build-1d-network"),
                    &errorMessage),
                "ROM Simulation operation should be selectable"))
     {
@@ -547,7 +547,7 @@ int main(int argc, char** argv)
         return 1;
     }
     if (Expect(actionMessage ==
-                   QStringLiteral("ROM Solver rom simulation operation accepted ROM Mesh."),
+                   QStringLiteral("Build 1D Network rom simulation operation accepted ROM Mesh."),
                "ROM Simulation handler should report selected operation"))
     {
         delete operationContext;
@@ -578,7 +578,7 @@ int main(int argc, char** argv)
     }
     if (Expect(operationContext->WorkflowOperations()->SelectOperation(
                    QStringLiteral("multiphysics"),
-                   QStringLiteral("run-coupled-solve"),
+                   QStringLiteral("configure-coupling"),
                    &errorMessage),
                "MultiPhysics operation should be selectable"))
     {
@@ -595,7 +595,7 @@ int main(int argc, char** argv)
         return 1;
     }
     if (Expect(actionMessage ==
-                   QStringLiteral("Coupled Solve multiphysics operation accepted Coupled Mesh."),
+                   QStringLiteral("Configure Coupling multiphysics operation accepted Coupled Mesh."),
                "MultiPhysics handler should report selected operation"))
     {
         delete operationContext;
