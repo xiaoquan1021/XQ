@@ -53,6 +53,58 @@
 - Marked ROM Boundary Calibration Infrastructure Action completed in
   `plan.md`.
 
+## Current Run Update: MultiPhysics Result Review Infrastructure Action
+
+- Continued from clean pushed `feature/windows-monolith-foundation` state after
+  `ae60938`.
+- Completed the next autonomous research refresh:
+  - Remaining solver actions, `run-rom-solver` and `run-coupled-solve`, still
+    lack native solver/result backends and should stay guarded.
+  - `review-coupled-results` can be a real non-solver action when the selected
+    data is an already-imported SimulationResult with named result fields.
+  - The implementation can reuse `xq_ResultImport::SetActiveScalar` and store
+    MultiPhysics review metadata without synthesizing result data.
+- Added next executable phase to `plan.md`: MultiPhysics Result Review
+  Infrastructure Action.
+- Starting RED tests first:
+  - `review-coupled-results` should require a selected result node.
+  - A valid result node should activate a preferred coupled scalar, mark it
+    visible, record review metadata, and refresh rendering.
+  - Production composition and the MultiPhysics operation page should validate
+    review through the Infrastructure handler rather than the unsupported
+    guard.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed after
+    fixing one missing test include.
+  - Targeted `ctest` failed because `review-coupled-results` still returned
+    `Review Coupled Results is not wired to a native Multi-Physics runtime yet.`
+    through the unsupported-operation guard.
+- Implemented MultiPhysics result review Infrastructure action:
+  - The dynamic MultiPhysics handler now routes `review-coupled-results` to a
+    native review path while keeping `run-coupled-solve` unsupported.
+  - The handler resolves an existing SimulationResult node, discovers
+    point/cell result fields, activates a preferred coupled scalar, marks the
+    node visible, and stores `xq.review.multiphysics.*` metadata.
+  - The action only prepares review for already-present result data and does
+    not synthesize coupled solve results.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(multiphysics_workflow_action_handler|simulation_operation_pages|application_import_wiring)"`
+    passed: 3/3.
+- Full-gate verification before commit:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - XQ `tests\*.ps1` passed.
+  - Full XQ `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - XQ `git diff --check` passed.
+  - Externals `tests\*.ps1` passed.
+  - Externals `git diff --check` passed.
+- Marked MultiPhysics Result Review Infrastructure Action completed in
+  `plan.md`.
+
 ## Previous Run: Loft Profiles Segmentation Infrastructure Action
 
 - Continued from clean pushed `feature/windows-monolith-foundation` state after

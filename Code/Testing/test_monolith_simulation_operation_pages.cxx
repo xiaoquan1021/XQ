@@ -1,6 +1,7 @@
 #include "Core/xq_ApplicationContext.h"
 #include "Core/xq_DataImportService.h"
 #include "Core/xq_DataNodeRegistryService.h"
+#include "Core/xq_DataSelectionService.h"
 #include "Core/xq_WorkflowOperationService.h"
 #include "Core/xq_WorkflowSelectionService.h"
 #include "Domain/xq_WorkflowActionHandlers.h"
@@ -10,14 +11,24 @@
 #include "Presentation/xq_MainWindow.h"
 
 #include <xq_MitkROMJob.h>
+#include <xq_MitkGrid.h>
 #include <xq_PipelineDataUtils.h>
 #include <xq_ROMJob.h>
+#include <xq_TetGenGrid.h>
 
 #include <QApplication>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QPushButton>
 #include <QSpinBox>
+
+#include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkSmartPointer.h>
+#include <vtkTetra.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <iostream>
 #include <memory>
@@ -93,6 +104,18 @@ xq::core::DataImportRequest MakeRomImport(const QString& id,
     return request;
 }
 
+xq::core::DataImportRequest MakeResultImport(const QString& id,
+                                             const QString& displayName)
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = id;
+    request.SourcePath = QStringLiteral("C:/studies/") + id;
+    request.DisplayName = displayName;
+    request.Modality = QStringLiteral("SimulationResult");
+    request.WorkflowRole = xq::core::DataWorkflowRole::SimulationResult;
+    return request;
+}
+
 mitk::DataNode::Pointer MakeRomNode(const std::string& name)
 {
     auto job = std::make_unique<xq_ROMJob>();
@@ -117,6 +140,58 @@ mitk::DataNode::Pointer MakeRomNode(const std::string& name)
     xq::pipeline::SetStringProperty(
         node, xq::pipeline::kSourceMeshProperty, "ROM Mesh");
     xq::pipeline::SetStringProperty(node, "xq.rom.status", "configured");
+    return node;
+}
+
+mitk::DataNode::Pointer MakeResultNode(const std::string& name)
+{
+    auto grid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(0.0, 0.0, 0.0);
+    points->InsertNextPoint(1.0, 0.0, 0.0);
+    points->InsertNextPoint(0.0, 1.0, 0.0);
+    points->InsertNextPoint(0.0, 0.0, 1.0);
+    grid->SetPoints(points);
+
+    auto tetra = vtkSmartPointer<vtkTetra>::New();
+    tetra->GetPointIds()->SetId(0, 0);
+    tetra->GetPointIds()->SetId(1, 1);
+    tetra->GetPointIds()->SetId(2, 2);
+    tetra->GetPointIds()->SetId(3, 3);
+
+    auto cells = vtkSmartPointer<vtkCellArray>::New();
+    cells->InsertNextCell(tetra);
+    grid->SetCells(VTK_TETRA, cells);
+
+    auto pressure = vtkSmartPointer<vtkDoubleArray>::New();
+    pressure->SetName("coupled_pressure");
+    pressure->SetNumberOfComponents(1);
+    pressure->SetNumberOfTuples(4);
+    for (vtkIdType i = 0; i < 4; ++i)
+        pressure->SetValue(i, 80.0 + static_cast<double>(i));
+    grid->GetPointData()->AddArray(pressure);
+
+    auto* tetGrid = new xq_TetGenGrid();
+    tetGrid->SetVolumeMesh(grid);
+
+    auto mitkGrid = xq_MitkGrid::New();
+    mitkGrid->SetMesh(tetGrid, 0);
+
+    auto node = mitk::DataNode::New();
+    node->SetName(name);
+    node->SetData(mitkGrid);
+    xq::pipeline::MarkGeneratedNode(node,
+                                    xq::pipeline::Stage::Result,
+                                    "coupled_result_import",
+                                    "test",
+                                    "1");
+    node->SetStringProperty("xq.type", "result");
+    xq::pipeline::SetStringProperty(
+        node, "xq.result.field_names", "point:coupled_pressure");
+    xq::pipeline::SetStringProperty(node,
+                                    "xq.result.field_name",
+                                    "point:coupled_pressure");
+    node->SetIntProperty("xq.result.field_count", 1);
     return node;
 }
 
@@ -488,6 +563,69 @@ int main(int argc, char** argv)
     if (Expect(diagnostics.contains(QStringLiteral(
                    "Run Multi-Physics failed: Coupled Solve is not wired to a native Multi-Physics runtime yet.")),
                "MultiPhysics action should report unsupported operation"))
+    {
+        delete context;
+        return 1;
+    }
+
+    multiphysicsSelector->setCurrentIndex(
+        multiphysicsSelector->findData(
+            QStringLiteral("review-coupled-results")));
+    app.processEvents();
+    if (Expect(multiphysicsButton != nullptr &&
+                   multiphysicsButton->text() ==
+                       QStringLiteral("Run Review Coupled Results"),
+               "MultiPhysics action should include review operation"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(FindIntegerParameter(window,
+                                    QStringLiteral("sample-count")) !=
+                   nullptr,
+               "Coupled review should expose sample count parameter"))
+    {
+        delete context;
+        return 1;
+    }
+    const auto coupledResult =
+        context->DataImports()->Import(MakeResultImport(
+                                           QStringLiteral("coupled-result"),
+                                           QStringLiteral("Coupled Result")),
+                                       &errorMessage);
+    if (Expect(coupledResult.Succeeded,
+               "MultiPhysics result import should succeed"))
+    {
+        delete context;
+        return 1;
+    }
+    auto coupledResultNode = MakeResultNode("Coupled Result");
+    context->DataStorage()->Add(coupledResultNode);
+    context->DataNodes()->BindNode(QStringLiteral("coupled-result"),
+                                   coupledResultNode);
+    if (Expect(context->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("multiphysics")),
+               "MultiPhysics workflow should be selectable before review"))
+    {
+        delete context;
+        return 1;
+    }
+    app.processEvents();
+    multiphysicsButton->click();
+    app.processEvents();
+    if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                   QStringLiteral("coupled-result"),
+               "MultiPhysics review should preserve result selection"))
+    {
+        delete context;
+        return 1;
+    }
+    std::string reviewStatus;
+    if (Expect(coupledResultNode->GetStringProperty(
+                   "xq.review.multiphysics.status",
+                   reviewStatus) &&
+                   reviewStatus == "ready",
+               "MultiPhysics review should store review status"))
     {
         delete context;
         return 1;

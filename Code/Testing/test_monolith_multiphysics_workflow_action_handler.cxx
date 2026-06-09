@@ -14,13 +14,23 @@
 
 #include <xq_MitkMultiPhysicsJob.h>
 #include <xq_MitkROMJob.h>
+#include <xq_MitkGrid.h>
 #include <xq_MultiPhysicsJob.h>
 #include <xq_PipelineDataUtils.h>
 #include <xq_ROMJob.h>
+#include <xq_TetGenGrid.h>
 
 #include <QCoreApplication>
 
 #include <mitkDataNode.h>
+
+#include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkSmartPointer.h>
+#include <vtkTetra.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <iostream>
 #include <memory>
@@ -75,6 +85,107 @@ mitk::DataNode::Pointer MakeRomNode()
         node, xq::pipeline::kSourceMeshProperty, "Main Mesh");
     xq::pipeline::SetStringProperty(node, "xq.rom.status", "configured");
     return node;
+}
+
+xq::core::DataImportRequest MakeResultImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("result-001");
+    request.SourcePath = QStringLiteral("C:/studies/result-001.vtu");
+    request.DisplayName = QStringLiteral("Coupled Result");
+    request.Modality = QStringLiteral("SimulationResult");
+    request.WorkflowRole = xq::core::DataWorkflowRole::SimulationResult;
+    return request;
+}
+
+vtkSmartPointer<vtkUnstructuredGrid> MakeResultGrid()
+{
+    auto grid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(0.0, 0.0, 0.0);
+    points->InsertNextPoint(1.0, 0.0, 0.0);
+    points->InsertNextPoint(0.0, 1.0, 0.0);
+    points->InsertNextPoint(0.0, 0.0, 1.0);
+    grid->SetPoints(points);
+
+    auto tetra = vtkSmartPointer<vtkTetra>::New();
+    tetra->GetPointIds()->SetId(0, 0);
+    tetra->GetPointIds()->SetId(1, 1);
+    tetra->GetPointIds()->SetId(2, 2);
+    tetra->GetPointIds()->SetId(3, 3);
+
+    auto cells = vtkSmartPointer<vtkCellArray>::New();
+    cells->InsertNextCell(tetra);
+    grid->SetCells(VTK_TETRA, cells);
+
+    auto pressure = vtkSmartPointer<vtkDoubleArray>::New();
+    pressure->SetName("coupled_pressure");
+    pressure->SetNumberOfComponents(1);
+    pressure->SetNumberOfTuples(4);
+    for (vtkIdType i = 0; i < 4; ++i)
+        pressure->SetValue(i, 80.0 + static_cast<double>(i));
+    grid->GetPointData()->AddArray(pressure);
+
+    auto displacement = vtkSmartPointer<vtkDoubleArray>::New();
+    displacement->SetName("wall_displacement");
+    displacement->SetNumberOfComponents(1);
+    displacement->SetNumberOfTuples(4);
+    for (vtkIdType i = 0; i < 4; ++i)
+        displacement->SetValue(i, 0.1 * static_cast<double>(i));
+    grid->GetPointData()->AddArray(displacement);
+    return grid;
+}
+
+mitk::DataNode::Pointer MakeResultNode()
+{
+    auto* tetGrid = new xq_TetGenGrid();
+    tetGrid->SetVolumeMesh(MakeResultGrid());
+
+    auto mitkGrid = xq_MitkGrid::New();
+    mitkGrid->SetMesh(tetGrid, 0);
+
+    auto node = mitk::DataNode::New();
+    node->SetName("Coupled Result");
+    node->SetData(mitkGrid);
+    xq::pipeline::MarkGeneratedNode(node,
+                                    xq::pipeline::Stage::Result,
+                                    "coupled_result_import",
+                                    "test",
+                                    "1");
+    node->SetStringProperty("xq.type", "result");
+    xq::pipeline::SetStringProperty(
+        node,
+        "xq.result.field_names",
+        "point:coupled_pressure,point:wall_displacement");
+    xq::pipeline::SetStringProperty(node,
+                                    "xq.result.field_name",
+                                    "point:coupled_pressure");
+    node->SetIntProperty("xq.result.field_count", 2);
+    xq::pipeline::SetStringProperty(
+        node, "xq.result.source_multiphysics", "Main ROM_multiphysics");
+    return node;
+}
+
+bool PrepareMultiPhysicsReviewWorkflow(xq::core::ApplicationContext& context)
+{
+    QString message;
+    xq::domain::RegisterDefaultWorkflowActionHandlers(
+        *context.WorkflowActions(),
+        context.WorkflowOperations());
+    if (!context.WorkflowSelection()->SelectWorkflow(
+            QStringLiteral("multiphysics")))
+    {
+        return false;
+    }
+    const auto importResult =
+        context.DataImports()->Import(MakeResultImport(), &message);
+    if (!importResult.Succeeded)
+        return false;
+
+    return context.WorkflowOperations()->SelectOperation(
+        QStringLiteral("multiphysics"),
+        QStringLiteral("review-coupled-results"),
+        &message);
 }
 
 bool PrepareMultiPhysicsWorkflow(xq::core::ApplicationContext& context)
@@ -370,7 +481,7 @@ int main(int argc, char** argv)
         if (Expect(PrepareMultiPhysicsWorkflow(
                        *context,
                        QStringLiteral("review-coupled-results")),
-                   "unsupported coupled review fixture should prepare workflow"))
+                   "missing coupled result review fixture should prepare workflow"))
         {
             return 1;
         }
@@ -382,22 +493,106 @@ int main(int argc, char** argv)
                         *context,
                         nullptr,
                         &message),
-                "unsupported coupled review fixture should install handler"))
+                "missing coupled result review fixture should install handler"))
         {
             return 1;
         }
 
         if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
                        &message),
-                   "unsupported coupled review should fail"))
+                   "coupled review should require selected result"))
         {
             return 1;
         }
         if (Expect(message == QStringLiteral(
-                                  "Review Coupled Results is not wired to a native Multi-Physics runtime yet."),
-                   "unsupported coupled review diagnostic should name operation"))
+                                  "Active coupled result node is required for multiphysics review."),
+                   "missing coupled result diagnostic should require result"))
         {
             std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareMultiPhysicsReviewWorkflow(*context),
+                   "valid coupled review fixture should prepare workflow"))
+        {
+            return 1;
+        }
+
+        auto resultNode = MakeResultNode();
+        context->DataStorage()->Add(resultNode);
+        context->DataNodes()->BindNode(QStringLiteral("result-001"),
+                                       resultNode);
+
+        QString message;
+        FakeRenderRefreshService refresh;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicMultiPhysicsWorkflowActionHandler(
+                        *context,
+                        &refresh,
+                        &message),
+                "valid coupled review fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "coupled review should activate result display"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Prepared multiphysics result review for point:coupled_pressure."),
+                   "coupled review should report selected scalar"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+
+        bool visible = false;
+        bool scalarVisibility = false;
+        std::string activeScalar;
+        std::string reviewScalar;
+        std::string reviewStatus;
+        if (Expect(resultNode->GetBoolProperty("visible", visible) &&
+                       visible &&
+                       resultNode->GetBoolProperty("scalar visibility",
+                                                   scalarVisibility) &&
+                       scalarVisibility &&
+                       resultNode->GetStringProperty(
+                           "xq.result.active_scalar",
+                           activeScalar) &&
+                       activeScalar == "coupled_pressure" &&
+                       resultNode->GetStringProperty(
+                           "xq.review.multiphysics.active_scalar",
+                           reviewScalar) &&
+                       reviewScalar == "point:coupled_pressure" &&
+                       resultNode->GetStringProperty(
+                           "xq.review.multiphysics.status",
+                           reviewStatus) &&
+                       reviewStatus == "ready",
+                   "coupled review should store scalar review metadata"))
+        {
+            return 1;
+        }
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("result-001"),
+                   "coupled review should preserve result selection"))
+        {
+            return 1;
+        }
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "coupled review should refresh rendering after success"))
+        {
             return 1;
         }
     }

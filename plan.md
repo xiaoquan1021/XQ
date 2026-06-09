@@ -4501,6 +4501,40 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: MultiPhysics Result Review Infrastructure Action
+
+1. Replace the `review-coupled-results` MultiPhysics unsupported guard with a
+   native result-review action.
+   - Resolve the selected SimulationResult node from `DataNodeRegistryService`
+     or the active node.
+   - Require a real result node with named point/cell result fields.
+   - Reuse the existing result scalar activation path to select a preferred
+     coupled scalar for rendering.
+   - Mark the result node visible, store review metadata, and refresh
+     rendering on success.
+2. Keep the action honest about scope.
+   - Do not run `run-coupled-solve`.
+   - Do not synthesize MultiPhysics result data.
+   - Only prepare review for result nodes already imported or present in
+     DataStorage.
+3. Add RED C++ tests before implementation:
+   - `review-coupled-results` without a result node should require an active
+     coupled result instead of reporting unsupported runtime.
+   - A valid result node should activate a preferred scalar, mark visibility,
+     store MultiPhysics review metadata, keep the selection, and refresh
+     rendering.
+   - Production composition and the MultiPhysics operation page should validate
+     review through the Infrastructure handler.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for MultiPhysics handler/page/composition tests
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Completed Phase: Path Operation Foundation
 
 1. Add Domain-level operation descriptors for the Path workflow.

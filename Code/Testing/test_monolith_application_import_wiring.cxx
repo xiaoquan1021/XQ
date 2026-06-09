@@ -12,15 +12,25 @@
 #include "xq_MonolithApplication.h"
 
 #include <xq_CenterlineSegment.h>
+#include <xq_MitkGrid.h>
 #include <xq_MitkROMJob.h>
 #include <xq_PipelineDataUtils.h>
 #include <xq_ROMJob.h>
+#include <xq_TetGenGrid.h>
 #include <xq_VesselCenterline.h>
 
 #include <QAction>
 #include <QApplication>
 
 #include <mitkDataNode.h>
+
+#include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkSmartPointer.h>
+#include <vtkTetra.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <iostream>
 #include <memory>
@@ -130,6 +140,17 @@ xq::core::DataImportRequest MakeMeshImport()
     return request;
 }
 
+xq::core::DataImportRequest MakeResultImport()
+{
+    xq::core::DataImportRequest request;
+    request.RequestedId = QStringLiteral("result-001");
+    request.SourcePath = QStringLiteral("C:/studies/result-001.vtu");
+    request.DisplayName = QStringLiteral("Coupled Result");
+    request.Modality = QStringLiteral("SimulationResult");
+    request.WorkflowRole = xq::core::DataWorkflowRole::SimulationResult;
+    return request;
+}
+
 xq::core::DataImportRequest MakeRomImport()
 {
     xq::core::DataImportRequest request;
@@ -165,6 +186,58 @@ mitk::DataNode::Pointer MakeRomNode()
     xq::pipeline::SetStringProperty(
         node, xq::pipeline::kSourceMeshProperty, "Main Mesh");
     xq::pipeline::SetStringProperty(node, "xq.rom.status", "configured");
+    return node;
+}
+
+mitk::DataNode::Pointer MakeResultNode()
+{
+    auto grid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(0.0, 0.0, 0.0);
+    points->InsertNextPoint(1.0, 0.0, 0.0);
+    points->InsertNextPoint(0.0, 1.0, 0.0);
+    points->InsertNextPoint(0.0, 0.0, 1.0);
+    grid->SetPoints(points);
+
+    auto tetra = vtkSmartPointer<vtkTetra>::New();
+    tetra->GetPointIds()->SetId(0, 0);
+    tetra->GetPointIds()->SetId(1, 1);
+    tetra->GetPointIds()->SetId(2, 2);
+    tetra->GetPointIds()->SetId(3, 3);
+
+    auto cells = vtkSmartPointer<vtkCellArray>::New();
+    cells->InsertNextCell(tetra);
+    grid->SetCells(VTK_TETRA, cells);
+
+    auto pressure = vtkSmartPointer<vtkDoubleArray>::New();
+    pressure->SetName("coupled_pressure");
+    pressure->SetNumberOfComponents(1);
+    pressure->SetNumberOfTuples(4);
+    for (vtkIdType i = 0; i < 4; ++i)
+        pressure->SetValue(i, 80.0 + static_cast<double>(i));
+    grid->GetPointData()->AddArray(pressure);
+
+    auto* tetGrid = new xq_TetGenGrid();
+    tetGrid->SetVolumeMesh(grid);
+
+    auto mitkGrid = xq_MitkGrid::New();
+    mitkGrid->SetMesh(tetGrid, 0);
+
+    auto node = mitk::DataNode::New();
+    node->SetName("Coupled Result");
+    node->SetData(mitkGrid);
+    xq::pipeline::MarkGeneratedNode(node,
+                                    xq::pipeline::Stage::Result,
+                                    "coupled_result_import",
+                                    "test",
+                                    "1");
+    node->SetStringProperty("xq.type", "result");
+    xq::pipeline::SetStringProperty(
+        node, "xq.result.field_names", "point:coupled_pressure");
+    xq::pipeline::SetStringProperty(node,
+                                    "xq.result.field_name",
+                                    "point:coupled_pressure");
+    node->SetIntProperty("xq.result.field_count", 1);
     return node;
 }
 
@@ -719,19 +792,32 @@ int main(int argc, char** argv)
                               "Active ROM or simulation prep node is required for multiphysics coupling."),
                "configured MultiPhysics action should require a MITK ROM or simulation prep node"))
         return 1;
+    const auto coupledResultImport =
+        multiphysicsContext->DataImports()->Import(MakeResultImport(),
+                                                   &message);
+    if (Expect(coupledResultImport.Succeeded,
+               "configured MultiPhysics result import should succeed"))
+        return 1;
+    auto coupledResultNode = MakeResultNode();
+    multiphysicsContext->DataStorage()->Add(coupledResultNode);
+    multiphysicsContext->DataNodes()->BindNode(QStringLiteral("result-001"),
+                                               coupledResultNode);
     if (Expect(multiphysicsContext->WorkflowOperations()->SelectOperation(
                    QStringLiteral("multiphysics"),
                    QStringLiteral("review-coupled-results"),
                    &message),
                "configured MultiPhysics workflow should select coupled review"))
         return 1;
-    if (Expect(!multiphysicsContext->WorkflowActions()
-                    ->RunActiveWorkflowAction(&message),
-               "configured MultiPhysics review should use unsupported-operation guard"))
+    if (Expect(multiphysicsContext->WorkflowActions()
+                   ->RunActiveWorkflowAction(&message),
+               "configured MultiPhysics review should use infrastructure behavior"))
+    {
+        std::cerr << message.toStdString() << '\n';
         return 1;
+    }
     if (Expect(message == QStringLiteral(
-                              "Review Coupled Results is not wired to a native Multi-Physics runtime yet."),
-               "configured MultiPhysics review should report unsupported operation"))
+                              "Prepared multiphysics result review for point:coupled_pressure."),
+               "configured MultiPhysics review should report selected scalar"))
         return 1;
 
     auto pythonApiContext =

@@ -12,9 +12,11 @@
 #include <xq_MitkMultiPhysicsJob.h>
 #include <xq_MultiPhysicsJob.h>
 #include <xq_PipelineDataUtils.h>
+#include <xq_ResultImport.h>
 
 #include <algorithm>
 #include <memory>
+#include <sstream>
 
 namespace xq::infrastructure
 {
@@ -24,6 +26,8 @@ namespace
 
 constexpr const char* kMultiPhysicsWorkflowId = "multiphysics";
 constexpr const char* kConfigureCouplingOperationId = "configure-coupling";
+constexpr const char* kReviewCoupledResultsOperationId =
+    "review-coupled-results";
 constexpr const char* kMultiPhysicsFolderId = "multiphysics";
 constexpr const char* kMultiPhysicsFolderTitle = "MultiPhysics";
 constexpr const char* kSourceRomProperty = "xq.source.rom";
@@ -101,6 +105,21 @@ mitk::DataNode::Pointer ResolveSelectedNode(
     return context.ActiveNode();
 }
 
+mitk::DataNode::Pointer ResolveResultNode(
+    xq::core::ApplicationContext& context,
+    const xq::core::WorkflowContextSnapshot& snapshot)
+{
+    const auto selectedNode = ResolveSelectedNode(context, snapshot);
+    if (selectedNode.IsNotNull() &&
+        xq::pipeline::HasStage(selectedNode.GetPointer(),
+                               xq::pipeline::Stage::Result))
+    {
+        return selectedNode;
+    }
+
+    return nullptr;
+}
+
 bool IsCouplingSourceNode(const mitk::DataNode::Pointer& node)
 {
     return node.IsNotNull() &&
@@ -168,6 +187,59 @@ void SetDoubleProperty(const mitk::DataNode::Pointer& node,
         return;
 
     node->SetFloatProperty(key, static_cast<float>(value));
+}
+
+std::vector<std::string> SplitCsv(std::string text)
+{
+    std::vector<std::string> values;
+    std::string token;
+    std::istringstream input(text);
+    while (std::getline(input, token, ','))
+    {
+        if (!token.empty())
+            values.push_back(token);
+    }
+    return values;
+}
+
+std::string PreferredCoupledReviewScalar(
+    const mitk::DataNode::Pointer& node)
+{
+    std::vector<std::string> fields =
+        xq_ResultImport::GetFieldNames(node.GetPointer());
+    if (fields.empty())
+    {
+        fields = SplitCsv(xq::pipeline::GetStringProperty(
+            node.GetPointer(), "xq.result.field_names"));
+    }
+
+    const auto findContaining = [&fields](const std::string& text) {
+        return std::find_if(fields.begin(),
+                            fields.end(),
+                            [&text](const std::string& field) {
+                                return field.find(text) != std::string::npos;
+                            });
+    };
+
+    if (auto pressure = findContaining("pressure");
+        pressure != fields.end())
+    {
+        return *pressure;
+    }
+    if (auto displacement = findContaining("displacement");
+        displacement != fields.end())
+    {
+        return *displacement;
+    }
+    if (auto velocity = findContaining("velocity");
+        velocity != fields.end())
+    {
+        return *velocity;
+    }
+    if (!fields.empty())
+        return fields.front();
+
+    return {};
 }
 
 std::unique_ptr<xq_MultiPhysicsJob> CreateMultiPhysicsJob(
@@ -429,6 +501,58 @@ bool RunConfigureCoupling(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool RunReviewCoupledResults(
+    xq::core::ApplicationContext& context,
+    xq::core::RenderRefreshService* renderRefresh,
+    const xq::core::WorkflowContextSnapshot& snapshot,
+    QString* message)
+{
+    const auto resultNode = ResolveResultNode(context, snapshot);
+    if (resultNode.IsNull())
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active coupled result node is required for multiphysics review."));
+        return false;
+    }
+
+    const std::string scalar = PreferredCoupledReviewScalar(resultNode);
+    if (scalar.empty())
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "MultiPhysics result review requires named result fields."));
+        return false;
+    }
+
+    if (!xq_ResultImport::SetActiveScalar(resultNode.GetPointer(), scalar))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "MultiPhysics result review could not activate %1.")
+                       .arg(QString::fromStdString(scalar)));
+        return false;
+    }
+
+    resultNode->SetVisibility(true);
+    resultNode->SetBoolProperty("visible", true);
+    resultNode->SetBoolProperty("scalar visibility", true);
+    xq::pipeline::SetStringProperty(
+        resultNode, "xq.review.multiphysics.active_scalar", scalar);
+    xq::pipeline::SetStringProperty(
+        resultNode, "xq.review.multiphysics.status", "ready");
+    resultNode->Modified();
+
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    SetMessage(message,
+               QStringLiteral(
+                   "Prepared multiphysics result review for %1.")
+                   .arg(QString::fromStdString(scalar)));
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicMultiPhysicsWorkflowActionHandler(
@@ -452,20 +576,29 @@ bool RegisterDynamicMultiPhysicsWorkflowActionHandler(
                 return false;
             }
 
-            if (operationId !=
+            if (operationId ==
                 QString::fromLatin1(kConfigureCouplingOperationId))
             {
-                return RunUnsupportedMultiPhysicsOperation(operations,
-                                                           snapshot,
-                                                           operationId,
-                                                           taskMessage);
+                return RunConfigureCoupling(context,
+                                            renderRefresh,
+                                            snapshot,
+                                            operationId,
+                                            taskMessage);
             }
 
-            return RunConfigureCoupling(context,
-                                        renderRefresh,
-                                        snapshot,
-                                        operationId,
-                                        taskMessage);
+            if (operationId ==
+                QString::fromLatin1(kReviewCoupledResultsOperationId))
+            {
+                return RunReviewCoupledResults(context,
+                                               renderRefresh,
+                                               snapshot,
+                                               taskMessage);
+            }
+
+            return RunUnsupportedMultiPhysicsOperation(operations,
+                                                       snapshot,
+                                                       operationId,
+                                                       taskMessage);
         };
 
     return context.WorkflowActions()->RegisterHandler(
