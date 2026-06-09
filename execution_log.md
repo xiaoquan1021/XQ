@@ -1,5 +1,58 @@
 # XQ Execution Log
 
+## Current Run: 3D Threshold Region Infrastructure Action
+
+- Continued from clean `feature/windows-monolith-foundation` checkouts after
+  `boundary-layers` was pushed.
+- Completed the active autonomous research refresh:
+  - Remaining native 3D Segmentation gaps are `threshold-region` and
+    `surface-preview`.
+  - `xq_Seg3DUtils::ThresholdSegmentation` and `xq_MitkSeg3D::THRESHOLD`
+    already exist, so `threshold-region` is the next narrow native slice.
+  - `surface-preview` remains unsupported until a separate preview-specific
+    action is designed.
+- Added next executable phase to `plan.md`: 3D Threshold Region Infrastructure
+  Action.
+- Starting RED tests first:
+  - `threshold-region` should require a real MITK image node.
+  - A valid synthetic MITK image should create an `xq_MitkSeg3D` threshold
+    result, register catalog/hierarchy/data-node bindings, select it, and
+    refresh rendering.
+  - Production composition should validate `threshold-region` through the
+    Infrastructure handler rather than the Domain placeholder.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - Targeted `ctest` failed because `threshold-region` still returned
+    `Threshold Region is not wired to a native 3D Segmentation runtime yet.`
+    instead of creating a native `xq_MitkSeg3D` result.
+- Implemented 3D Threshold Region Infrastructure action:
+  - The dynamic Segmentation handler now routes `segmentation-3d` /
+    `threshold-region` to a native path.
+  - The handler resolves the selected MITK image, reads `threshold-lower` and
+    `threshold-upper`, validates the threshold range, and calls
+    `xq_Seg3DUtils::ThresholdSegmentation`.
+  - Successful runs create an `xq_MitkSeg3D` threshold node, stamp
+    `Segmentation3D` pipeline metadata, register catalog/hierarchy/data-node
+    bindings, select the result, and refresh rendering.
+  - `surface-preview` remains on the unsupported-operation guard.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(segmentation_workflow_action_handler|segmentation_operation_page|application_import_wiring)"`
+    passed: 3/3.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted 3D Threshold Region Infrastructure Action to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## 2026-06-07
 
 - Continued the Windows monolith migration loop from the pushed `feature/windows-monolith-foundation` branch.

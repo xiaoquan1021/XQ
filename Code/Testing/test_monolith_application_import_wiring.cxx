@@ -271,9 +271,9 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(segmentationContext->WorkflowOperations()->SelectOperation(
                    QStringLiteral("segmentation-3d"),
-                   QStringLiteral("region-growing"),
+                   QStringLiteral("threshold-region"),
                    &message),
-               "configured 3D segmentation workflow should select region growing"))
+               "configured 3D segmentation workflow should select threshold region"))
         return 1;
     if (Expect(!segmentationContext->WorkflowActions()
                     ->RunActiveWorkflowAction(&message),

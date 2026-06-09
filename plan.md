@@ -4063,6 +4063,46 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   native workflow gap.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: 3D Threshold Region Infrastructure Action
+
+1. Replace the `threshold-region` 3D Segmentation unsupported guard with a
+   native Infrastructure action.
+   - Resolve the selected MITK image node from `DataNodeRegistryService` or the
+     active node.
+   - Read `threshold-lower` and `threshold-upper` from
+     `WorkflowOperationService`.
+   - Run `xq_Seg3DUtils::ThresholdSegmentation`.
+   - Commit an `xq_MitkSeg3D` node with generated catalog/hierarchy entries,
+     select it, and refresh rendering on success.
+2. Keep `surface-preview` unsupported until it receives its own native handler.
+3. Add RED C++ tests before implementation:
+   - `threshold-region` with a real MITK image should no longer return the
+     unsupported-operation diagnostic.
+   - A successful run should register a 3D segmentation catalog entry, bind an
+     `xq_MitkSeg3D` node, record threshold metadata, select the result, and
+     refresh rendering.
+   - Production composition should validate `threshold-region` through the
+     Infrastructure handler.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for
+     `test_monolith_segmentation_workflow_action_handler`
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

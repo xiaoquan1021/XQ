@@ -31,6 +31,7 @@ namespace
 constexpr const char* kSegmentation2DWorkflowId = "segmentation-2d";
 constexpr const char* kSegmentation3DWorkflowId = "segmentation-3d";
 constexpr const char* kManualContourOperationId = "manual-contour";
+constexpr const char* kThresholdRegionOperationId = "threshold-region";
 constexpr const char* kRegionGrowingOperationId = "region-growing";
 constexpr const char* kSegmentationsFolderId = "segmentations";
 constexpr const char* kSegmentationsFolderTitle = "Segmentations";
@@ -490,6 +491,130 @@ bool RunRegionGrowing3D(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool RunThresholdRegion3D(xq::core::ApplicationContext& context,
+                          xq::core::RenderRefreshService* renderRefresh,
+                          const xq::core::WorkflowContextSnapshot& snapshot,
+                          const QString& operationId,
+                          QString* message)
+{
+    const auto imageNode = ResolveImageNode(context, snapshot);
+    auto* image = imageNode.IsNotNull()
+                      ? dynamic_cast<mitk::Image*>(imageNode->GetData())
+                      : nullptr;
+    vtkImageData* vtkImage = image ? image->GetVtkImageData() : nullptr;
+    if (!vtkImage)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active image node is required for 3D segmentation."));
+        return false;
+    }
+
+    const QString entryId = ResultCatalogEntryId(snapshot, operationId);
+    const QString preflightMessage = PreflightCommitTarget(context, entryId);
+    if (!preflightMessage.isEmpty())
+    {
+        SetMessage(message, preflightMessage);
+        return false;
+    }
+
+    const int* dims = vtkImage->GetDimensions();
+    if (!dims || dims[0] <= 0 || dims[1] <= 0 || dims[2] <= 0)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Selected image has no voxel data for 3D segmentation."));
+        return false;
+    }
+
+    const QVariantMap parameters =
+        context.WorkflowOperations()
+            ? context.WorkflowOperations()->ParameterValues(snapshot.WorkflowId,
+                                                            operationId)
+            : QVariantMap();
+    const double lowerThreshold =
+        parameters.value(QStringLiteral("threshold-lower"), 0.0).toDouble();
+    const double upperThreshold =
+        parameters.value(QStringLiteral("threshold-upper"),
+                         lowerThreshold)
+            .toDouble();
+    if (upperThreshold < lowerThreshold)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "3D segmentation upper threshold must be greater than or equal to lower threshold."));
+        return false;
+    }
+
+    auto surface = xq_Seg3DUtils::ThresholdSegmentation(vtkImage,
+                                                        lowerThreshold,
+                                                        upperThreshold);
+    if (!surface || surface->GetNumberOfPoints() == 0)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "3D threshold segmentation did not produce a surface."));
+        return false;
+    }
+
+    auto segmentation = xq_MitkSeg3D::New();
+    segmentation->SetMethod(xq_MitkSeg3D::Seg3DMethod::THRESHOLD);
+    segmentation->SetLowerThreshold(lowerThreshold);
+    segmentation->SetUpperThreshold(upperThreshold);
+    segmentation->SetSurfaceMesh(surface);
+
+    const QString sourceName =
+        QString::fromStdString(imageNode->GetName()).trimmed();
+    auto resultNode = mitk::DataNode::New();
+    resultNode->SetName(
+        QStringLiteral("%1_threshold_region").arg(sourceName).toStdString());
+    resultNode->SetData(segmentation);
+    resultNode->SetColor(0.1f, 0.55f, 1.0f);
+    resultNode->SetOpacity(0.45f);
+    xq::pipeline::MarkNode(resultNode,
+                           xq::pipeline::Stage::Segmentation3D);
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        xq::pipeline::kAlgorithmProperty,
+        "threshold-region");
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        xq::pipeline::kSourceImageProperty,
+        sourceName.toStdString());
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        "xq.segmentation.method",
+        "threshold");
+    xq::pipeline::SetStringProperty(
+        resultNode,
+        "xq.params.segmentation3d.method",
+        "threshold");
+    resultNode->SetBoolProperty("xq.segmentation.3d", true);
+    resultNode->SetDoubleProperty("xq.segmentation.threshold.min",
+                                  lowerThreshold);
+    resultNode->SetDoubleProperty("xq.segmentation.threshold.max",
+                                  upperThreshold);
+
+    auto folder = xq::pipeline::FindCategoryFolder(
+        context.DataStorage().GetPointer(),
+        xq::pipeline::Stage::Segmentation3D,
+        imageNode.GetPointer());
+    if (folder.IsNotNull())
+        context.DataStorage()->Add(resultNode, folder);
+    else
+        context.DataStorage()->Add(resultNode, imageNode);
+
+    if (!CommitSegmentation3DResult(context, entryId, resultNode, message))
+        return false;
+
+    QString selectionMessage;
+    context.DataSelection()->SelectCatalogEntry(entryId, &selectionMessage);
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicSegmentationWorkflowActionHandler(
@@ -511,6 +636,17 @@ bool RegisterDynamicSegmentationWorkflowActionHandler(
                            QStringLiteral(
                                "2D segmentation operation id is required."));
                 return false;
+            }
+
+            if (snapshot.WorkflowId ==
+                    QString::fromLatin1(kSegmentation3DWorkflowId) &&
+                operationId == QString::fromLatin1(kThresholdRegionOperationId))
+            {
+                return RunThresholdRegion3D(context,
+                                            renderRefresh,
+                                            snapshot,
+                                            operationId,
+                                            taskMessage);
             }
 
             if (snapshot.WorkflowId ==

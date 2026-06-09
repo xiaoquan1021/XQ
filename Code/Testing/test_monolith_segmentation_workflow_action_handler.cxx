@@ -425,6 +425,144 @@ int main(int argc, char** argv)
             xq::core::ApplicationContext::CreateDefault());
         if (Expect(PrepareSegmentation3DWorkflow(
                        *context,
+                       QStringLiteral("threshold-region")),
+                   "3D threshold region fixture should prepare workflow"))
+        {
+            return 1;
+        }
+        QString message;
+        if (Expect(context->WorkflowOperations()->SetParameterValue(
+                       QStringLiteral("segmentation-3d"),
+                       QStringLiteral("threshold-region"),
+                       QStringLiteral("threshold-lower"),
+                       50.0,
+                       &message),
+                   "3D threshold region fixture should set lower threshold"))
+        {
+            return 1;
+        }
+        if (Expect(context->WorkflowOperations()->SetParameterValue(
+                       QStringLiteral("segmentation-3d"),
+                       QStringLiteral("threshold-region"),
+                       QStringLiteral("threshold-upper"),
+                       150.0,
+                       &message),
+                   "3D threshold region fixture should set upper threshold"))
+        {
+            return 1;
+        }
+
+        auto imageNode = MakeImageNode("CTA Image");
+        context->DataStorage()->Add(imageNode);
+        context->DataNodes()->BindNode(QStringLiteral("image-001"), imageNode);
+
+        FakeRenderRefreshService refresh;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicSegmentationWorkflowActionHandler(
+                        *context,
+                        &refresh,
+                        &message),
+                "3D threshold region fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "3D threshold region should create segmentation result"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Registered 3D segmentation result catalog entry."),
+                   "3D threshold region should report catalog commit success"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        const auto* entry = context->DataCatalog()->FindById(
+            QStringLiteral("image-001-threshold-region"));
+        if (Expect(entry != nullptr &&
+                       entry->WorkflowRole ==
+                           xq::core::DataWorkflowRole::Segmentation &&
+                       entry->SourcePath ==
+                           QStringLiteral(
+                               "xq://generated/segmentation/image-001-threshold-region"),
+                   "3D threshold region should register generated catalog entry"))
+        {
+            return 1;
+        }
+        const auto* hierarchyNode = context->DataHierarchy()->FindNode(
+            QStringLiteral("data-image-001-threshold-region"));
+        if (Expect(hierarchyNode != nullptr &&
+                       hierarchyNode->DataCatalogEntryId ==
+                           QStringLiteral("image-001-threshold-region"),
+                   "3D threshold region should register hierarchy entry"))
+        {
+            return 1;
+        }
+        auto resultNode = context->DataNodes()->FindNode(
+            QStringLiteral("image-001-threshold-region"));
+        auto* seg3d = resultNode.IsNotNull()
+                          ? dynamic_cast<xq_MitkSeg3D*>(resultNode->GetData())
+                          : nullptr;
+        if (Expect(seg3d != nullptr,
+                   "3D threshold region should bind xq_MitkSeg3D data"))
+        {
+            return 1;
+        }
+        if (Expect(seg3d->GetMethod() ==
+                       xq_MitkSeg3D::Seg3DMethod::THRESHOLD &&
+                       seg3d->GetSeedPoints().empty() &&
+                       seg3d->GetLowerThreshold() == 50.0 &&
+                       seg3d->GetUpperThreshold() == 150.0,
+                   "3D threshold region should preserve method and thresholds"))
+        {
+            return 1;
+        }
+        if (Expect(seg3d->GetSurfaceMesh() != nullptr &&
+                       seg3d->GetSurfaceMesh()->GetNumberOfPoints() > 0,
+                   "3D threshold region should attach extracted surface mesh"))
+        {
+            return 1;
+        }
+        if (Expect(xq::pipeline::HasStage(resultNode,
+                                          xq::pipeline::Stage::Segmentation3D) &&
+                       xq::pipeline::GetStringProperty(
+                           resultNode.GetPointer(),
+                           xq::pipeline::kAlgorithmProperty) ==
+                           "threshold-region" &&
+                       xq::pipeline::GetStringProperty(
+                           resultNode.GetPointer(),
+                           xq::pipeline::kSourceImageProperty) ==
+                           "CTA Image",
+                   "3D threshold region should mark pipeline metadata"))
+        {
+            return 1;
+        }
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("image-001-threshold-region"),
+                   "3D threshold region should select generated segmentation"))
+        {
+            return 1;
+        }
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "3D threshold region should refresh rendering after success"))
+        {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareSegmentation3DWorkflow(
+                       *context,
                        QStringLiteral("region-growing")),
                    "3D region growing fixture should prepare workflow"))
         {

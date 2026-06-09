@@ -203,10 +203,10 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
-    if (Expect(segmentation3dSelector->itemData(1).toString() ==
-                       QStringLiteral("region-growing") &&
-                   segmentation3dSelector->itemText(1) ==
-                       QStringLiteral("Region Growing"),
+    if (Expect(segmentation3dSelector->itemData(0).toString() ==
+                       QStringLiteral("threshold-region") &&
+                   segmentation3dSelector->itemText(0) ==
+                       QStringLiteral("Threshold Region"),
                "3D segmentation selector should preserve operation order"))
     {
         delete context;
@@ -214,24 +214,25 @@ int main(int argc, char** argv)
     }
 
     segmentation3dSelector->setCurrentIndex(
-        segmentation3dSelector->findData(QStringLiteral("region-growing")));
+        segmentation3dSelector->findData(QStringLiteral("threshold-region")));
     app.processEvents();
     auto* segmentation3dButton =
         FindActionButton(window, QStringLiteral("segmentation-3d"));
     if (Expect(segmentation3dButton != nullptr &&
                    segmentation3dButton->text() ==
-                       QStringLiteral("Run Region Growing"),
+                       QStringLiteral("Run Threshold Region"),
                "3D segmentation action should include selected operation"))
     {
         delete context;
         return 1;
     }
-    if (Expect(FindIntegerParameter(window, QStringLiteral("seed-x")) !=
+    if (Expect(FindNumericParameter(window,
+                                    QStringLiteral("threshold-lower")) !=
                        nullptr &&
                    FindNumericParameter(window,
                                         QStringLiteral("threshold-upper")) !=
                        nullptr,
-               "3D region growing should expose seed and threshold controls"))
+               "3D threshold region should expose threshold controls"))
     {
         delete context;
         return 1;
