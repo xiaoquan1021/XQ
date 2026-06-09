@@ -4079,6 +4079,59 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Workbench Close Workspace and .env Launcher Discipline
+
+- User asked why there are so many bugs and whether a `.env`-style virtual
+  environment can be used.
+- Environment diagnosis:
+  - For this MSVC/Qt/MITK native desktop stack, `.env` is useful but is not a
+    Python-style dependency sandbox.
+  - The equivalent stable workflow is project-local `.env` plus
+    `scripts\Enter-XQEnvironment.ps1`, `scripts\build-xq.ps1`, and
+    `scripts\run-xq.ps1`, which centralize Visual Studio, CMake, dependency
+    install root, runtime `PATH`, `QT_PLUGIN_PATH`, and `XQ_PLUGIN_PATH`.
+  - The remaining UI bugs in this slice were not caused by missing externals;
+    they were monolith state wiring gaps after replacing BlueBerry/CTK runtime
+    behavior with explicit Qt services.
+- Continued the in-progress Close Workspace TDD slice:
+  - Existing RED target failed because File -> Close Workspace was still not
+    fully resetting UI state.
+  - First green step added project action refresh after a successful close.
+  - Second failure showed the project page empty-state labels still used the
+    old "No project" / blank path text.
+  - Updated empty project labels to "No project loaded" and "No project file".
+- Implemented Close Workspace production behavior:
+  - `ProjectSessionService::Close()` clears active project state, catalog,
+    hierarchy, selection, node bindings, and MITK `DataStorage`.
+  - `MainWindow::CloseWorkspace()` now routes File -> Close Workspace through
+    the session service and refreshes project/data UI, menu state, rendering,
+    window title, and status bar.
+- Tightened `.env` launcher behavior:
+  - Added a RED assertion that `Start-XQ.cmd` must not pass a hardcoded
+    `-ExternalsRoot` that overrides `.env`.
+  - Updated `Start-XQ.cmd` to call `scripts\run-xq.ps1` directly and let
+    `.env` or explicit user arguments provide machine-local paths.
+- Targeted verification so far:
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(project_close_workspace_action|project_save_as_action|project_menu_actions|main_window_project_save_action)"`
+    passed: 4/4.
+  - `tests\test_windows_env_scripts.ps1` passed.
+  - `tests\test_windows_dotenv_virtual_environment.ps1` passed.
+- Full verification:
+  - `scripts\build-xq.ps1 configure` passed using `.env`.
+  - `scripts\build-xq.ps1 build` passed using `.env`.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - First full CTest run found one stale Project workflow empty-state
+    assertion still expecting "No project"; updated the adjacent test to the
+    new "No project loaded" / "No project file" empty state.
+  - Targeted retest for Project workflow and Close Workspace passed: 2/2.
+  - Full `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 81/81.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+
 ## Current Run Update: Workbench Project Menu Actions Wiring
 
 - User environment note:

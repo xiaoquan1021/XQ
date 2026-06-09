@@ -75,6 +75,16 @@ bool DataNodeRegistryService::RemoveNode(const QString& catalogEntryId,
     return true;
 }
 
+void DataNodeRegistryService::Clear()
+{
+    if (m_CatalogEntryIds.isEmpty() && m_NodesByCatalogEntryId.isEmpty())
+        return;
+
+    m_CatalogEntryIds.clear();
+    m_NodesByCatalogEntryId.clear();
+    emit BindingsChanged();
+}
+
 QString DataNodeRegistryService::NormalizedId(const QString& catalogEntryId)
 {
     return catalogEntryId.trimmed();

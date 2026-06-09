@@ -163,7 +163,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    if (Expect(nameLabel->text() == QStringLiteral("No project"),
+    if (Expect(nameLabel->text() == QStringLiteral("No project loaded") &&
+                   pathLabel->text() == QStringLiteral("No project file"),
                "project page should start with no project metadata"))
     {
         delete context;

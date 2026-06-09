@@ -5594,3 +5594,36 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench Close Workspace Action
+
+1. Replace the restored File -> Close Workspace guard with real monolith
+   session close behavior.
+   - Close clears the active schema 2.0 project.
+   - Close clears the data catalog, hierarchy, selection, node registry, and
+     MITK `DataStorage`.
+   - Close refreshes project labels, project tree, data workflow state, data
+     action state, File menu action enablement, window title, status bar, and
+     MITK rendering.
+2. Keep scope honest.
+   - Do not restore legacy BlueBerry workspace migration.
+   - Do not implement old `.xqproj` compatibility.
+   - Inactive Close Workspace reports a deterministic no-op diagnostic.
+3. Tighten the Windows environment entry point.
+   - Keep `.env` as the local machine configuration file for this native stack.
+   - Keep `scripts\Enter-XQEnvironment.ps1` as the PowerShell activation entry,
+     similar in role to a Python virtual environment activation script.
+   - Keep `Start-XQ.cmd` from overriding `.env` with a hardcoded
+     `-ExternalsRoot`, so one workstation can point at its own dependency tree.
+4. Add regression coverage.
+   - `test_monolith_project_close_workspace_action` verifies project/data/node
+     cleanup and UI reset.
+   - `test_windows_env_scripts` verifies the double-click launcher initializes
+     through `scripts\run-xq.ps1` without bypassing or overriding `.env`.
+5. Verification gate:
+   - targeted Project Close/Save/Save As/menu tests.
+   - `.env` and environment script PowerShell tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.

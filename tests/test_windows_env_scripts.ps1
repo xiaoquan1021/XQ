@@ -41,6 +41,9 @@ $StartLauncher = Get-Content -Raw -LiteralPath $StartLauncherPath
 if ($StartLauncher -notmatch [regex]::Escape("scripts\run-xq.ps1")) {
     throw "Start-XQ.cmd must launch through scripts\run-xq.ps1 so the runtime PATH is initialized"
 }
+if ($StartLauncher -match "-ExternalsRoot") {
+    throw "Start-XQ.cmd must not override .env with a hardcoded -ExternalsRoot value"
+}
 if ($StartLauncher -match "build\\\\windows-msvc-release\\\\bin\\\\XQ\.exe") {
     throw "Start-XQ.cmd must not launch XQ.exe directly because that bypasses dependency PATH setup"
 }

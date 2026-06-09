@@ -598,6 +598,14 @@ const ProjectMetadata* ProjectService::CurrentProject() const
     return &(*m_CurrentProject);
 }
 
+void ProjectService::ClearProject()
+{
+    if (!m_CurrentProject.has_value())
+        return;
+
+    m_CurrentProject.reset();
+}
+
 bool ProjectService::CreateProject(const QString& name,
                                    const QString& projectFilePath,
                                    QString* errorMessage)

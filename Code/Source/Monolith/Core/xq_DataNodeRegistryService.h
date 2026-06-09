@@ -26,6 +26,7 @@ public:
                   QString* errorMessage = nullptr);
     bool RemoveNode(const QString& catalogEntryId,
                     QString* errorMessage = nullptr);
+    void Clear();
 
 signals:
     void BindingsChanged();

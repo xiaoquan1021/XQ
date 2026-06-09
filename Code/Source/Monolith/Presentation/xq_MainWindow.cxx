@@ -483,8 +483,9 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     connect(closeProjectAction,
             &QAction::triggered,
             this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "Close Workspace is not available in Windows monolith v1.")));
+            [this]() {
+                CloseWorkspace();
+            });
     connect(importDicomAction,
             &QAction::triggered,
             this,
@@ -1285,6 +1286,31 @@ void MainWindow::SaveProjectAsFromProvider()
     UpdateProjectStructureTree();
 }
 
+void MainWindow::CloseWorkspace()
+{
+    QString errorMessage;
+    const bool closed = m_Context.ProjectSession()->Close(&errorMessage);
+    if (!errorMessage.trimmed().isEmpty())
+        m_Context.PostDiagnostic(errorMessage);
+    if (!closed)
+    {
+        UpdateProjectActions();
+        return;
+    }
+
+    setWindowTitle(QStringLiteral("XQ"));
+    statusBar()->showMessage(QStringLiteral("No project"));
+    UpdateProjectActions();
+    UpdateProjectPage(nullptr);
+    UpdateProjectPageDataCount();
+    UpdateProjectStructureTree();
+    UpdateDataWorkflowPage();
+    UpdateDataManagerSelection();
+    UpdateDataActions();
+    if (auto* renderingManager = mitk::RenderingManager::GetInstance())
+        renderingManager->RequestUpdateAll();
+}
+
 void MainWindow::SyncWorkflowNavigationFromCore(const QString& workflowId)
 {
     if (!m_Navigation || !m_Pages)
@@ -1967,8 +1993,8 @@ void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)
 
     if (!project)
     {
-        m_ProjectNameLabel->setText(QStringLiteral("No project"));
-        m_ProjectPathLabel->clear();
+        m_ProjectNameLabel->setText(QStringLiteral("No project loaded"));
+        m_ProjectPathLabel->setText(QStringLiteral("No project file"));
         m_ProjectSchemaLabel->setText(QStringLiteral("Schema: -"));
         UpdateProjectPageDataCount();
         UpdateProjectStructureTree();

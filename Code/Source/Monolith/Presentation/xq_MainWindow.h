@@ -52,6 +52,7 @@ private:
     void AddWorkflowPage(const QString& id, const QString& title);
     void AppendTaskHistoryRow(const xq::core::TaskRecord& task);
     void CreateProjectFromProvider();
+    void CloseWorkspace();
     void ImportData();
     void OpenProjectFromProvider();
     void OpenPreferencesDialog();

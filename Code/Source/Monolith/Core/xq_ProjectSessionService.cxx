@@ -2,6 +2,7 @@
 
 #include "xq_DataCatalogService.h"
 #include "xq_DataHierarchyService.h"
+#include "xq_DataNodeRegistryService.h"
 #include "xq_DataSelectionService.h"
 #include "xq_ProjectService.h"
 #include "xq_TaskRunner.h"
@@ -51,6 +52,28 @@ ProjectSessionService::ProjectSessionService(
     , m_DataCatalog(dataCatalog)
     , m_DataHierarchy(dataHierarchy)
     , m_DataSelection(&dataSelection)
+    , m_WorkflowOperations(&workflowOperations)
+    , m_TaskRunner(taskRunner)
+{
+}
+
+ProjectSessionService::ProjectSessionService(
+    ProjectService& projectService,
+    DataCatalogService& dataCatalog,
+    DataHierarchyService& dataHierarchy,
+    DataSelectionService& dataSelection,
+    DataNodeRegistryService& dataNodes,
+    mitk::DataStorage::Pointer dataStorage,
+    WorkflowOperationService& workflowOperations,
+    TaskRunner& taskRunner,
+    QObject* parent)
+    : QObject(parent)
+    , m_ProjectService(projectService)
+    , m_DataCatalog(dataCatalog)
+    , m_DataHierarchy(dataHierarchy)
+    , m_DataSelection(&dataSelection)
+    , m_DataNodes(&dataNodes)
+    , m_DataStorage(dataStorage)
     , m_WorkflowOperations(&workflowOperations)
     , m_TaskRunner(taskRunner)
 {
@@ -135,6 +158,36 @@ bool ProjectSessionService::Open(const QString& projectFilePath,
     if (succeeded && m_DataSelection)
         m_DataSelection->Clear();
     return succeeded;
+}
+
+bool ProjectSessionService::Close(QString* errorMessage)
+{
+    if (!m_ProjectService.HasActiveProject())
+    {
+        SetError(errorMessage,
+                 QStringLiteral("Close Workspace skipped: no active project."));
+        return false;
+    }
+
+    DataCatalogService emptyCatalog;
+    DataHierarchyService emptyHierarchy;
+    m_DataCatalog.ReplaceWith(emptyCatalog);
+    m_DataHierarchy.ReplaceWith(emptyHierarchy);
+
+    if (m_DataSelection)
+        m_DataSelection->Clear();
+    if (m_DataNodes)
+        m_DataNodes->Clear();
+    if (m_DataStorage.IsNotNull())
+    {
+        auto allNodes = m_DataStorage->GetAll();
+        for (auto it = allNodes->begin(); it != allNodes->end(); ++it)
+            m_DataStorage->Remove(*it);
+    }
+
+    m_ProjectService.ClearProject();
+    SetError(errorMessage, QStringLiteral("Workspace closed."));
+    return true;
 }
 
 void ProjectSessionService::SetError(QString* errorMessage,

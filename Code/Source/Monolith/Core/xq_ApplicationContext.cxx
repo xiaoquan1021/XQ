@@ -51,6 +51,8 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
                                                         *m_DataCatalogService,
                                                         *m_DataHierarchyService,
                                                         *m_DataSelectionService,
+                                                        *m_DataNodeRegistryService,
+                                                        m_DataStorage,
                                                         *m_WorkflowOperationService,
                                                         *m_TaskRunner,
                                                         this))

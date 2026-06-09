@@ -32,6 +32,7 @@ public:
 
     bool HasActiveProject() const;
     const ProjectMetadata* CurrentProject() const;
+    void ClearProject();
 
     bool CreateProject(const QString& name,
                        const QString& projectFilePath,
