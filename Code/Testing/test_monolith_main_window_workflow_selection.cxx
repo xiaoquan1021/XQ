@@ -6,8 +6,10 @@
 #include <QApplication>
 #include <QAction>
 #include <QListWidget>
+#include <QSize>
 #include <QStackedWidget>
 #include <QToolBar>
+#include <QToolButton>
 
 #include <iostream>
 
@@ -31,6 +33,8 @@ int main(int argc, char** argv)
 
     auto* context = xq::core::ApplicationContext::CreateDefault();
     xq::presentation::MainWindow window(*context);
+    window.show();
+    app.processEvents();
 
     auto* navigation =
         window.findChild<QListWidget*>(QStringLiteral("xqWorkflowNavigation"));
@@ -152,6 +156,8 @@ int main(int argc, char** argv)
     };
     for (const auto& expectation : toolbarExpectations)
     {
+        const QString workflowId = QString::fromLatin1(
+            expectation.WorkflowId);
         auto* action = window.findChild<QAction*>(
             QString::fromLatin1(expectation.ActionName));
         if (Expect(action != nullptr,
@@ -172,11 +178,53 @@ int main(int argc, char** argv)
             delete context;
             return 1;
         }
+        auto* button = qobject_cast<QToolButton*>(
+            viewToolbar->widgetForAction(action));
+        if (Expect(button != nullptr,
+                   "Workflow toolbar action should own a visible Workbench tool button"))
+        {
+            delete context;
+            return 1;
+        }
+        if (Expect(button->objectName() ==
+                       QStringLiteral("xqToolButton_%1").arg(workflowId),
+                   "Workflow tool buttons should have stable Workbench object names"))
+        {
+            delete context;
+            return 1;
+        }
+        if (Expect(button->toolButtonStyle() == Qt::ToolButtonTextUnderIcon,
+                   "Workflow tool buttons should use icon-over-text Workbench layout"))
+        {
+            delete context;
+            return 1;
+        }
+        if (Expect(button->iconSize() == QSize(36, 36),
+                   "Workflow tool buttons should restore original 36px XQ icons"))
+        {
+            delete context;
+            return 1;
+        }
+        if (Expect(button->minimumWidth() >= 76 &&
+                       button->maximumWidth() <= 96,
+                   "Workflow tool buttons should use compact fixed widths"))
+        {
+            delete context;
+            return 1;
+        }
+        const QRect buttonRect = viewToolbar->actionGeometry(action);
+        if (Expect(buttonRect.isValid() &&
+                       buttonRect.right() <= viewToolbar->width(),
+                   "Workflow toolbar buttons should fit within the default Workbench window width"))
+        {
+            delete context;
+            return 1;
+        }
 
         action->trigger();
         app.processEvents();
         if (Expect(workflowSelection->SelectedWorkflowId() ==
-                       QString::fromLatin1(expectation.WorkflowId),
+                       workflowId,
                    "Workflow toolbar action should update Core selection"))
         {
             delete context;

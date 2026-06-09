@@ -53,6 +53,7 @@
 #include <QTabWidget>
 #include <QTextEdit>
 #include <QToolBar>
+#include <QToolButton>
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QVariantList>
@@ -283,8 +284,8 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     viewToolbar->setMovable(false);
     viewToolbar->setFloatable(false);
     viewToolbar->setAllowedAreas(Qt::TopToolBarArea);
-    viewToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    viewToolbar->setIconSize(QSize(32, 32));
+    viewToolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    viewToolbar->setIconSize(QSize(36, 36));
     m_WorkflowToolbarActionGroup = new QActionGroup(this);
     m_WorkflowToolbarActionGroup->setExclusive(true);
     for (const auto& tool : kWorkflowTools)
@@ -302,9 +303,21 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                 this,
                 [this, workflowId]() {
                     m_Context.WorkflowSelection()->SelectWorkflow(workflowId);
-                });
+        });
         m_WorkflowToolbarActions.insert(workflowId, action);
         viewToolbar->addAction(action);
+        if (auto* button =
+                qobject_cast<QToolButton*>(viewToolbar->widgetForAction(action)))
+        {
+            button->setObjectName(
+                QStringLiteral("xqToolButton_%1").arg(workflowId));
+            button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+            button->setIconSize(QSize(36, 36));
+            button->setFocusPolicy(Qt::NoFocus);
+            button->setMinimumWidth(82);
+            button->setMaximumWidth(90);
+            button->setMinimumHeight(58);
+        }
     }
     addToolBar(Qt::TopToolBarArea, viewToolbar);
 

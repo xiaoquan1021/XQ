@@ -5247,3 +5247,31 @@ The next monolith slice is grounded in these comparable systems:
 5. Verification gate:
    - targeted Workbench layout/workflow/page tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Workflow Toolbar Fidelity
+
+1. Restore the first-viewport workflow toolbar shape from the original XQ
+   Workbench advisor.
+   - Keep `xqViewToolBar` as the monolith workflow switcher.
+   - Use original XQ SVG resources for each workflow action.
+   - Present each workflow as a compact fixed-width tool button instead of a
+     variable-width default action button.
+2. Keep workflow state behavior unchanged.
+   - Preserve `xqToolAction_*` actions and the exclusive action group.
+   - Keep toolbar-triggered selection routed through
+     `WorkflowSelectionService`.
+   - Keep the hidden workflow navigation and page stack synchronized.
+3. Improve startup readability.
+   - Use icon-over-text layout for workflow tools.
+   - Use 36px workflow icons, matching the original advisor's explicit icon
+     sizing.
+   - Assign stable `xqToolButton_*` object names for UI regression tests and
+     future screenshot automation.
+4. Add regression coverage.
+   - `test_monolith_main_window_workflow_selection` verifies every workflow
+     action owns a visible Workbench tool button, uses 36px icons,
+     icon-over-text layout, compact fixed widths, and fits inside the default
+     window width.
+5. Verification gate:
+   - targeted workflow/layout/theme/page tests.
+   - full XQ and Externals test gates before commit.

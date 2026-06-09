@@ -4079,6 +4079,43 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Workbench Workflow Toolbar Fidelity
+
+- Continued UI fidelity after the fresh Workbench panels and Tools dock
+  readability correction.
+- Source comparison:
+  - The original `xq_WorkbenchWindowAdvisor` created explicit workflow
+    `QToolButton` widgets for XQ tools and gave them 36px icons.
+  - The monolith shell still used default `QToolBar::addAction()` buttons with
+    text beside icons, making the first-viewport workflow strip look like a
+    generic action bar and prone to horizontal crowding.
+- Red test observed:
+  - Extended `test_monolith_main_window_workflow_selection` first.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_main_window_workflow_selection"`
+    failed on `Workflow tool buttons should have stable Workbench object names`.
+- Implemented the toolbar correction:
+  - Kept the existing workflow `QAction` objects and Core selection routing.
+  - Switched `xqViewToolBar` to icon-over-text layout with 36px icons.
+  - Assigned each workflow button a stable `xqToolButton_*` object name.
+  - Set compact width/height constraints so the toolbar fits the default
+    Workbench window width.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_main_window_workflow_selection"`
+    passed: 1/1.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(main_window_workbench_layout|main_window_workflow_selection|workbench_theme|workflow_primary_action_page|simulation_operation_pages|modeling_meshing_operation_pages|path_operation_page|segmentation_operation_page)"`
+    passed: 8/8.
+- Final verification for this slice:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Runtime smoke started `build\windows-msvc-release\bin\XQ.exe`, kept it
+    alive for 10 seconds, and closed it successfully.
+
 ## Current Run Update: Workbench Tools Dock Readability Correction
 
 - Runtime screenshot QA after restoring workflow panels showed a real UI
