@@ -9,9 +9,12 @@
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowOperationService.h"
 
+#include <xq_Model.h>
 #include <xq_ModelPipeline.h>
 #include <xq_PipelineDataUtils.h>
+#include <xq_PolyGeometry.h>
 #include <xq_ProfileGroup.h>
+#include <xq_SegmentationUtils.h>
 
 #include <algorithm>
 
@@ -23,6 +26,7 @@ namespace
 
 constexpr const char* kModelingWorkflowId = "modeling";
 constexpr const char* kBuildSolidModelOperationId = "build-solid-model";
+constexpr const char* kLoftSurfaceOperationId = "loft-surface";
 constexpr const char* kModelsFolderId = "models";
 constexpr const char* kModelsFolderTitle = "Models";
 
@@ -259,6 +263,123 @@ bool RunBuildSolidModel(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool RunLoftSurfaceModel(xq::core::ApplicationContext& context,
+                         xq::core::RenderRefreshService* renderRefresh,
+                         const xq::core::WorkflowContextSnapshot& snapshot,
+                         const QString& operationId,
+                         QString* message)
+{
+    const auto segmentationNode = ResolveSegmentationNode(context, snapshot);
+    if (segmentationNode.IsNull() ||
+        !xq::pipeline::HasStage(segmentationNode.GetPointer(),
+                                xq::pipeline::Stage::ContourGroup))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active segmentation node is required for modeling."));
+        return false;
+    }
+
+    auto* profileGroup =
+        dynamic_cast<xq_ProfileGroup*>(segmentationNode->GetData());
+    if (!profileGroup)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active profile-group segmentation is required for loft surface modeling."));
+        return false;
+    }
+    if (!profileGroup->IsReadyForLoft(0))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Profile group is not ready for loft surface modeling."));
+        return false;
+    }
+
+    const QString entryId = ResultCatalogEntryId(snapshot, operationId);
+    const QString preflightMessage = PreflightCommitTarget(context, entryId);
+    if (!preflightMessage.isEmpty())
+    {
+        SetMessage(message, preflightMessage);
+        return false;
+    }
+
+    auto surface = profileGroup->GetLoftedMesh(0);
+    if (!surface || profileGroup->IsLoftCacheDirty(0))
+    {
+        surface = xq_SegmentationUtils::LoftProfileGroup(profileGroup, 0);
+        if (surface)
+            profileGroup->SetLoftedMesh(surface, 0);
+    }
+    if (!surface || surface->GetNumberOfCells() <= 0)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Profile group could not produce loft surface geometry."));
+        return false;
+    }
+
+    auto surfaceCopy = vtkSmartPointer<vtkPolyData>::New();
+    surfaceCopy->DeepCopy(surface);
+
+    auto modelData = xq_Model::New();
+    modelData->SetType("PolyData");
+    auto geometry = std::make_unique<xq_PolyGeometry>();
+    geometry->SetWholeVtkPolyData(surfaceCopy);
+    modelData->SetModelElement(std::move(geometry), 0);
+
+    const QString sourceName =
+        QString::fromStdString(segmentationNode->GetName()).trimmed();
+    auto modelNode = mitk::DataNode::New();
+    modelNode->SetData(modelData);
+    modelNode->SetName(
+        QStringLiteral("%1_loft_surface").arg(sourceName).toStdString());
+    modelNode->SetStringProperty("xq.model.type", "PolyData");
+    modelNode->SetStringProperty("xq.model.operation", "loft-surface");
+    modelNode->SetBoolProperty("xq.model.surface_only", true);
+    modelNode->SetBoolProperty("xq.model.algorithm.fallback", false);
+    modelNode->SetStringProperty(
+        "xq.model.capability.diagnostic",
+        "Loft surface operation generated a PolyData surface from profile "
+        "contours. No OCCT solid modeling or branch trimming backend was run.");
+    modelNode->SetIntProperty("xq.model.surface.cells",
+                              surfaceCopy->GetNumberOfCells());
+    modelNode->SetIntProperty("xq.model.surface.points",
+                              surfaceCopy->GetNumberOfPoints());
+    xq::pipeline::MarkNode(modelNode, xq::pipeline::Stage::Model);
+    xq::pipeline::SetStringProperty(modelNode,
+                                    xq::pipeline::kAlgorithmProperty,
+                                    "loft-surface");
+    xq::pipeline::SetStringProperty(modelNode,
+                                    xq::pipeline::kSourceContourGroupsProperty,
+                                    segmentationNode->GetName());
+
+    auto modelFolder = xq::pipeline::FindCategoryFolder(
+        context.DataStorage().GetPointer(),
+        xq::pipeline::Stage::Model,
+        segmentationNode.GetPointer());
+    if (modelFolder.IsNotNull())
+        context.DataStorage()->Add(modelNode, modelFolder);
+    else
+        context.DataStorage()->Add(modelNode, segmentationNode);
+
+    xq_CreateModelResult result;
+    result.ok = true;
+    result.node = modelNode;
+    result.surface = surfaceCopy;
+
+    if (!CommitModelResult(context, entryId, result, message))
+        return false;
+
+    QString selectionMessage;
+    context.DataSelection()->SelectCatalogEntry(entryId, &selectionMessage);
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicModelingWorkflowActionHandler(
@@ -283,12 +404,22 @@ bool RegisterDynamicModelingWorkflowActionHandler(
             }
 
             if (operationId !=
-                QString::fromLatin1(kBuildSolidModelOperationId))
+                    QString::fromLatin1(kBuildSolidModelOperationId) &&
+                operationId != QString::fromLatin1(kLoftSurfaceOperationId))
             {
                 return RunUnsupportedModelingOperation(operations,
                                                        snapshot,
                                                        operationId,
                                                        taskMessage);
+            }
+
+            if (operationId == QString::fromLatin1(kLoftSurfaceOperationId))
+            {
+                return RunLoftSurfaceModel(context,
+                                           renderRefresh,
+                                           snapshot,
+                                           operationId,
+                                           taskMessage);
             }
 
             return RunBuildSolidModel(context,

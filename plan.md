@@ -4190,6 +4190,50 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   native workflow gap.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Loft Surface Modeling Infrastructure Action
+
+1. Replace the `loft-surface` Modeling unsupported guard with a native
+   Infrastructure action.
+   - Resolve the selected Segmentation node from `DataNodeRegistryService` or
+     the active node.
+   - Require an `xq_ProfileGroup` contour-group payload that is ready for
+     lofting.
+   - Reuse its cached lofted mesh when available, otherwise call
+     `xq_SegmentationUtils::LoftProfileGroup`.
+   - Store the resulting surface in an `xq_Model` / `xq_PolyGeometry` result.
+   - Commit a generated Model catalog/hierarchy entry, select it, and refresh
+     rendering on success.
+2. Keep the action honest about scope.
+   - Record metadata as a lofted surface model.
+   - Do not claim OCCT solid modeling, branch trimming, or downstream mesh
+     generation in this slice.
+3. Add RED C++ tests before implementation:
+   - `loft-surface` with a real profile-group segmentation should no longer
+     return the unsupported-operation diagnostic.
+   - A successful run should register a Model result, bind an `xq_Model` with
+     non-empty `vtkPolyData`, record loft-surface metadata, select the result,
+     and refresh rendering.
+   - Production composition should validate `loft-surface` through the
+     Infrastructure handler.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for modeling handler/composition tests
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

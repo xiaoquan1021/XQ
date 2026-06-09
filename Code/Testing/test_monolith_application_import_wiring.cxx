@@ -337,6 +337,20 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(modelingContext->WorkflowOperations()->SelectOperation(
                    QStringLiteral("modeling"),
+                   QStringLiteral("loft-surface"),
+                   &message),
+               "configured modeling workflow should select loft surface"))
+        return 1;
+    if (Expect(!modelingContext->WorkflowActions()
+                    ->RunActiveWorkflowAction(&message),
+               "configured loft surface should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active segmentation node is required for modeling."),
+               "configured loft surface should require a segmentation node"))
+        return 1;
+    if (Expect(modelingContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("modeling"),
                    QStringLiteral("trim-branches"),
                    &message),
                "configured modeling workflow should select trim branches"))

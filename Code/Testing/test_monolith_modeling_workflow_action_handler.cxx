@@ -328,7 +328,118 @@ int main(int argc, char** argv)
             xq::core::ApplicationContext::CreateDefault());
         if (Expect(PrepareModelingWorkflow(*context,
                                            QStringLiteral("loft-surface")),
-                   "unsupported loft fixture should prepare modeling workflow"))
+                   "loft fixture should prepare modeling workflow"))
+        {
+            return 1;
+        }
+
+        auto segmentationNode = MakeSegmentationNode("Main Segmentation");
+        context->DataStorage()->Add(segmentationNode);
+        context->DataNodes()->BindNode(QStringLiteral("seg-001"),
+                                       segmentationNode);
+
+        QString message;
+        FakeRenderRefreshService refresh;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicModelingWorkflowActionHandler(
+                        *context,
+                        &refresh,
+                        &message),
+                "loft fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "loft surface should create generated model"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Registered model result catalog entry."),
+                   "loft surface should report catalog commit success"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+
+        const auto* entry = context->DataCatalog()->FindById(
+            QStringLiteral("seg-001-loft-surface"));
+        if (Expect(entry != nullptr &&
+                       entry->WorkflowRole ==
+                           xq::core::DataWorkflowRole::Model &&
+                       entry->SourcePath ==
+                           QStringLiteral(
+                               "xq://generated/model/seg-001-loft-surface"),
+                   "loft surface should register generated model catalog entry"))
+        {
+            return 1;
+        }
+
+        const auto* hierarchyNode = context->DataHierarchy()->FindNode(
+            QStringLiteral("data-seg-001-loft-surface"));
+        if (Expect(hierarchyNode != nullptr &&
+                       hierarchyNode->DataCatalogEntryId ==
+                           QStringLiteral("seg-001-loft-surface"),
+                   "loft surface should register generated hierarchy entry"))
+        {
+            return 1;
+        }
+
+        auto resultNode = context->DataNodes()->FindNode(
+            QStringLiteral("seg-001-loft-surface"));
+        auto* model = resultNode.IsNotNull()
+                          ? dynamic_cast<xq_Model*>(resultNode->GetData())
+                          : nullptr;
+        auto* element = model ? model->GetModelElement(0) : nullptr;
+        auto surface = element ? element->GetWholeVtkPolyData() : nullptr;
+        if (Expect(model != nullptr &&
+                       surface != nullptr &&
+                       surface->GetNumberOfCells() > 0,
+                   "loft surface should bind generated model geometry"))
+        {
+            return 1;
+        }
+
+        std::string operation;
+        bool surfaceOnly = false;
+        if (Expect(resultNode.IsNotNull() &&
+                       resultNode->GetStringProperty("xq.model.operation",
+                                                     operation) &&
+                       operation == "loft-surface" &&
+                       resultNode->GetBoolProperty("xq.model.surface_only",
+                                                   surfaceOnly) &&
+                       surfaceOnly,
+                   "loft surface should record honest surface metadata"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("seg-001-loft-surface"),
+                   "loft surface should select generated model"))
+        {
+            return 1;
+        }
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "loft surface should refresh rendering after success"))
+        {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareModelingWorkflow(*context,
+                                           QStringLiteral("loft-surface")),
+                   "missing loft segmentation fixture should prepare modeling workflow"))
         {
             return 1;
         }
@@ -340,20 +451,21 @@ int main(int argc, char** argv)
                         *context,
                         nullptr,
                         &message),
-                "unsupported loft fixture should install handler"))
+                "missing loft segmentation fixture should install handler"))
         {
             return 1;
         }
 
         if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
                        &message),
-                   "unsupported loft surface should fail"))
+                   "loft surface should reject missing segmentation node"))
         {
             return 1;
         }
-        if (Expect(message == QStringLiteral(
-                                  "Loft Surface is not wired to a native Modeling runtime yet."),
-                   "unsupported loft diagnostic should name operation"))
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Active segmentation node is required for modeling."),
+                   "missing loft segmentation diagnostic should be specific"))
         {
             std::cerr << message.toStdString() << '\n';
             return 1;

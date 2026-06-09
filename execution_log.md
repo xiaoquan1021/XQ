@@ -1,6 +1,61 @@
 # XQ Execution Log
 
-## Current Run: 3D Threshold Region Infrastructure Action
+## Current Run: Loft Surface Modeling Infrastructure Action
+
+- Continued from clean `feature/windows-monolith-foundation` checkouts after
+  `generate-surface-mesh` was pushed.
+- Completed the active autonomous research refresh:
+  - Remaining exposed gaps include Path edit/smooth operations, Modeling
+    `loft-surface` / `trim-branches`, and solver/review follow-ups for ROM and
+    MultiPhysics.
+  - `loft-surface` is the next narrow native slice because the test fixture
+    already creates an `xq_ProfileGroup`, `xq_SegmentationUtils` can produce
+    a lofted `vtkPolyData`, and `xq_Model` / `xq_PolyGeometry` can hold the
+    generated surface honestly without claiming OCCT solid modeling.
+  - ROM/MultiPhysics solver-like actions remain later work until a real
+    backend/result path exists.
+- Added next executable phase to `plan.md`: Loft Surface Modeling
+  Infrastructure Action.
+- Starting RED tests first:
+  - `loft-surface` should require a real profile-group segmentation node.
+  - A valid profile group should create a generated `xq_Model` surface result,
+    register catalog/hierarchy/data-node bindings, stamp loft-surface
+    metadata, select it, and refresh rendering.
+  - Production composition should validate `loft-surface` through the
+    Infrastructure handler rather than the unsupported-operation guard.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - Targeted `ctest` failed because `loft-surface` still returned
+    `Loft Surface is not wired to a native Modeling runtime yet.` instead of
+    creating a generated model result.
+- Implemented Loft Surface Modeling Infrastructure action:
+  - The dynamic Modeling handler now routes `loft-surface` to a native path.
+  - The handler resolves the selected contour-group segmentation, validates an
+    `xq_ProfileGroup`, reuses or regenerates its lofted `vtkPolyData`, and
+    stores the surface in an `xq_Model` / `xq_PolyGeometry`.
+  - Successful runs stamp loft-surface / surface-only metadata, register
+    catalog/hierarchy/data-node bindings, select the result, and refresh
+    rendering.
+  - `trim-branches` remains on the unsupported-operation guard.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(modeling_workflow_action_handler|application_import_wiring)"`
+    passed: 2/2.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Loft Surface Modeling Infrastructure Action to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Previous Run: 3D Threshold Region Infrastructure Action
 
 - Continued from clean `feature/windows-monolith-foundation` checkouts after
   `boundary-layers` was pushed.
