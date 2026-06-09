@@ -165,7 +165,8 @@ function Initialize-XQEnvironment {
         (Join-Path $installRoot "opencascade-7.6.0\bin"),
         (Join-Path $installRoot "freetype-2.13.0\bin"),
         (Join-Path $resolvedExternals (Join-Path "build" (Join-Path $ExternalPlatform "MITK\MITK-build\bin"))),
-        (Join-Path $resolvedExternals (Join-Path "build" (Join-Path $ExternalPlatform "MITK\MITK-build\bin\plugins")))
+        (Join-Path $resolvedExternals (Join-Path "build" (Join-Path $ExternalPlatform "MITK\MITK-build\bin\plugins"))),
+        (Join-Path $resolvedExternals (Join-Path "build" (Join-Path $ExternalPlatform "MITK\ep\src\CTK-build\CTK-build\bin")))
     )
 
     foreach ($path in $runtimePaths) {

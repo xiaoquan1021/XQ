@@ -4744,3 +4744,32 @@ The next monolith slice is grounded in these comparable systems:
    - Use only self-owned or explicitly licensed solver backends.
    - Add Externals recipes/tests and a result import contract before exposing
      any solver-run operation again.
+
+## Completed Phase: Workbench-Style Monolith Shell Correction
+
+1. Correct the Windows monolith Presentation direction after UI review.
+   - Preserve the original XQ/MITK Workbench information architecture instead
+     of presenting a new generic workflow shell.
+   - Keep the monolith architecture; do not restore BlueBerry/CTK as the
+     runtime shell.
+2. Restore the default Workbench layout shape.
+   - `xqRenderHostContainer` is the central MITK render/editor area.
+   - `xqDataManagerDock` lives on the left and owns `xqDataHierarchyView`.
+   - `xqImageNavigatorDock` lives below the Data Manager on the left.
+   - `xqWorkflowToolsDock` lives on the right and hosts the workflow
+     navigation plus workflow pages.
+   - Diagnostics and task history remain docked workbench panes.
+3. Restore Workbench entry points.
+   - Add a `FileMenu` and `mainActionsToolBar` matching the original shell
+     naming so future menu/toolbar migration has stable anchors.
+   - Keep existing action object names such as `xqImportDataAction`,
+     `xqSaveProjectAction`, and `xqRemoveDataAction`.
+4. Add regression coverage.
+   - `test_monolith_main_window_workbench_layout` verifies the Workbench dock
+     layout and prevents the workflow shell from moving back into the left
+     primary column.
+5. Runtime launcher fix.
+   - `xq-env.ps1` includes the MITK-built CTK bin directory so
+     `CTKWidgets.dll` is available at runtime.
+   - `Start-XQ.cmd` provides a double-click launcher that routes through
+     `scripts\run-xq.ps1` instead of launching `XQ.exe` directly.

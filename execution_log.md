@@ -3674,6 +3674,47 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Final Update: Workbench-Style Monolith Shell Correction
+
+- User review corrected the Presentation direction:
+  - The Windows monolith UI looked too different from the original
+    XQ/BlueBerry/MITK Workbench.
+  - Migration direction is now explicitly "original Workbench-style shell on
+    top of monolith internals", not a new generic workflow-first interface.
+- Root-cause comparison:
+  - Original `xq_DefaultPerspective` uses Data Manager on the left, Image
+    Navigator below it, a central editor/render area, and right-side
+    placeholder folders for tools/logging.
+  - The monolith `MainWindow` had moved workflow navigation into the left
+    primary area, making the app feel unrelated to original XQ.
+- Runtime fix:
+  - Added the MITK-built CTK bin path to `scripts\xq-env.ps1` so
+    `CTKWidgets.dll` is available during launch.
+  - Added `Start-XQ.cmd`, a double-click launcher that calls
+    `scripts\run-xq.ps1 -ExternalsRoot ..\Externals`.
+  - Extended `tests\test_windows_env_scripts.ps1` to guard both runtime PATH
+    and launcher behavior.
+- Presentation correction:
+  - `xqRenderHostContainer` is now the `QMainWindow` central widget.
+  - `xqDataManagerDock` owns `xqDataHierarchyView` on the left.
+  - `xqImageNavigatorDock` is docked below Data Manager as the monolith v1
+    placeholder for the original Image Navigator view.
+  - `xqWorkflowToolsDock` moves workflow navigation/pages to the right.
+  - Restored stable shell anchors `FileMenu` and `mainActionsToolBar` while
+    preserving existing import/save/remove action object names.
+- Red/green evidence:
+  - Added `test_monolith_main_window_workbench_layout` before the UI change.
+  - Initial run failed as expected with
+    `MITK render host should be the central workbench area`.
+  - After implementation, XQ C++ tests passed: 74/74.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File tests\test_windows_env_scripts.ps1`
+    passed.
+  - Runtime smoke launched `XQ.exe` through `scripts\run-xq.ps1`, confirmed the
+    process stayed alive for 10 seconds, and closed it cleanly.
+  - `git diff --check` passed.
+
 ## Current Run Update: Image Preprocessing Page Infrastructure Wiring
 
 - Completed autonomous research refresh:

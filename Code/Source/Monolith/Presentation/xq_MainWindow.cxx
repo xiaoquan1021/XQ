@@ -27,6 +27,8 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QMenu>
+#include <QMenuBar>
 #include <QPushButton>
 #include <QScopeGuard>
 #include <QSignalBlocker>
@@ -170,68 +172,37 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     statusBar()->setObjectName(QStringLiteral("xqProjectStatusBar"));
     statusBar()->showMessage(QStringLiteral("No project"));
 
-    auto* projectToolbar = new QToolBar(this);
-    projectToolbar->setObjectName(QStringLiteral("xqProjectToolbar"));
-    projectToolbar->setMovable(false);
-    projectToolbar->setFloatable(false);
+    menuBar()->setNativeMenuBar(false);
+    auto* fileMenu = menuBar()->addMenu(QStringLiteral("&File"));
+    fileMenu->setObjectName(QStringLiteral("FileMenu"));
 
-    m_SaveProjectAction = new QAction(QStringLiteral("Save"), projectToolbar);
+    auto* mainToolbar = new QToolBar(QStringLiteral("Main Actions"), this);
+    mainToolbar->setObjectName(QStringLiteral("mainActionsToolBar"));
+    mainToolbar->setMovable(false);
+    mainToolbar->setFloatable(false);
+    mainToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+    m_ImportDataAction =
+        new QAction(QStringLiteral("Open Data File..."), this);
+    m_ImportDataAction->setObjectName(QStringLiteral("xqImportDataAction"));
+    fileMenu->addAction(m_ImportDataAction);
+    mainToolbar->addAction(m_ImportDataAction);
+
+    m_SaveProjectAction = new QAction(QStringLiteral("Save"), this);
     m_SaveProjectAction->setObjectName(
         QStringLiteral("xqSaveProjectAction"));
     m_SaveProjectAction->setEnabled(false);
-    projectToolbar->addAction(m_SaveProjectAction);
-    addToolBar(Qt::TopToolBarArea, projectToolbar);
-
-    auto* splitter = new QSplitter(Qt::Horizontal, this);
-    auto* workflowPanel = new QWidget(splitter);
-    auto* workflowLayout = new QVBoxLayout(workflowPanel);
-    workflowLayout->setContentsMargins(0, 0, 0, 0);
-    workflowLayout->setSpacing(0);
-
-    m_DataHierarchyModel =
-        new DataHierarchyModel(*m_Context.DataHierarchy(), workflowPanel);
-
-    m_DataHierarchyView = new QTreeView(workflowPanel);
-    m_DataHierarchyView->setObjectName(
-        QStringLiteral("xqDataHierarchyView"));
-    m_DataHierarchyView->setHeaderHidden(true);
-    m_DataHierarchyView->setMinimumHeight(160);
-    m_DataHierarchyView->setModel(m_DataHierarchyModel);
-
-    auto* dataToolbar = new QToolBar(workflowPanel);
-    dataToolbar->setObjectName(QStringLiteral("xqDataPanelToolbar"));
-    dataToolbar->setMovable(false);
-    dataToolbar->setFloatable(false);
-
-    m_ImportDataAction =
-        new QAction(QStringLiteral("Import"), dataToolbar);
-    m_ImportDataAction->setObjectName(QStringLiteral("xqImportDataAction"));
-    dataToolbar->addAction(m_ImportDataAction);
+    fileMenu->addAction(m_SaveProjectAction);
+    mainToolbar->addAction(m_SaveProjectAction);
 
     m_RemoveDataAction =
-        new QAction(QStringLiteral("Remove"), dataToolbar);
+        new QAction(QStringLiteral("Remove Data"), this);
     m_RemoveDataAction->setObjectName(QStringLiteral("xqRemoveDataAction"));
     m_RemoveDataAction->setEnabled(false);
-    dataToolbar->addAction(m_RemoveDataAction);
+    mainToolbar->addAction(m_RemoveDataAction);
+    addToolBar(Qt::TopToolBarArea, mainToolbar);
 
-    workflowLayout->addWidget(dataToolbar, 0);
-    workflowLayout->addWidget(m_DataHierarchyView, 0);
-
-    auto* workflowSplitter = new QSplitter(Qt::Horizontal, workflowPanel);
-    workflowLayout->addWidget(workflowSplitter);
-
-    m_Navigation = new QListWidget(workflowSplitter);
-    m_Navigation->setObjectName(QStringLiteral("xqWorkflowNavigation"));
-    m_Navigation->setMinimumWidth(220);
-    m_Navigation->setMaximumWidth(320);
-
-    m_Pages = new QStackedWidget(workflowSplitter);
-    m_Pages->setObjectName(QStringLiteral("xqWorkflowPages"));
-    workflowSplitter->addWidget(m_Navigation);
-    workflowSplitter->addWidget(m_Pages);
-    workflowSplitter->setStretchFactor(1, 1);
-
-    m_RenderHostContainer = new QWidget(splitter);
+    m_RenderHostContainer = new QWidget(this);
     m_RenderHostContainer->setObjectName(
         QStringLiteral("xqRenderHostContainer"));
     auto* renderHostLayout = new QVBoxLayout(m_RenderHostContainer);
@@ -240,13 +211,68 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     m_RenderHost = new QFrame(m_RenderHostContainer);
     m_RenderHost->setObjectName(QStringLiteral("xqRenderPlaceholder"));
     renderHostLayout->addWidget(m_RenderHost);
+    setCentralWidget(m_RenderHostContainer);
 
-    splitter->addWidget(workflowPanel);
-    splitter->addWidget(m_RenderHostContainer);
-    splitter->setStretchFactor(0, 0);
-    splitter->setStretchFactor(1, 1);
-    splitter->setSizes({420, 1020});
-    setCentralWidget(splitter);
+    auto* dataManagerDock =
+        new QDockWidget(QStringLiteral("Data Manager"), this);
+    dataManagerDock->setObjectName(QStringLiteral("xqDataManagerDock"));
+    dataManagerDock->setAllowedAreas(Qt::LeftDockWidgetArea |
+                                     Qt::RightDockWidgetArea);
+    m_DataHierarchyModel =
+        new DataHierarchyModel(*m_Context.DataHierarchy(), dataManagerDock);
+
+    m_DataHierarchyView = new QTreeView(dataManagerDock);
+    m_DataHierarchyView->setObjectName(
+        QStringLiteral("xqDataHierarchyView"));
+    m_DataHierarchyView->setHeaderHidden(true);
+    m_DataHierarchyView->setMinimumHeight(160);
+    m_DataHierarchyView->setModel(m_DataHierarchyModel);
+    dataManagerDock->setWidget(m_DataHierarchyView);
+    addDockWidget(Qt::LeftDockWidgetArea, dataManagerDock);
+
+    auto* imageNavigatorDock =
+        new QDockWidget(QStringLiteral("Image Navigator"), this);
+    imageNavigatorDock->setObjectName(QStringLiteral("xqImageNavigatorDock"));
+    imageNavigatorDock->setAllowedAreas(Qt::LeftDockWidgetArea |
+                                        Qt::RightDockWidgetArea);
+    auto* imageNavigatorPlaceholder = new QWidget(imageNavigatorDock);
+    imageNavigatorPlaceholder->setObjectName(
+        QStringLiteral("xqImageNavigatorPlaceholder"));
+    imageNavigatorDock->setWidget(imageNavigatorPlaceholder);
+    addDockWidget(Qt::LeftDockWidgetArea, imageNavigatorDock);
+    splitDockWidget(dataManagerDock,
+                    imageNavigatorDock,
+                    Qt::Vertical);
+
+    auto* workflowDock =
+        new QDockWidget(QStringLiteral("Tools"), this);
+    workflowDock->setObjectName(QStringLiteral("xqWorkflowToolsDock"));
+    workflowDock->setAllowedAreas(Qt::RightDockWidgetArea |
+                                  Qt::LeftDockWidgetArea);
+
+    auto* workflowPanel = new QWidget(workflowDock);
+    workflowPanel->setObjectName(QStringLiteral("xqWorkflowToolsPanel"));
+    auto* workflowLayout = new QVBoxLayout(workflowPanel);
+    workflowLayout->setContentsMargins(0, 0, 0, 0);
+    workflowLayout->setSpacing(0);
+
+    auto* workflowSplitter = new QSplitter(Qt::Horizontal, workflowPanel);
+    workflowLayout->addWidget(workflowSplitter);
+
+    m_Navigation = new QListWidget(workflowSplitter);
+    m_Navigation->setObjectName(QStringLiteral("xqWorkflowNavigation"));
+    m_Navigation->setMinimumWidth(140);
+    m_Navigation->setMaximumWidth(220);
+
+    m_Pages = new QStackedWidget(workflowSplitter);
+    m_Pages->setObjectName(QStringLiteral("xqWorkflowPages"));
+    workflowSplitter->addWidget(m_Navigation);
+    workflowSplitter->addWidget(m_Pages);
+    workflowSplitter->setStretchFactor(0, 0);
+    workflowSplitter->setStretchFactor(1, 1);
+
+    workflowDock->setWidget(workflowPanel);
+    addDockWidget(Qt::RightDockWidgetArea, workflowDock);
 
     for (const auto& workflow : xq::core::DefaultWorkflowRegistry())
         AddWorkflowPage(workflow.Id, workflow.Title);
