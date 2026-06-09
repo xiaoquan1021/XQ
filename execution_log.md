@@ -1,5 +1,41 @@
 # XQ Execution Log
 
+## Current Run: Workbench Data Manager Panel Restore
+
+- Continued after `7a81df2` with the next Workbench fidelity gap:
+  - The left Data Manager dock existed, but it was only a flat tree.
+  - The original XQ Data Explorer also exposed search, opacity/color controls,
+    and a collapsible properties table.
+- Scope decision:
+  - Do not copy the legacy BlueBerry Data Manager plugin wholesale in this
+    slice.
+  - Keep the monolith `DataHierarchyModel` as the tree model so existing
+    project/catalog/selection behavior remains stable.
+  - Restore the old panel structure and UX anchors first; defer full
+    `QmitkDataStorageTreeModel` migration to a later isolated slice.
+- RED test observed before production code:
+  - Extended `test_monolith_main_window_data_panel` to require
+    `xqDataManagerSearchBox`, `xqDataOpacitySlider`,
+    `xqDataOpacityValueLabel`, `xqDataColorButton`,
+    `xqDataPropertiesToggle`, and `xqDataPropertiesTable`.
+  - The test first failed because the search box did not exist.
+- Implemented the slice:
+  - Wrapped the Data Manager dock content in `xqDataManagerPanel`.
+  - Added the search box with placeholder `Search nodes...`.
+  - Added opacity controls and a Color button.
+  - Added a collapsed properties toggle/table pair.
+  - Added view-layer search filtering through `QTreeView::setRowHidden()`.
+- Debugging note:
+  - The first properties toggle assertion failed because the test window was
+    not shown, so Qt's `isVisible()` reflected parent visibility rather than
+    the table's own toggle state in a real window.
+  - Updated the Data Manager panel test to show the `MainWindow` before
+    asserting visibility behavior.
+- Targeted verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release -R "test_monolith_main_window_data_panel|test_monolith_main_window_selection_sync|test_monolith_main_window_data_actions" --output-on-failure --timeout 120`
+    passed: 3/3.
+
 ## Current Run: Workbench View Menu Dock Toggles
 
 - Continued after `5c42b89` with the next Workbench fidelity gap:
@@ -3848,6 +3884,32 @@
     passed: 65/65.
   - `git diff --check` passed in both `XQ` and `Externals`.
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Current Run Final Update: Workbench Data Manager Panel Restore
+
+- Restored the monolith Data Manager dock to the original XQ Data Explorer
+  panel shape while keeping the current monolith data hierarchy model.
+- Added the Workbench-style search box, opacity slider, opacity percentage
+  label, Color button, collapsed Properties section, and two-column property
+  table.
+- Added first-pass panel behavior:
+  - search filters tree rows without mutating the underlying model;
+  - opacity slider updates its percentage label;
+  - Properties toggle shows and hides the property table.
+- Updated Workbench layout coverage because the Data Manager dock now owns a
+  panel containing the hierarchy tree rather than the tree directly.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Runtime smoke launched `build\windows-msvc-release\bin\XQ.exe`; the
+    application stayed running for 10 seconds and was then closed.
+- Promoted Workbench Data Manager Panel Restore to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
 ## Current Run Final Update: Workbench-Style Monolith Shell Correction

@@ -6,9 +6,14 @@
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
+#include <QLabel>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QModelIndex>
+#include <QPushButton>
+#include <QSlider>
 #include <QStackedWidget>
+#include <QTableWidget>
 #include <QTreeView>
 
 #include <iostream>
@@ -45,11 +50,102 @@ int main(int argc, char** argv)
 
     auto* context = xq::core::ApplicationContext::CreateDefault();
     xq::presentation::MainWindow window(*context);
+    window.show();
+    app.processEvents();
 
     auto* hierarchyView =
         window.findChild<QTreeView*>(QStringLiteral("xqDataHierarchyView"));
+    auto* searchBox =
+        window.findChild<QLineEdit*>(QStringLiteral("xqDataManagerSearchBox"));
+    auto* opacitySlider =
+        window.findChild<QSlider*>(QStringLiteral("xqDataOpacitySlider"));
+    auto* opacityValue =
+        window.findChild<QLabel*>(QStringLiteral("xqDataOpacityValueLabel"));
+    auto* colorButton =
+        window.findChild<QPushButton*>(QStringLiteral("xqDataColorButton"));
+    auto* propertiesToggle =
+        window.findChild<QPushButton*>(QStringLiteral("xqDataPropertiesToggle"));
+    auto* propertiesTable =
+        window.findChild<QTableWidget*>(QStringLiteral("xqDataPropertiesTable"));
     if (Expect(hierarchyView != nullptr,
                "MainWindow should expose the data hierarchy tree view"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(searchBox != nullptr,
+               "Data Manager should restore the original search box"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(searchBox->placeholderText() ==
+                   QStringLiteral("Search nodes..."),
+               "Data Manager search box should keep the original placeholder"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(opacitySlider != nullptr &&
+                   opacityValue != nullptr &&
+                   colorButton != nullptr,
+               "Data Manager should restore opacity and color controls"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(opacitySlider->minimum() == 0 &&
+                   opacitySlider->maximum() == 100 &&
+                   opacitySlider->value() == 100,
+               "Data Manager opacity slider should use percentage range"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(opacityValue->text() == QStringLiteral("100%"),
+               "Data Manager opacity label should mirror slider value"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(colorButton->text() == QStringLiteral("Color"),
+               "Data Manager color button should keep the original label"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(propertiesToggle != nullptr && propertiesTable != nullptr,
+               "Data Manager should restore the properties panel controls"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!propertiesTable->isVisible(),
+               "Data Manager properties table should start collapsed"))
+    {
+        delete context;
+        return 1;
+    }
+    propertiesToggle->setChecked(true);
+    app.processEvents();
+    if (Expect(propertiesTable->isVisible(),
+               "Data Manager properties toggle should show the table"))
+    {
+        delete context;
+        return 1;
+    }
+    propertiesToggle->setChecked(false);
+    app.processEvents();
+    if (Expect(!propertiesTable->isVisible(),
+               "Data Manager properties toggle should hide the table"))
+    {
+        delete context;
+        return 1;
+    }
+    opacitySlider->setValue(35);
+    app.processEvents();
+    if (Expect(opacityValue->text() == QStringLiteral("35%"),
+               "Data Manager opacity label should update with slider changes"))
     {
         delete context;
         return 1;
@@ -113,6 +209,31 @@ int main(int argc, char** argv)
     if (Expect(hierarchyModel->data(imageIndex, Qt::DisplayRole).toString() ==
                    QStringLiteral("CTA A"),
                "imported image row should expose its display name"))
+    {
+        delete context;
+        return 1;
+    }
+
+    searchBox->setText(QStringLiteral("CTA"));
+    app.processEvents();
+    if (Expect(!hierarchyView->isRowHidden(0, imagesIndex),
+               "Data Manager search should keep matching child rows visible"))
+    {
+        delete context;
+        return 1;
+    }
+    searchBox->setText(QStringLiteral("no-match"));
+    app.processEvents();
+    if (Expect(hierarchyView->isRowHidden(0, imagesIndex),
+               "Data Manager search should hide non-matching child rows"))
+    {
+        delete context;
+        return 1;
+    }
+    searchBox->clear();
+    app.processEvents();
+    if (Expect(!hierarchyView->isRowHidden(0, imagesIndex),
+               "Clearing Data Manager search should show child rows again"))
     {
         delete context;
         return 1;

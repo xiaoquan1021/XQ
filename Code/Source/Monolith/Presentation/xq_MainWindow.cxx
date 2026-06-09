@@ -24,6 +24,7 @@
 #include <QFormLayout>
 #include <QFrame>
 #include <QHeaderView>
+#include <QHBoxLayout>
 #include <QIcon>
 #include <QItemSelectionModel>
 #include <QLabel>
@@ -36,6 +37,7 @@
 #include <QScopeGuard>
 #include <QSignalBlocker>
 #include <QSize>
+#include <QSlider>
 #include <QSplitter>
 #include <QSpinBox>
 #include <QStackedWidget>
@@ -281,13 +283,90 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         new DataHierarchyModel(*m_Context.DataHierarchy(), dataManagerDock);
     m_DataManagerDock = dataManagerDock;
 
-    m_DataHierarchyView = new QTreeView(dataManagerDock);
+    auto* dataManagerPanel = new QWidget(dataManagerDock);
+    dataManagerPanel->setObjectName(QStringLiteral("xqDataManagerPanel"));
+    auto* dataManagerLayout = new QVBoxLayout(dataManagerPanel);
+    dataManagerLayout->setContentsMargins(2, 2, 2, 2);
+    dataManagerLayout->setSpacing(4);
+
+    auto* dataSearchBox = new QLineEdit(dataManagerPanel);
+    dataSearchBox->setObjectName(QStringLiteral("xqDataManagerSearchBox"));
+    dataSearchBox->setPlaceholderText(QStringLiteral("Search nodes..."));
+    dataSearchBox->setClearButtonEnabled(true);
+    dataManagerLayout->addWidget(dataSearchBox);
+
+    m_DataHierarchyView = new QTreeView(dataManagerPanel);
     m_DataHierarchyView->setObjectName(
         QStringLiteral("xqDataHierarchyView"));
     m_DataHierarchyView->setHeaderHidden(true);
     m_DataHierarchyView->setMinimumHeight(160);
     m_DataHierarchyView->setModel(m_DataHierarchyModel);
-    dataManagerDock->setWidget(m_DataHierarchyView);
+    dataManagerLayout->addWidget(m_DataHierarchyView, 1);
+
+    auto* dataControlLayout = new QHBoxLayout();
+    dataControlLayout->setContentsMargins(0, 0, 0, 0);
+    dataControlLayout->setSpacing(6);
+    auto* opacityLabel = new QLabel(QStringLiteral("Opacity:"), dataManagerPanel);
+    auto* opacitySlider = new QSlider(Qt::Horizontal, dataManagerPanel);
+    opacitySlider->setObjectName(QStringLiteral("xqDataOpacitySlider"));
+    opacitySlider->setRange(0, 100);
+    opacitySlider->setValue(100);
+    m_DataOpacityValueLabel = new QLabel(QStringLiteral("100%"), dataManagerPanel);
+    m_DataOpacityValueLabel->setObjectName(
+        QStringLiteral("xqDataOpacityValueLabel"));
+    m_DataOpacityValueLabel->setMinimumWidth(40);
+    m_DataOpacityValueLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    auto* colorButton = new QPushButton(QStringLiteral("Color"), dataManagerPanel);
+    colorButton->setObjectName(QStringLiteral("xqDataColorButton"));
+    colorButton->setMaximumWidth(60);
+    dataControlLayout->addWidget(opacityLabel);
+    dataControlLayout->addWidget(opacitySlider, 1);
+    dataControlLayout->addWidget(m_DataOpacityValueLabel);
+    dataControlLayout->addWidget(colorButton);
+    dataManagerLayout->addLayout(dataControlLayout);
+
+    auto* propertiesToggle =
+        new QPushButton(QStringLiteral("Properties"), dataManagerPanel);
+    propertiesToggle->setObjectName(QStringLiteral("xqDataPropertiesToggle"));
+    propertiesToggle->setFlat(true);
+    propertiesToggle->setCheckable(true);
+    dataManagerLayout->addWidget(propertiesToggle);
+
+    auto* propertiesTable = new QTableWidget(dataManagerPanel);
+    propertiesTable->setObjectName(QStringLiteral("xqDataPropertiesTable"));
+    propertiesTable->setColumnCount(2);
+    propertiesTable->setHorizontalHeaderLabels(
+        {QStringLiteral("Property"), QStringLiteral("Value")});
+    propertiesTable->setAlternatingRowColors(true);
+    propertiesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    propertiesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    propertiesTable->setMaximumHeight(200);
+    propertiesTable->setVisible(false);
+    propertiesTable->horizontalHeader()->setStretchLastSection(true);
+    dataManagerLayout->addWidget(propertiesTable);
+
+    connect(dataSearchBox,
+            &QLineEdit::textChanged,
+            this,
+            [this](const QString& text) {
+                ApplyDataManagerSearch(text);
+            });
+    connect(opacitySlider,
+            &QSlider::valueChanged,
+            this,
+            [this](int value) {
+                if (m_DataOpacityValueLabel)
+                {
+                    m_DataOpacityValueLabel->setText(
+                        QStringLiteral("%1%").arg(value));
+                }
+            });
+    connect(propertiesToggle,
+            &QPushButton::toggled,
+            propertiesTable,
+            &QTableWidget::setVisible);
+
+    dataManagerDock->setWidget(dataManagerPanel);
     addDockWidget(Qt::LeftDockWidgetArea, dataManagerDock);
 
     auto* imageNavigatorDock =
@@ -1187,6 +1266,41 @@ void MainWindow::UpdateDataActions()
 
     m_RemoveDataAction->setEnabled(
         !m_Context.DataSelection()->SelectedCatalogEntryId().isEmpty());
+}
+
+void MainWindow::ApplyDataManagerSearch(const QString& text)
+{
+    if (!m_DataHierarchyView || !m_DataHierarchyModel)
+        return;
+
+    ApplyDataManagerSearch(QModelIndex(), text.trimmed().toLower());
+}
+
+bool MainWindow::ApplyDataManagerSearch(const QModelIndex& parent,
+                                        const QString& normalizedText)
+{
+    if (!m_DataHierarchyView || !m_DataHierarchyModel)
+        return true;
+
+    bool anyVisibleChild = false;
+    const int rows = m_DataHierarchyModel->rowCount(parent);
+    for (int row = 0; row < rows; ++row)
+    {
+        const QModelIndex index = m_DataHierarchyModel->index(row, 0, parent);
+        const QString displayText =
+            m_DataHierarchyModel->data(index, Qt::DisplayRole)
+                .toString()
+                .toLower();
+        const bool selfMatches = normalizedText.isEmpty() ||
+                                 displayText.contains(normalizedText);
+        const bool childMatches =
+            ApplyDataManagerSearch(index, normalizedText);
+        const bool visible = selfMatches || childMatches;
+        m_DataHierarchyView->setRowHidden(row, parent, !visible);
+        anyVisibleChild = anyVisibleChild || visible;
+    }
+
+    return anyVisibleChild;
 }
 
 QWidget* MainWindow::CreateWorkflowPage(const QString& id,

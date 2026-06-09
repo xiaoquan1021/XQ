@@ -69,6 +69,9 @@ private:
     void UpdateProjectActions();
     void SyncTreeSelectionFromCore(const QString& hierarchyNodeId);
     void UpdateDataActions();
+    void ApplyDataManagerSearch(const QString& text);
+    bool ApplyDataManagerSearch(const QModelIndex& parent,
+                                const QString& normalizedText);
 
     xq::core::ApplicationContext& m_Context;
     DataHierarchyModel* m_DataHierarchyModel = nullptr;
@@ -82,6 +85,7 @@ private:
     QLabel* m_DataDisplayNameLabel = nullptr;
     QLabel* m_DataSourcePathLabel = nullptr;
     QLabel* m_DataWorkflowRoleLabel = nullptr;
+    QLabel* m_DataOpacityValueLabel = nullptr;
     QHash<QString, QWidget*> m_WorkflowParameterPanels;
     QHash<QString, QComboBox*> m_WorkflowOperationSelectors;
     QHash<QString, QLabel*> m_WorkflowContextStatusLabels;

@@ -111,10 +111,10 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
-    if (Expect(dataManagerDock->widget() ==
-                   window.findChild<QTreeView*>(
-                       QStringLiteral("xqDataHierarchyView")),
-               "Data Manager dock should own the data hierarchy tree"))
+    if (Expect(dataManagerDock->widget() != nullptr &&
+                   dataManagerDock->findChild<QTreeView*>(
+                       QStringLiteral("xqDataHierarchyView")) != nullptr,
+               "Data Manager dock should own a panel containing the data hierarchy tree"))
     {
         delete context;
         return 1;

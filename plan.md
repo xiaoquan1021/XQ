@@ -4868,3 +4868,30 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted `ctest` for Workbench layout and workflow selection.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Data Manager Panel Restore
+
+1. Restore the original XQ Data Explorer panel structure in the monolith Data
+   Manager dock without reintroducing the BlueBerry Data Manager plugin.
+   - Add the original search box affordance with placeholder
+     `Search nodes...`.
+   - Keep the existing monolith `DataHierarchyModel` tree so catalog,
+     hierarchy, and selection tests remain valid.
+   - Add the original opacity slider, percent label, and Color button row.
+   - Add a collapsed Properties section with a two-column property table.
+2. Add first-pass view-layer behavior.
+   - Search filters visible tree rows while preserving the underlying model.
+   - Opacity slider updates its percent label.
+   - Properties toggle shows/hides the properties table.
+3. Keep future MITK DataStorage migration open.
+   - This phase restores the old panel shape and UX anchors only.
+   - A later phase can replace or augment the tree with a MITK
+     `QmitkDataStorageTreeModel` once DataStorage selection/context-menu
+     behavior is isolated from the legacy BlueBerry plugin.
+4. Add regression coverage.
+   - `test_monolith_main_window_data_panel` verifies the restored controls,
+     filtering behavior, and existing selection/navigation behavior.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for Data Manager, selection sync, and data actions.
+   - full XQ and Externals test gates before commit.
