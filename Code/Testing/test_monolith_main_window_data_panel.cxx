@@ -6,6 +6,7 @@
 #include "Presentation/xq_DataHierarchyModel.h"
 #include "Presentation/xq_MainWindow.h"
 
+#include <QAction>
 #include <QApplication>
 #include <QLabel>
 #include <QLineEdit>
@@ -74,6 +75,14 @@ int main(int argc, char** argv)
 
     auto* hierarchyView =
         window.findChild<QTreeView*>(QStringLiteral("xqDataHierarchyView"));
+    auto* toggleVisibilityAction =
+        window.findChild<QAction*>(QStringLiteral("xqToggleDataVisibilityAction"));
+    auto* showOnlySelectedAction =
+        window.findChild<QAction*>(QStringLiteral("xqShowOnlySelectedDataAction"));
+    auto* makeAllVisibleAction =
+        window.findChild<QAction*>(QStringLiteral("xqMakeAllDataVisibleAction"));
+    auto* makeAllInvisibleAction =
+        window.findChild<QAction*>(QStringLiteral("xqMakeAllDataInvisibleAction"));
     auto* searchBox =
         window.findChild<QLineEdit*>(QStringLiteral("xqDataManagerSearchBox"));
     auto* opacitySlider =
@@ -88,6 +97,29 @@ int main(int argc, char** argv)
         window.findChild<QTableWidget*>(QStringLiteral("xqDataPropertiesTable"));
     if (Expect(hierarchyView != nullptr,
                "MainWindow should expose the data hierarchy tree view"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(hierarchyView->contextMenuPolicy() ==
+                   Qt::ActionsContextMenu,
+               "Data Manager tree should expose Workbench-style action context menu"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(toggleVisibilityAction != nullptr &&
+                   showOnlySelectedAction != nullptr &&
+                   makeAllVisibleAction != nullptr &&
+                   makeAllInvisibleAction != nullptr,
+               "Data Manager should restore core visibility context actions"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!toggleVisibilityAction->isEnabled() &&
+                   !showOnlySelectedAction->isEnabled(),
+               "selection-dependent visibility actions should start disabled"))
     {
         delete context;
         return 1;
@@ -288,6 +320,13 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(toggleVisibilityAction->isEnabled() &&
+                   showOnlySelectedAction->isEnabled(),
+               "selection-dependent visibility actions should enable for MITK-backed data"))
+    {
+        delete context;
+        return 1;
+    }
     if (Expect(opacitySlider->value() == 42 &&
                    opacityValue->text() == QStringLiteral("42%"),
                "selecting a MITK-backed data row should load node opacity"))
@@ -341,6 +380,13 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(TableValue(propertiesTable, QStringLiteral("Visible")) ==
+                   QStringLiteral("true"),
+               "Data Manager properties should include node visibility"))
+    {
+        delete context;
+        return 1;
+    }
 
     opacitySlider->setValue(64);
     app.processEvents();
@@ -355,6 +401,76 @@ int main(int argc, char** argv)
     if (Expect(TableValue(propertiesTable, QStringLiteral("Opacity")) ==
                    QStringLiteral("0.64"),
                "Data Manager properties should refresh after opacity changes"))
+    {
+        delete context;
+        return 1;
+    }
+
+    toggleVisibilityAction->trigger();
+    app.processEvents();
+    bool visible = true;
+    mitkNode->GetBoolProperty("visible", visible);
+    if (Expect(!visible,
+               "Toggle Visibility should invert the selected MITK node visibility"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(TableValue(propertiesTable, QStringLiteral("Visible")) ==
+                   QStringLiteral("false"),
+               "Data Manager properties should refresh after visibility toggle"))
+    {
+        delete context;
+        return 1;
+    }
+
+    makeAllVisibleAction->trigger();
+    app.processEvents();
+    mitkNode->GetBoolProperty("visible", visible);
+    if (Expect(visible,
+               "Make All Visible should show the selected MITK node"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(TableValue(propertiesTable, QStringLiteral("Visible")) ==
+                   QStringLiteral("true"),
+               "properties table should refresh after Make All Visible"))
+    {
+        delete context;
+        return 1;
+    }
+
+    auto secondNode = mitk::DataNode::New();
+    secondNode->SetName("CTA B node");
+    secondNode->SetBoolProperty("visible", true);
+    if (Expect(context->DataNodes()->BindNode(QStringLiteral("image-002"),
+                                              secondNode,
+                                              &errorMessage),
+               "test should bind a second MITK node for global visibility actions"))
+    {
+        delete context;
+        return 1;
+    }
+
+    makeAllInvisibleAction->trigger();
+    app.processEvents();
+    bool secondVisible = true;
+    mitkNode->GetBoolProperty("visible", visible);
+    secondNode->GetBoolProperty("visible", secondVisible);
+    if (Expect(!visible && !secondVisible,
+               "Make All Invisible should hide every registered MITK node"))
+    {
+        delete context;
+        return 1;
+    }
+
+    showOnlySelectedAction->trigger();
+    app.processEvents();
+    mitkNode->GetBoolProperty("visible", visible);
+    secondNode->GetBoolProperty("visible", secondVisible);
+    if (Expect(visible && !secondVisible,
+               "Show Only Selected should show selected data and hide other registered nodes"))
     {
         delete context;
         return 1;

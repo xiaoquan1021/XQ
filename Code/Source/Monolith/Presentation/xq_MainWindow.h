@@ -76,6 +76,10 @@ private:
     void UpdateDataManagerSelection();
     void UpdateDataManagerPropertiesTable();
     void ApplySelectedDataOpacity(int value);
+    void ToggleSelectedDataVisibility();
+    void ShowOnlySelectedData();
+    void SetAllDataVisibility(bool visible);
+    void RefreshDataManagerAfterVisibilityChange();
 
     xq::core::ApplicationContext& m_Context;
     DataHierarchyModel* m_DataHierarchyModel = nullptr;
@@ -103,6 +107,8 @@ private:
     QAction* m_SaveProjectAction = nullptr;
     QAction* m_ImportDataAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
+    QAction* m_ToggleDataVisibilityAction = nullptr;
+    QAction* m_ShowOnlySelectedDataAction = nullptr;
     xq::core::DataImportCommand* m_DataImportCommand = nullptr;
     QListWidget* m_Navigation = nullptr;
     QStackedWidget* m_Pages = nullptr;

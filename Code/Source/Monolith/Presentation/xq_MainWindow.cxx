@@ -52,6 +52,7 @@
 #include <QVariantList>
 #include <QWidget>
 
+#include <mitkDataStorage.h>
 #include <mitkBaseProperty.h>
 #include <mitkPropertyList.h>
 #include <mitkRenderingManager.h>
@@ -338,7 +339,35 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     m_DataHierarchyView->setHeaderHidden(true);
     m_DataHierarchyView->setMinimumHeight(160);
     m_DataHierarchyView->setModel(m_DataHierarchyModel);
+    m_DataHierarchyView->setContextMenuPolicy(Qt::ActionsContextMenu);
     dataManagerLayout->addWidget(m_DataHierarchyView, 1);
+
+    m_ToggleDataVisibilityAction =
+        new QAction(QStringLiteral("Toggle Visibility"), m_DataHierarchyView);
+    m_ToggleDataVisibilityAction->setObjectName(
+        QStringLiteral("xqToggleDataVisibilityAction"));
+    m_ToggleDataVisibilityAction->setShortcut(Qt::Key_Space);
+    m_ToggleDataVisibilityAction->setEnabled(false);
+    m_DataHierarchyView->addAction(m_ToggleDataVisibilityAction);
+
+    m_ShowOnlySelectedDataAction =
+        new QAction(QStringLiteral("Show Only Selected"), m_DataHierarchyView);
+    m_ShowOnlySelectedDataAction->setObjectName(
+        QStringLiteral("xqShowOnlySelectedDataAction"));
+    m_ShowOnlySelectedDataAction->setEnabled(false);
+    m_DataHierarchyView->addAction(m_ShowOnlySelectedDataAction);
+
+    auto* makeAllVisibleAction =
+        new QAction(QStringLiteral("Make All Visible"), m_DataHierarchyView);
+    makeAllVisibleAction->setObjectName(
+        QStringLiteral("xqMakeAllDataVisibleAction"));
+    m_DataHierarchyView->addAction(makeAllVisibleAction);
+
+    auto* makeAllInvisibleAction =
+        new QAction(QStringLiteral("Make All Invisible"), m_DataHierarchyView);
+    makeAllInvisibleAction->setObjectName(
+        QStringLiteral("xqMakeAllDataInvisibleAction"));
+    m_DataHierarchyView->addAction(makeAllInvisibleAction);
 
     auto* dataControlLayout = new QHBoxLayout();
     dataControlLayout->setContentsMargins(0, 0, 0, 0);
@@ -393,6 +422,30 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this](int value) {
                 ApplySelectedDataOpacity(value);
+            });
+    connect(m_ToggleDataVisibilityAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                ToggleSelectedDataVisibility();
+            });
+    connect(m_ShowOnlySelectedDataAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                ShowOnlySelectedData();
+            });
+    connect(makeAllVisibleAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                SetAllDataVisibility(true);
+            });
+    connect(makeAllInvisibleAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                SetAllDataVisibility(false);
             });
     connect(propertiesToggle,
             &QPushButton::toggled,
@@ -590,6 +643,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this]() {
                 UpdateDataManagerSelection();
+                UpdateDataActions();
             });
 
     connect(m_Context.Projects(),
@@ -1310,11 +1364,18 @@ void MainWindow::SyncTreeSelectionFromCore(const QString& hierarchyNodeId)
 
 void MainWindow::UpdateDataActions()
 {
-    if (!m_RemoveDataAction)
-        return;
+    const QString selectedCatalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    const bool hasSelection = !selectedCatalogEntryId.isEmpty();
+    const bool hasSelectedNode =
+        m_Context.DataNodes()->FindNode(selectedCatalogEntryId).IsNotNull();
 
-    m_RemoveDataAction->setEnabled(
-        !m_Context.DataSelection()->SelectedCatalogEntryId().isEmpty());
+    if (m_RemoveDataAction)
+        m_RemoveDataAction->setEnabled(hasSelection);
+    if (m_ToggleDataVisibilityAction)
+        m_ToggleDataVisibilityAction->setEnabled(hasSelectedNode);
+    if (m_ShowOnlySelectedDataAction)
+        m_ShowOnlySelectedDataAction->setEnabled(hasSelectedNode);
 }
 
 void MainWindow::ApplyDataManagerSearch(const QString& text)
@@ -1501,6 +1562,63 @@ void MainWindow::ApplySelectedDataOpacity(int value)
 
     node->SetFloatProperty("opacity", static_cast<float>(value) / 100.0f);
     UpdateDataManagerPropertiesTable();
+    if (auto* renderingManager = mitk::RenderingManager::GetInstance())
+        renderingManager->RequestUpdateAll();
+}
+
+void MainWindow::ToggleSelectedDataVisibility()
+{
+    const QString catalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+    if (node.IsNull())
+        return;
+
+    bool visible = true;
+    node->GetBoolProperty("visible", visible);
+    node->SetBoolProperty("visible", !visible);
+    RefreshDataManagerAfterVisibilityChange();
+}
+
+void MainWindow::ShowOnlySelectedData()
+{
+    const QString selectedCatalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    auto selectedNode = m_Context.DataNodes()->FindNode(selectedCatalogEntryId);
+    if (selectedNode.IsNull())
+        return;
+
+    const QStringList catalogEntryIds = m_Context.DataNodes()->CatalogEntryIds();
+    for (const auto& catalogEntryId : catalogEntryIds)
+    {
+        auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+        if (node.IsNotNull())
+        {
+            node->SetBoolProperty(
+                "visible",
+                catalogEntryId == selectedCatalogEntryId);
+        }
+    }
+
+    RefreshDataManagerAfterVisibilityChange();
+}
+
+void MainWindow::SetAllDataVisibility(bool visible)
+{
+    const QStringList catalogEntryIds = m_Context.DataNodes()->CatalogEntryIds();
+    for (const auto& catalogEntryId : catalogEntryIds)
+    {
+        auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+        if (node.IsNotNull())
+            node->SetBoolProperty("visible", visible);
+    }
+
+    RefreshDataManagerAfterVisibilityChange();
+}
+
+void MainWindow::RefreshDataManagerAfterVisibilityChange()
+{
+    UpdateDataManagerSelection();
     if (auto* renderingManager = mitk::RenderingManager::GetInstance())
         renderingManager->RequestUpdateAll();
 }

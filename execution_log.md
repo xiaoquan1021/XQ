@@ -3953,6 +3953,46 @@
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Final Update: Workbench Data Manager Visibility Actions
+
+- Started the next UI fidelity slice: restore the original Data Explorer's
+  non-dialog visibility actions in the monolith Data Manager.
+- Red test observed:
+  - Extended `test_monolith_main_window_data_panel` to require a Workbench-style
+    action context menu and visibility actions for selected MITK-backed data.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release -R test_monolith_main_window_data_panel --output-on-failure --timeout 120`
+    failed because the Data Manager tree did not expose an action context menu.
+- Implemented Data Manager visibility actions:
+  - The Data Manager tree now uses `Qt::ActionsContextMenu`.
+  - Added stable actions:
+    `xqToggleDataVisibilityAction`,
+    `xqShowOnlySelectedDataAction`,
+    `xqMakeAllDataVisibleAction`, and
+    `xqMakeAllDataInvisibleAction`.
+  - Selection-dependent actions enable only when the selected catalog entry has
+    a bound MITK node.
+  - Toggle/Show Only/Make All actions update registered MITK nodes' `visible`
+    property, refresh the properties table, and request a MITK render update.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release -R test_monolith_main_window_data_panel --output-on-failure --timeout 120`
+    passed: 1/1.
+  - Related targeted Data Manager/data tests passed: 6/6.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Runtime smoke launched `build\windows-msvc-release\bin\XQ.exe`; the
+    application stayed running for 10 seconds and was then closed.
+- Promoted Workbench Data Manager Visibility Actions to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Final Update: Workbench-Style Monolith Shell Correction
 
 - User review corrected the Presentation direction:

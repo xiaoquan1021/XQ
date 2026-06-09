@@ -4921,3 +4921,31 @@ The next monolith slice is grounded in these comparable systems:
      Workbench layout, import action, data workflow page, and application
      import wiring.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Data Manager Visibility Actions
+
+1. Restore the core non-dialog Data Explorer context actions in the monolith
+   Data Manager tree.
+   - Use Qt `ActionsContextMenu` so the tree has a native right-click action
+     menu without bringing back the BlueBerry Data Manager plugin.
+   - Add stable action IDs for `Toggle Visibility`, `Show Only Selected`,
+     `Make All Visible`, and `Make All Invisible`.
+2. Connect visibility actions to the monolith DataNode registry.
+   - Selection-dependent actions enable only when the selected catalog entry
+     has a bound `mitk::DataNode`.
+   - `Toggle Visibility` flips the selected node's `visible` property.
+   - `Show Only Selected` shows the selected registered node and hides other
+     registered nodes.
+   - `Make All Visible` and `Make All Invisible` update every registered
+     MITK node.
+   - Visibility changes refresh the Data Manager properties table and request
+     a MITK render update.
+3. Add regression coverage.
+   - `test_monolith_main_window_data_panel` verifies menu/action discovery,
+     action enabled state, node visibility mutations, and properties-table
+     refresh.
+4. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for Data Manager, data actions, selection sync,
+     Workbench layout, DataManagementService, and DataNodeRegistry.
+   - full XQ and Externals test gates before commit.
