@@ -1091,7 +1091,9 @@ void MainWindow::UpdateWorkflowOperationControls()
     UpdateFlowSimulationToolButtons();
     UpdateModelingToolButtons();
     UpdateMeshingToolButtons();
+    UpdateMultiPhysicsToolButtons();
     UpdatePathToolButtons();
+    UpdateRomSimulationToolButtons();
     UpdateSegmentation2DToolButtons();
     UpdateSegmentation3DToolButtons();
 }
@@ -1129,6 +1131,52 @@ void MainWindow::UpdateMeshingToolButtons()
         QStringLiteral("xqMeshingGenerateSurfaceMeshButton"),
         QStringLiteral("xqMeshingGenerateVolumeMeshButton"),
         QStringLiteral("xqMeshingBoundaryLayersButton"),
+    };
+
+    for (const auto& objectName : buttonObjectNames)
+    {
+        auto* button = findChild<QPushButton*>(objectName);
+        if (!button)
+            continue;
+
+        QSignalBlocker blocker(button);
+        button->setChecked(
+            button->property("xqOperationId").toString() ==
+            selectedOperationId);
+    }
+}
+
+void MainWindow::UpdateMultiPhysicsToolButtons()
+{
+    const QString selectedOperationId =
+        m_Context.WorkflowOperations()->SelectedOperationId(
+            QStringLiteral("multiphysics"));
+    const QStringList buttonObjectNames = {
+        QStringLiteral("xqMultiPhysicsConfigureCouplingButton"),
+        QStringLiteral("xqMultiPhysicsReviewResultsButton"),
+    };
+
+    for (const auto& objectName : buttonObjectNames)
+    {
+        auto* button = findChild<QPushButton*>(objectName);
+        if (!button)
+            continue;
+
+        QSignalBlocker blocker(button);
+        button->setChecked(
+            button->property("xqOperationId").toString() ==
+            selectedOperationId);
+    }
+}
+
+void MainWindow::UpdateRomSimulationToolButtons()
+{
+    const QString selectedOperationId =
+        m_Context.WorkflowOperations()->SelectedOperationId(
+            QStringLiteral("rom-simulation"));
+    const QStringList buttonObjectNames = {
+        QStringLiteral("xqRomBuildNetworkButton"),
+        QStringLiteral("xqRomCalibrateBoundaryButton"),
     };
 
     for (const auto& objectName : buttonObjectNames)
@@ -2650,6 +2698,248 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                                       QStringLiteral("run-steady-flow"));
                     connectFlowButton(reviewResultsButton,
                                       QStringLiteral("review-flow-results"));
+                }
+                else if (id == QStringLiteral("rom-simulation"))
+                {
+                    operationSelector->setVisible(false);
+                    layout->addWidget(operationSelector);
+
+                    auto* statusLabel = new QLabel(
+                        QStringLiteral(
+                            "ROM Simulation\n\n"
+                            "No ROM job selected.\n\n"
+                            "Select or double-click an xq_MitkROMJob node to "
+                            "bind it here. Opening this view does not export "
+                            "files or run a solver."),
+                        page);
+                    statusLabel->setObjectName(
+                        QStringLiteral("xqRomStatusLabel"));
+                    statusLabel->setWordWrap(true);
+                    layout->addWidget(statusLabel);
+
+                    auto* stepsText = new QTextEdit(page);
+                    stepsText->setObjectName(
+                        QStringLiteral("xqRomWorkflowStepsText"));
+                    stepsText->setReadOnly(true);
+                    stepsText->setMaximumHeight(170);
+                    stepsText->setPlainText(
+                        QStringLiteral(
+                            "Reduced-Order Model (ROM) simulation workflow.\n\n"
+                            "Data model: xq_ROMSimulationJob (ready)\n"
+                            "XML export: xq_ROMSimJobXmlWriter (ready)\n\n"
+                            "GUI workflow steps (native scope):\n"
+                            "  1. Select model + centerline\n"
+                            "  2. Configure ROM mesh parameters\n"
+                            "  3. Set boundary conditions\n"
+                            "  4. Save/load ROM job metadata"));
+                    layout->addWidget(stepsText);
+
+                    auto* operationsGroup =
+                        new QGroupBox(QStringLiteral("ROM Configuration"),
+                                      page);
+                    operationsGroup->setObjectName(
+                        QStringLiteral("xqRomConfigurationGroup"));
+                    auto* operationsLayout =
+                        new QVBoxLayout(operationsGroup);
+                    auto* operationButtonLayout = new QHBoxLayout();
+                    auto* buildNetworkButton =
+                        new QPushButton(QStringLiteral("Build 1D Network"),
+                                        operationsGroup);
+                    buildNetworkButton->setObjectName(
+                        QStringLiteral("xqRomBuildNetworkButton"));
+                    buildNetworkButton->setCheckable(true);
+                    buildNetworkButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("build-1d-network"));
+                    auto* calibrateBoundaryButton =
+                        new QPushButton(QStringLiteral(
+                                            "Calibrate Boundary Conditions"),
+                                        operationsGroup);
+                    calibrateBoundaryButton->setObjectName(QStringLiteral(
+                        "xqRomCalibrateBoundaryButton"));
+                    calibrateBoundaryButton->setCheckable(true);
+                    calibrateBoundaryButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("calibrate-boundary-conditions"));
+                    operationButtonLayout->addWidget(buildNetworkButton);
+                    operationButtonLayout->addWidget(calibrateBoundaryButton);
+                    operationsLayout->addLayout(operationButtonLayout);
+                    operationsLayout->addWidget(parameterPanel);
+                    layout->addWidget(operationsGroup);
+
+                    auto* exportButton =
+                        new QPushButton(QStringLiteral("Export ROM Metadata"),
+                                        page);
+                    exportButton->setObjectName(
+                        QStringLiteral("xqRomExportMetadataButton"));
+                    exportButton->setEnabled(false);
+                    layout->addWidget(exportButton);
+
+                    auto* solverNotice = new QLabel(
+                        QStringLiteral(
+                            "Runtime status: native ROM solver execution is "
+                            "unavailable and disabled. Windows v1 configures "
+                            "jobs and calibrates metadata only."),
+                        page);
+                    solverNotice->setObjectName(
+                        QStringLiteral("xqRomSolverNoticeLabel"));
+                    solverNotice->setWordWrap(true);
+                    layout->addWidget(solverNotice);
+
+                    auto* toolButtons = new QButtonGroup(page);
+                    toolButtons->setExclusive(true);
+                    toolButtons->addButton(buildNetworkButton);
+                    toolButtons->addButton(calibrateBoundaryButton);
+
+                    auto connectRomButton =
+                        [this](QPushButton* button,
+                               const QString& operationId) {
+                            connect(button,
+                                    &QPushButton::clicked,
+                                    this,
+                                    [this, operationId]() {
+                                        QString message;
+                                        if (!m_Context.WorkflowOperations()
+                                                 ->SelectOperation(
+                                                     QStringLiteral(
+                                                         "rom-simulation"),
+                                                     operationId,
+                                                     &message))
+                                        {
+                                            m_Context.PostDiagnostic(message);
+                                        }
+                                        UpdateWorkflowOperationControls();
+                                    });
+                        };
+                    connectRomButton(buildNetworkButton,
+                                     QStringLiteral("build-1d-network"));
+                    connectRomButton(
+                        calibrateBoundaryButton,
+                        QStringLiteral("calibrate-boundary-conditions"));
+                }
+                else if (id == QStringLiteral("multiphysics"))
+                {
+                    operationSelector->setVisible(false);
+                    layout->addWidget(operationSelector);
+
+                    auto* statusLabel = new QLabel(
+                        QStringLiteral(
+                            "Multi-Physics Simulation\n\n"
+                            "No MultiPhysics job selected.\n\n"
+                            "Select or double-click an "
+                            "xq_MitkMultiPhysicsJob node to bind it here. "
+                            "Opening this view does not export XML or run a "
+                            "solver."),
+                        page);
+                    statusLabel->setObjectName(
+                        QStringLiteral("xqMultiPhysicsStatusLabel"));
+                    statusLabel->setWordWrap(true);
+                    layout->addWidget(statusLabel);
+
+                    auto* stepsText = new QTextEdit(page);
+                    stepsText->setObjectName(QStringLiteral(
+                        "xqMultiPhysicsWorkflowStepsText"));
+                    stepsText->setReadOnly(true);
+                    stepsText->setMaximumHeight(190);
+                    stepsText->setPlainText(
+                        QStringLiteral(
+                            "Coupled multi-physics simulation workflow.\n\n"
+                            "Data model: xq_MultiPhysicsJob (ready)\n"
+                            "XML export: xq_MultiPhysicsXmlWriter (ready)\n\n"
+                            "GUI workflow steps (native scope):\n"
+                            "  1. Define computational domains\n"
+                            "  2. Assign material properties per domain\n"
+                            "  3. Configure equations and solver settings\n"
+                            "  4. Set boundary conditions with parameters\n"
+                            "  5. Save/load MultiPhysics XML metadata"));
+                    layout->addWidget(stepsText);
+
+                    auto* operationsGroup =
+                        new QGroupBox(QStringLiteral(
+                                          "MultiPhysics Configuration"),
+                                      page);
+                    operationsGroup->setObjectName(QStringLiteral(
+                        "xqMultiPhysicsConfigurationGroup"));
+                    auto* operationsLayout =
+                        new QVBoxLayout(operationsGroup);
+                    auto* operationButtonLayout = new QHBoxLayout();
+                    auto* configureCouplingButton =
+                        new QPushButton(QStringLiteral("Configure Coupling"),
+                                        operationsGroup);
+                    configureCouplingButton->setObjectName(QStringLiteral(
+                        "xqMultiPhysicsConfigureCouplingButton"));
+                    configureCouplingButton->setCheckable(true);
+                    configureCouplingButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("configure-coupling"));
+                    auto* reviewResultsButton =
+                        new QPushButton(QStringLiteral(
+                                            "Review Coupled Results"),
+                                        operationsGroup);
+                    reviewResultsButton->setObjectName(QStringLiteral(
+                        "xqMultiPhysicsReviewResultsButton"));
+                    reviewResultsButton->setCheckable(true);
+                    reviewResultsButton->setProperty(
+                        "xqOperationId",
+                        QStringLiteral("review-coupled-results"));
+                    operationButtonLayout->addWidget(configureCouplingButton);
+                    operationButtonLayout->addWidget(reviewResultsButton);
+                    operationsLayout->addLayout(operationButtonLayout);
+                    operationsLayout->addWidget(parameterPanel);
+                    layout->addWidget(operationsGroup);
+
+                    auto* exportButton =
+                        new QPushButton(QStringLiteral(
+                                            "Export MultiPhysics Metadata"),
+                                        page);
+                    exportButton->setObjectName(QStringLiteral(
+                        "xqMultiPhysicsExportMetadataButton"));
+                    exportButton->setEnabled(false);
+                    layout->addWidget(exportButton);
+
+                    auto* solverNotice = new QLabel(
+                        QStringLiteral(
+                            "Runtime status: native coupled solver execution "
+                            "is unavailable and disabled. Windows v1 "
+                            "configures coupling and reviews imported results "
+                            "only."),
+                        page);
+                    solverNotice->setObjectName(QStringLiteral(
+                        "xqMultiPhysicsSolverNoticeLabel"));
+                    solverNotice->setWordWrap(true);
+                    layout->addWidget(solverNotice);
+
+                    auto* toolButtons = new QButtonGroup(page);
+                    toolButtons->setExclusive(true);
+                    toolButtons->addButton(configureCouplingButton);
+                    toolButtons->addButton(reviewResultsButton);
+
+                    auto connectMultiPhysicsButton =
+                        [this](QPushButton* button,
+                               const QString& operationId) {
+                            connect(button,
+                                    &QPushButton::clicked,
+                                    this,
+                                    [this, operationId]() {
+                                        QString message;
+                                        if (!m_Context.WorkflowOperations()
+                                                 ->SelectOperation(
+                                                     QStringLiteral(
+                                                         "multiphysics"),
+                                                     operationId,
+                                                     &message))
+                                        {
+                                            m_Context.PostDiagnostic(message);
+                                        }
+                                        UpdateWorkflowOperationControls();
+                                    });
+                        };
+                    connectMultiPhysicsButton(
+                        configureCouplingButton,
+                        QStringLiteral("configure-coupling"));
+                    connectMultiPhysicsButton(
+                        reviewResultsButton,
+                        QStringLiteral("review-coupled-results"));
                 }
                 else if (id == QStringLiteral("modeling"))
                 {

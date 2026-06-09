@@ -593,6 +593,51 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto* romStatusLabel =
+        window.findChild<QLabel*>(QStringLiteral("xqRomStatusLabel"));
+    auto* romWorkflowSteps =
+        window.findChild<QTextEdit*>(QStringLiteral("xqRomWorkflowStepsText"));
+    auto* romBuildButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqRomBuildNetworkButton"));
+    auto* romCalibrateButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqRomCalibrateBoundaryButton"));
+    auto* romExportButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqRomExportMetadataButton"));
+    auto* romSolverNotice =
+        window.findChild<QLabel*>(QStringLiteral("xqRomSolverNoticeLabel"));
+    if (Expect(romStatusLabel != nullptr &&
+                   romStatusLabel->text().contains(
+                       QStringLiteral("No ROM job selected")) &&
+                   romWorkflowSteps != nullptr &&
+                   romWorkflowSteps->toPlainText().contains(
+                       QStringLiteral("Save/load ROM job metadata")),
+               "ROM Simulation page should restore legacy status workflow text"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(romBuildButton != nullptr &&
+                   romCalibrateButton != nullptr &&
+                   romBuildButton->isCheckable() &&
+                   romCalibrateButton->isCheckable(),
+               "ROM Simulation page should restore v1 operation buttons"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(romExportButton != nullptr &&
+                   !romExportButton->isEnabled() &&
+                   romSolverNotice != nullptr &&
+                   romSolverNotice->text().contains(
+                       QStringLiteral("solver execution is unavailable")),
+               "ROM Simulation page should keep solver execution deferred"))
+    {
+        delete context;
+        return 1;
+    }
     if (Expect(romSelector->itemData(1).toString() ==
                        QStringLiteral("calibrate-boundary-conditions") &&
                    romSelector->itemText(1) ==
@@ -606,6 +651,32 @@ int main(int argc, char** argv)
     romSelector->setCurrentIndex(
         romSelector->findData(
             QStringLiteral("calibrate-boundary-conditions")));
+    app.processEvents();
+    if (Expect(romCalibrateButton->isChecked(),
+               "ROM calibration button should mirror selector changes"))
+    {
+        delete context;
+        return 1;
+    }
+    romBuildButton->click();
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("rom-simulation")) ==
+                   QStringLiteral("build-1d-network"),
+               "ROM Build Network button should update Core operation state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(romSelector->currentData().toString() ==
+                   QStringLiteral("build-1d-network") &&
+                   romBuildButton->isChecked(),
+               "ROM selector and tool button should stay synchronized"))
+    {
+        delete context;
+        return 1;
+    }
+    romCalibrateButton->click();
     app.processEvents();
     auto* romButton =
         FindActionButton(window, QStringLiteral("rom-simulation"));
@@ -731,6 +802,54 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto* multiphysicsStatusLabel =
+        window.findChild<QLabel*>(
+            QStringLiteral("xqMultiPhysicsStatusLabel"));
+    auto* multiphysicsWorkflowSteps =
+        window.findChild<QTextEdit*>(
+            QStringLiteral("xqMultiPhysicsWorkflowStepsText"));
+    auto* configureCouplingButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqMultiPhysicsConfigureCouplingButton"));
+    auto* reviewCoupledResultsButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqMultiPhysicsReviewResultsButton"));
+    auto* multiphysicsExportButton =
+        window.findChild<QPushButton*>(
+            QStringLiteral("xqMultiPhysicsExportMetadataButton"));
+    auto* multiphysicsSolverNotice =
+        window.findChild<QLabel*>(
+            QStringLiteral("xqMultiPhysicsSolverNoticeLabel"));
+    if (Expect(multiphysicsStatusLabel != nullptr &&
+                   multiphysicsStatusLabel->text().contains(
+                       QStringLiteral("No MultiPhysics job selected")) &&
+                   multiphysicsWorkflowSteps != nullptr &&
+                   multiphysicsWorkflowSteps->toPlainText().contains(
+                       QStringLiteral("Save/load MultiPhysics XML metadata")),
+               "MultiPhysics page should restore legacy status workflow text"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(configureCouplingButton != nullptr &&
+                   reviewCoupledResultsButton != nullptr &&
+                   configureCouplingButton->isCheckable() &&
+                   reviewCoupledResultsButton->isCheckable(),
+               "MultiPhysics page should restore v1 operation buttons"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(multiphysicsExportButton != nullptr &&
+                   !multiphysicsExportButton->isEnabled() &&
+                   multiphysicsSolverNotice != nullptr &&
+                   multiphysicsSolverNotice->text().contains(
+                       QStringLiteral("coupled solver execution is unavailable")),
+               "MultiPhysics page should keep solver execution deferred"))
+    {
+        delete context;
+        return 1;
+    }
     if (Expect(multiphysicsSelector->itemData(1).toString() ==
                        QStringLiteral("review-coupled-results") &&
                    multiphysicsSelector->itemText(1) ==
@@ -744,6 +863,32 @@ int main(int argc, char** argv)
     multiphysicsSelector->setCurrentIndex(
         multiphysicsSelector->findData(
             QStringLiteral("review-coupled-results")));
+    app.processEvents();
+    if (Expect(reviewCoupledResultsButton->isChecked(),
+               "MultiPhysics review button should mirror selector changes"))
+    {
+        delete context;
+        return 1;
+    }
+    configureCouplingButton->click();
+    app.processEvents();
+    if (Expect(context->WorkflowOperations()->SelectedOperationId(
+                   QStringLiteral("multiphysics")) ==
+                   QStringLiteral("configure-coupling"),
+               "MultiPhysics Configure Coupling button should update Core operation state"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(multiphysicsSelector->currentData().toString() ==
+                   QStringLiteral("configure-coupling") &&
+                   configureCouplingButton->isChecked(),
+               "MultiPhysics selector and tool button should stay synchronized"))
+    {
+        delete context;
+        return 1;
+    }
+    reviewCoupledResultsButton->click();
     app.processEvents();
     auto* multiphysicsButton =
         FindActionButton(window, QStringLiteral("multiphysics"));

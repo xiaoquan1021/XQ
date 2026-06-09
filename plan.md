@@ -5190,3 +5190,36 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted flow/workflow UI tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench ROM and MultiPhysics V1 Panel Restore
+
+1. Restore the visible status-panel structure of the original
+   `xq_ROMSimulationView` and `xq_MultiPhysicsView` inside the monolith
+   Windows v1 pages.
+   - Add legacy status text for selected/no selected job state.
+   - Add read-only workflow step summaries for ROM and MultiPhysics metadata
+     workflows.
+   - Add v1 operation buttons for ROM network build, ROM boundary calibration,
+     MultiPhysics coupling configuration, and imported coupled-result review.
+   - Keep the existing hidden monolith operation selectors so current tests and
+     Core operation state remain compatible.
+2. Keep the solver scope decision explicit.
+   - Do not expose `run-rom-solver`.
+   - Do not expose `run-coupled-solve`.
+   - Keep disabled metadata export anchors for future self-owned/export-only
+     work.
+   - Show an explicit notice that native ROM/coupled solver execution is
+     unavailable and disabled in Windows v1.
+3. Keep Core workflow operations authoritative.
+   - Restored buttons call `WorkflowOperationService::SelectOperation()`.
+   - Core-driven operation changes still update the hidden selectors.
+   - Selector-driven operation changes update the restored buttons.
+4. Add regression coverage.
+   - `test_monolith_simulation_operation_pages` verifies the status text,
+     workflow summaries, v1 buttons, hidden solver operations, deferred solver
+     notices, operation synchronization, parameter anchors, and existing
+     validation behavior.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted ROM/MultiPhysics workflow UI tests.
+   - full XQ and Externals test gates before commit.

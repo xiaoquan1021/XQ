@@ -56,7 +56,9 @@ private:
     void UpdateFlowSimulationToolButtons();
     void UpdateModelingToolButtons();
     void UpdateMeshingToolButtons();
+    void UpdateMultiPhysicsToolButtons();
     void UpdatePathToolButtons();
+    void UpdateRomSimulationToolButtons();
     void UpdateSegmentation2DToolButtons();
     void UpdateSegmentation3DToolButtons();
     void UpdateWorkflowContextStatusPage();

@@ -4114,6 +4114,53 @@
   - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
   - Runtime smoke passed: `XQ.exe` launched and stayed running for 10 seconds.
 
+## Current Run Update: Workbench ROM and MultiPhysics V1 Panel Restore
+
+- Started the next UI fidelity slice after pushing Flow Simulation.
+- Reviewed the original ROM/MultiPhysics plugin views:
+  - `xq_ROMSimulationView.cxx`
+  - `xq_ROMSimulationView.h`
+  - `xq_MultiPhysicsView.cxx`
+  - `xq_MultiPhysicsView.h`
+- Scope reminder:
+  - Windows v1 does not expose ROM or coupled solver execution.
+  - `run-rom-solver` and `run-coupled-solve` remain hidden from the page and
+    operation selectors.
+- Red test observed:
+  - Extended `test_monolith_simulation_operation_pages` first.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_simulation_operation_pages"`
+    failed on `ROM Simulation page should restore legacy status workflow text`
+    because the monolith ROM page still exposed only the generic workflow
+    operation shell.
+- Implemented ROM/MultiPhysics v1 panel restoration:
+  - Restored ROM and MultiPhysics status labels using the legacy
+    no-selection/open-view wording.
+  - Added read-only workflow step summaries for ROM metadata and MultiPhysics
+    XML metadata workflows.
+  - Added ROM Build 1D Network and Calibrate Boundary Conditions buttons.
+  - Added MultiPhysics Configure Coupling and Review Coupled Results buttons.
+  - Added disabled metadata export anchors for future authorized export work.
+  - Added explicit solver-deferred notices for ROM and coupled execution.
+  - Kept hidden generic operation selectors so existing Core operation state
+    and tests remain compatible.
+  - Wired restored buttons through `WorkflowOperationService` so selector and
+    button state stay synchronized.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_simulation_operation_pages"`
+    passed: 1/1.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(simulation_operation_pages|rom_simulation_workflow_action_handler|multiphysics_workflow_action_handler|domain_workflow_action_handlers|application_import_wiring|workflow_primary_action_page)"`
+    passed: 6/6.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Runtime smoke passed: `XQ.exe` launched and stayed running for 10 seconds.
+
 ## Current Run Update: Workbench Flow Simulation Tool Panel Restore
 
 - Started the next UI fidelity slice after pushing Meshing.
