@@ -4157,6 +4157,46 @@
   - Runtime smoke started `build\windows-msvc-release\bin\XQ.exe`, kept it
     alive for 10 seconds, and closed it successfully.
 
+## Current Run Update: Data Workflow Page Workbench Panel Restore
+
+- Continued UI fidelity after the pushed Project page commit
+  `9ee7b7b`.
+- Source comparison:
+  - The original Data Explorer is a structured data-management view with
+    search/tree controls, opacity/color controls, properties, and context
+    actions.
+  - The monolith Data Manager dock already covers most of that original view,
+    but the Data workflow page still showed loose selected-data labels only.
+- Red test observed:
+  - Extended `test_monolith_data_workflow_page` first.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_data_workflow_page"`
+    failed on `data page should restore the Workbench selected data group`.
+- Implemented the Data page restoration:
+  - Added `Selected Data`, `Provenance`, and `Data Actions` groups.
+  - Kept existing metadata labels under the restored groups.
+  - Added Open Data File, Rename, Remove, Show Only Selected, and
+    Reinitialize Node command anchors.
+  - Routed page buttons to the same MainWindow handlers used by the toolbar
+    and Data Manager context actions.
+  - Synced page button enabled states with selected catalog entry and selected
+    MITK node binding state.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_data_workflow_page"`
+    passed: 1/1.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(data_workflow_page|main_window_data_panel|main_window_data_actions|main_window_import_action|main_window_selection_sync|project_workflow_page|main_window_workbench_layout)"`
+    passed: 7/7.
+- Final verification for this slice:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Runtime smoke started `build\windows-msvc-release\bin\XQ.exe`, kept it
+    alive for 10 seconds, and closed it successfully.
+
 ## Current Run Update: Workbench Tools Dock Readability Correction
 
 - Runtime screenshot QA after restoring workflow panels showed a real UI

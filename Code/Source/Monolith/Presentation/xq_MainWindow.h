@@ -112,6 +112,10 @@ private:
     QLabel* m_DataDisplayNameLabel = nullptr;
     QLabel* m_DataSourcePathLabel = nullptr;
     QLabel* m_DataWorkflowRoleLabel = nullptr;
+    QPushButton* m_DataPageRenameButton = nullptr;
+    QPushButton* m_DataPageRemoveButton = nullptr;
+    QPushButton* m_DataPageShowOnlyButton = nullptr;
+    QPushButton* m_DataPageReinitializeButton = nullptr;
     QSlider* m_DataOpacitySlider = nullptr;
     QLabel* m_DataOpacityValueLabel = nullptr;
     QPushButton* m_DataColorButton = nullptr;

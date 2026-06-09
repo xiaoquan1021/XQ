@@ -5301,3 +5301,29 @@ The next monolith slice is grounded in these comparable systems:
 5. Verification gate:
    - targeted project/data/workbench UI tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Data Workflow Page Workbench Panel Restore
+
+1. Restore the monolith Data workflow page as a Workbench-style data panel
+   instead of a loose metadata summary.
+   - Add `Selected Data`, `Provenance`, and `Data Actions` groups.
+   - Keep existing selected-data metadata labels as stable state anchors.
+   - Add visible command anchors for `Open Data File...`, `Rename...`,
+     `Remove`, `Show Only Selected`, and `Reinitialize Node`.
+2. Keep behavior unified with the existing Data Manager dock.
+   - Page buttons call the same MainWindow handlers used by toolbar/context
+     menu actions.
+   - Rename/remove buttons follow selected catalog-entry state.
+   - Node-only buttons follow selected MITK node binding state.
+3. Keep scope focused.
+   - Do not duplicate the Data Manager tree inside the Data workflow page.
+   - Do not add new import or data-management services.
+   - Preserve the Data Manager dock as the main hierarchy browser.
+4. Add regression coverage.
+   - `test_monolith_data_workflow_page` verifies the restored groups,
+     command anchors, disabled startup state, selected-data updates,
+     rename/remove state changes, and node-only disabled behavior without a
+     bound MITK node.
+5. Verification gate:
+   - targeted Data/Project/Workbench UI tests.
+   - full XQ and Externals test gates before commit.

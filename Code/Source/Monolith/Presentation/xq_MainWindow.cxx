@@ -1826,12 +1826,20 @@ void MainWindow::UpdateDataActions()
         m_RenameDataAction->setEnabled(hasSelection);
     if (m_RemoveSelectedDataAction)
         m_RemoveSelectedDataAction->setEnabled(hasSelection);
+    if (m_DataPageRenameButton)
+        m_DataPageRenameButton->setEnabled(hasSelection);
+    if (m_DataPageRemoveButton)
+        m_DataPageRemoveButton->setEnabled(hasSelection);
     if (m_ReinitializeSelectedDataAction)
         m_ReinitializeSelectedDataAction->setEnabled(hasSelectedNode);
     if (m_ToggleDataVisibilityAction)
         m_ToggleDataVisibilityAction->setEnabled(hasSelectedNode);
     if (m_ShowOnlySelectedDataAction)
         m_ShowOnlySelectedDataAction->setEnabled(hasSelectedNode);
+    if (m_DataPageShowOnlyButton)
+        m_DataPageShowOnlyButton->setEnabled(hasSelectedNode);
+    if (m_DataPageReinitializeButton)
+        m_DataPageReinitializeButton->setEnabled(hasSelectedNode);
     if (m_SurfaceRepresentationAction)
         m_SurfaceRepresentationAction->setEnabled(hasSelectedNode);
     if (m_WireframeRepresentationAction)
@@ -2217,27 +2225,102 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
     }
     else if (id == QStringLiteral("data"))
     {
-        m_DataSelectionLabel = new QLabel(page);
+        auto* selectedDataGroup =
+            new QGroupBox(QStringLiteral("Selected Data"), page);
+        selectedDataGroup->setObjectName(
+            QStringLiteral("xqDataSelectedDataGroup"));
+        auto* selectedDataLayout = new QVBoxLayout(selectedDataGroup);
+        selectedDataLayout->setContentsMargins(8, 8, 8, 8);
+        selectedDataLayout->setSpacing(6);
+
+        m_DataSelectionLabel = new QLabel(selectedDataGroup);
         m_DataSelectionLabel->setObjectName(
             QStringLiteral("xqDataPageSelection"));
-        m_DataCatalogIdLabel = new QLabel(page);
-        m_DataCatalogIdLabel->setObjectName(
-            QStringLiteral("xqDataPageCatalogId"));
-        m_DataDisplayNameLabel = new QLabel(page);
+        m_DataDisplayNameLabel = new QLabel(selectedDataGroup);
         m_DataDisplayNameLabel->setObjectName(
             QStringLiteral("xqDataPageDisplayName"));
-        m_DataSourcePathLabel = new QLabel(page);
-        m_DataSourcePathLabel->setObjectName(
-            QStringLiteral("xqDataPageSourcePath"));
-        m_DataWorkflowRoleLabel = new QLabel(page);
+        m_DataWorkflowRoleLabel = new QLabel(selectedDataGroup);
         m_DataWorkflowRoleLabel->setObjectName(
             QStringLiteral("xqDataPageWorkflowRole"));
+        selectedDataLayout->addWidget(m_DataSelectionLabel);
+        selectedDataLayout->addWidget(m_DataDisplayNameLabel);
+        selectedDataLayout->addWidget(m_DataWorkflowRoleLabel);
+        layout->addWidget(selectedDataGroup);
 
-        layout->addWidget(m_DataSelectionLabel);
-        layout->addWidget(m_DataCatalogIdLabel);
-        layout->addWidget(m_DataDisplayNameLabel);
-        layout->addWidget(m_DataSourcePathLabel);
-        layout->addWidget(m_DataWorkflowRoleLabel);
+        auto* provenanceGroup =
+            new QGroupBox(QStringLiteral("Provenance"), page);
+        provenanceGroup->setObjectName(QStringLiteral("xqDataProvenanceGroup"));
+        auto* provenanceLayout = new QVBoxLayout(provenanceGroup);
+        provenanceLayout->setContentsMargins(8, 8, 8, 8);
+        provenanceLayout->setSpacing(6);
+        m_DataCatalogIdLabel = new QLabel(provenanceGroup);
+        m_DataCatalogIdLabel->setObjectName(
+            QStringLiteral("xqDataPageCatalogId"));
+        m_DataSourcePathLabel = new QLabel(provenanceGroup);
+        m_DataSourcePathLabel->setObjectName(
+            QStringLiteral("xqDataPageSourcePath"));
+        m_DataSourcePathLabel->setWordWrap(true);
+        provenanceLayout->addWidget(m_DataCatalogIdLabel);
+        provenanceLayout->addWidget(m_DataSourcePathLabel);
+        layout->addWidget(provenanceGroup);
+
+        auto* actionsGroup =
+            new QGroupBox(QStringLiteral("Data Actions"), page);
+        actionsGroup->setObjectName(QStringLiteral("xqDataActionsGroup"));
+        auto* actionsLayout = new QVBoxLayout(actionsGroup);
+        actionsLayout->setContentsMargins(8, 8, 8, 8);
+        actionsLayout->setSpacing(6);
+
+        auto* importButton =
+            new QPushButton(QStringLiteral("Open Data File..."), actionsGroup);
+        importButton->setObjectName(QStringLiteral("xqDataPageImportButton"));
+        m_DataPageRenameButton =
+            new QPushButton(QStringLiteral("Rename..."), actionsGroup);
+        m_DataPageRenameButton->setObjectName(
+            QStringLiteral("xqDataPageRenameButton"));
+        m_DataPageRemoveButton =
+            new QPushButton(QStringLiteral("Remove"), actionsGroup);
+        m_DataPageRemoveButton->setObjectName(
+            QStringLiteral("xqDataPageRemoveButton"));
+        m_DataPageShowOnlyButton =
+            new QPushButton(QStringLiteral("Show Only Selected"),
+                            actionsGroup);
+        m_DataPageShowOnlyButton->setObjectName(
+            QStringLiteral("xqDataPageShowOnlyButton"));
+        m_DataPageReinitializeButton =
+            new QPushButton(QStringLiteral("Reinitialize Node"),
+                            actionsGroup);
+        m_DataPageReinitializeButton->setObjectName(
+            QStringLiteral("xqDataPageReinitializeButton"));
+
+        actionsLayout->addWidget(importButton);
+        actionsLayout->addWidget(m_DataPageRenameButton);
+        actionsLayout->addWidget(m_DataPageRemoveButton);
+        actionsLayout->addWidget(m_DataPageShowOnlyButton);
+        actionsLayout->addWidget(m_DataPageReinitializeButton);
+        layout->addWidget(actionsGroup);
+        layout->addStretch(1);
+
+        connect(importButton,
+                &QPushButton::clicked,
+                this,
+                [this]() { ImportData(); });
+        connect(m_DataPageRenameButton,
+                &QPushButton::clicked,
+                this,
+                [this]() { RenameSelectedData(); });
+        connect(m_DataPageRemoveButton,
+                &QPushButton::clicked,
+                this,
+                [this]() { RemoveSelectedData(); });
+        connect(m_DataPageShowOnlyButton,
+                &QPushButton::clicked,
+                this,
+                [this]() { ShowOnlySelectedData(); });
+        connect(m_DataPageReinitializeButton,
+                &QPushButton::clicked,
+                this,
+                [this]() { ReinitializeSelectedData(); });
     }
     else
     {

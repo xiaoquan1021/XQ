@@ -4,7 +4,9 @@
 #include "Presentation/xq_MainWindow.h"
 
 #include <QApplication>
+#include <QGroupBox>
 #include <QLabel>
+#include <QPushButton>
 #include <QWidget>
 
 #include <iostream>
@@ -73,6 +75,22 @@ int main(int argc, char** argv)
         dataPage->findChild<QLabel*>(QStringLiteral("xqDataPageSourcePath"));
     auto* workflowRoleLabel =
         dataPage->findChild<QLabel*>(QStringLiteral("xqDataPageWorkflowRole"));
+    auto* selectedDataGroup = dataPage->findChild<QGroupBox*>(
+        QStringLiteral("xqDataSelectedDataGroup"));
+    auto* provenanceGroup = dataPage->findChild<QGroupBox*>(
+        QStringLiteral("xqDataProvenanceGroup"));
+    auto* actionsGroup = dataPage->findChild<QGroupBox*>(
+        QStringLiteral("xqDataActionsGroup"));
+    auto* importButton = dataPage->findChild<QPushButton*>(
+        QStringLiteral("xqDataPageImportButton"));
+    auto* renameButton = dataPage->findChild<QPushButton*>(
+        QStringLiteral("xqDataPageRenameButton"));
+    auto* removeButton = dataPage->findChild<QPushButton*>(
+        QStringLiteral("xqDataPageRemoveButton"));
+    auto* showOnlyButton = dataPage->findChild<QPushButton*>(
+        QStringLiteral("xqDataPageShowOnlyButton"));
+    auto* reinitializeButton = dataPage->findChild<QPushButton*>(
+        QStringLiteral("xqDataPageReinitializeButton"));
 
     if (Expect(selectionLabel != nullptr,
                "data page should expose a selection label"))
@@ -100,6 +118,71 @@ int main(int argc, char** argv)
     }
     if (Expect(workflowRoleLabel != nullptr,
                "data page should expose a workflow role label"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(selectedDataGroup != nullptr &&
+                   selectedDataGroup->title() ==
+                       QStringLiteral("Selected Data"),
+               "data page should restore the Workbench selected data group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(provenanceGroup != nullptr &&
+                   provenanceGroup->title() ==
+                       QStringLiteral("Provenance"),
+               "data page should restore the Workbench provenance group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(actionsGroup != nullptr &&
+                   actionsGroup->title() == QStringLiteral("Data Actions"),
+               "data page should restore the Workbench data actions group"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(importButton != nullptr &&
+                   importButton->text() ==
+                       QStringLiteral("Open Data File..."),
+               "data page should expose the Workbench import command anchor"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(renameButton != nullptr &&
+                   renameButton->text() == QStringLiteral("Rename...") &&
+                   !renameButton->isEnabled(),
+               "data page should expose a disabled Rename command before selection"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(removeButton != nullptr &&
+                   removeButton->text() == QStringLiteral("Remove") &&
+                   !removeButton->isEnabled(),
+               "data page should expose a disabled Remove command before selection"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(showOnlyButton != nullptr &&
+                   showOnlyButton->text() ==
+                       QStringLiteral("Show Only Selected") &&
+                   !showOnlyButton->isEnabled(),
+               "data page should expose the Workbench visibility command anchor"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(reinitializeButton != nullptr &&
+                   reinitializeButton->text() ==
+                       QStringLiteral("Reinitialize Node") &&
+                   !reinitializeButton->isEnabled(),
+               "data page should expose the Workbench reinitialize command anchor"))
     {
         delete context;
         return 1;
@@ -166,6 +249,19 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(renameButton->isEnabled() && removeButton->isEnabled(),
+               "data import should enable selected-data page actions"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!showOnlyButton->isEnabled() &&
+                   !reinitializeButton->isEnabled(),
+               "data import without a MITK node should keep node-only page actions disabled"))
+    {
+        delete context;
+        return 1;
+    }
 
     if (Expect(context->DataManagement()->RenameEntry(
                    QStringLiteral("image-001"),
@@ -209,6 +305,12 @@ int main(int argc, char** argv)
                    sourcePathLabel->text().isEmpty() &&
                    workflowRoleLabel->text().isEmpty(),
                "data remove should clear metadata labels"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!renameButton->isEnabled() && !removeButton->isEnabled(),
+               "data remove should disable selected-data page actions"))
     {
         delete context;
         return 1;
