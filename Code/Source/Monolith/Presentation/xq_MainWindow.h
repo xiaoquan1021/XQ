@@ -68,6 +68,7 @@ private:
     void UpdateProjectPageDataCount();
     void UpdateProjectWindowState(const xq::core::ProjectMetadata& project);
     void UpdateProjectActions();
+    void RenameSelectedData();
     void SyncTreeSelectionFromCore(const QString& hierarchyNodeId);
     void UpdateDataActions();
     void ApplyDataManagerSearch(const QString& text);
@@ -80,6 +81,8 @@ private:
     void ShowOnlySelectedData();
     void SetAllDataVisibility(bool visible);
     void RefreshDataManagerAfterVisibilityChange();
+    void ReinitializeSelectedData();
+    void GlobalReinitializeData();
     void SetSelectedDataRepresentation(int representation,
                                        bool materialWireframe,
                                        bool disableVolumeRendering);
@@ -110,6 +113,10 @@ private:
     QAction* m_SaveProjectAction = nullptr;
     QAction* m_ImportDataAction = nullptr;
     QAction* m_RemoveDataAction = nullptr;
+    QAction* m_RenameDataAction = nullptr;
+    QAction* m_RemoveSelectedDataAction = nullptr;
+    QAction* m_ReinitializeSelectedDataAction = nullptr;
+    QAction* m_GlobalReinitializeDataAction = nullptr;
     QAction* m_ToggleDataVisibilityAction = nullptr;
     QAction* m_ShowOnlySelectedDataAction = nullptr;
     QAction* m_SurfaceRepresentationAction = nullptr;

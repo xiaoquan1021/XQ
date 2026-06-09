@@ -10,6 +10,7 @@
 #include <QApplication>
 #include <QLabel>
 #include <QLineEdit>
+#include <QKeySequence>
 #include <QListWidget>
 #include <QModelIndex>
 #include <QPushButton>
@@ -19,6 +20,7 @@
 #include <QTreeView>
 
 #include <mitkDataNode.h>
+#include <mitkDataStorage.h>
 
 #include <iostream>
 
@@ -62,6 +64,22 @@ QString TableValue(QTableWidget* table, const QString& key)
     return QString();
 }
 
+bool DataStorageContainsNode(const mitk::DataStorage::Pointer& storage,
+                             const mitk::DataNode::Pointer& node)
+{
+    if (storage.IsNull() || node.IsNull())
+        return false;
+
+    auto allNodes = storage->GetAll();
+    for (auto it = allNodes->begin(); it != allNodes->end(); ++it)
+    {
+        if ((*it).GetPointer() == node.GetPointer())
+            return true;
+    }
+
+    return false;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -77,6 +95,14 @@ int main(int argc, char** argv)
         window.findChild<QTreeView*>(QStringLiteral("xqDataHierarchyView"));
     auto* toggleVisibilityAction =
         window.findChild<QAction*>(QStringLiteral("xqToggleDataVisibilityAction"));
+    auto* renameDataAction =
+        window.findChild<QAction*>(QStringLiteral("xqRenameDataAction"));
+    auto* removeSelectedDataAction =
+        window.findChild<QAction*>(QStringLiteral("xqRemoveSelectedDataAction"));
+    auto* reinitializeSelectedDataAction =
+        window.findChild<QAction*>(QStringLiteral("xqReinitializeSelectedDataAction"));
+    auto* globalReinitializeDataAction =
+        window.findChild<QAction*>(QStringLiteral("xqGlobalReinitializeDataAction"));
     auto* showOnlySelectedAction =
         window.findChild<QAction*>(QStringLiteral("xqShowOnlySelectedDataAction"));
     auto* makeAllVisibleAction =
@@ -119,6 +145,30 @@ int main(int argc, char** argv)
                    makeAllVisibleAction != nullptr &&
                    makeAllInvisibleAction != nullptr,
                "Data Manager should restore core visibility context actions"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(renameDataAction != nullptr &&
+                   removeSelectedDataAction != nullptr &&
+                   reinitializeSelectedDataAction != nullptr &&
+                   globalReinitializeDataAction != nullptr,
+               "Data Manager should restore rename, remove, and reinit context actions"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(renameDataAction->shortcut() == QKeySequence(Qt::Key_F2) &&
+                   removeSelectedDataAction->shortcut() == QKeySequence::Delete,
+               "Data Manager rename/remove actions should restore Workbench shortcuts"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!renameDataAction->isEnabled() &&
+                   !removeSelectedDataAction->isEnabled() &&
+                   !reinitializeSelectedDataAction->isEnabled(),
+               "selection-dependent rename/remove/reinit actions should start disabled"))
     {
         delete context;
         return 1;
@@ -250,6 +300,7 @@ int main(int argc, char** argv)
     mitkNode->SetFloatProperty("opacity", 0.42f);
     mitkNode->SetColor(0.25f, 0.5f, 0.75f);
     mitkNode->SetBoolProperty("visible", true);
+    context->DataStorage()->Add(mitkNode);
     if (Expect(context->DataNodes()->BindNode(QStringLiteral("image-001"),
                                               mitkNode,
                                               &errorMessage),
@@ -345,6 +396,14 @@ int main(int argc, char** argv)
     if (Expect(toggleVisibilityAction->isEnabled() &&
                    showOnlySelectedAction->isEnabled(),
                "selection-dependent visibility actions should enable for MITK-backed data"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(renameDataAction->isEnabled() &&
+                   removeSelectedDataAction->isEnabled() &&
+                   reinitializeSelectedDataAction->isEnabled(),
+               "selection-dependent rename/remove/reinit actions should enable for MITK-backed data"))
     {
         delete context;
         return 1;
@@ -474,6 +533,7 @@ int main(int argc, char** argv)
     auto secondNode = mitk::DataNode::New();
     secondNode->SetName("CTA B node");
     secondNode->SetBoolProperty("visible", true);
+    context->DataStorage()->Add(secondNode);
     if (Expect(context->DataNodes()->BindNode(QStringLiteral("image-002"),
                                               secondNode,
                                               &errorMessage),
@@ -561,6 +621,45 @@ int main(int argc, char** argv)
     if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
                    QStringLiteral("image-001"),
                "selecting a folder should not overwrite data selection"))
+    {
+        delete context;
+        return 1;
+    }
+
+    hierarchyView->setCurrentIndex(imageIndex);
+    app.processEvents();
+    removeSelectedDataAction->trigger();
+    app.processEvents();
+    if (Expect(context->DataCatalog()->FindById(QStringLiteral("image-001")) ==
+                   nullptr,
+               "Data Manager Remove should remove selected catalog entry"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->DataNodes()->FindNode(QStringLiteral("image-001"))
+                   .IsNull(),
+               "Data Manager Remove should clear the selected MITK node binding"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!DataStorageContainsNode(context->DataStorage(), mitkNode),
+               "Data Manager Remove should remove the selected node from MITK DataStorage"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->DataSelection()->SelectedCatalogEntryId().isEmpty(),
+               "Data Manager Remove should clear selected data"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!renameDataAction->isEnabled() &&
+                   !removeSelectedDataAction->isEnabled() &&
+                   !reinitializeSelectedDataAction->isEnabled(),
+               "Data Manager data actions should disable after selected data removal"))
     {
         delete context;
         return 1;

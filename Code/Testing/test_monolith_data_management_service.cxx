@@ -10,6 +10,7 @@
 #include <QCoreApplication>
 
 #include <mitkDataNode.h>
+#include <mitkDataStorage.h>
 
 #include <iostream>
 
@@ -42,6 +43,22 @@ mitk::DataNode::Pointer MakeNode(const std::string& name)
     auto node = mitk::DataNode::New();
     node->SetName(name);
     return node;
+}
+
+bool DataStorageContainsNode(const mitk::DataStorage::Pointer& storage,
+                             const mitk::DataNode::Pointer& node)
+{
+    if (storage.IsNull() || node.IsNull())
+        return false;
+
+    auto allNodes = storage->GetAll();
+    for (auto it = allNodes->begin(); it != allNodes->end(); ++it)
+    {
+        if ((*it).GetPointer() == node.GetPointer())
+            return true;
+    }
+
+    return false;
 }
 
 } // namespace
@@ -125,6 +142,7 @@ int main(int argc, char** argv)
         return 1;
     }
     auto boundNode = MakeNode("CTA node");
+    context->DataStorage()->Add(boundNode);
     if (Expect(context->DataNodes()->BindNode(QStringLiteral("image-001"),
                                               boundNode,
                                               &errorMessage),
@@ -204,6 +222,12 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(!DataStorageContainsNode(context->DataStorage(), boundNode),
+               "remove should clear the bound node from DataStorage"))
+    {
+        delete context;
+        return 1;
+    }
 
     const auto secondImport =
         context->DataImports()->Import(MakeImageImport(
@@ -216,6 +240,7 @@ int main(int argc, char** argv)
         return 1;
     }
     auto secondBoundNode = MakeNode("CTA B node");
+    context->DataStorage()->Add(secondBoundNode);
     if (Expect(context->DataNodes()->BindNode(QStringLiteral("image-002"),
                                               secondBoundNode,
                                               &errorMessage),
@@ -250,6 +275,13 @@ int main(int argc, char** argv)
                    ->FindNode(QStringLiteral("image-002"))
                    .GetPointer() == secondBoundNode.GetPointer(),
                "failed remove should preserve data node registry binding"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(DataStorageContainsNode(context->DataStorage(),
+                                       secondBoundNode),
+               "failed remove should preserve the bound DataStorage node"))
     {
         delete context;
         return 1;

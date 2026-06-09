@@ -27,6 +27,7 @@
 #include <QHeaderView>
 #include <QHBoxLayout>
 #include <QIcon>
+#include <QInputDialog>
 #include <QItemSelectionModel>
 #include <QLabel>
 #include <QLineEdit>
@@ -343,6 +344,15 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     m_DataHierarchyView->setContextMenuPolicy(Qt::ActionsContextMenu);
     dataManagerLayout->addWidget(m_DataHierarchyView, 1);
 
+    m_RenameDataAction =
+        new QAction(QIcon::fromTheme(QStringLiteral("edit-rename")),
+                    QStringLiteral("Rename..."),
+                    m_DataHierarchyView);
+    m_RenameDataAction->setObjectName(QStringLiteral("xqRenameDataAction"));
+    m_RenameDataAction->setShortcut(QKeySequence(Qt::Key_F2));
+    m_RenameDataAction->setEnabled(false);
+    m_DataHierarchyView->addAction(m_RenameDataAction);
+
     m_ToggleDataVisibilityAction =
         new QAction(QStringLiteral("Toggle Visibility"), m_DataHierarchyView);
     m_ToggleDataVisibilityAction->setObjectName(
@@ -350,6 +360,20 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     m_ToggleDataVisibilityAction->setShortcut(Qt::Key_Space);
     m_ToggleDataVisibilityAction->setEnabled(false);
     m_DataHierarchyView->addAction(m_ToggleDataVisibilityAction);
+
+    m_RemoveSelectedDataAction =
+        new QAction(QIcon::fromTheme(QStringLiteral("edit-delete")),
+                    QStringLiteral("Remove"),
+                    m_DataHierarchyView);
+    m_RemoveSelectedDataAction->setObjectName(
+        QStringLiteral("xqRemoveSelectedDataAction"));
+    m_RemoveSelectedDataAction->setShortcut(QKeySequence::Delete);
+    m_RemoveSelectedDataAction->setEnabled(false);
+    m_DataHierarchyView->addAction(m_RemoveSelectedDataAction);
+
+    auto* dataManagerSeparator = new QAction(m_DataHierarchyView);
+    dataManagerSeparator->setSeparator(true);
+    m_DataHierarchyView->addAction(dataManagerSeparator);
 
     m_ShowOnlySelectedDataAction =
         new QAction(QStringLiteral("Show Only Selected"), m_DataHierarchyView);
@@ -369,6 +393,23 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     makeAllInvisibleAction->setObjectName(
         QStringLiteral("xqMakeAllDataInvisibleAction"));
     m_DataHierarchyView->addAction(makeAllInvisibleAction);
+
+    auto* reinitializeSeparator = new QAction(m_DataHierarchyView);
+    reinitializeSeparator->setSeparator(true);
+    m_DataHierarchyView->addAction(reinitializeSeparator);
+
+    m_ReinitializeSelectedDataAction =
+        new QAction(QStringLiteral("Reinitialize Node"), m_DataHierarchyView);
+    m_ReinitializeSelectedDataAction->setObjectName(
+        QStringLiteral("xqReinitializeSelectedDataAction"));
+    m_ReinitializeSelectedDataAction->setEnabled(false);
+    m_DataHierarchyView->addAction(m_ReinitializeSelectedDataAction);
+
+    m_GlobalReinitializeDataAction =
+        new QAction(QStringLiteral("Global Reinit"), m_DataHierarchyView);
+    m_GlobalReinitializeDataAction->setObjectName(
+        QStringLiteral("xqGlobalReinitializeDataAction"));
+    m_DataHierarchyView->addAction(m_GlobalReinitializeDataAction);
 
     auto* representationSeparator = new QAction(m_DataHierarchyView);
     representationSeparator->setSeparator(true);
@@ -452,6 +493,12 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             [this](int value) {
                 ApplySelectedDataOpacity(value);
             });
+    connect(m_RenameDataAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                RenameSelectedData();
+            });
     connect(m_ToggleDataVisibilityAction,
             &QAction::triggered,
             this,
@@ -475,6 +522,24 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this]() {
                 SetAllDataVisibility(false);
+            });
+    connect(m_RemoveSelectedDataAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                RemoveSelectedData();
+            });
+    connect(m_ReinitializeSelectedDataAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                ReinitializeSelectedData();
+            });
+    connect(m_GlobalReinitializeDataAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                GlobalReinitializeData();
             });
     connect(m_SurfaceRepresentationAction,
             &QAction::triggered,
@@ -1375,6 +1440,65 @@ void MainWindow::RemoveSelectedData()
     if (!errorMessage.trimmed().isEmpty())
         m_Context.PostDiagnostic(errorMessage);
 
+    if (auto* renderingManager = mitk::RenderingManager::GetInstance())
+        renderingManager->RequestUpdateAll();
+
+    UpdateDataActions();
+}
+
+void MainWindow::RenameSelectedData()
+{
+    const QString selectedCatalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    const auto* entry = m_Context.DataCatalog()->FindById(selectedCatalogEntryId);
+    if (!entry)
+    {
+        m_Context.PostDiagnostic(QStringLiteral("No data selected."));
+        UpdateDataActions();
+        return;
+    }
+
+    bool accepted = false;
+    const QString displayName =
+        QInputDialog::getText(this,
+                              QStringLiteral("Rename Node"),
+                              QStringLiteral("New name:"),
+                              QLineEdit::Normal,
+                              entry->DisplayName,
+                              &accepted)
+            .trimmed();
+    if (!accepted)
+        return;
+
+    if (displayName.isEmpty())
+    {
+        m_Context.PostDiagnostic(
+            QStringLiteral("Data display name is required."));
+        return;
+    }
+
+    QString errorMessage;
+    if (!m_Context.DataManagement()->RenameEntry(selectedCatalogEntryId,
+                                                 displayName,
+                                                 &errorMessage))
+    {
+        m_Context.PostDiagnostic(errorMessage);
+        UpdateDataActions();
+        return;
+    }
+
+    auto node = m_Context.DataNodes()->FindNode(selectedCatalogEntryId);
+    if (node.IsNotNull())
+    {
+        node->SetName(displayName.toStdString());
+        if (auto* renderingManager = mitk::RenderingManager::GetInstance())
+            renderingManager->RequestUpdateAll();
+    }
+
+    if (!errorMessage.trimmed().isEmpty())
+        m_Context.PostDiagnostic(errorMessage);
+    UpdateDataWorkflowPage();
+    UpdateDataManagerSelection();
     UpdateDataActions();
 }
 
@@ -1419,6 +1543,12 @@ void MainWindow::UpdateDataActions()
 
     if (m_RemoveDataAction)
         m_RemoveDataAction->setEnabled(hasSelection);
+    if (m_RenameDataAction)
+        m_RenameDataAction->setEnabled(hasSelection);
+    if (m_RemoveSelectedDataAction)
+        m_RemoveSelectedDataAction->setEnabled(hasSelection);
+    if (m_ReinitializeSelectedDataAction)
+        m_ReinitializeSelectedDataAction->setEnabled(hasSelectedNode);
     if (m_ToggleDataVisibilityAction)
         m_ToggleDataVisibilityAction->setEnabled(hasSelectedNode);
     if (m_ShowOnlySelectedDataAction)
@@ -1674,6 +1804,31 @@ void MainWindow::RefreshDataManagerAfterVisibilityChange()
     UpdateDataManagerSelection();
     if (auto* renderingManager = mitk::RenderingManager::GetInstance())
         renderingManager->RequestUpdateAll();
+}
+
+void MainWindow::ReinitializeSelectedData()
+{
+    const QString catalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+    if (node.IsNull() || !node->GetData())
+        return;
+
+    if (auto* renderingManager = mitk::RenderingManager::GetInstance())
+    {
+        renderingManager->InitializeViews(
+            node->GetData()->GetTimeGeometry());
+    }
+}
+
+void MainWindow::GlobalReinitializeData()
+{
+    if (m_Context.DataStorage().IsNull())
+        return;
+
+    if (auto* renderingManager = mitk::RenderingManager::GetInstance())
+        renderingManager->InitializeViewsByBoundingObjects(
+            m_Context.DataStorage());
 }
 
 void MainWindow::SetSelectedDataRepresentation(int representation,

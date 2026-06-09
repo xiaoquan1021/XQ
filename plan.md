@@ -4977,3 +4977,34 @@ The next monolith slice is grounded in these comparable systems:
    - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
    - targeted Data Manager/data tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Workbench Data Manager Core Menu Actions
+
+1. Continue restoring the original Data Explorer context menu in the monolith
+   Data Manager tree.
+   - Add stable actions for `Rename...`, `Remove`, `Reinitialize Node`, and
+     `Global Reinit`.
+   - Restore the legacy shortcuts for rename (`F2`) and remove (`Delete`).
+   - Keep selection-dependent actions disabled until a valid data entry is
+     selected; keep reinitialize disabled until the selected entry has a bound
+     `mitk::DataNode`.
+2. Preserve monolith service ownership for data mutation.
+   - The Data Manager remove context action uses `DataManagementService`
+     instead of directly deleting catalog/hierarchy state.
+   - `DataManagementService` now removes the bound MITK node from the
+     application `DataStorage` after a successful delete, so toolbar, context
+     menu, and future service callers share the same cleanup semantics.
+3. Restore first-pass legacy MITK view commands.
+   - `Reinitialize Node` calls MITK rendering initialization for the selected
+     node geometry.
+   - `Global Reinit` calls MITK bounding-object initialization for the current
+     application `DataStorage`.
+4. Add regression coverage.
+   - `test_monolith_main_window_data_panel` verifies menu/action discovery,
+     shortcuts, enabled state, and context-menu remove behavior.
+   - `test_monolith_data_management_service` verifies service-level
+     `DataStorage` cleanup and failed-remove preservation.
+5. Verification gate:
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted Data Manager/DataManagement tests.
+   - full XQ and Externals test gates before commit.

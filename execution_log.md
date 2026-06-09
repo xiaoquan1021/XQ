@@ -434,6 +434,62 @@
   `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Workbench Data Manager Core Menu Actions
+
+- Continued from the fresh UI clone:
+  - Active worktree:
+    `C:\Users\OCEAN\Desktop\XIAOQUAN\XQ-fresh-ui`.
+  - Branch: `feature/windows-monolith-foundation`.
+  - First committed/pushed the previously verified representation-action
+    slice as `bcf8df4`.
+- Compared the monolith Data Manager against the original
+  `xq_DataExplorerView` context menu.
+  - Next UI fidelity gap chosen: restore `Rename...`, `Remove`,
+    `Reinitialize Node`, and `Global Reinit` without reintroducing the
+    BlueBerry Data Manager plugin.
+- RED test 1:
+  - Extended `test_monolith_main_window_data_panel`.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_main_window_data_panel"`
+    failed as expected with:
+    `Data Manager should restore rename, remove, and reinit context actions`.
+- Implemented the UI slice:
+  - Added stable Data Manager context actions:
+    `xqRenameDataAction`, `xqRemoveSelectedDataAction`,
+    `xqReinitializeSelectedDataAction`, and
+    `xqGlobalReinitializeDataAction`.
+  - Restored Workbench shortcuts: `F2` for rename and `Delete` for remove.
+  - Wired remove through `DataManagementService`.
+  - Wired selected/global reinit to MITK rendering initialization APIs.
+- RED test 2:
+  - Extended `test_monolith_data_management_service` to verify a successful
+    service-level remove also removes the bound MITK node from
+    `ApplicationContext::DataStorage()`.
+  - The test failed as expected with:
+    `remove should clear the bound node from DataStorage`.
+- Implemented the service fix:
+  - `DataManagementService` now optionally owns the application
+    `mitk::DataStorage` pointer and removes the previously bound node from
+    storage after a successful catalog/hierarchy/registry delete.
+  - `ApplicationContext` passes its `DataStorage` into the management
+    service.
+  - Removed duplicate DataStorage deletion responsibility from
+    `MainWindow::RemoveSelectedData()`.
+- Targeted green verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(data_management_service|main_window_data_panel)"`
+    passed: 2/2.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Runtime smoke passed: `build\windows-msvc-release\bin\XQ.exe` stayed
+    running for 10 seconds and was then closed.
+
 ## Previous Run: Threshold Contour Segmentation Infrastructure Action
 
 - Continued from clean pushed `feature/windows-monolith-foundation` state after

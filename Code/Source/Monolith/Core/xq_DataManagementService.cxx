@@ -28,6 +28,7 @@ DataManagementService::DataManagementService(
     DataHierarchyService& dataHierarchy,
     DataSelectionService& dataSelection,
     DataNodeRegistryService& dataNodes,
+    mitk::DataStorage::Pointer dataStorage,
     TaskRunner& taskRunner,
     QObject* parent)
     : QObject(parent)
@@ -35,6 +36,7 @@ DataManagementService::DataManagementService(
     , m_DataHierarchy(dataHierarchy)
     , m_DataSelection(dataSelection)
     , m_DataNodes(&dataNodes)
+    , m_DataStorage(dataStorage)
     , m_TaskRunner(taskRunner)
 {
 }
@@ -91,6 +93,9 @@ bool DataManagementService::RemoveEntry(const QString& dataCatalogEntryId,
     const QString normalizedEntryId = dataCatalogEntryId.trimmed();
     const bool removedEntryWasSelected =
         m_DataSelection.SelectedCatalogEntryId() == normalizedEntryId;
+    mitk::DataNode::Pointer boundNode;
+    if (m_DataNodes)
+        boundNode = m_DataNodes->FindNode(normalizedEntryId);
 
     QString taskMessage;
     const bool succeeded = m_TaskRunner.RunBlocking(
@@ -133,6 +138,9 @@ bool DataManagementService::RemoveEntry(const QString& dataCatalogEntryId,
 
     if (succeeded && removedEntryWasSelected)
         m_DataSelection.Clear();
+
+    if (succeeded && boundNode.IsNotNull() && m_DataStorage.IsNotNull())
+        m_DataStorage->Remove(boundNode);
 
     SetError(errorMessage, taskMessage);
     return succeeded;

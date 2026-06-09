@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QString>
 
+#include <mitkDataStorage.h>
+
 namespace xq::core
 {
 
@@ -27,6 +29,7 @@ public:
                           DataHierarchyService& dataHierarchy,
                           DataSelectionService& dataSelection,
                           DataNodeRegistryService& dataNodes,
+                          mitk::DataStorage::Pointer dataStorage,
                           TaskRunner& taskRunner,
                           QObject* parent = nullptr);
 
@@ -43,6 +46,7 @@ private:
     DataHierarchyService& m_DataHierarchy;
     DataSelectionService& m_DataSelection;
     DataNodeRegistryService* m_DataNodes = nullptr;
+    mitk::DataStorage::Pointer m_DataStorage;
     TaskRunner& m_TaskRunner;
 };
 

@@ -38,6 +38,7 @@ ApplicationContext::ApplicationContext(mitk::DataStorage::Pointer dataStorage,
                                                         *m_DataHierarchyService,
                                                         *m_DataSelectionService,
                                                         *m_DataNodeRegistryService,
+                                                        m_DataStorage,
                                                         *m_TaskRunner,
                                                         this))
     , m_DataImportService(new DataImportService(*m_DataCatalogService,
