@@ -4197,6 +4197,47 @@
   - Runtime smoke started `build\windows-msvc-release\bin\XQ.exe`, kept it
     alive for 10 seconds, and closed it successfully.
 
+## Current Run Update: Python API Workbench Panel Restore
+
+- Continued UI fidelity after the pushed Data page commit
+  `c95ea96`.
+- Source comparison:
+  - The Python API module already has a clear C++ service contract: runtime
+    availability, node inspection, snippet export, and project save/open
+    surfaces.
+  - The monolith Python API page still used only the generic operation selector
+    and did not make the runtime-unavailable guard visible in the page itself.
+- Red test observed:
+  - Extended `test_monolith_python_api_operation_page` first.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_python_api_operation_page"`
+    failed on `Python API page should restore a runtime status panel`.
+- Implemented the Python API page restoration:
+  - Added `Runtime Status`, `Snippet Catalog`, and `Project Script Runner`
+    groups.
+  - Kept the generic operation selector hidden while preserving Core operation
+    state.
+  - Added `Check Runtime`, `Export Snippets`, and `Run Project Script` command
+    buttons.
+  - Routed panel buttons through `WorkflowOperationService` and the existing
+    `WorkflowActionService` dynamic infrastructure handler.
+  - Kept the Windows v1 script runtime notice explicit and honest.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_python_api_operation_page"`
+    passed: 1/1.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(python_api_operation_page|python_api_workflow_action_handler|application_import_wiring|domain_workflow_action_handlers|workflow_operation_service|workflow_primary_action_page|workflow_context_status_page)"`
+    passed: 7/7.
+- Final verification for this slice:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 75/75.
+  - `git diff --check` passed in both `XQ-fresh-ui` and `Externals`.
+  - Runtime smoke started `build\windows-msvc-release\bin\XQ.exe`, kept it
+    alive for 10 seconds, and closed it successfully.
+
 ## Current Run Update: Workbench Tools Dock Readability Correction
 
 - Runtime screenshot QA after restoring workflow panels showed a real UI

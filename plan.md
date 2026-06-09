@@ -5327,3 +5327,33 @@ The next monolith slice is grounded in these comparable systems:
 5. Verification gate:
    - targeted Data/Project/Workbench UI tests.
    - full XQ and Externals test gates before commit.
+
+## Completed Phase: Python API Workbench Panel Restore
+
+1. Restore the Python API workflow page as explicit Workbench panels instead
+   of a generic operation selector.
+   - Add `Runtime Status`, `Snippet Catalog`, and `Project Script Runner`
+     groups.
+   - Keep the generic operation selector hidden for Core operation state and
+     tests.
+   - Add concrete command buttons: `Check Runtime`, `Export Snippets`, and
+     `Run Project Script`.
+2. Keep runtime scope honest.
+   - Do not claim Python scripting is available in Windows v1.
+   - Show the unavailable runtime notice directly in the script panel.
+   - Keep the existing infrastructure guard that fails project-script runs
+     until pybind11 and a matching Python 3.11 ABI are linked.
+3. Preserve operation behavior.
+   - Panel buttons select the corresponding operation in
+     `WorkflowOperationService`.
+   - Execution still runs through `WorkflowActionService` and the dynamic
+     Python API infrastructure handler.
+   - Snippet export remains deterministic and available without a Python
+     runtime.
+4. Add regression coverage.
+   - `test_monolith_python_api_operation_page` verifies hidden generic
+     selector, restored groups, runtime notice, command buttons, parameters,
+     and the existing unavailable script diagnostic.
+5. Verification gate:
+   - targeted Python API/workflow/action tests.
+   - full XQ and Externals test gates before commit.

@@ -7,6 +7,7 @@
 
 #include <QApplication>
 #include <QComboBox>
+#include <QGroupBox>
 #include <QLabel>
 #include <QPushButton>
 #include <QSpinBox>
@@ -97,6 +98,82 @@ int main(int argc, char** argv)
                    selector->itemText(1) ==
                        QStringLiteral("Project Script Runner"),
                "Python API selector should preserve operation order"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!selector->isVisible(),
+               "Python API page should keep the generic operation selector hidden behind Workbench panels"))
+    {
+        delete context;
+        return 1;
+    }
+
+    auto* runtimeGroup = window.findChild<QGroupBox*>(
+        QStringLiteral("xqPythonApiRuntimeGroup"));
+    auto* snippetGroup = window.findChild<QGroupBox*>(
+        QStringLiteral("xqPythonApiSnippetGroup"));
+    auto* scriptGroup = window.findChild<QGroupBox*>(
+        QStringLiteral("xqPythonApiScriptGroup"));
+    auto* runtimeStatus = window.findChild<QLabel*>(
+        QStringLiteral("xqPythonApiRuntimeStatusLabel"));
+    auto* scriptNotice = window.findChild<QLabel*>(
+        QStringLiteral("xqPythonApiScriptUnavailableNotice"));
+    auto* consoleButton = window.findChild<QPushButton*>(
+        QStringLiteral("xqPythonApiConsoleButton"));
+    auto* snippetButton = window.findChild<QPushButton*>(
+        QStringLiteral("xqPythonApiSnippetButton"));
+    auto* scriptButton = window.findChild<QPushButton*>(
+        QStringLiteral("xqPythonApiScriptButton"));
+
+    if (Expect(runtimeGroup != nullptr &&
+                   runtimeGroup->title() == QStringLiteral("Runtime Status"),
+               "Python API page should restore a runtime status panel"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(snippetGroup != nullptr &&
+                   snippetGroup->title() == QStringLiteral("Snippet Catalog"),
+               "Python API page should restore a snippet catalog panel"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(scriptGroup != nullptr &&
+                   scriptGroup->title() ==
+                       QStringLiteral("Project Script Runner"),
+               "Python API page should restore a project script panel"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(runtimeStatus != nullptr &&
+                   runtimeStatus->text().contains(
+                       QStringLiteral("Python API unavailable")),
+               "Python API runtime panel should state runtime availability honestly"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(scriptNotice != nullptr &&
+                   scriptNotice->text().contains(
+                       QStringLiteral("runtime is unavailable")),
+               "Python API script panel should show the v1 runtime guard"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(consoleButton != nullptr &&
+                   consoleButton->text() ==
+                       QStringLiteral("Check Runtime") &&
+                   snippetButton != nullptr &&
+                   snippetButton->text() ==
+                       QStringLiteral("Export Snippets") &&
+                   scriptButton != nullptr &&
+                   scriptButton->text() ==
+                       QStringLiteral("Run Project Script"),
+               "Python API page should expose concrete Workbench command buttons"))
     {
         delete context;
         return 1;

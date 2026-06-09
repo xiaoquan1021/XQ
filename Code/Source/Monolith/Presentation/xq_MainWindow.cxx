@@ -2905,6 +2905,122 @@ QWidget* MainWindow::CreateWorkflowPage(const QString& id,
                     connectFlowButton(reviewResultsButton,
                                       QStringLiteral("review-flow-results"));
                 }
+                else if (id == QStringLiteral("python-api"))
+                {
+                    operationSelector->setVisible(false);
+                    layout->addWidget(operationSelector);
+
+                    auto* runtimeGroup =
+                        new QGroupBox(QStringLiteral("Runtime Status"),
+                                      page);
+                    runtimeGroup->setObjectName(
+                        QStringLiteral("xqPythonApiRuntimeGroup"));
+                    auto* runtimeLayout = new QVBoxLayout(runtimeGroup);
+                    runtimeLayout->setContentsMargins(8, 8, 8, 8);
+                    runtimeLayout->setSpacing(6);
+                    auto* runtimeStatus =
+                        new QLabel(QStringLiteral(
+                            "Python API unavailable in this build. The C++ inspection service remains available for tests and internal callers."),
+                                   runtimeGroup);
+                    runtimeStatus->setObjectName(QStringLiteral(
+                        "xqPythonApiRuntimeStatusLabel"));
+                    runtimeStatus->setWordWrap(true);
+                    auto* consoleButton =
+                        new QPushButton(QStringLiteral("Check Runtime"),
+                                        runtimeGroup);
+                    consoleButton->setObjectName(QStringLiteral(
+                        "xqPythonApiConsoleButton"));
+                    runtimeLayout->addWidget(runtimeStatus);
+                    runtimeLayout->addWidget(consoleButton);
+                    layout->addWidget(runtimeGroup);
+
+                    auto* snippetGroup =
+                        new QGroupBox(QStringLiteral("Snippet Catalog"),
+                                      page);
+                    snippetGroup->setObjectName(
+                        QStringLiteral("xqPythonApiSnippetGroup"));
+                    auto* snippetLayout = new QVBoxLayout(snippetGroup);
+                    snippetLayout->setContentsMargins(8, 8, 8, 8);
+                    snippetLayout->setSpacing(6);
+                    auto* snippetSummary =
+                        new QLabel(QStringLiteral(
+                            "Export deterministic examples for xq.version(), xq.list_nodes(), xq.find_node(name), and related metadata inspection calls."),
+                                   snippetGroup);
+                    snippetSummary->setObjectName(QStringLiteral(
+                        "xqPythonApiSnippetSummaryLabel"));
+                    snippetSummary->setWordWrap(true);
+                    auto* snippetButton =
+                        new QPushButton(QStringLiteral("Export Snippets"),
+                                        snippetGroup);
+                    snippetButton->setObjectName(QStringLiteral(
+                        "xqPythonApiSnippetButton"));
+                    snippetLayout->addWidget(snippetSummary);
+                    snippetLayout->addWidget(snippetButton);
+                    layout->addWidget(snippetGroup);
+
+                    auto* scriptGroup =
+                        new QGroupBox(QStringLiteral("Project Script Runner"),
+                                      page);
+                    scriptGroup->setObjectName(
+                        QStringLiteral("xqPythonApiScriptGroup"));
+                    auto* scriptLayout = new QVBoxLayout(scriptGroup);
+                    scriptLayout->setContentsMargins(8, 8, 8, 8);
+                    scriptLayout->setSpacing(6);
+                    auto* scriptNotice =
+                        new QLabel(QStringLiteral(
+                            "Python project script runtime is unavailable in Windows v1 until pybind11 and a matching Python 3.11 ABI are linked."),
+                                   scriptGroup);
+                    scriptNotice->setObjectName(QStringLiteral(
+                        "xqPythonApiScriptUnavailableNotice"));
+                    scriptNotice->setWordWrap(true);
+                    auto* scriptButton =
+                        new QPushButton(QStringLiteral("Run Project Script"),
+                                        scriptGroup);
+                    scriptButton->setObjectName(QStringLiteral(
+                        "xqPythonApiScriptButton"));
+                    scriptLayout->addWidget(scriptNotice);
+                    scriptLayout->addWidget(scriptButton);
+                    layout->addWidget(scriptGroup);
+
+                    auto selectPythonOperation =
+                        [this](const QString& operationId) {
+                            QString message;
+                            if (!m_Context.WorkflowOperations()->SelectOperation(
+                                    QStringLiteral("python-api"),
+                                    operationId,
+                                    &message))
+                            {
+                                m_Context.PostDiagnostic(message);
+                            }
+                            UpdateWorkflowOperationControls();
+                        };
+                    connect(consoleButton,
+                            &QPushButton::clicked,
+                            this,
+                            [this, selectPythonOperation]() {
+                                selectPythonOperation(
+                                    QStringLiteral("open-python-console"));
+                                RunActiveWorkflowAction();
+                            });
+                    connect(snippetButton,
+                            &QPushButton::clicked,
+                            this,
+                            [this, selectPythonOperation]() {
+                                selectPythonOperation(
+                                    QStringLiteral("export-api-snippet"));
+                                RunActiveWorkflowAction();
+                            });
+                    connect(scriptButton,
+                            &QPushButton::clicked,
+                            this,
+                            [this, selectPythonOperation]() {
+                                selectPythonOperation(
+                                    QStringLiteral("run-project-script"));
+                                RunActiveWorkflowAction();
+                            });
+
+                    layout->addWidget(parameterPanel);
+                }
                 else if (id == QStringLiteral("rom-simulation"))
                 {
                     operationSelector->setVisible(false);
