@@ -381,11 +381,11 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(!meshingContext->WorkflowActions()
                     ->RunActiveWorkflowAction(&message),
-               "configured boundary layers should use unsupported-operation guard"))
+               "configured boundary layers should use infrastructure validation"))
         return 1;
     if (Expect(message == QStringLiteral(
-                              "Boundary Layers is not wired to a native Meshing runtime yet."),
-               "configured boundary layers should report unsupported operation"))
+                              "Active model node is required for meshing."),
+               "configured boundary layers should require a model node"))
         return 1;
 
     auto flowContext =

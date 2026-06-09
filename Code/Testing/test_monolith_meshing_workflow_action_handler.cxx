@@ -346,34 +346,119 @@ int main(int argc, char** argv)
             xq::core::ApplicationContext::CreateDefault());
         if (Expect(PrepareMeshingWorkflow(*context,
                                           QStringLiteral("boundary-layers")),
-                   "unsupported boundary layers fixture should prepare workflow"))
+                   "boundary layers fixture should prepare workflow"))
+        {
+            return 1;
+        }
+        QString message;
+        if (Expect(context->WorkflowOperations()->SetParameterValue(
+                       QStringLiteral("meshing"),
+                       QStringLiteral("boundary-layers"),
+                       QStringLiteral("layer-count"),
+                       3,
+                       &message),
+                   "boundary layers fixture should set layer count"))
+        {
+            return 1;
+        }
+        if (Expect(context->WorkflowOperations()->SetParameterValue(
+                       QStringLiteral("meshing"),
+                       QStringLiteral("boundary-layers"),
+                       QStringLiteral("growth-rate"),
+                       1.35,
+                       &message),
+                   "boundary layers fixture should set growth rate"))
         {
             return 1;
         }
 
-        QString message;
+        auto modelNode = MakeModelNode("Main Model");
+        context->DataStorage()->Add(modelNode);
+        context->DataNodes()->BindNode(QStringLiteral("model-001"),
+                                       modelNode);
+
+        FakeRenderRefreshService refresh;
         if (Expect(
                 xq::infrastructure::
                     RegisterDynamicMeshingWorkflowActionHandler(
                         *context,
-                        nullptr,
+                        &refresh,
                         &message),
-                "unsupported boundary layers fixture should install handler"))
+                "boundary layers fixture should install handler"))
         {
             return 1;
         }
 
-        if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
                        &message),
-                   "unsupported boundary layers should fail"))
+                   "boundary layers should create fallback mesh"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Registered mesh result catalog entry."),
+                   "boundary layers should report catalog commit success"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        const auto* entry = context->DataCatalog()->FindById(
+            QStringLiteral("model-001-boundary-layers"));
+        if (Expect(entry != nullptr &&
+                       entry->WorkflowRole ==
+                           xq::core::DataWorkflowRole::Mesh &&
+                       entry->SourcePath ==
+                           QStringLiteral(
+                               "xq://generated/mesh/model-001-boundary-layers"),
+                   "boundary layers should register generated catalog entry"))
         {
             return 1;
         }
-        if (Expect(message == QStringLiteral(
-                                  "Boundary Layers is not wired to a native Meshing runtime yet."),
-                   "unsupported boundary layers diagnostic should name operation"))
+        auto resultNode = context->DataNodes()->FindNode(
+            QStringLiteral("model-001-boundary-layers"));
+        auto* grid = resultNode.IsNotNull()
+                         ? dynamic_cast<xq_MitkGrid*>(resultNode->GetData())
+                         : nullptr;
+        auto* mesh = grid ? grid->GetMesh(0) : nullptr;
+        if (Expect(grid != nullptr &&
+                       mesh != nullptr &&
+                       mesh->GetVolumeMesh() != nullptr &&
+                       mesh->GetVolumeMesh()->GetNumberOfCells() > 0,
+                   "boundary layers should bind generated mesh"))
         {
-            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        int layerCount = 0;
+        double growthRate = 0.0;
+        bool fallback = false;
+        if (Expect(resultNode->GetIntProperty("xq.mesh.bl.layers",
+                                              layerCount) &&
+                       layerCount == 3 &&
+                       resultNode->GetDoubleProperty(
+                           "xq.mesh.bl.growthRate",
+                           growthRate) &&
+                       growthRate == 1.35 &&
+                       resultNode->GetBoolProperty(
+                           "xq.mesh.backend.fallback",
+                           fallback) &&
+                       fallback,
+                   "boundary layers should record fallback boundary-layer metadata"))
+        {
+            return 1;
+        }
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("model-001-boundary-layers"),
+                   "boundary layers should select generated mesh"))
+        {
+            return 1;
+        }
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "boundary layers should refresh rendering after success"))
+        {
             return 1;
         }
     }

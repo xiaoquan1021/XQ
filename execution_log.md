@@ -3150,6 +3150,60 @@
 - Promoted 3D Region Growing Infrastructure Action to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Boundary Layers Meshing Infrastructure Action
+
+- Completed autonomous research refresh:
+  - Re-scanned remaining native workflow gaps after 3D Region Growing.
+  - `boundary-layers` is a good next slice because `xq_MeshPipelineService`
+    already accepts boundary-layer request fields and records explicit fallback
+    metadata on generated mesh nodes.
+  - Chosen next slice: route the Meshing `boundary-layers` operation through
+    the existing native mesh pipeline fallback instead of the unsupported guard.
+- Added next executable phase to `plan.md`: Boundary Layers Meshing
+  Infrastructure Action.
+- Started the next unattended loop iteration:
+  - Adding a failing Meshing `boundary-layers` Infrastructure action test
+    first.
+- Red test observed:
+  - Extended `test_monolith_meshing_workflow_action_handler` so
+    `boundary-layers` uses a real model node and expects a generated mesh with
+    boundary-layer metadata.
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_meshing_workflow_action_handler"`
+    failed because `boundary-layers` still returned the unsupported-operation
+    diagnostic.
+- Implemented Boundary Layers Meshing Infrastructure action:
+  - The dynamic Meshing handler now routes `boundary-layers` through
+    `xq_MeshPipelineService::CreateVolumeMesh`.
+  - The handler maps `layer-count` and `growth-rate` into
+    `xq_MeshGenerationRequest` boundary-layer fields.
+  - The existing mesh pipeline records explicit VTK fallback metadata and
+    boundary-layer parameters on the generated mesh node.
+  - `generate-surface-mesh` remains a deterministic unsupported operation.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_meshing_workflow_action_handler"`
+    passed: 1/1.
+  - Related application/page tests first failed because they still expected the
+    old unsupported diagnostic for `boundary-layers`.
+  - Updated those tests to expect the new Infrastructure missing-model
+    validation when no real MITK model node is bound.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(application_import_wiring|modeling_meshing_operation_pages|meshing_workflow_action_handler)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Boundary Layers Meshing Infrastructure Action to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Update: Path Unsupported Operation Guard
 
 - Completed autonomous research refresh:

@@ -22,6 +22,7 @@ namespace
 
 constexpr const char* kMeshingWorkflowId = "meshing";
 constexpr const char* kGenerateVolumeMeshOperationId = "generate-volume-mesh";
+constexpr const char* kBoundaryLayersOperationId = "boundary-layers";
 constexpr const char* kMeshesFolderId = "meshes";
 constexpr const char* kMeshesFolderTitle = "Meshes";
 
@@ -228,13 +229,32 @@ bool RunGenerateVolumeMesh(xq::core::ApplicationContext& context,
         QStringLiteral("%1_mesh")
             .arg(QString::fromStdString(modelNode->GetName()).trimmed())
             .toStdString();
-    request.globalEdgeSize =
-        std::max(1.0e-6,
-                 parameters.value(QStringLiteral("element-size"), 1.0)
-                     .toDouble());
-    const int optimizationSteps =
-        parameters.value(QStringLiteral("optimization-steps"), 1).toInt();
-    request.optimize = optimizationSteps > 0;
+    if (operationId == QString::fromLatin1(kBoundaryLayersOperationId))
+    {
+        request.globalEdgeSize = 1.0;
+        request.boundaryLayerLayers =
+            std::max(1,
+                     parameters.value(QStringLiteral("layer-count"), 1)
+                         .toInt());
+        request.boundaryLayerGrowthRate =
+            std::max(1.0,
+                     parameters.value(QStringLiteral("growth-rate"), 1.2)
+                         .toDouble());
+        request.boundaryLayerFirstHeight =
+            std::max(1.0e-6,
+                     request.globalEdgeSize /
+                         static_cast<double>(request.boundaryLayerLayers + 1));
+    }
+    else
+    {
+        request.globalEdgeSize =
+            std::max(1.0e-6,
+                     parameters.value(QStringLiteral("element-size"), 1.0)
+                         .toDouble());
+        const int optimizationSteps =
+            parameters.value(QStringLiteral("optimization-steps"), 1).toInt();
+        request.optimize = optimizationSteps > 0;
+    }
 
     const auto result =
         xq_MeshPipelineService::CreateVolumeMesh(
@@ -281,7 +301,8 @@ bool RegisterDynamicMeshingWorkflowActionHandler(
             }
 
             if (operationId !=
-                QString::fromLatin1(kGenerateVolumeMeshOperationId))
+                    QString::fromLatin1(kGenerateVolumeMeshOperationId) &&
+                operationId != QString::fromLatin1(kBoundaryLayersOperationId))
             {
                 return RunUnsupportedMeshingOperation(operations,
                                                       snapshot,

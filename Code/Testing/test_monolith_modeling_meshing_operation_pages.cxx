@@ -252,8 +252,8 @@ int main(int argc, char** argv)
     meshingButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Meshing failed: Boundary Layers is not wired to a native Meshing runtime yet.")),
-               "Meshing action should report unsupported operation"))
+                   "Run Meshing failed: Active model node is required for meshing.")),
+               "Meshing action should report infrastructure validation"))
     {
         delete context;
         return 1;
