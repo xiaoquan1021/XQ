@@ -9,11 +9,14 @@
 #include "Core/xq_WorkflowActionService.h"
 #include "Core/xq_WorkflowOperationService.h"
 
+#include <xq_CenterlineInteractor.h>
 #include <xq_PathPipeline.h>
 #include <xq_PipelineDataUtils.h>
 #include <xq_VesselCenterline.h>
 
 #include <mitkImage.h>
+
+#include <usModuleRegistry.h>
 
 #include <QVariantList>
 #include <QVariantMap>
@@ -28,6 +31,7 @@ namespace
 
 constexpr const char* kPathWorkflowId = "path";
 constexpr const char* kCreateCenterlineOperationId = "create-centerline";
+constexpr const char* kEditControlPointsOperationId = "edit-control-points";
 constexpr const char* kSmoothPathOperationId = "smooth-path";
 constexpr const char* kPathsFolderId = "paths";
 constexpr const char* kPathsFolderTitle = "Paths";
@@ -461,6 +465,58 @@ bool RunSmoothPath(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool RunEditControlPoints(xq::core::ApplicationContext& context,
+                          xq::core::RenderRefreshService* renderRefresh,
+                          const xq::core::WorkflowContextSnapshot& snapshot,
+                          QString* message)
+{
+    const auto sourceNode = ResolveSourceNode(context, snapshot);
+    auto* path = sourceNode.IsNotNull()
+                     ? dynamic_cast<xq_VesselCenterline*>(sourceNode->GetData())
+                     : nullptr;
+    auto* segment = path ? path->GetSegment(0) : nullptr;
+    if (sourceNode.IsNull() ||
+        !xq::pipeline::HasStage(sourceNode.GetPointer(),
+                                xq::pipeline::Stage::Path) ||
+        !path ||
+        !segment)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active path node is required for control point editing."));
+        return false;
+    }
+
+    if (sourceNode->GetDataInteractor().IsNull())
+    {
+        auto interactor = xq_CenterlineInteractor::New();
+        auto* module = us::ModuleRegistry::GetModule("xqModulePath");
+        interactor->LoadStateMachine("xq_PathInteraction.xml", module);
+        interactor->SetEventConfig("xq_PathConfig.xml", module);
+        interactor->SetDataNode(sourceNode);
+    }
+
+    sourceNode->SetBoolProperty("xq.path.editable", true);
+    sourceNode->SetBoolProperty("path.show.control.points", true);
+    sourceNode->SetBoolProperty("xq.path.editing.enabled", true);
+    sourceNode->SetStringProperty("xq.path.operation",
+                                  "edit-control-points");
+    sourceNode->SetStringProperty(
+        "xq.path.capability.diagnostic",
+        "Edit Control Points enabled the Path interactor on the selected "
+        "node. Anchor insert, move, and delete are handled by interaction "
+        "events; no generated data entry was created.");
+
+    QString selectionMessage;
+    context.DataSelection()->SelectCatalogEntry(snapshot.SelectedCatalogEntryId,
+                                                &selectionMessage);
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    SetMessage(message, QStringLiteral("Path control point editing enabled."));
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicPathWorkflowActionHandler(
@@ -485,12 +541,23 @@ bool RegisterDynamicPathWorkflowActionHandler(
 
             if (operationId !=
                     QString::fromLatin1(kCreateCenterlineOperationId) &&
+                operationId !=
+                    QString::fromLatin1(kEditControlPointsOperationId) &&
                 operationId != QString::fromLatin1(kSmoothPathOperationId))
             {
                 return RunUnsupportedPathOperation(operations,
                                                    snapshot,
                                                    operationId,
                                                    taskMessage);
+            }
+
+            if (operationId ==
+                QString::fromLatin1(kEditControlPointsOperationId))
+            {
+                return RunEditControlPoints(context,
+                                            renderRefresh,
+                                            snapshot,
+                                            taskMessage);
             }
 
             if (operationId == QString::fromLatin1(kSmoothPathOperationId))

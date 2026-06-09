@@ -359,10 +359,86 @@ int main(int argc, char** argv)
     {
         std::unique_ptr<xq::core::ApplicationContext> context(
             xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PreparePathWorkflow(*context,
+                                       QStringLiteral("edit-control-points")),
+                   "edit path fixture should prepare workflow"))
+            return 1;
+
+        auto pathNode = MakePathNode("Path CTA");
+        context->DataStorage()->Add(pathNode);
+        context->DataNodes()->BindNode(QStringLiteral("path-image"),
+                                       pathNode);
+
+        QString message;
+        FakeRenderRefreshService refresh;
+        if (Expect(xq::infrastructure::RegisterDynamicPathWorkflowActionHandler(
+                       *context,
+                       &refresh,
+                       &message),
+                   "edit path fixture should install handler"))
+            return 1;
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "edit control points should enable path editing"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message == QStringLiteral(
+                                  "Path control point editing enabled."),
+                   "edit control points should report editing enabled"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+
+        bool editable = false;
+        bool showControlPoints = false;
+        bool editingEnabled = false;
+        std::string operation;
+        if (Expect(pathNode->GetBoolProperty("xq.path.editable",
+                                             editable) &&
+                       editable &&
+                       pathNode->GetBoolProperty(
+                           "path.show.control.points",
+                           showControlPoints) &&
+                       showControlPoints &&
+                       pathNode->GetBoolProperty(
+                           "xq.path.editing.enabled",
+                           editingEnabled) &&
+                       editingEnabled &&
+                       pathNode->GetStringProperty("xq.path.operation",
+                                                   operation) &&
+                       operation == "edit-control-points",
+                   "edit control points should mark path node editable"))
+            return 1;
+        if (Expect(pathNode->GetDataInteractor().IsNotNull(),
+                   "edit control points should attach a data interactor"))
+            return 1;
+        if (Expect(context->DataCatalog()->FindById(
+                       QStringLiteral("path-image-edit-control-points")) ==
+                       nullptr,
+                   "edit control points should not register generated catalog entry"))
+            return 1;
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("path-image"),
+                   "edit control points should keep selected path"))
+            return 1;
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "edit control points should refresh rendering after success"))
+            return 1;
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
         if (Expect(PreparePathWorkflow(
                        *context,
                        QStringLiteral("edit-control-points")),
-                   "unsupported path edit fixture should prepare workflow"))
+                   "missing edit path fixture should prepare workflow"))
             return 1;
 
         QString message;
@@ -370,16 +446,16 @@ int main(int argc, char** argv)
                        *context,
                        nullptr,
                        &message),
-                   "unsupported path edit fixture should install handler"))
+                   "missing edit path fixture should install handler"))
             return 1;
 
         if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
                        &message),
-                   "unsupported path edit should fail"))
+                   "edit control points should reject missing path node"))
             return 1;
         if (Expect(message == QStringLiteral(
-                                  "Edit Control Points is not wired to a native Path runtime yet."),
-                   "unsupported path edit diagnostic should name operation"))
+                                  "Active path node is required for control point editing."),
+                   "missing edit path node diagnostic should be specific"))
         {
             std::cerr << message.toStdString() << '\n';
             return 1;

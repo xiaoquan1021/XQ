@@ -186,29 +186,26 @@ int main(int argc, char** argv)
     }
 
     selector->setCurrentIndex(
-        selector->findData(QStringLiteral("smooth-path")));
+        selector->findData(QStringLiteral("edit-control-points")));
     app.processEvents();
     if (Expect(context->WorkflowOperations()->SelectedOperationId(
                    QStringLiteral("path")) ==
-                   QStringLiteral("smooth-path"),
+                   QStringLiteral("edit-control-points"),
                "Path selector should update Core state"))
     {
         delete context;
         return 1;
     }
-    if (Expect(actionButton->text() == QStringLiteral("Run Smooth Path"),
+    if (Expect(actionButton->text() == QStringLiteral("Run Edit Control Points"),
                "Path action should update after selector change"))
     {
         delete context;
         return 1;
     }
     if (Expect(FindNumericParameter(window,
-                                    QStringLiteral("smoothing-factor")) !=
-                       nullptr &&
-                   FindIntegerParameter(window,
-                                        QStringLiteral("iteration-count")) !=
+                                    QStringLiteral("snap-distance")) !=
                        nullptr,
-               "Smooth Path should expose smoothing parameters"))
+               "Edit Control Points should expose snap distance parameter"))
     {
         delete context;
         return 1;
@@ -254,8 +251,8 @@ int main(int argc, char** argv)
     actionButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Path failed: Active path node is required for path smoothing.")),
-               "Path action should report native smoothing validation"))
+                   "Run Path failed: Active path node is required for control point editing.")),
+               "Path action should report native control point validation"))
     {
         delete context;
         return 1;

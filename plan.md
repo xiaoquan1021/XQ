@@ -4280,6 +4280,50 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   native workflow gap.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Edit Control Points Infrastructure Action
+
+1. Replace the `edit-control-points` Path unsupported guard with a native
+   Infrastructure action.
+   - Resolve the selected Path node from `DataNodeRegistryService` or the
+     active node.
+   - Require a real `xq_VesselCenterline` payload with a segment ready for
+     control-point editing.
+   - Attach `xq_CenterlineInteractor` with the existing Path interaction
+     state machine/config resources.
+   - Mark the source Path node as editable and show control points.
+   - Refresh rendering and keep the current Path catalog selection.
+2. Keep the action honest about scope.
+   - Do not create a generated Path entry.
+   - Do not mutate anchor geometry in this batch action; actual insert/move/
+     delete remains driven by the interactor.
+   - Do not implement a full Presentation editing panel in this slice.
+3. Add RED C++ tests before implementation:
+   - `edit-control-points` with a real `xq_VesselCenterline` should no longer
+     return the unsupported-operation diagnostic.
+   - A successful run should set editable/control-point metadata, attach a data
+     interactor, preserve selection, avoid registering a generated result, and
+     refresh rendering.
+   - Production composition and the Path operation page should validate
+     `edit-control-points` through the Infrastructure handler.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for path handler/page/composition tests
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

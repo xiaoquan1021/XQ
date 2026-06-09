@@ -1,6 +1,56 @@
 # XQ Execution Log
 
-## Current Run: Smooth Path Infrastructure Action
+## Current Run: Edit Control Points Infrastructure Action
+
+- Continued from clean pushed `feature/windows-monolith-foundation` state after
+  `smooth-path` was pushed as `a93de18`.
+- Completed the active autonomous research refresh:
+  - Remaining exposed Path gap is `edit-control-points`.
+  - XQ already ships `xq_CenterlineInteractor`, `xq_CenterlineOp`, and Path
+    interaction resources used by the legacy centerline plugin.
+  - The narrow native slice is to enable edit mode on the selected Path node,
+    not to fake interactive point edits in a batch action.
+- Added next executable phase to `plan.md`: Edit Control Points Infrastructure
+  Action.
+- Starting RED tests first:
+  - `edit-control-points` should require a real Path DataNode.
+  - A valid `xq_VesselCenterline` should be marked editable, show control
+    points, receive a Path interactor, preserve the selected catalog id, avoid
+    registering generated data, and refresh rendering.
+  - Production composition and the Path page should validate
+    `edit-control-points` through the Infrastructure handler rather than the
+    unsupported-operation guard.
+- Red test observed:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - Targeted `ctest` failed because `edit-control-points` still returned
+    `Edit Control Points is not wired to a native Path runtime yet.` instead
+    of enabling the Path interactor/editing state.
+- Implemented Edit Control Points Infrastructure action:
+  - The dynamic Path handler now routes `edit-control-points` to a native path.
+  - The handler resolves a selected `xq_VesselCenterline`, loads the existing
+    Path interaction state machine/config on `xq_CenterlineInteractor`, and
+    attaches it to the selected node.
+  - Successful runs set editable/control-point metadata, preserve the current
+    catalog selection, avoid generated catalog entries, and refresh rendering.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(path_workflow_action_handler|path_operation_page|application_import_wiring)"`
+    passed: 3/3.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 18/18.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 30/30.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 73/73.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+- Promoted Edit Control Points Infrastructure Action to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
+## Previous Run: Smooth Path Infrastructure Action
 
 - Continued from clean pushed `feature/windows-monolith-foundation` state after
   `loft-surface` was pushed as `1bb8e0d`.

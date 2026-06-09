@@ -215,14 +215,28 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(pathContext->WorkflowOperations()->SelectOperation(
                    QStringLiteral("path"),
+                   QStringLiteral("edit-control-points"),
+                   &message),
+               "configured path workflow should select edit control points"))
+        return 1;
+    const auto editPathImportResult =
+        pathContext->DataImports()->Import(MakePathImport(), &message);
+    if (Expect(editPathImportResult.Succeeded,
+               "configured edit control points path import should succeed"))
+        return 1;
+    if (Expect(!pathContext->WorkflowActions()->RunActiveWorkflowAction(
+                   &message),
+               "configured edit control points should use infrastructure validation"))
+        return 1;
+    if (Expect(message == QStringLiteral(
+                              "Active path node is required for control point editing."),
+               "configured edit control points should require a path node"))
+        return 1;
+    if (Expect(pathContext->WorkflowOperations()->SelectOperation(
+                   QStringLiteral("path"),
                    QStringLiteral("smooth-path"),
                    &message),
                "configured path workflow should select smooth path"))
-        return 1;
-    const auto smoothPathImportResult =
-        pathContext->DataImports()->Import(MakePathImport(), &message);
-    if (Expect(smoothPathImportResult.Succeeded,
-               "configured smooth path path import should succeed"))
         return 1;
     if (Expect(!pathContext->WorkflowActions()->RunActiveWorkflowAction(
                    &message),
