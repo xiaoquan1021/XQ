@@ -477,7 +477,112 @@ int main(int argc, char** argv)
             xq::core::ApplicationContext::CreateDefault());
         if (Expect(PrepareModelingWorkflow(*context,
                                            QStringLiteral("trim-branches")),
-                   "unsupported trim fixture should prepare modeling workflow"))
+                   "trim fixture should prepare modeling workflow"))
+        {
+            return 1;
+        }
+
+        auto segmentationNode = MakeSegmentationNode("Main Segmentation");
+        context->DataStorage()->Add(segmentationNode);
+        context->DataNodes()->BindNode(QStringLiteral("seg-001"),
+                                       segmentationNode);
+
+        QString message;
+        FakeRenderRefreshService refresh;
+        if (Expect(
+                xq::infrastructure::
+                    RegisterDynamicModelingWorkflowActionHandler(
+                        *context,
+                        &refresh,
+                        &message),
+                "trim fixture should install handler"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->WorkflowActions()->RunActiveWorkflowAction(
+                       &message),
+                   "trim branches should create filtered model"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Registered model result catalog entry."),
+                   "trim branches should report catalog commit success"))
+        {
+            std::cerr << message.toStdString() << '\n';
+            return 1;
+        }
+
+        const auto* entry = context->DataCatalog()->FindById(
+            QStringLiteral("seg-001-trim-branches"));
+        if (Expect(entry != nullptr &&
+                       entry->WorkflowRole ==
+                           xq::core::DataWorkflowRole::Model &&
+                       entry->SourcePath ==
+                           QStringLiteral(
+                               "xq://generated/model/seg-001-trim-branches"),
+                   "trim branches should register generated model catalog entry"))
+        {
+            return 1;
+        }
+
+        auto resultNode = context->DataNodes()->FindNode(
+            QStringLiteral("seg-001-trim-branches"));
+        auto* model = resultNode.IsNotNull()
+                          ? dynamic_cast<xq_Model*>(resultNode->GetData())
+                          : nullptr;
+        auto* element = model ? model->GetModelElement(0) : nullptr;
+        auto surface = element ? element->GetWholeVtkPolyData() : nullptr;
+        if (Expect(model != nullptr &&
+                       surface != nullptr &&
+                       surface->GetNumberOfCells() > 0,
+                   "trim branches should bind generated model geometry"))
+        {
+            return 1;
+        }
+
+        std::string operation;
+        std::string trimPath;
+        bool filterOnly = false;
+        if (Expect(resultNode.IsNotNull() &&
+                       resultNode->GetStringProperty("xq.model.operation",
+                                                     operation) &&
+                       operation == "trim-branches" &&
+                       resultNode->GetStringProperty("xq.model.trim.path",
+                                                     trimPath) &&
+                       trimPath == "Main Path" &&
+                       resultNode->GetBoolProperty("xq.model.trim.filter_only",
+                                                   filterOnly) &&
+                       filterOnly,
+                   "trim branches should record honest trim filter metadata"))
+        {
+            return 1;
+        }
+
+        if (Expect(context->DataSelection()->SelectedCatalogEntryId() ==
+                       QStringLiteral("seg-001-trim-branches"),
+                   "trim branches should select generated model"))
+        {
+            return 1;
+        }
+        if (Expect(refresh.Calls == 1 &&
+                       refresh.LastDataStorage.GetPointer() ==
+                           context->DataStorage().GetPointer(),
+                   "trim branches should refresh rendering after success"))
+        {
+            return 1;
+        }
+    }
+
+    {
+        std::unique_ptr<xq::core::ApplicationContext> context(
+            xq::core::ApplicationContext::CreateDefault());
+        if (Expect(PrepareModelingWorkflow(*context,
+                                           QStringLiteral("trim-branches")),
+                   "missing trim segmentation fixture should prepare modeling workflow"))
         {
             return 1;
         }
@@ -489,20 +594,21 @@ int main(int argc, char** argv)
                         *context,
                         nullptr,
                         &message),
-                "unsupported trim fixture should install handler"))
+                "missing trim segmentation fixture should install handler"))
         {
             return 1;
         }
 
         if (Expect(!context->WorkflowActions()->RunActiveWorkflowAction(
                        &message),
-                   "unsupported trim branches should fail"))
+                   "trim branches should reject missing segmentation node"))
         {
             return 1;
         }
-        if (Expect(message == QStringLiteral(
-                                  "Trim Branches is not wired to a native Modeling runtime yet."),
-                   "unsupported trim diagnostic should name operation"))
+        if (Expect(message ==
+                       QStringLiteral(
+                           "Active segmentation node is required for modeling."),
+                   "missing trim segmentation diagnostic should be specific"))
         {
             std::cerr << message.toStdString() << '\n';
             return 1;

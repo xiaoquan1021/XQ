@@ -167,8 +167,8 @@ int main(int argc, char** argv)
     modelingButton->click();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Run Modeling failed: Trim Branches is not wired to a native Modeling runtime yet.")),
-               "Modeling action should report unsupported operation"))
+                   "Run Modeling failed: Active segmentation node is required for modeling.")),
+               "Modeling action should report native trim validation"))
     {
         delete context;
         return 1;

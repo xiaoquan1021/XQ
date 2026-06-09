@@ -4324,6 +4324,48 @@ The next monolith slice is grounded in these comparable systems:
    - `git diff --check`
 5. Commit and push the verified XQ iteration.
 
+## Completed Phase: Autonomous Research Refresh
+
+1. Search comparable medical imaging workstation projects and documentation
+   again.
+2. Re-scan the monolith tests and product composition for the next highest-value
+   native workflow gap.
+3. Write the next executable phase into this plan.
+4. Immediately return to plan execution.
+
+## Completed Phase: Trim Branches Modeling Infrastructure Action
+
+1. Replace the `trim-branches` Modeling unsupported guard with a native
+   Infrastructure action.
+   - Resolve the selected Segmentation node from `DataNodeRegistryService` or
+     the active node.
+   - Require a contour-group/profile-group source with a usable path name.
+   - Use `xq_ModelPipelineService::CreateModel` with `pathFilter` set to the
+     selected source path, so only the matching branch/profile group is rebuilt.
+   - Commit a generated Model catalog/hierarchy entry, select it, and refresh
+     rendering on success.
+2. Keep the action honest about scope.
+   - Record metadata as filtered branch rebuild / trim-path selection.
+   - Do not claim a full boolean branch trim beyond the existing model pipeline
+     capabilities.
+3. Add RED C++ tests before implementation:
+   - `trim-branches` with a real profile-group segmentation should no longer
+     return the unsupported-operation diagnostic.
+   - A successful run should register a Model result, bind non-empty model
+     geometry, record trim-path/filter metadata, select the result, and refresh
+     rendering.
+   - Production composition and the Modeling page should validate
+     `trim-branches` through the Infrastructure handler.
+4. Run:
+   - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals`
+   - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+   - targeted `ctest` for modeling handler/page/composition tests
+   - all XQ `tests\*.ps1`
+   - all Externals `tests\*.ps1`
+   - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+   - `git diff --check`
+5. Commit and push the verified XQ iteration.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Search comparable medical imaging workstation projects and documentation

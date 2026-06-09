@@ -376,11 +376,11 @@ int main(int argc, char** argv)
         return 1;
     if (Expect(!modelingContext->WorkflowActions()
                     ->RunActiveWorkflowAction(&message),
-               "configured trim branches should use unsupported-operation guard"))
+               "configured trim branches should use infrastructure validation"))
         return 1;
     if (Expect(message == QStringLiteral(
-                              "Trim Branches is not wired to a native Modeling runtime yet."),
-               "configured trim branches should report unsupported operation"))
+                              "Active segmentation node is required for modeling."),
+               "configured trim branches should require a segmentation node"))
         return 1;
 
     auto meshingContext =

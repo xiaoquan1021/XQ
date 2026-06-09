@@ -27,6 +27,7 @@ namespace
 constexpr const char* kModelingWorkflowId = "modeling";
 constexpr const char* kBuildSolidModelOperationId = "build-solid-model";
 constexpr const char* kLoftSurfaceOperationId = "loft-surface";
+constexpr const char* kTrimBranchesOperationId = "trim-branches";
 constexpr const char* kModelsFolderId = "models";
 constexpr const char* kModelsFolderTitle = "Models";
 
@@ -380,6 +381,106 @@ bool RunLoftSurfaceModel(xq::core::ApplicationContext& context,
     return true;
 }
 
+bool RunTrimBranchesModel(xq::core::ApplicationContext& context,
+                          xq::core::RenderRefreshService* renderRefresh,
+                          const xq::core::WorkflowContextSnapshot& snapshot,
+                          const QString& operationId,
+                          QString* message)
+{
+    const auto segmentationNode = ResolveSegmentationNode(context, snapshot);
+    if (segmentationNode.IsNull() ||
+        !xq::pipeline::HasStage(segmentationNode.GetPointer(),
+                                xq::pipeline::Stage::ContourGroup))
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active segmentation node is required for modeling."));
+        return false;
+    }
+
+    auto* profileGroup =
+        dynamic_cast<xq_ProfileGroup*>(segmentationNode->GetData());
+    if (!profileGroup)
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Active profile-group segmentation is required for branch trimming."));
+        return false;
+    }
+
+    const QString pathName =
+        QString::fromStdString(profileGroup->GetAttribute("path_name"))
+            .trimmed();
+    if (pathName.isEmpty())
+    {
+        SetMessage(message,
+                   QStringLiteral(
+                       "Profile-group segmentation path name is required for branch trimming."));
+        return false;
+    }
+
+    const QString entryId = ResultCatalogEntryId(snapshot, operationId);
+    const QString preflightMessage = PreflightCommitTarget(context, entryId);
+    if (!preflightMessage.isEmpty())
+    {
+        SetMessage(message, preflightMessage);
+        return false;
+    }
+
+    const QVariantMap parameters =
+        context.WorkflowOperations()
+            ? context.WorkflowOperations()->ParameterValues(snapshot.WorkflowId,
+                                                            operationId)
+            : QVariantMap();
+
+    xq_CreateModelRequest request;
+    request.modelName =
+        QStringLiteral("%1_trimmed_model")
+            .arg(QString::fromStdString(segmentationNode->GetName()).trimmed())
+            .toStdString();
+    request.modelType = "PolyData";
+    request.numSampling =
+        std::max(1,
+                 parameters.value(QStringLiteral("sample-count"), 60).toInt());
+    request.pathFilter = pathName.toStdString();
+    request.sourceContourGroupNames = {segmentationNode->GetName()};
+    request.blendRadius =
+        std::max(0.0,
+                 parameters.value(QStringLiteral("trim-distance"), 0.0)
+                     .toDouble());
+
+    auto result =
+        xq_ModelPipelineService::CreateModel(context.DataStorage().GetPointer(),
+                                             request);
+    if (!result.ok)
+    {
+        SetMessage(message, FirstDiagnosticMessage(result));
+        return false;
+    }
+
+    if (result.node.IsNotNull())
+    {
+        result.node->SetStringProperty("xq.model.operation",
+                                       "trim-branches");
+        result.node->SetBoolProperty("xq.model.trim.filter_only", true);
+        result.node->SetStringProperty(
+            "xq.model.capability.diagnostic",
+            "Trim Branches rebuilt the model from contour/profile groups "
+            "matching the selected path filter. It did not run a separate "
+            "boolean branch clipping backend.");
+    }
+
+    if (!CommitModelResult(context, entryId, result, message))
+        return false;
+
+    QString selectionMessage;
+    context.DataSelection()->SelectCatalogEntry(entryId, &selectionMessage);
+    if (renderRefresh)
+        renderRefresh->RefreshDataStorage(context.DataStorage());
+
+    return true;
+}
+
 } // namespace
 
 bool RegisterDynamicModelingWorkflowActionHandler(
@@ -405,7 +506,8 @@ bool RegisterDynamicModelingWorkflowActionHandler(
 
             if (operationId !=
                     QString::fromLatin1(kBuildSolidModelOperationId) &&
-                operationId != QString::fromLatin1(kLoftSurfaceOperationId))
+                operationId != QString::fromLatin1(kLoftSurfaceOperationId) &&
+                operationId != QString::fromLatin1(kTrimBranchesOperationId))
             {
                 return RunUnsupportedModelingOperation(operations,
                                                        snapshot,
@@ -420,6 +522,15 @@ bool RegisterDynamicModelingWorkflowActionHandler(
                                            snapshot,
                                            operationId,
                                            taskMessage);
+            }
+
+            if (operationId == QString::fromLatin1(kTrimBranchesOperationId))
+            {
+                return RunTrimBranchesModel(context,
+                                            renderRefresh,
+                                            snapshot,
+                                            operationId,
+                                            taskMessage);
             }
 
             return RunBuildSolidModel(context,
