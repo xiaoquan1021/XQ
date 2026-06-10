@@ -435,6 +435,14 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         presetAction->setObjectName(
             QStringLiteral("xqViewPreset_%1").arg(presetName));
     }
+    viewPresetMenu->addSeparator();
+    auto* resetViewPresetAction =
+        new QAction(QStringLiteral("Reset View Preset"), this);
+    resetViewPresetAction->setObjectName(
+        QStringLiteral("xqResetViewPresetAction"));
+    resetViewPresetAction->setStatusTip(QStringLiteral(
+        "Restore the default XQ Workbench view preset."));
+    viewPresetMenu->addAction(resetViewPresetAction);
 
     auto* preferencesAction =
         new QAction(QStringLiteral("Preferences..."), this);
@@ -556,6 +564,12 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this](bool checked) {
                 SetCrosshairEnabled(checked);
+            });
+    connect(resetViewPresetAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                ResetViewPreset();
             });
     connect(preferencesAction,
             &QAction::triggered,
@@ -2276,6 +2290,57 @@ void MainWindow::OpenWelcomeDialog()
     dialog->show();
     dialog->raise();
     dialog->activateWindow();
+}
+
+void MainWindow::ResetViewPreset()
+{
+    if (m_DataManagerDock)
+    {
+        m_DataManagerDock->setFloating(false);
+        addDockWidget(Qt::LeftDockWidgetArea, m_DataManagerDock);
+        m_DataManagerDock->show();
+        m_DataManagerDock->raise();
+    }
+
+    if (m_ImageNavigatorDock)
+    {
+        m_ImageNavigatorDock->setFloating(false);
+        addDockWidget(Qt::LeftDockWidgetArea, m_ImageNavigatorDock);
+        if (m_DataManagerDock)
+        {
+            splitDockWidget(m_DataManagerDock,
+                            m_ImageNavigatorDock,
+                            Qt::Vertical);
+        }
+        m_ImageNavigatorDock->show();
+        m_ImageNavigatorDock->raise();
+    }
+
+    if (m_WorkflowToolsDock)
+    {
+        m_WorkflowToolsDock->setFloating(false);
+        addDockWidget(Qt::RightDockWidgetArea, m_WorkflowToolsDock);
+        m_WorkflowToolsDock->show();
+        m_WorkflowToolsDock->raise();
+    }
+
+    if (m_DiagnosticsDock)
+    {
+        m_DiagnosticsDock->setFloating(false);
+        addDockWidget(Qt::BottomDockWidgetArea, m_DiagnosticsDock);
+        m_DiagnosticsDock->show();
+    }
+
+    if (m_TaskHistoryDock)
+    {
+        m_TaskHistoryDock->setFloating(false);
+        addDockWidget(Qt::BottomDockWidgetArea, m_TaskHistoryDock);
+        m_TaskHistoryDock->show();
+    }
+
+    resizeDocks({m_WorkflowToolsDock}, {380}, Qt::Horizontal);
+    m_Context.WorkflowSelection()->SelectWorkflow(QStringLiteral("project"));
+    statusBar()->showMessage(QStringLiteral("View preset reset"), 3000);
 }
 
 void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)

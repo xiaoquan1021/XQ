@@ -1,4 +1,5 @@
 #include "Core/xq_ApplicationContext.h"
+#include "Core/xq_WorkflowSelectionService.h"
 #include "Presentation/xq_MainWindow.h"
 
 #include <QAction>
@@ -32,6 +33,12 @@ QDockWidget* FindDock(xq::presentation::MainWindow& window,
                       const QString& objectName)
 {
     return window.findChild<QDockWidget*>(objectName);
+}
+
+QAction* FindAction(xq::presentation::MainWindow& window,
+                    const QString& objectName)
+{
+    return window.findChild<QAction*>(objectName);
 }
 
 int ExpectDockToggle(xq::presentation::MainWindow& window,
@@ -285,6 +292,61 @@ int main(int argc, char** argv)
                          app,
                          QStringLiteral("xqToggleTaskHistoryDockAction"),
                          taskHistoryDock))
+    {
+        delete context;
+        return 1;
+    }
+
+    auto* resetViewPresetAction =
+        FindAction(window, QStringLiteral("xqResetViewPresetAction"));
+    if (Expect(resetViewPresetAction != nullptr &&
+                   resetViewPresetAction->text().remove(QLatin1Char('&')) ==
+                       QStringLiteral("Reset View Preset"),
+               "View Presets should expose the original Reset View Preset action"))
+    {
+        delete context;
+        return 1;
+    }
+
+    if (Expect(context->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("meshing")),
+               "Layout test should be able to select a non-default workflow"))
+    {
+        delete context;
+        return 1;
+    }
+    dataManagerDock->hide();
+    imageNavigatorDock->hide();
+    workflowDock->hide();
+    diagnosticsDock->hide();
+    taskHistoryDock->hide();
+    app.processEvents();
+
+    resetViewPresetAction->trigger();
+    app.processEvents();
+
+    if (Expect(dataManagerDock->isVisible() &&
+                   imageNavigatorDock->isVisible() &&
+                   workflowDock->isVisible(),
+               "Reset View Preset should restore the core Workbench docks"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(window.dockWidgetArea(dataManagerDock) ==
+                       Qt::LeftDockWidgetArea &&
+                   window.dockWidgetArea(imageNavigatorDock) ==
+                       Qt::LeftDockWidgetArea &&
+                   window.dockWidgetArea(workflowDock) ==
+                       Qt::RightDockWidgetArea,
+               "Reset View Preset should restore the default Workbench dock areas"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->WorkflowSelection()->SelectedWorkflowId() ==
+                   QStringLiteral("project"),
+               "Reset View Preset should return the workflow toolbar to Project"))
     {
         delete context;
         return 1;

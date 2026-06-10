@@ -5839,10 +5839,32 @@ The next monolith slice is grounded in these comparable systems:
    - full CTest.
    - clean-PATH direct startup smoke.
 
+## Completed Phase: Workbench View Preset Reset Restore
+
+1. Restore the original Workbench View Presets reset entry.
+   - Add `Reset View Preset` to the monolith `View Presets` menu.
+   - Keep the default/Viewer/Analysis preset labels intact for the next, larger
+     preset-behavior slice.
+2. Implement honest monolith behavior.
+   - Reset restores the core Workbench docks: Data Manager and Image Navigator
+     on the left, Tools on the right.
+   - Reset returns the workflow toolbar/page selection to Project.
+   - Reset also shows the diagnostics/task docks so hidden utility panes are
+     reachable again after a layout reset.
+3. Add regression coverage.
+   - `test_monolith_main_window_workbench_layout` verifies the restored action,
+     core dock visibility, default dock areas, and workflow reset behavior.
+4. Verification gate:
+   - targeted Workbench layout/menu tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
+
 ## Active Phase: Autonomous Research Refresh
 
-1. Re-check the remaining original XQ/MITK Workbench parity gaps after Help
-   menu behavior is restored.
+1. Re-check the remaining original XQ/MITK Workbench parity gaps after Reset
+   View Preset behavior is restored.
 2. Select the next highest-value Windows monolith slice that moves the running
    application closer to the original Workbench without faking unsupported
    behavior.

@@ -77,6 +77,7 @@ private:
     void OpenPreferencesDialog();
     void OpenWelcomeDialog();
     void RemoveSelectedData();
+    void ResetViewPreset();
     void SaveProjectAsFromProvider();
     void SaveMitkScene();
     void SetCrosshairEnabled(bool enabled);
