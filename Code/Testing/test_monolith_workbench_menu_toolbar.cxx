@@ -164,6 +164,12 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    if (Expect(!undoAction->isEnabled() && !redoAction->isEnabled(),
+               "Undo and Redo should be disabled until a monolith undo stack exists"))
+    {
+        delete context;
+        return 1;
+    }
 
     auto* screenshotAction =
         FindAction(window, QStringLiteral("xqScreenshotAction"));
@@ -264,11 +270,17 @@ int main(int argc, char** argv)
                      [&diagnostics](const QString& message) {
                          diagnostics.append(message);
     });
+    undoAction->trigger();
+    redoAction->trigger();
     FindAction(window, QStringLiteral("xqMeasureDistanceAction"))->trigger();
     app.processEvents();
-    if (Expect(diagnostics.contains(QStringLiteral(
+    if (Expect(!diagnostics.contains(QStringLiteral(
+                   "Undo is not available in Windows monolith v1.")) &&
+                   !diagnostics.contains(QStringLiteral(
+                       "Redo is not available in Windows monolith v1.")) &&
+                   diagnostics.contains(QStringLiteral(
                        "Measurement tools are not available in Windows monolith v1.")),
-               "Unmigrated Workbench actions should report honest v1 diagnostics"))
+               "Disabled Edit actions should be quiet while measurement tools keep honest v1 diagnostics"))
     {
         delete context;
         return 1;

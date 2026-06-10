@@ -364,6 +364,9 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                     this);
     undoAction->setObjectName(QStringLiteral("xqUndoAction"));
     undoAction->setShortcut(QKeySequence(QStringLiteral("Ctrl+Z")));
+    undoAction->setEnabled(false);
+    undoAction->setStatusTip(QStringLiteral(
+        "Undo will be enabled when monolith edit history is available."));
     editMenu->addAction(undoAction);
 
     auto* redoAction =
@@ -372,6 +375,9 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                     this);
     redoAction->setObjectName(QStringLiteral("xqRedoAction"));
     redoAction->setShortcut(QKeySequence(QStringLiteral("Ctrl+Y")));
+    redoAction->setEnabled(false);
+    redoAction->setStatusTip(QStringLiteral(
+        "Redo will be enabled when monolith edit history is available."));
     editMenu->addAction(redoAction);
 
     auto* screenshotAction =
@@ -503,16 +509,6 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                 SaveMitkScene();
             });
     connect(exitAction, &QAction::triggered, this, [this]() { close(); });
-    connect(undoAction,
-            &QAction::triggered,
-            this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "Undo is not available in Windows monolith v1.")));
-    connect(redoAction,
-            &QAction::triggered,
-            this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "Redo is not available in Windows monolith v1.")));
     connect(screenshotAction,
             &QAction::triggered,
             this,

@@ -4116,6 +4116,38 @@
   - Clean-PATH direct startup smoke passed for
     `build\windows-msvc-release\bin\XQ.exe`.
 
+## Current Run Update: Workbench Edit Action State Correction
+
+- Root-cause/context note:
+  - The restored Undo/Redo Workbench actions were visually clickable but only
+    posted Windows v1 unavailable diagnostics.
+  - Because the monolith does not yet have an edit-history stack, the correct
+    desktop behavior is to keep these commands present but disabled.
+- Red test observed:
+  - Extended `test_monolith_workbench_menu_toolbar` to require disabled
+    Undo/Redo actions and no old Undo/Redo unavailable diagnostics.
+  - After rebuilding the test binary, targeted CTest failed with:
+    `Undo and Redo should be disabled until a monolith undo stack exists`.
+- Implemented Edit action state correction:
+  - Undo and Redo now keep their original shortcuts/icons/menu/toolbar
+    placement but start disabled.
+  - Removed the click-time unavailable diagnostic connections for disabled
+    Undo/Redo actions.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_workbench_menu_toolbar"`
+    passed: 1/1.
+- Full verification for this iteration:
+  - `scripts\build-xq.ps1 configure` passed.
+  - `scripts\build-xq.ps1 build` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 86/86.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+
 ## Current Run Update: Workbench Close Workspace and .env Launcher Discipline
 
 - User asked why there are so many bugs and whether a `.env`-style virtual

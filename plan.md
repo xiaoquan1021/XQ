@@ -5723,3 +5723,28 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench Edit Action State Correction
+
+1. Make the restored Edit menu and toolbar state behave like a mature
+   Workbench shell while the monolith has no edit-history stack.
+   - Keep the original Undo and Redo actions, shortcuts, icons, menu
+     placement, and toolbar placement.
+   - Disable Undo and Redo by default until a future monolith command history
+     service exists.
+   - Remove click-time unavailable diagnostics for disabled Edit actions.
+2. Keep scope honest.
+   - This slice does not add a fake undo stack.
+   - It does not record project/data operations for replay yet.
+   - Measurement tools remain guarded because they need a separate MITK
+     interaction/annotation design.
+3. Add regression coverage.
+   - `test_monolith_workbench_menu_toolbar` verifies Undo/Redo are restored
+     but disabled, and that triggering disabled Edit actions does not post old
+     v1 unavailable diagnostics.
+4. Verification gate:
+   - targeted Workbench menu test.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
