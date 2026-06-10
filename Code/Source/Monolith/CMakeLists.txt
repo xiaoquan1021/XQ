@@ -28,6 +28,7 @@ set(XQ_MONOLITH_CORE_HDRS
     Core/xq_DataManagementService.h
     Core/xq_DataNodeRegistryService.h
     Core/xq_DataSelectionService.h
+    Core/xq_MeasurementService.h
     Core/xq_PreferencesService.h
     Core/xq_ProjectFilePathProvider.h
     Core/xq_ProjectService.h
@@ -103,6 +104,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
     Infrastructure/xq_MitkFileImportService.cxx
     Infrastructure/xq_MitkRenderRefreshService.cxx
     Infrastructure/xq_MitkSceneExportService.cxx
+    Infrastructure/xq_MitkSurfaceMeasurementService.cxx
     Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.cxx
     Infrastructure/xq_ImagePreprocessingApplicationCommitService.cxx
     Infrastructure/xq_ImagePreprocessingCatalogCommitService.cxx
@@ -128,6 +130,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
     Infrastructure/xq_MitkFileImportService.h
     Infrastructure/xq_MitkRenderRefreshService.h
     Infrastructure/xq_MitkSceneExportService.h
+    Infrastructure/xq_MitkSurfaceMeasurementService.h
     Infrastructure/xq_ImagePreprocessingAlgorithmAdapter.h
     Infrastructure/xq_ImagePreprocessingApplicationCommitService.h
     Infrastructure/xq_ImagePreprocessingCatalogCommitService.h

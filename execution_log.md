@@ -4079,6 +4079,49 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Final Update: Workbench Surface Measurement Actions
+
+- Continued restoring original XQ/MITK Workbench Tools menu behavior after
+  Undo/Redo were corrected to disabled Workbench actions.
+- Scope decision:
+  - Surface Area and Volume can be migrated honestly in Windows v1 for selected
+    MITK `Surface` nodes using the existing `xq_VtkUtils` area/volume helpers.
+  - Distance and Angle remain visible but disabled because they need a real
+    monolith picking/annotation UX; no fake coordinate input or placeholder
+    result is exposed.
+- Red tests observed:
+  - The first build failed after adding measurement tests because
+    `Infrastructure/xq_MitkSurfaceMeasurementService.h` did not exist.
+  - The next build failed because `Core/xq_MeasurementService.h` did not exist.
+  - These failures proved the new tests were covering missing production
+    behavior before implementation.
+- Implemented Workbench surface measurement:
+  - Added `xq::core::MeasurementService` with typed surface measurement kinds
+    and result payload.
+  - Added `xq::infrastructure::MitkSurfaceMeasurementService`, backed by
+    `xq_VtkUtils::MeasureSurfaceArea()` and
+    `xq_VtkUtils::MeasureEnclosedVolume()`.
+  - Wired the MITK-backed service into `CreateConfiguredMainWindow()`.
+  - Tools -> Measure Surface Area and Measure Volume now enable only for a
+    selected MITK `Surface` and post measured diagnostics.
+  - Tools -> Measure Distance and Measure Angle stay disabled and quiet.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(mitk_surface_measurement_service|measurement_actions|workbench_menu_toolbar)"`
+    passed: 3/3.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 88/88.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+- Promoted Workbench Surface Measurement Actions to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Update: Workbench DICOM Directory Import Action
 
 - Root-cause/context note:

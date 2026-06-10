@@ -232,6 +232,24 @@ int main(int argc, char** argv)
             return 1;
         }
     }
+    if (Expect(!FindAction(window, QStringLiteral("xqMeasureDistanceAction"))
+                    ->isEnabled() &&
+                   !FindAction(window, QStringLiteral("xqMeasureAngleAction"))
+                        ->isEnabled(),
+               "Interactive distance and angle measurement should stay disabled until monolith picking exists"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!FindAction(window, QStringLiteral("xqMeasureAreaAction"))
+                    ->isEnabled() &&
+                   !FindAction(window, QStringLiteral("xqMeasureVolumeAction"))
+                        ->isEnabled(),
+               "Surface measurement actions should exist but stay disabled without selected surface data"))
+    {
+        delete context;
+        return 1;
+    }
 
     auto* mainToolbar =
         window.findChild<QToolBar*>(QStringLiteral("mainActionsToolBar"));
@@ -273,14 +291,17 @@ int main(int argc, char** argv)
     undoAction->trigger();
     redoAction->trigger();
     FindAction(window, QStringLiteral("xqMeasureDistanceAction"))->trigger();
+    FindAction(window, QStringLiteral("xqMeasureAngleAction"))->trigger();
+    FindAction(window, QStringLiteral("xqMeasureAreaAction"))->trigger();
+    FindAction(window, QStringLiteral("xqMeasureVolumeAction"))->trigger();
     app.processEvents();
     if (Expect(!diagnostics.contains(QStringLiteral(
                    "Undo is not available in Windows monolith v1.")) &&
                    !diagnostics.contains(QStringLiteral(
                        "Redo is not available in Windows monolith v1.")) &&
-                   diagnostics.contains(QStringLiteral(
+                   !diagnostics.contains(QStringLiteral(
                        "Measurement tools are not available in Windows monolith v1.")),
-               "Disabled Edit actions should be quiet while measurement tools keep honest v1 diagnostics"))
+               "Disabled edit and unavailable measurement actions should be quiet"))
     {
         delete context;
         return 1;

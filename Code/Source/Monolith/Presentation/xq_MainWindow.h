@@ -24,10 +24,12 @@ namespace xq::core
 {
 class ApplicationContext;
 class DataImportCommand;
+class MeasurementService;
 class ProjectFilePathProvider;
 class SceneExportService;
 class SceneFilePathProvider;
 class ScreenshotFilePathProvider;
+enum class SurfaceMeasurementKind;
 struct ProjectMetadata;
 struct TaskRecord;
 }
@@ -53,6 +55,7 @@ public:
     void SetSceneExportService(xq::core::SceneExportService* service);
     void SetScreenshotFilePathProvider(
         xq::core::ScreenshotFilePathProvider* provider);
+    void SetMeasurementService(xq::core::MeasurementService* service);
     void SetRenderHost(QWidget* renderHost);
     void SetImageNavigatorWidget(QWidget* imageNavigator);
 
@@ -72,6 +75,8 @@ private:
     void SaveMitkScene();
     void SetCrosshairEnabled(bool enabled);
     void SetSelectedDataVolumeRendering(bool enabled);
+    void RunSurfaceMeasurement(xq::core::SurfaceMeasurementKind kind);
+    bool SelectedDataIsSurface() const;
     void RunActiveWorkflowAction();
     void SaveProject();
     void SyncWorkflowNavigationFromCore(const QString& workflowId);
@@ -161,8 +166,11 @@ private:
     QAction* m_SurfaceRepresentationAction = nullptr;
     QAction* m_WireframeRepresentationAction = nullptr;
     QAction* m_PointsRepresentationAction = nullptr;
+    QAction* m_MeasureAreaAction = nullptr;
+    QAction* m_MeasureVolumeAction = nullptr;
     xq::core::DataImportCommand* m_DataImportCommand = nullptr;
     xq::core::DataImportCommand* m_DicomImportCommand = nullptr;
+    xq::core::MeasurementService* m_MeasurementService = nullptr;
     xq::core::ProjectFilePathProvider* m_ProjectFilePathProvider = nullptr;
     xq::core::SceneFilePathProvider* m_SceneFilePathProvider = nullptr;
     xq::core::SceneExportService* m_SceneExportService = nullptr;

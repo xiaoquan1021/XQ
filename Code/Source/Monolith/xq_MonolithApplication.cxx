@@ -5,6 +5,7 @@
 #include "Infrastructure/xq_MitkFileDataImportCommand.h"
 #include "Infrastructure/xq_MitkRenderRefreshService.h"
 #include "Infrastructure/xq_MitkSceneExportService.h"
+#include "Infrastructure/xq_MitkSurfaceMeasurementService.h"
 #include "Infrastructure/xq_ImagePreprocessingWorkflowActionHandler.h"
 #include "Infrastructure/xq_PathWorkflowActionHandler.h"
 #include "Infrastructure/xq_SegmentationWorkflowActionHandler.h"
@@ -159,6 +160,11 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
     configured->SceneExport =
         std::make_unique<xq::infrastructure::MitkSceneExportService>();
     configured->Window->SetSceneExportService(configured->SceneExport.get());
+    configured->SurfaceMeasurement =
+        std::make_unique<
+            xq::infrastructure::MitkSurfaceMeasurementService>();
+    configured->Window->SetMeasurementService(
+        configured->SurfaceMeasurement.get());
     configured->OwnedScreenshotPathProvider =
         std::make_unique<xq::presentation::QtScreenshotFilePathProvider>(
             configured->Window.get());

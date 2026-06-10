@@ -7,6 +7,7 @@
 #include "Core/xq_DataManagementService.h"
 #include "Core/xq_DataNodeRegistryService.h"
 #include "Core/xq_DataSelectionService.h"
+#include "Core/xq_MeasurementService.h"
 #include "Core/xq_PreferencesService.h"
 #include "Core/xq_ProjectFilePathProvider.h"
 #include "Core/xq_ProjectSessionService.h"
@@ -73,6 +74,7 @@
 #include <mitkPropertyList.h>
 #include <mitkProperties.h>
 #include <mitkRenderingManager.h>
+#include <mitkSurface.h>
 
 #include <utility>
 
@@ -429,25 +431,33 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         new QAction(QStringLiteral("Measure Distance"), this);
     measureDistanceAction->setObjectName(
         QStringLiteral("xqMeasureDistanceAction"));
+    measureDistanceAction->setEnabled(false);
+    measureDistanceAction->setStatusTip(QStringLiteral(
+        "Interactive distance measurement will be enabled after monolith picking is available."));
     toolsMenu->addAction(measureDistanceAction);
 
     auto* measureAngleAction =
         new QAction(QStringLiteral("Measure Angle"), this);
     measureAngleAction->setObjectName(
         QStringLiteral("xqMeasureAngleAction"));
+    measureAngleAction->setEnabled(false);
+    measureAngleAction->setStatusTip(QStringLiteral(
+        "Interactive angle measurement will be enabled after monolith picking is available."));
     toolsMenu->addAction(measureAngleAction);
 
-    auto* measureAreaAction =
+    m_MeasureAreaAction =
         new QAction(QStringLiteral("Measure Surface Area"), this);
-    measureAreaAction->setObjectName(
+    m_MeasureAreaAction->setObjectName(
         QStringLiteral("xqMeasureAreaAction"));
-    toolsMenu->addAction(measureAreaAction);
+    m_MeasureAreaAction->setEnabled(false);
+    toolsMenu->addAction(m_MeasureAreaAction);
 
-    auto* measureVolumeAction =
+    m_MeasureVolumeAction =
         new QAction(QStringLiteral("Measure Volume"), this);
-    measureVolumeAction->setObjectName(
+    m_MeasureVolumeAction->setObjectName(
         QStringLiteral("xqMeasureVolumeAction"));
-    toolsMenu->addAction(measureVolumeAction);
+    m_MeasureVolumeAction->setEnabled(false);
+    toolsMenu->addAction(m_MeasureVolumeAction);
 
     mainToolbar->addAction(openProjectAction);
     mainToolbar->addAction(m_SaveProjectAction);
@@ -465,12 +475,6 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     m_RemoveDataAction->setEnabled(false);
     mainToolbar->addAction(m_RemoveDataAction);
     addToolBar(Qt::TopToolBarArea, mainToolbar);
-
-    const auto postUnavailableDiagnostic = [this](const QString& message) {
-        return [this, message]() {
-            m_Context.PostDiagnostic(message);
-        };
-    };
 
     connect(newProjectAction,
             &QAction::triggered,
@@ -533,17 +537,20 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             [this]() {
                 OpenPreferencesDialog();
             });
-    for (auto* action : {measureDistanceAction,
-                         measureAngleAction,
-                         measureAreaAction,
-                         measureVolumeAction})
-    {
-        connect(action,
-                &QAction::triggered,
-                this,
-                postUnavailableDiagnostic(QStringLiteral(
-                    "Measurement tools are not available in Windows monolith v1.")));
-    }
+    connect(m_MeasureAreaAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                RunSurfaceMeasurement(
+                    xq::core::SurfaceMeasurementKind::Area);
+            });
+    connect(m_MeasureVolumeAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                RunSurfaceMeasurement(
+                    xq::core::SurfaceMeasurementKind::Volume);
+            });
 
     auto* viewToolbar = new QToolBar(QStringLiteral("XQ Views"), this);
     viewToolbar->setObjectName(QStringLiteral("xqViewToolBar"));
@@ -1154,6 +1161,13 @@ void MainWindow::SetScreenshotFilePathProvider(
     xq::core::ScreenshotFilePathProvider* provider)
 {
     m_ScreenshotFilePathProvider = provider;
+}
+
+void MainWindow::SetMeasurementService(
+    xq::core::MeasurementService* service)
+{
+    m_MeasurementService = service;
+    UpdateDataActions();
 }
 
 void MainWindow::SetRenderHost(QWidget* renderHost)
@@ -2349,6 +2363,8 @@ void MainWindow::UpdateDataActions()
     const bool hasSelection = !selectedCatalogEntryId.isEmpty();
     const bool hasSelectedNode =
         m_Context.DataNodes()->FindNode(selectedCatalogEntryId).IsNotNull();
+    const bool canMeasureSurface =
+        m_MeasurementService && SelectedDataIsSurface();
 
     if (m_RemoveDataAction)
         m_RemoveDataAction->setEnabled(hasSelection);
@@ -2376,6 +2392,10 @@ void MainWindow::UpdateDataActions()
         m_WireframeRepresentationAction->setEnabled(hasSelectedNode);
     if (m_PointsRepresentationAction)
         m_PointsRepresentationAction->setEnabled(hasSelectedNode);
+    if (m_MeasureAreaAction)
+        m_MeasureAreaAction->setEnabled(canMeasureSurface);
+    if (m_MeasureVolumeAction)
+        m_MeasureVolumeAction->setEnabled(canMeasureSurface);
 }
 
 void MainWindow::ApplyDataManagerSearch(const QString& text)
@@ -2593,6 +2613,33 @@ void MainWindow::SetSelectedDataVolumeRendering(bool enabled)
     UpdateDataManagerSelection();
     if (auto* renderingManager = mitk::RenderingManager::GetInstance())
         renderingManager->RequestUpdateAll();
+}
+
+bool MainWindow::SelectedDataIsSurface() const
+{
+    const QString catalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+    return node.IsNotNull() &&
+           dynamic_cast<mitk::Surface*>(node->GetData()) != nullptr;
+}
+
+void MainWindow::RunSurfaceMeasurement(
+    xq::core::SurfaceMeasurementKind kind)
+{
+    if (!m_MeasurementService)
+    {
+        m_Context.PostDiagnostic(
+            QStringLiteral("Measurement service is not configured."));
+        return;
+    }
+
+    const QString catalogEntryId =
+        m_Context.DataSelection()->SelectedCatalogEntryId();
+    auto node = m_Context.DataNodes()->FindNode(catalogEntryId);
+    const auto result = m_MeasurementService->MeasureSurface(node, kind);
+    if (!result.Message.trimmed().isEmpty())
+        m_Context.PostDiagnostic(result.Message);
 }
 
 void MainWindow::SetCrosshairEnabled(bool enabled)

@@ -5748,3 +5748,46 @@ The next monolith slice is grounded in these comparable systems:
    - XQ and Externals PowerShell tests.
    - full CTest.
    - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench Surface Measurement Actions
+
+1. Restore the Workbench surface measurement entry points that can be migrated
+   honestly in Windows v1.
+   - Keep Measure Distance and Measure Angle visible in the Tools menu, but
+     disabled until monolith interactive picking/annotation is available.
+   - Enable Measure Surface Area and Measure Volume only when the selected
+     catalog entry is bound to a MITK `Surface`.
+   - Do not emit old "measurement tools unavailable" diagnostics for disabled
+     actions.
+2. Add a small Core/Infrastructure measurement boundary.
+   - Add `xq::core::MeasurementService` and typed surface measurement results.
+   - Add `xq::infrastructure::MitkSurfaceMeasurementService` backed by the
+     existing `xq_VtkUtils` surface area and enclosed-volume utilities.
+   - Wire the MITK-backed service in `CreateConfiguredMainWindow()` so the
+     real Windows monolith shell uses it.
+3. Keep scope honest.
+   - Distance and angle measurement are not faked without a real picking UX.
+   - Volume and area operate only on actual selected surface data.
+4. Add regression coverage.
+   - `test_monolith_mitk_surface_measurement_service` verifies deterministic
+     failures for missing/non-surface nodes and real area/volume values for a
+     closed cuboid surface.
+   - `test_monolith_measurement_actions` verifies action enabled state,
+     service calls, selected-node forwarding, and diagnostics.
+   - `test_monolith_workbench_menu_toolbar` now treats disabled measurement
+     actions as quiet Workbench actions instead of unavailable placeholders.
+5. Verification gate:
+   - targeted measurement/menu tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Re-check the remaining original XQ/MITK Workbench parity gaps after surface
+   measurement is restored.
+2. Select the next highest-value Windows monolith slice that moves the running
+   application closer to the original Workbench without faking unsupported
+   behavior.
+3. Add the next executable phase to this plan before implementation.

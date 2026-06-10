@@ -20,6 +20,7 @@ class DicomImportCommand;
 class MitkFileDataImportCommand;
 class MitkRenderRefreshService;
 class MitkSceneExportService;
+class MitkSurfaceMeasurementService;
 }
 
 namespace xq::presentation
@@ -57,6 +58,8 @@ struct ConfiguredMainWindow
         DicomImportCommand;
     std::unique_ptr<xq::infrastructure::MitkSceneExportService>
         SceneExport;
+    std::unique_ptr<xq::infrastructure::MitkSurfaceMeasurementService>
+        SurfaceMeasurement;
     std::unique_ptr<xq::presentation::MainWindow> Window;
 };
 
