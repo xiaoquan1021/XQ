@@ -6,6 +6,7 @@
 
 #include <QApplication>
 #include <QDir>
+#include <QLabel>
 #include <QStatusBar>
 #include <QTemporaryDir>
 
@@ -88,6 +89,34 @@ int main(int argc, char** argv)
         delete context;
         return 1;
     }
+    auto* selectionStatusLabel =
+        window.findChild<QLabel*>(QStringLiteral("xqStatusSelectionLabel"));
+    auto* positionStatusLabel =
+        window.findChild<QLabel*>(QStringLiteral("xqStatusPositionLabel"));
+    auto* nodeStatusLabel =
+        window.findChild<QLabel*>(QStringLiteral("xqStatusMemoryNodesLabel"));
+    if (Expect(selectionStatusLabel != nullptr &&
+                   selectionStatusLabel->text() == QStringLiteral("Ready"),
+               "Workbench status bar should restore the selection status label"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(positionStatusLabel != nullptr &&
+                   positionStatusLabel->text() ==
+                       QStringLiteral("Position: Ready"),
+               "Workbench status bar should restore the coordinate status label"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(nodeStatusLabel != nullptr &&
+                   nodeStatusLabel->text().contains(QStringLiteral("Nodes: 0")),
+               "Workbench status bar should restore the node-count status label"))
+    {
+        delete context;
+        return 1;
+    }
 
     if (Expect(window.windowTitle() == QStringLiteral("XQ"),
                "new MainWindow should start with the base title"))
@@ -123,6 +152,31 @@ int main(int argc, char** argv)
     if (Expect(statusBar->currentMessage().contains(QStringLiteral("FirstStudy")) &&
                    statusBar->currentMessage().contains(firstProjectPath),
                "project create should update the status message"))
+    {
+        delete context;
+        return 1;
+    }
+
+    const auto importResult =
+        context->DataImports()->Import(MakeImageImport(
+                                           QStringLiteral("status-image")),
+                                       &errorMessage);
+    if (Expect(importResult.Succeeded,
+               "status bar test image import should succeed"))
+    {
+        delete context;
+        return 1;
+    }
+    app.processEvents();
+    if (Expect(selectionStatusLabel->text() ==
+                   QStringLiteral("Selected: status-image"),
+               "Workbench selection status should update after data import"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(nodeStatusLabel->text().contains(QStringLiteral("Nodes: 1")),
+               "Workbench node status should update after data import"))
     {
         delete context;
         return 1;

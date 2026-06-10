@@ -5886,10 +5886,44 @@ The next monolith slice is grounded in these comparable systems:
    - full CTest.
    - clean-PATH direct startup smoke.
 
-## Active Phase: Autonomous Research Refresh
+## Completed Phase: Autonomous Research Refresh
 
 1. Re-check the remaining original XQ/MITK Workbench parity gaps after View
    menu direct view actions are restored.
+2. Select the next highest-value Windows monolith slice that moves the running
+   application closer to the original Workbench without faking unsupported
+   behavior.
+3. Chosen next slice: restore the persistent Workbench status bar fields that
+   make the running shell feel like the original MITK Workbench while keeping
+   unsupported live memory and cursor-coordinate data honest.
+
+## Completed Phase: Workbench Status Bar Restore
+
+1. Restore Workbench-style persistent status fields in the monolith shell.
+   - Keep the existing project status message area.
+   - Add a selection status label with object name `xqStatusSelectionLabel`.
+   - Add a coordinate/status label with object name `xqStatusPositionLabel`.
+   - Add a memory/node-count label with object name
+     `xqStatusMemoryNodesLabel`.
+2. Keep Windows v1 behavior honest.
+   - The selection field reports the selected catalog entry display name.
+   - The node count is derived from the monolith `DataCatalogService`.
+   - Live MITK cursor coordinates and process memory are not faked; the labels
+     stay conservative until real providers are wired.
+3. Add regression coverage.
+   - `test_monolith_main_window_project_state` verifies status label
+     restoration, initial text, selection updates, and node-count updates.
+4. Verification gate:
+   - targeted project-state/import/data-panel/workbench tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Re-check the remaining original XQ/MITK Workbench parity gaps after the
+   status bar is restored.
 2. Select the next highest-value Windows monolith slice that moves the running
    application closer to the original Workbench without faking unsupported
    behavior.

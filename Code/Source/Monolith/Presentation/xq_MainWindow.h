@@ -112,6 +112,7 @@ private:
     void UpdateProjectStructureTree();
     void UpdateProjectWindowState(const xq::core::ProjectMetadata& project);
     void UpdateProjectActions();
+    void UpdateWorkbenchStatusBar();
     QStringList RecentProjectPaths() const;
     void RecordRecentProject(const QString& projectFilePath,
                              const QString& replacedProjectFilePath = {});
@@ -150,6 +151,9 @@ private:
     QLabel* m_DataDisplayNameLabel = nullptr;
     QLabel* m_DataSourcePathLabel = nullptr;
     QLabel* m_DataWorkflowRoleLabel = nullptr;
+    QLabel* m_StatusSelectionLabel = nullptr;
+    QLabel* m_StatusPositionLabel = nullptr;
+    QLabel* m_StatusMemoryNodesLabel = nullptr;
     QPushButton* m_DataPageRenameButton = nullptr;
     QPushButton* m_DataPageRemoveButton = nullptr;
     QPushButton* m_DataPageShowOnlyButton = nullptr;

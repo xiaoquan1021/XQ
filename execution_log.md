@@ -4079,6 +4079,50 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Workbench Status Bar Restore
+
+- Completed autonomous research refresh:
+  - Rechecked original XQ/MITK Workbench parity after restoring direct View
+    menu entries.
+  - The monolith shell still had only a transient project message in the
+    status bar, so the running UI lacked the persistent Workbench-style
+    selection, coordinate/status, and memory/node-count fields.
+  - Chosen next slice: restore conservative status bar fields without faking
+    live MITK cursor coordinates or process memory usage.
+- Red test observed:
+  - Added status-bar assertions to
+    `test_monolith_main_window_project_state`.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_main_window_project_state"`
+    failed with the expected message:
+    `Workbench status bar should restore the selection status label`.
+- Implemented Workbench status bar restoration:
+  - Added persistent `xqStatusSelectionLabel`,
+    `xqStatusPositionLabel`, and `xqStatusMemoryNodesLabel` labels.
+  - Selection status now updates from `DataSelection` and `DataCatalog`.
+  - Node count now updates from `DataCatalogService`.
+  - Coordinate and memory text remains honest placeholders until real runtime
+    providers are wired.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_main_window_project_state"`
+    passed: 1/1.
+  - Adjacent targeted verification
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(main_window_project_state|main_window_import_action|main_window_data_panel|workbench_menu_toolbar)"`
+    passed: 4/4.
+- Promoted Workbench Status Bar Restore to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 90/90.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed: staged `XQ.exe` stayed alive for
+    10 seconds with PATH reduced to Windows system directories.
+
 ## Current Run Update: Workbench View Preset Reset Restore
 
 - Chosen next Workbench parity slice:

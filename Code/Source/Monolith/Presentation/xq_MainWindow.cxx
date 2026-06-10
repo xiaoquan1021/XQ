@@ -288,6 +288,29 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     resize(1440, 960);
     statusBar()->setObjectName(QStringLiteral("xqProjectStatusBar"));
     statusBar()->showMessage(QStringLiteral("No project"));
+    m_StatusSelectionLabel = new QLabel(QStringLiteral("Ready"), this);
+    m_StatusSelectionLabel->setObjectName(
+        QStringLiteral("xqStatusSelectionLabel"));
+    m_StatusSelectionLabel->setMinimumWidth(200);
+    statusBar()->addWidget(m_StatusSelectionLabel, 1);
+
+    m_StatusPositionLabel =
+        new QLabel(QStringLiteral("Position: Ready"), this);
+    m_StatusPositionLabel->setObjectName(
+        QStringLiteral("xqStatusPositionLabel"));
+    m_StatusPositionLabel->setFixedWidth(180);
+    statusBar()->addPermanentWidget(m_StatusPositionLabel, 0);
+
+    m_StatusMemoryNodesLabel =
+        new QLabel(QStringLiteral("Mem: -- MB | Nodes: 0"), this);
+    m_StatusMemoryNodesLabel->setObjectName(
+        QStringLiteral("xqStatusMemoryNodesLabel"));
+    m_StatusMemoryNodesLabel->setFixedWidth(180);
+    m_StatusMemoryNodesLabel->setAlignment(Qt::AlignRight |
+                                           Qt::AlignVCenter);
+    m_StatusMemoryNodesLabel->setStyleSheet(
+        QStringLiteral("font-size: 11px;"));
+    statusBar()->addPermanentWidget(m_StatusMemoryNodesLabel, 0);
 
     menuBar()->setNativeMenuBar(false);
     auto* fileMenu = menuBar()->addMenu(QStringLiteral("&File"));
@@ -1138,6 +1161,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                 UpdateDataWorkflowPage();
                 UpdateDataManagerSelection();
                 UpdateDataActions();
+                UpdateWorkbenchStatusBar();
             });
 
     UpdateDataActions();
@@ -1151,6 +1175,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                 UpdateDataActions();
                 UpdateProjectPageDataCount();
                 UpdateProjectStructureTree();
+                UpdateWorkbenchStatusBar();
             });
     connect(m_Context.DataHierarchy(),
             &xq::core::DataHierarchyService::NodesChanged,
@@ -1188,6 +1213,7 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     }
     UpdateDataManagerSelection();
     UpdateProjectActions();
+    UpdateWorkbenchStatusBar();
 
     m_Diagnostics = new QTextEdit(this);
     m_Diagnostics->setObjectName(QStringLiteral("xqDiagnosticsLog"));
@@ -2507,6 +2533,34 @@ void MainWindow::UpdateProjectActions()
     if (m_ProjectOpenFolderButton)
         m_ProjectOpenFolderButton->setEnabled(hasProject);
     UpdateRecentProjectsMenu();
+}
+
+void MainWindow::UpdateWorkbenchStatusBar()
+{
+    if (m_StatusSelectionLabel)
+    {
+        const QString selectedCatalogEntryId =
+            m_Context.DataSelection()->SelectedCatalogEntryId();
+        const auto* entry =
+            m_Context.DataCatalog()->FindById(selectedCatalogEntryId);
+        if (entry)
+        {
+            m_StatusSelectionLabel->setText(
+                QStringLiteral("Selected: %1").arg(entry->DisplayName));
+        }
+        else
+        {
+            m_StatusSelectionLabel->setText(QStringLiteral("Ready"));
+        }
+    }
+
+    if (m_StatusMemoryNodesLabel)
+    {
+        const int nodeCount = static_cast<int>(
+            m_Context.DataCatalog()->Entries().size());
+        m_StatusMemoryNodesLabel->setText(
+            QStringLiteral("Mem: -- MB | Nodes: %1").arg(nodeCount));
+    }
 }
 
 QStringList MainWindow::RecentProjectPaths() const
