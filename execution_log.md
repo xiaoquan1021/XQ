@@ -4119,6 +4119,46 @@
 - Promoted Workbench View Preset Reset Restore to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Workbench View Menu Direct Actions Restore
+
+- Chosen next Workbench parity slice:
+  - Restore the original top-of-View-menu `Data Manager`, `Image Navigator`,
+    and `Workspace Explorer` direct view entries.
+  - Map them to existing monolith docks/workflow pages instead of reintroducing
+    BlueBerry view lookup.
+- Red test added:
+  - Extended `test_monolith_main_window_workbench_layout`.
+  - The test requires the three direct view actions at the top of `&View`, as
+    non-checkable Workbench actions.
+  - The test verifies `Data Manager` and `Image Navigator` show their docks,
+    while `Workspace Explorer` shows the Tools dock and selects Project.
+- Red failure observed:
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_main_window_workbench_layout"`
+    failed with `View menu should restore the original Data Manager view action`.
+- Implemented View menu direct actions:
+  - Added `xqShowDataManagerViewAction`.
+  - Added `xqShowImageNavigatorViewAction`.
+  - Added `xqShowWorkspaceExplorerViewAction`.
+  - Kept the existing dock toggle actions intact for dock visibility testing.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(main_window_workbench_layout|workbench_menu_toolbar|main_window_workflow_selection)"`
+    passed: 3/3.
+- Full verification:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 90/90.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed:
+    `build\windows-msvc-release\bin\XQ.exe` stayed alive for 10 seconds and
+    was then closed.
+- Promoted Workbench View Menu Direct Actions Restore to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Update: Workbench Recent Projects Menu Restore
 
 - Chosen next Workbench parity slice:

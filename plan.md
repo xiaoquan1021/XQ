@@ -5861,10 +5861,35 @@ The next monolith slice is grounded in these comparable systems:
    - full CTest.
    - clean-PATH direct startup smoke.
 
+## Completed Phase: Workbench View Menu Direct Actions Restore
+
+1. Restore the original top-level Workbench View menu view entries.
+   - Add non-checkable `Data Manager`, `Image Navigator`, and
+     `Workspace Explorer` actions at the top of `&View`.
+   - Keep the existing dock toggle actions available for the monolith shell,
+     but expose the original direct view entry points first.
+2. Implement honest monolith mappings.
+   - `Data Manager` shows and raises the Data Manager dock.
+   - `Image Navigator` shows and raises the Image Navigator dock beneath Data
+     Manager.
+   - `Workspace Explorer` shows the right Tools dock and selects the Project
+     workflow page, which is the monolith replacement for the old Workspace
+     Explorer view.
+3. Add regression coverage.
+   - `test_monolith_main_window_workbench_layout` verifies action presence,
+     menu ordering, non-toggle behavior, dock visibility, and Project workflow
+     selection.
+4. Verification gate:
+   - targeted Workbench layout/menu/workflow tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
+
 ## Active Phase: Autonomous Research Refresh
 
-1. Re-check the remaining original XQ/MITK Workbench parity gaps after Reset
-   View Preset behavior is restored.
+1. Re-check the remaining original XQ/MITK Workbench parity gaps after View
+   menu direct view actions are restored.
 2. Select the next highest-value Windows monolith slice that moves the running
    application closer to the original Workbench without faking unsupported
    behavior.

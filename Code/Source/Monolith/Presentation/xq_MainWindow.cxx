@@ -398,6 +398,25 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         "Redo will be enabled when monolith edit history is available."));
     editMenu->addAction(redoAction);
 
+    auto* showDataManagerAction =
+        new QAction(QStringLiteral("Data Manager"), this);
+    showDataManagerAction->setObjectName(
+        QStringLiteral("xqShowDataManagerViewAction"));
+    viewMenu->addAction(showDataManagerAction);
+
+    auto* showImageNavigatorAction =
+        new QAction(QStringLiteral("Image Navigator"), this);
+    showImageNavigatorAction->setObjectName(
+        QStringLiteral("xqShowImageNavigatorViewAction"));
+    viewMenu->addAction(showImageNavigatorAction);
+
+    auto* showWorkspaceExplorerAction =
+        new QAction(QStringLiteral("Workspace Explorer"), this);
+    showWorkspaceExplorerAction->setObjectName(
+        QStringLiteral("xqShowWorkspaceExplorerViewAction"));
+    viewMenu->addAction(showWorkspaceExplorerAction);
+    viewMenu->addSeparator();
+
     auto* screenshotAction =
         new QAction(QIcon(QStringLiteral(":/xq/camera-photo.svg")),
                     QStringLiteral("Screenshot..."),
@@ -564,6 +583,49 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             this,
             [this](bool checked) {
                 SetCrosshairEnabled(checked);
+            });
+    connect(showDataManagerAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                if (!m_DataManagerDock)
+                    return;
+                m_DataManagerDock->setFloating(false);
+                addDockWidget(Qt::LeftDockWidgetArea, m_DataManagerDock);
+                m_DataManagerDock->show();
+                m_DataManagerDock->raise();
+            });
+    connect(showImageNavigatorAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                if (!m_ImageNavigatorDock)
+                    return;
+                m_ImageNavigatorDock->setFloating(false);
+                addDockWidget(Qt::LeftDockWidgetArea, m_ImageNavigatorDock);
+                if (m_DataManagerDock)
+                {
+                    splitDockWidget(m_DataManagerDock,
+                                    m_ImageNavigatorDock,
+                                    Qt::Vertical);
+                }
+                m_ImageNavigatorDock->show();
+                m_ImageNavigatorDock->raise();
+            });
+    connect(showWorkspaceExplorerAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                if (m_WorkflowToolsDock)
+                {
+                    m_WorkflowToolsDock->setFloating(false);
+                    addDockWidget(Qt::RightDockWidgetArea,
+                                  m_WorkflowToolsDock);
+                    m_WorkflowToolsDock->show();
+                    m_WorkflowToolsDock->raise();
+                }
+                m_Context.WorkflowSelection()->SelectWorkflow(
+                    QStringLiteral("project"));
             });
     connect(resetViewPresetAction,
             &QAction::triggered,

@@ -41,6 +41,14 @@ QAction* FindAction(xq::presentation::MainWindow& window,
     return window.findChild<QAction*>(objectName);
 }
 
+bool MenuContainsAction(QMenu* menu, QAction* action)
+{
+    if (!menu || !action)
+        return false;
+
+    return menu->actions().contains(action);
+}
+
 int ExpectDockToggle(xq::presentation::MainWindow& window,
                      QApplication& app,
                      const QString& actionName,
@@ -234,6 +242,85 @@ int main(int argc, char** argv)
         window.findChild<QToolBar*>(QStringLiteral("mainActionsToolBar"));
     if (Expect(mainToolbar != nullptr,
                "Workbench layout should restore the original main actions toolbar name"))
+    {
+        delete context;
+        return 1;
+    }
+
+    auto* showDataManagerAction =
+        FindAction(window, QStringLiteral("xqShowDataManagerViewAction"));
+    auto* showImageNavigatorAction =
+        FindAction(window, QStringLiteral("xqShowImageNavigatorViewAction"));
+    auto* showWorkspaceExplorerAction =
+        FindAction(window, QStringLiteral("xqShowWorkspaceExplorerViewAction"));
+    if (Expect(showDataManagerAction != nullptr &&
+                   showDataManagerAction->text().remove(QLatin1Char('&')) ==
+                       QStringLiteral("Data Manager") &&
+                   !showDataManagerAction->isCheckable() &&
+                   MenuContainsAction(viewMenu, showDataManagerAction),
+               "View menu should restore the original Data Manager view action"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(showImageNavigatorAction != nullptr &&
+                   showImageNavigatorAction->text().remove(QLatin1Char('&')) ==
+                       QStringLiteral("Image Navigator") &&
+                   !showImageNavigatorAction->isCheckable() &&
+                   MenuContainsAction(viewMenu, showImageNavigatorAction),
+               "View menu should restore the original Image Navigator view action"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(showWorkspaceExplorerAction != nullptr &&
+                   showWorkspaceExplorerAction->text().remove(QLatin1Char('&')) ==
+                       QStringLiteral("Workspace Explorer") &&
+                   !showWorkspaceExplorerAction->isCheckable() &&
+                   MenuContainsAction(viewMenu, showWorkspaceExplorerAction),
+               "View menu should restore the original Workspace Explorer view action"))
+    {
+        delete context;
+        return 1;
+    }
+    const auto viewActions = viewMenu->actions();
+    if (Expect(viewActions.size() >= 3 &&
+                   viewActions.at(0) == showDataManagerAction &&
+                   viewActions.at(1) == showImageNavigatorAction &&
+                   viewActions.at(2) == showWorkspaceExplorerAction,
+               "Original Workbench view actions should stay at the top of the View menu"))
+    {
+        delete context;
+        return 1;
+    }
+
+    dataManagerDock->hide();
+    imageNavigatorDock->hide();
+    workflowDock->hide();
+    app.processEvents();
+    showDataManagerAction->trigger();
+    showImageNavigatorAction->trigger();
+    app.processEvents();
+    if (Expect(dataManagerDock->isVisible() &&
+                   imageNavigatorDock->isVisible(),
+               "Workbench view actions should show their matching docks without toggling them off"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("meshing")),
+               "Layout test should be able to select Meshing before showing Workspace Explorer"))
+    {
+        delete context;
+        return 1;
+    }
+    showWorkspaceExplorerAction->trigger();
+    app.processEvents();
+    if (Expect(workflowDock->isVisible() &&
+                   context->WorkflowSelection()->SelectedWorkflowId() ==
+                       QStringLiteral("project"),
+               "Workspace Explorer view action should show the Project workflow page"))
     {
         delete context;
         return 1;
