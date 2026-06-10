@@ -476,6 +476,12 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         auto* presetAction = viewPresetMenu->addAction(presetName);
         presetAction->setObjectName(
             QStringLiteral("xqViewPreset_%1").arg(presetName));
+        connect(presetAction,
+                &QAction::triggered,
+                this,
+                [this, presetName]() {
+                    ApplyViewPreset(presetName);
+                });
     }
     viewPresetMenu->addSeparator();
     auto* resetViewPresetAction =
@@ -2429,6 +2435,88 @@ void MainWindow::ResetViewPreset()
     resizeDocks({m_WorkflowToolsDock}, {380}, Qt::Horizontal);
     m_Context.WorkflowSelection()->SelectWorkflow(QStringLiteral("project"));
     statusBar()->showMessage(QStringLiteral("View preset reset"), 3000);
+}
+
+void MainWindow::ApplyViewPreset(const QString& presetName)
+{
+    auto showDock = [this](QDockWidget* dock, Qt::DockWidgetArea area) {
+        if (!dock)
+            return;
+        dock->setFloating(false);
+        addDockWidget(area, dock);
+        dock->show();
+        dock->raise();
+    };
+
+    auto hideDock = [](QDockWidget* dock) {
+        if (dock)
+            dock->hide();
+    };
+
+    auto showImageNavigatorBelowDataManager = [this]() {
+        if (!m_ImageNavigatorDock)
+            return;
+
+        m_ImageNavigatorDock->setFloating(false);
+        addDockWidget(Qt::LeftDockWidgetArea, m_ImageNavigatorDock);
+        if (m_DataManagerDock)
+        {
+            splitDockWidget(m_DataManagerDock,
+                            m_ImageNavigatorDock,
+                            Qt::Vertical);
+        }
+        m_ImageNavigatorDock->show();
+        m_ImageNavigatorDock->raise();
+    };
+
+    if (presetName == QStringLiteral("Default"))
+    {
+        showDock(m_DataManagerDock, Qt::LeftDockWidgetArea);
+        showImageNavigatorBelowDataManager();
+        showDock(m_WorkflowToolsDock, Qt::RightDockWidgetArea);
+        hideDock(m_DiagnosticsDock);
+        hideDock(m_TaskHistoryDock);
+        resizeDocks({m_DataManagerDock, m_WorkflowToolsDock},
+                    {280, 380},
+                    Qt::Horizontal);
+        m_Context.WorkflowSelection()->SelectWorkflow(
+            QStringLiteral("project"));
+        statusBar()->showMessage(
+            QStringLiteral("Default view preset applied"), 3000);
+        return;
+    }
+
+    if (presetName == QStringLiteral("Viewer"))
+    {
+        showDock(m_DataManagerDock, Qt::LeftDockWidgetArea);
+        hideDock(m_ImageNavigatorDock);
+        hideDock(m_WorkflowToolsDock);
+        hideDock(m_DiagnosticsDock);
+        hideDock(m_TaskHistoryDock);
+        resizeDocks({m_DataManagerDock}, {220}, Qt::Horizontal);
+        statusBar()->showMessage(
+            QStringLiteral("Viewer view preset applied"), 3000);
+        return;
+    }
+
+    if (presetName == QStringLiteral("Analysis"))
+    {
+        showDock(m_DataManagerDock, Qt::LeftDockWidgetArea);
+        hideDock(m_ImageNavigatorDock);
+        showDock(m_WorkflowToolsDock, Qt::RightDockWidgetArea);
+        showDock(m_DiagnosticsDock, Qt::BottomDockWidgetArea);
+        hideDock(m_TaskHistoryDock);
+        resizeDocks({m_DataManagerDock, m_WorkflowToolsDock},
+                    {260, 420},
+                    Qt::Horizontal);
+        resizeDocks({m_DiagnosticsDock}, {180}, Qt::Vertical);
+        statusBar()->showMessage(
+            QStringLiteral("Analysis view preset applied"), 3000);
+        return;
+    }
+
+    m_Context.PostDiagnostic(
+        QStringLiteral("Unknown view preset: %1").arg(presetName));
 }
 
 void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)

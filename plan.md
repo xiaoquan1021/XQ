@@ -5920,10 +5920,46 @@ The next monolith slice is grounded in these comparable systems:
    - full CTest.
    - clean-PATH direct startup smoke.
 
-## Active Phase: Autonomous Research Refresh
+## Completed Phase: Autonomous Research Refresh
 
 1. Re-check the remaining original XQ/MITK Workbench parity gaps after the
    status bar is restored.
+2. Select the next highest-value Windows monolith slice that moves the running
+   application closer to the original Workbench without faking unsupported
+   behavior.
+3. Chosen next slice: make the restored `Default`, `Viewer`, and `Analysis`
+   View Presets apply real Qt dock layouts instead of remaining inert menu
+   labels.
+
+## Completed Phase: Workbench View Preset Behavior Restore
+
+1. Restore View Preset behavior in the monolith shell without reintroducing
+   BlueBerry perspectives.
+   - `Default` restores the normal XQ three-pane workbench: Data Manager and
+     Image Navigator on the left, Tools on the right, and Project workflow
+     selected.
+   - `Viewer` focuses the MITK render host by keeping Data Manager visible and
+     hiding Image Navigator, Tools, Diagnostics, and Task History.
+   - `Analysis` shows Data Manager, Tools, and Diagnostics while keeping the
+     render host central and hiding non-essential side panels.
+2. Keep Windows v1 behavior honest.
+   - Do not persist layout state as a legacy perspective.
+   - Do not claim old BlueBerry perspective compatibility.
+   - Use deterministic Qt dock visibility/area changes only.
+3. Add regression coverage before implementation.
+   - Extend `test_monolith_main_window_workbench_layout` to verify action
+     presence and the concrete dock/workflow behavior for all three presets.
+4. Verification gate:
+   - targeted Workbench layout/menu tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Re-check the remaining original XQ/MITK Workbench parity gaps after
+   concrete View Preset behavior is restored.
 2. Select the next highest-value Windows monolith slice that moves the running
    application closer to the original Workbench without faking unsupported
    behavior.

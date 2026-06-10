@@ -76,6 +76,7 @@ private:
     void OpenAboutDialog();
     void OpenPreferencesDialog();
     void OpenWelcomeDialog();
+    void ApplyViewPreset(const QString& presetName);
     void RemoveSelectedData();
     void ResetViewPreset();
     void SaveProjectAsFromProvider();

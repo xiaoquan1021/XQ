@@ -4123,6 +4123,51 @@
   - Clean-PATH direct startup smoke passed: staged `XQ.exe` stayed alive for
     10 seconds with PATH reduced to Windows system directories.
 
+## Current Run Update: Workbench View Preset Behavior Restore
+
+- Completed autonomous research refresh:
+  - Rechecked the original BlueBerry perspective entries after status bar
+    restoration.
+  - `Default`, `Viewer`, and `Analysis` View Preset actions were visible in
+    the monolith View menu, but only `Reset View Preset` had real behavior.
+  - Chosen next slice: map the restored preset entries to deterministic Qt
+    dock layouts without reintroducing the BlueBerry perspective runtime.
+- Red test observed:
+  - Extended `test_monolith_main_window_workbench_layout` to verify the
+    concrete dock/workflow behavior for `Default`, `Viewer`, and `Analysis`.
+  - After rebuilding the test, `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_main_window_workbench_layout"`
+    failed as expected with:
+    `Default View Preset should restore the three-pane Workbench layout`.
+- Implemented View Preset behavior:
+  - `Default` restores Data Manager and Image Navigator on the left, Tools on
+    the right, hides bottom utility docks, and selects the Project workflow.
+  - `Viewer` keeps Data Manager visible and hides Image Navigator, Tools,
+    Diagnostics, and Task History to emphasize the central MITK render host.
+  - `Analysis` shows Data Manager, Tools, and Diagnostics while hiding
+    non-essential side panels and preserving the active workflow page.
+  - Unknown preset names post a deterministic diagnostic instead of silently
+    doing nothing.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_main_window_workbench_layout"`
+    passed: 1/1.
+  - Adjacent targeted verification
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(main_window_workbench_layout|workbench_menu_toolbar|workbench_theme|main_window_project_state)"`
+    passed: 4/4.
+- Promoted Workbench View Preset Behavior Restore to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 90/90.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed: staged `XQ.exe` stayed alive for
+    10 seconds with PATH reduced to Windows system directories.
+
 ## Current Run Update: Workbench View Preset Reset Restore
 
 - Chosen next Workbench parity slice:

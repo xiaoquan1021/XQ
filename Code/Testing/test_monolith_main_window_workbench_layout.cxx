@@ -386,10 +386,40 @@ int main(int argc, char** argv)
 
     auto* resetViewPresetAction =
         FindAction(window, QStringLiteral("xqResetViewPresetAction"));
+    auto* defaultViewPresetAction =
+        FindAction(window, QStringLiteral("xqViewPreset_Default"));
+    auto* viewerViewPresetAction =
+        FindAction(window, QStringLiteral("xqViewPreset_Viewer"));
+    auto* analysisViewPresetAction =
+        FindAction(window, QStringLiteral("xqViewPreset_Analysis"));
     if (Expect(resetViewPresetAction != nullptr &&
                    resetViewPresetAction->text().remove(QLatin1Char('&')) ==
                        QStringLiteral("Reset View Preset"),
                "View Presets should expose the original Reset View Preset action"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(defaultViewPresetAction != nullptr &&
+                   defaultViewPresetAction->text().remove(QLatin1Char('&')) ==
+                       QStringLiteral("Default"),
+               "View Presets should expose the original Default preset action"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(viewerViewPresetAction != nullptr &&
+                   viewerViewPresetAction->text().remove(QLatin1Char('&')) ==
+                       QStringLiteral("Viewer"),
+               "View Presets should expose the original Viewer preset action"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(analysisViewPresetAction != nullptr &&
+                   analysisViewPresetAction->text().remove(QLatin1Char('&')) ==
+                       QStringLiteral("Analysis"),
+               "View Presets should expose the original Analysis preset action"))
     {
         delete context;
         return 1;
@@ -434,6 +464,117 @@ int main(int argc, char** argv)
     if (Expect(context->WorkflowSelection()->SelectedWorkflowId() ==
                    QStringLiteral("project"),
                "Reset View Preset should return the workflow toolbar to Project"))
+    {
+        delete context;
+        return 1;
+    }
+
+    if (Expect(context->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("meshing")),
+               "Layout test should be able to select Meshing before applying Default preset"))
+    {
+        delete context;
+        return 1;
+    }
+    dataManagerDock->hide();
+    imageNavigatorDock->hide();
+    workflowDock->hide();
+    diagnosticsDock->show();
+    taskHistoryDock->show();
+    app.processEvents();
+
+    defaultViewPresetAction->trigger();
+    app.processEvents();
+
+    if (Expect(dataManagerDock->isVisible() &&
+                   imageNavigatorDock->isVisible() &&
+                   workflowDock->isVisible(),
+               "Default View Preset should restore the three-pane Workbench layout"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(!diagnosticsDock->isVisible() &&
+                   !taskHistoryDock->isVisible(),
+               "Default View Preset should hide bottom utility docks"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(window.dockWidgetArea(dataManagerDock) ==
+                       Qt::LeftDockWidgetArea &&
+                   window.dockWidgetArea(imageNavigatorDock) ==
+                       Qt::LeftDockWidgetArea &&
+                   window.dockWidgetArea(workflowDock) ==
+                       Qt::RightDockWidgetArea,
+               "Default View Preset should restore the expected dock areas"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->WorkflowSelection()->SelectedWorkflowId() ==
+                   QStringLiteral("project"),
+               "Default View Preset should select the Project workflow"))
+    {
+        delete context;
+        return 1;
+    }
+
+    viewerViewPresetAction->trigger();
+    app.processEvents();
+
+    if (Expect(dataManagerDock->isVisible() &&
+                   !imageNavigatorDock->isVisible() &&
+                   !workflowDock->isVisible() &&
+                   !diagnosticsDock->isVisible() &&
+                   !taskHistoryDock->isVisible(),
+               "Viewer View Preset should focus the render host with only Data Manager visible"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(window.dockWidgetArea(dataManagerDock) ==
+                   Qt::LeftDockWidgetArea,
+               "Viewer View Preset should keep Data Manager on the left"))
+    {
+        delete context;
+        return 1;
+    }
+
+    if (Expect(context->WorkflowSelection()->SelectWorkflow(
+                   QStringLiteral("flow-simulation")),
+               "Layout test should be able to select Flow Simulation before applying Analysis preset"))
+    {
+        delete context;
+        return 1;
+    }
+    analysisViewPresetAction->trigger();
+    app.processEvents();
+
+    if (Expect(dataManagerDock->isVisible() &&
+                   workflowDock->isVisible() &&
+                   diagnosticsDock->isVisible() &&
+                   !imageNavigatorDock->isVisible() &&
+                   !taskHistoryDock->isVisible(),
+               "Analysis View Preset should show data, tools, and diagnostics"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(window.dockWidgetArea(dataManagerDock) ==
+                       Qt::LeftDockWidgetArea &&
+                   window.dockWidgetArea(workflowDock) ==
+                       Qt::RightDockWidgetArea &&
+                   window.dockWidgetArea(diagnosticsDock) ==
+                       Qt::BottomDockWidgetArea,
+               "Analysis View Preset should restore analysis dock areas"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(context->WorkflowSelection()->SelectedWorkflowId() ==
+                   QStringLiteral("flow-simulation"),
+               "Analysis View Preset should preserve the active workflow page"))
     {
         delete context;
         return 1;
