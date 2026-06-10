@@ -65,6 +65,8 @@ int main(int argc, char** argv)
     auto* editMenu = FindMenu(window, QStringLiteral("EditMenu"));
     auto* viewMenu = FindMenu(window, QStringLiteral("ViewMenu"));
     auto* toolsMenu = FindMenu(window, QStringLiteral("ToolsMenu"));
+    auto* windowMenu = FindMenu(window, QStringLiteral("WindowMenu"));
+    auto* helpMenu = FindMenu(window, QStringLiteral("HelpMenu"));
     if (Expect(fileMenu != nullptr &&
                    fileMenu->title() == QStringLiteral("&File"),
                "Workbench menu bar should expose the original File menu"))
@@ -89,6 +91,30 @@ int main(int argc, char** argv)
     if (Expect(toolsMenu != nullptr &&
                    toolsMenu->title() == QStringLiteral("&Tools"),
                "Workbench menu bar should expose the original Tools menu"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(windowMenu != nullptr &&
+                   windowMenu->title() == QStringLiteral("&Window"),
+               "Workbench menu bar should expose the original Window menu"))
+    {
+        delete context;
+        return 1;
+    }
+    if (Expect(helpMenu != nullptr &&
+                   helpMenu->title() == QStringLiteral("&Help"),
+               "Workbench menu bar should expose the original Help menu"))
+    {
+        delete context;
+        return 1;
+    }
+    const auto menuActions = window.menuBar()->actions();
+    if (Expect(menuActions.indexOf(toolsMenu->menuAction()) <
+                       menuActions.indexOf(windowMenu->menuAction()) &&
+                   menuActions.indexOf(windowMenu->menuAction()) <
+                       menuActions.indexOf(helpMenu->menuAction()),
+               "Window menu should sit between Tools and Help like the original Workbench"))
     {
         delete context;
         return 1;
@@ -231,6 +257,17 @@ int main(int argc, char** argv)
             delete context;
             return 1;
         }
+    }
+    auto* preferencesAction =
+        FindAction(window, QStringLiteral("xqOpenPreferencesAction"));
+    if (Expect(preferencesAction != nullptr &&
+                   MenuContainsAction(windowMenu, preferencesAction) &&
+                   preferencesAction->shortcut().toString() ==
+                       QStringLiteral("Ctrl+P"),
+               "Window menu should expose the shared Preferences action with the original shortcut"))
+    {
+        delete context;
+        return 1;
     }
     if (Expect(!FindAction(window, QStringLiteral("xqMeasureDistanceAction"))
                     ->isEnabled() &&

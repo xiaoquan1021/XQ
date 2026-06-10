@@ -5992,10 +5992,39 @@ The next monolith slice is grounded in these comparable systems:
    - full CTest.
    - clean-PATH direct startup smoke.
 
-## Active Phase: Autonomous Research Refresh
+## Completed Phase: Autonomous Research Refresh
 
 1. Re-check the remaining original XQ/MITK Workbench parity gaps after
    Logging and slice-plane View menu controls are restored.
+2. Select the next highest-value Windows monolith slice that moves the running
+   application closer to the original Workbench without faking unsupported
+   behavior.
+3. Chosen next slice: restore the original top-level `Window` menu and expose
+   Preferences there as an alias to the existing monolith Preferences dialog.
+
+## Completed Phase: Workbench Window Menu Restore
+
+1. Restore the original Workbench menu bar structure.
+   - Add top-level `&Window` between `&Tools` and `&Help`.
+   - Give it stable object name `WindowMenu`.
+2. Reuse existing honest monolith behavior.
+   - Add the existing `xqOpenPreferencesAction` to `Window`.
+   - Keep the same Preferences dialog and `PreferencesService` wiring.
+   - Add the original `Ctrl+P` shortcut to the shared action.
+3. Add regression coverage before implementation.
+   - Extend `test_monolith_workbench_menu_toolbar` to verify menu presence,
+     menu order, shared Preferences ownership, and shortcut.
+4. Verification gate:
+   - targeted Workbench menu/preferences/help tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Re-check the remaining original XQ/MITK Workbench parity gaps after the
+   Window menu is restored.
 2. Select the next highest-value Windows monolith slice that moves the running
    application closer to the original Workbench without faking unsupported
    behavior.

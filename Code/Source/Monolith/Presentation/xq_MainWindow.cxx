@@ -321,6 +321,8 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     viewMenu->setObjectName(QStringLiteral("ViewMenu"));
     auto* toolsMenu = menuBar()->addMenu(QStringLiteral("&Tools"));
     toolsMenu->setObjectName(QStringLiteral("ToolsMenu"));
+    auto* windowMenu = menuBar()->addMenu(QStringLiteral("&Window"));
+    windowMenu->setObjectName(QStringLiteral("WindowMenu"));
     auto* helpMenu = menuBar()->addMenu(QStringLiteral("&Help"));
     helpMenu->setObjectName(QStringLiteral("HelpMenu"));
 
@@ -532,7 +534,9 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
         new QAction(QStringLiteral("Preferences..."), this);
     preferencesAction->setObjectName(
         QStringLiteral("xqOpenPreferencesAction"));
+    preferencesAction->setShortcut(QKeySequence(QStringLiteral("Ctrl+P")));
     toolsMenu->addAction(preferencesAction);
+    windowMenu->addAction(preferencesAction);
     toolsMenu->addSeparator();
 
     auto* measureDistanceAction =

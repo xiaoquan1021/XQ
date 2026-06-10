@@ -4123,6 +4123,43 @@
   - Clean-PATH direct startup smoke passed: staged `XQ.exe` stayed alive for
     10 seconds with PATH reduced to Windows system directories.
 
+## Current Run Update: Workbench Window Menu Restore
+
+- Completed autonomous research refresh:
+  - Rechecked top-level menu parity after restoring View menu controls.
+  - The original Workbench exposed a top-level `Window` menu with
+    `Preferences...`; the monolith only exposed Preferences under `Tools`.
+  - Chosen next slice: restore `Window` as a normal Qt menu and share the
+    existing Preferences action/dialog.
+- Red test observed:
+  - Extended `test_monolith_workbench_menu_toolbar` to require `WindowMenu`,
+    top-level menu order, shared Preferences ownership, and `Ctrl+P`.
+  - After rebuilding the test, `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_workbench_menu_toolbar"`
+    failed as expected with:
+    `Workbench menu bar should expose the original Window menu`.
+- Implemented Window menu restoration:
+  - Added top-level `&Window` with object name `WindowMenu` between `Tools`
+    and `Help`.
+  - Reused `xqOpenPreferencesAction` in both `Tools` and `Window`.
+  - Added the original `Ctrl+P` shortcut to the shared action.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(workbench_menu_toolbar|preferences_dialog|help_menu)"`
+    passed: 3/3.
+- Promoted Workbench Window Menu Restore to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 90/90.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed: staged `XQ.exe` stayed alive for
+    10 seconds with PATH reduced to Windows system directories.
+
 ## Current Run Update: Workbench View Menu Slice Controls Restore
 
 - Completed autonomous research refresh:
