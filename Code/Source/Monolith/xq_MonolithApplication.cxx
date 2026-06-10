@@ -1,6 +1,7 @@
 #include "xq_MonolithApplication.h"
 
 #include "Core/xq_DataImportCommand.h"
+#include "Infrastructure/xq_DicomImportCommand.h"
 #include "Infrastructure/xq_MitkFileDataImportCommand.h"
 #include "Infrastructure/xq_MitkRenderRefreshService.h"
 #include "Infrastructure/xq_MitkSceneExportService.h"
@@ -14,6 +15,7 @@
 #include "Infrastructure/xq_MultiPhysicsWorkflowActionHandler.h"
 #include "Infrastructure/xq_PythonApiWorkflowActionHandler.h"
 #include "Presentation/xq_MainWindow.h"
+#include "Presentation/xq_QtDicomImportPathProvider.h"
 #include "Presentation/xq_QtFileImportPathProvider.h"
 #include "Presentation/xq_QtProjectFilePathProvider.h"
 #include "Presentation/xq_QtSceneFilePathProvider.h"
@@ -108,6 +110,11 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
             pathProvider,
             nullptr,
             configured->RenderRefresh.get());
+    configured->OwnedDicomPathProvider =
+        std::make_unique<xq::presentation::QtDicomImportPathProvider>();
+    configured->DicomImportCommand =
+        std::make_unique<xq::infrastructure::DicomImportCommand>(
+            configured->OwnedDicomPathProvider.get());
     xq::infrastructure::RegisterDynamicImagePreprocessingWorkflowActionHandler(
         context,
         configured->RenderRefresh.get());
@@ -137,6 +144,8 @@ std::unique_ptr<ConfiguredMainWindow> CreateConfiguredMainWindow(
         std::make_unique<xq::presentation::MainWindow>(context);
     configured->Window->SetDataImportCommand(
         configured->ImportCommand.get());
+    configured->Window->SetDicomImportCommand(
+        configured->DicomImportCommand.get());
     configured->OwnedProjectPathProvider =
         std::make_unique<xq::presentation::QtProjectFilePathProvider>(
             configured->Window.get());

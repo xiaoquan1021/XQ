@@ -45,6 +45,7 @@ public:
     explicit MainWindow(xq::core::ApplicationContext& context,
                         QWidget* parent = nullptr);
     void SetDataImportCommand(xq::core::DataImportCommand* command);
+    void SetDicomImportCommand(xq::core::DataImportCommand* command);
     void SetProjectFilePathProvider(
         xq::core::ProjectFilePathProvider* provider);
     void SetSceneFilePathProvider(
@@ -63,6 +64,7 @@ private:
     void CreateProjectFromProvider();
     void CloseWorkspace();
     void ImportData();
+    void ImportDicomData();
     void OpenProjectFromProvider();
     void OpenPreferencesDialog();
     void RemoveSelectedData();
@@ -160,6 +162,7 @@ private:
     QAction* m_WireframeRepresentationAction = nullptr;
     QAction* m_PointsRepresentationAction = nullptr;
     xq::core::DataImportCommand* m_DataImportCommand = nullptr;
+    xq::core::DataImportCommand* m_DicomImportCommand = nullptr;
     xq::core::ProjectFilePathProvider* m_ProjectFilePathProvider = nullptr;
     xq::core::SceneFilePathProvider* m_SceneFilePathProvider = nullptr;
     xq::core::SceneExportService* m_SceneExportService = nullptr;

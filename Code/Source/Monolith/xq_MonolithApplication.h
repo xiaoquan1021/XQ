@@ -16,6 +16,7 @@ class FileImportPathProvider;
 
 namespace xq::infrastructure
 {
+class DicomImportCommand;
 class MitkFileDataImportCommand;
 class MitkRenderRefreshService;
 class MitkSceneExportService;
@@ -24,6 +25,7 @@ class MitkSceneExportService;
 namespace xq::presentation
 {
 class MainWindow;
+class QtDicomImportPathProvider;
 class QtFileImportPathProvider;
 class QtProjectFilePathProvider;
 class QtSceneFilePathProvider;
@@ -39,6 +41,8 @@ struct ConfiguredMainWindow
 
     std::unique_ptr<xq::presentation::QtFileImportPathProvider>
         OwnedPathProvider;
+    std::unique_ptr<xq::presentation::QtDicomImportPathProvider>
+        OwnedDicomPathProvider;
     std::unique_ptr<xq::presentation::QtProjectFilePathProvider>
         OwnedProjectPathProvider;
     std::unique_ptr<xq::presentation::QtSceneFilePathProvider>
@@ -49,6 +53,8 @@ struct ConfiguredMainWindow
         RenderRefresh;
     std::unique_ptr<xq::infrastructure::MitkFileDataImportCommand>
         ImportCommand;
+    std::unique_ptr<xq::infrastructure::DicomImportCommand>
+        DicomImportCommand;
     std::unique_ptr<xq::infrastructure::MitkSceneExportService>
         SceneExport;
     std::unique_ptr<xq::presentation::MainWindow> Window;

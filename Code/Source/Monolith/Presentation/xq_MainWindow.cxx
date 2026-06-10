@@ -493,8 +493,9 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     connect(importDicomAction,
             &QAction::triggered,
             this,
-            postUnavailableDiagnostic(QStringLiteral(
-                "Import DICOM is not available in Windows monolith v1.")));
+            [this]() {
+                ImportDicomData();
+            });
     connect(saveSceneAction,
             &QAction::triggered,
             this,
@@ -1128,6 +1129,11 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
 void MainWindow::SetDataImportCommand(xq::core::DataImportCommand* command)
 {
     m_DataImportCommand = command;
+}
+
+void MainWindow::SetDicomImportCommand(xq::core::DataImportCommand* command)
+{
+    m_DicomImportCommand = command;
 }
 
 void MainWindow::SetProjectFilePathProvider(
@@ -2202,6 +2208,25 @@ void MainWindow::ImportData()
 
     UpdateDataWorkflowPage();
     UpdateProjectPageDataCount();
+    UpdateDataActions();
+}
+
+void MainWindow::ImportDicomData()
+{
+    if (!m_DicomImportCommand)
+    {
+        m_Context.PostDiagnostic(
+            QStringLiteral("No DICOM import command is configured."));
+        return;
+    }
+
+    const auto result = m_DicomImportCommand->RunImport(m_Context);
+    if (!result.Message.trimmed().isEmpty())
+        m_Context.PostDiagnostic(result.Message);
+
+    UpdateDataWorkflowPage();
+    UpdateProjectPageDataCount();
+    UpdateProjectStructureTree();
     UpdateDataActions();
 }
 

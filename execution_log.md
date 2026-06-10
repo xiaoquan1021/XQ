@@ -4079,6 +4079,43 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Workbench DICOM Directory Import Action
+
+- Root-cause/context note:
+  - The Workbench File -> Import DICOM action was still wired to the generic
+    Windows v1 unavailable diagnostic even though the monolith already had a
+    metadata import service suitable for a first honest DICOM slice.
+  - Full DICOM series browsing and MITK image decoding are still larger future
+    work; this slice intentionally avoids fake image nodes.
+- Red test observed:
+  - Added `test_monolith_import_dicom_action` and
+    `test_monolith_dicom_import_command`.
+  - Initial build failed because `Infrastructure/xq_DicomImportCommand.h`
+    did not exist, proving the new command boundary was missing.
+- Implemented Workbench DICOM directory import:
+  - Added `xq::infrastructure::DicomImportCommand`.
+  - Added `xq::presentation::QtDicomImportPathProvider`.
+  - File -> Import DICOM now invokes the configured DICOM command instead of
+    the unavailable guard.
+  - `CreateConfiguredMainWindow()` installs the DICOM provider and command.
+  - Imported DICOM directories register `DICOMSeries` metadata through
+    `DataImportService`, select the new catalog entry, and do not create fake
+    MITK image data.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(dicom_import_command|import_dicom_action|workbench_menu_toolbar)"`
+    passed: 3/3.
+- Full verification for this iteration:
+  - `scripts\build-xq.ps1 configure` passed.
+  - `scripts\build-xq.ps1 build` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 86/86.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+
 ## Current Run Update: Workbench Close Workspace and .env Launcher Discipline
 
 - User asked why there are so many bugs and whether a `.env`-style virtual

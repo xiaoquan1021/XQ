@@ -338,6 +338,13 @@ if(TARGET xqMonolithCore)
         MitkCore
     )
 
+    xq_add_registered_test(test_monolith_dicom_import_command
+        xqMonolithInfrastructure
+        xqMonolithCore
+        Qt6::Core
+        MitkCore
+    )
+
     xq_add_registered_test(test_monolith_data_management_service
         xqMonolithCore
         Qt6::Core
@@ -407,6 +414,14 @@ if(TARGET xqMonolithCore)
     )
 
     xq_add_registered_test(test_monolith_save_scene_action
+        xqMonolithPresentation
+        xqMonolithCore
+        Qt6::Core
+        Qt6::Widgets
+        MitkCore
+    )
+
+    xq_add_registered_test(test_monolith_import_dicom_action
         xqMonolithPresentation
         xqMonolithCore
         Qt6::Core

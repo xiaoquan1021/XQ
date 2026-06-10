@@ -98,6 +98,7 @@ target_link_libraries(xqMonolithDomain
 
 set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
     Infrastructure/xq_DataNodeImportService.cxx
+    Infrastructure/xq_DicomImportCommand.cxx
     Infrastructure/xq_MitkFileDataImportCommand.cxx
     Infrastructure/xq_MitkFileImportService.cxx
     Infrastructure/xq_MitkRenderRefreshService.cxx
@@ -122,6 +123,7 @@ set(XQ_MONOLITH_INFRASTRUCTURE_SRCS
 
 set(XQ_MONOLITH_INFRASTRUCTURE_HDRS
     Infrastructure/xq_DataNodeImportService.h
+    Infrastructure/xq_DicomImportCommand.h
     Infrastructure/xq_MitkFileDataImportCommand.h
     Infrastructure/xq_MitkFileImportService.h
     Infrastructure/xq_MitkRenderRefreshService.h
@@ -180,6 +182,7 @@ set(XQ_MONOLITH_PRESENTATION_SRCS
     Presentation/xq_DataHierarchyModel.cxx
     Presentation/xq_MainWindow.cxx
     Presentation/xq_PreferencesDialog.cxx
+    Presentation/xq_QtDicomImportPathProvider.cxx
     Presentation/xq_QtFileImportPathProvider.cxx
     Presentation/xq_QtProjectFilePathProvider.cxx
     Presentation/xq_QtSceneFilePathProvider.cxx
@@ -191,6 +194,7 @@ set(XQ_MONOLITH_PRESENTATION_HDRS
     Presentation/xq_DataHierarchyModel.h
     Presentation/xq_MainWindow.h
     Presentation/xq_PreferencesDialog.h
+    Presentation/xq_QtDicomImportPathProvider.h
     Presentation/xq_QtFileImportPathProvider.h
     Presentation/xq_QtProjectFilePathProvider.h
     Presentation/xq_QtSceneFilePathProvider.h

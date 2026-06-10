@@ -264,12 +264,9 @@ int main(int argc, char** argv)
                      [&diagnostics](const QString& message) {
                          diagnostics.append(message);
     });
-    FindAction(window, QStringLiteral("xqImportDicomAction"))->trigger();
     FindAction(window, QStringLiteral("xqMeasureDistanceAction"))->trigger();
     app.processEvents();
     if (Expect(diagnostics.contains(QStringLiteral(
-                   "Import DICOM is not available in Windows monolith v1.")) &&
-                   diagnostics.contains(QStringLiteral(
                        "Measurement tools are not available in Windows monolith v1.")),
                "Unmigrated Workbench actions should report honest v1 diagnostics"))
     {

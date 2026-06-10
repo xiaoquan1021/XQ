@@ -5519,15 +5519,16 @@ The next monolith slice is grounded in these comparable systems:
    - Meshing: mesh type, global edge size, boundary layers, auto-run.
    - Simulation: solver path, MPI path, processor count, custom MPI flag, with
      an explicit Windows v1 note that solver execution remains disabled.
-3. Keep unmigrated Workbench tools honest.
+3. Keep then-unmigrated Workbench tools honest.
    - DICOM import, MITK scene export, undo/redo, screenshots, render toggles,
-     and measurements keep deterministic v1 diagnostics until implemented.
+     and measurements kept deterministic v1 diagnostics until implemented in
+     later slices.
 4. Add regression coverage.
    - `test_monolith_preferences_dialog` verifies the dialog opens from Tools,
      exposes restored tabs/controls, loads existing preference values, and
      stores Apply/OK edits into `PreferencesService`.
-   - `test_monolith_workbench_menu_toolbar` now treats Preferences as migrated
-     while keeping DICOM and measurement diagnostics guarded.
+   - `test_monolith_workbench_menu_toolbar` treated Preferences as migrated
+     while keeping then-unmigrated DICOM and measurement diagnostics guarded.
 5. Verification gate:
    - targeted preferences/menu tests.
    - configure/build.
@@ -5683,6 +5684,41 @@ The next monolith slice is grounded in these comparable systems:
      deterministically.
 5. Verification gate:
    - targeted Scene export/menu/screenshot tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
+
+## Completed Phase: Workbench DICOM Directory Import Action
+
+1. Replace the restored File -> Import DICOM guard with a real Windows v1
+   action.
+   - Add `DicomImportCommand` as a metadata-only import command for selected
+     DICOM directories.
+   - Add `QtDicomImportPathProvider` so production uses a normal Qt directory
+     picker while tests inject deterministic paths.
+   - Register imported entries as `DataWorkflowRole::DICOMSeries` with
+     `DICOM` modality through the existing `DataImportService`.
+   - Select the imported catalog entry and refresh the Workbench project/data
+     panels after import.
+2. Keep scope honest.
+   - This slice does not implement a full DICOM series browser.
+   - It does not decode DICOM files into MITK image volumes yet.
+   - It does not create fake `DataStorage` image nodes.
+3. Wire production composition.
+   - `CreateConfiguredMainWindow()` installs the Qt DICOM path provider and
+     DICOM import command alongside the existing file import command.
+4. Add regression coverage.
+   - `test_monolith_dicom_import_command` verifies cancellation, metadata
+     registration, selection, source path preservation, and no fake MITK image
+     data.
+   - `test_monolith_import_dicom_action` verifies the Workbench File menu
+     action invokes the configured DICOM command and no longer reports the
+     Windows v1 unavailable diagnostic.
+   - `test_monolith_workbench_menu_toolbar` now keeps only still-unmigrated
+     measurement tools behind the deterministic v1 guard.
+5. Verification gate:
+   - targeted DICOM/menu tests.
    - configure/build.
    - XQ and Externals PowerShell tests.
    - full CTest.
