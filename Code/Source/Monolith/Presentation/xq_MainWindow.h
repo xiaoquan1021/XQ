@@ -73,7 +73,9 @@ private:
     void OpenProjectFromPath(const QString& projectFilePath);
     void OpenProjectFromProvider();
     void OpenRecentProject(const QString& projectFilePath);
+    void OpenAboutDialog();
     void OpenPreferencesDialog();
+    void OpenWelcomeDialog();
     void RemoveSelectedData();
     void SaveProjectAsFromProvider();
     void SaveMitkScene();

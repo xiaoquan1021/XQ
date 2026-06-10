@@ -29,6 +29,7 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDialog>
 #include <QDockWidget>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
@@ -297,6 +298,8 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     viewMenu->setObjectName(QStringLiteral("ViewMenu"));
     auto* toolsMenu = menuBar()->addMenu(QStringLiteral("&Tools"));
     toolsMenu->setObjectName(QStringLiteral("ToolsMenu"));
+    auto* helpMenu = menuBar()->addMenu(QStringLiteral("&Help"));
+    helpMenu->setObjectName(QStringLiteral("HelpMenu"));
 
     auto* mainToolbar = new QToolBar(QStringLiteral("Main Actions"), this);
     mainToolbar->setObjectName(QStringLiteral("mainActionsToolBar"));
@@ -472,6 +475,16 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     m_MeasureVolumeAction->setEnabled(false);
     toolsMenu->addAction(m_MeasureVolumeAction);
 
+    auto* welcomeAction = new QAction(QStringLiteral("&Welcome"), this);
+    welcomeAction->setObjectName(QStringLiteral("xqWelcomeAction"));
+    welcomeAction->setStatusTip(QStringLiteral("Show the XQ welcome screen."));
+    helpMenu->addAction(welcomeAction);
+    helpMenu->addSeparator();
+
+    auto* aboutAction = new QAction(QStringLiteral("&About XQ"), this);
+    aboutAction->setObjectName(QStringLiteral("xqAboutAction"));
+    helpMenu->addAction(aboutAction);
+
     mainToolbar->addAction(openProjectAction);
     mainToolbar->addAction(m_SaveProjectAction);
     mainToolbar->addSeparator();
@@ -563,6 +576,18 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
             [this]() {
                 RunSurfaceMeasurement(
                     xq::core::SurfaceMeasurementKind::Volume);
+            });
+    connect(welcomeAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                OpenWelcomeDialog();
+            });
+    connect(aboutAction,
+            &QAction::triggered,
+            this,
+            [this]() {
+                OpenAboutDialog();
             });
 
     auto* viewToolbar = new QToolBar(QStringLiteral("XQ Views"), this);
@@ -2112,6 +2137,82 @@ void MainWindow::OpenRecentProject(const QString& projectFilePath)
     OpenProjectFromPath(projectFilePath);
 }
 
+void MainWindow::OpenAboutDialog()
+{
+    auto* existingDialog =
+        findChild<QDialog*>(QStringLiteral("xqAboutDialog"));
+    if (existingDialog)
+    {
+        existingDialog->show();
+        existingDialog->raise();
+        existingDialog->activateWindow();
+        return;
+    }
+
+    auto* dialog = new QDialog(this);
+    dialog->setObjectName(QStringLiteral("xqAboutDialog"));
+    dialog->setWindowTitle(QStringLiteral("About XQ"));
+    dialog->setMinimumSize(520, 480);
+
+    auto* layout = new QVBoxLayout(dialog);
+    layout->setContentsMargins(24, 24, 24, 18);
+    layout->setSpacing(10);
+
+    auto* captionLabel = new QLabel(QStringLiteral("XQ"), dialog);
+    captionLabel->setObjectName(QStringLiteral("xqAboutCaption"));
+    captionLabel->setAlignment(Qt::AlignCenter);
+    captionLabel->setStyleSheet(QStringLiteral(
+        "font-size: 32px; font-weight: bold; color: #2563EB;"));
+    layout->addWidget(captionLabel);
+
+    auto* versionLabel =
+        new QLabel(QStringLiteral("Version 1.0.0"), dialog);
+    versionLabel->setObjectName(QStringLiteral("xqAboutVersion"));
+    versionLabel->setAlignment(Qt::AlignCenter);
+    versionLabel->setStyleSheet(QStringLiteral(
+        "font-size: 13px; color: #1D4ED8;"));
+    layout->addWidget(versionLabel);
+
+    auto* descriptionText = new QTextEdit(dialog);
+    descriptionText->setObjectName(QStringLiteral("xqAboutDescription"));
+    descriptionText->setReadOnly(true);
+    descriptionText->setHtml(QStringLiteral(
+        "<html><body style='font-size:12px; color:#1E293B;'>"
+        "<p style='font-weight:bold; color:#2563EB;'>"
+        "Cardiovascular Analysis &amp; Hemodynamic Simulation</p>"
+        "<p>XQ provides a Windows monolith workflow for medical image based "
+        "cardiovascular analysis.</p>"
+        "<table cellpadding='4'>"
+        "<tr><td>&#x2022;</td><td>Project and data management</td></tr>"
+        "<tr><td>&#x2022;</td><td>Image preprocessing</td></tr>"
+        "<tr><td>&#x2022;</td><td>Path planning</td></tr>"
+        "<tr><td>&#x2022;</td><td>2D and 3D segmentation</td></tr>"
+        "<tr><td>&#x2022;</td><td>Modeling and mesh generation</td></tr>"
+        "<tr><td>&#x2022;</td><td>Simulation setup and result review</td></tr>"
+        "</table>"
+        "<hr/>"
+        "<p style='font-size:11px; color:#64748B;'>"
+        "Qt %1 | MITK toolkit | Windows x64 monolith<br/>"
+        "License: BSD 3-Clause</p>"
+        "</body></html>")
+                                 .arg(QLatin1String(qVersion())));
+    descriptionText->setStyleSheet(QStringLiteral(
+        "border: none; background: transparent;"));
+    layout->addWidget(descriptionText, 1);
+
+    auto* buttonLayout = new QHBoxLayout();
+    buttonLayout->addStretch(1);
+    auto* okButton = new QPushButton(QStringLiteral("OK"), dialog);
+    okButton->setDefault(true);
+    buttonLayout->addWidget(okButton);
+    layout->addLayout(buttonLayout);
+    connect(okButton, &QPushButton::clicked, dialog, &QDialog::accept);
+
+    dialog->show();
+    dialog->raise();
+    dialog->activateWindow();
+}
+
 void MainWindow::OpenPreferencesDialog()
 {
     auto* existingDialog =
@@ -2125,6 +2226,56 @@ void MainWindow::OpenPreferencesDialog()
 
     auto* dialog = new PreferencesDialog(*m_Context.Preferences(), this);
     dialog->show();
+}
+
+void MainWindow::OpenWelcomeDialog()
+{
+    auto* existingDialog =
+        findChild<QDialog*>(QStringLiteral("xqWelcomeDialog"));
+    if (existingDialog)
+    {
+        existingDialog->show();
+        existingDialog->raise();
+        existingDialog->activateWindow();
+        return;
+    }
+
+    auto* dialog = new QDialog(this);
+    dialog->setObjectName(QStringLiteral("xqWelcomeDialog"));
+    dialog->setWindowTitle(QStringLiteral("Welcome to XQ"));
+    dialog->setMinimumSize(460, 260);
+
+    auto* layout = new QVBoxLayout(dialog);
+    layout->setContentsMargins(24, 24, 24, 18);
+    layout->setSpacing(12);
+
+    auto* titleLabel = new QLabel(QStringLiteral("Welcome to XQ"), dialog);
+    titleLabel->setAlignment(Qt::AlignCenter);
+    titleLabel->setStyleSheet(QStringLiteral(
+        "font-size: 24px; font-weight: bold; color: #2563EB;"));
+    layout->addWidget(titleLabel);
+
+    auto* textLabel = new QLabel(dialog);
+    textLabel->setObjectName(QStringLiteral("xqWelcomeText"));
+    textLabel->setWordWrap(true);
+    textLabel->setText(QStringLiteral(
+        "XQ is a cardiovascular analysis application for medical image "
+        "workflows.\n\nUse the File, View, Tools, and workflow toolbar "
+        "entry points to move through images, paths, segmentations, modeling, "
+        "meshing, simulation setup, and results review."));
+    layout->addWidget(textLabel, 1);
+
+    auto* buttonLayout = new QHBoxLayout();
+    buttonLayout->addStretch(1);
+    auto* okButton = new QPushButton(QStringLiteral("OK"), dialog);
+    okButton->setDefault(true);
+    buttonLayout->addWidget(okButton);
+    layout->addLayout(buttonLayout);
+    connect(okButton, &QPushButton::clicked, dialog, &QDialog::accept);
+
+    dialog->show();
+    dialog->raise();
+    dialog->activateWindow();
 }
 
 void MainWindow::UpdateProjectPage(const xq::core::ProjectMetadata* project)

@@ -5813,10 +5813,36 @@ The next monolith slice is grounded in these comparable systems:
    - full CTest.
    - clean-PATH direct startup smoke.
 
+## Completed Phase: Workbench Help Menu Restore
+
+1. Restore the original Workbench Help menu in the monolith shell.
+   - Add `&Help` to the menu bar after Tools.
+   - Add `&Welcome` and `&About XQ` actions with stable object names for
+     regression coverage.
+   - Open native monolith Qt dialogs instead of reintroducing the BlueBerry
+     intro/about runtime.
+2. Keep scope honest.
+   - The Welcome dialog is a compact monolith substitute for the old intro
+     part, not a plugin-hosted welcome view.
+   - The About dialog describes Windows v1 as medical imaging workflow,
+     project/data, preprocessing, path, segmentation, modeling, meshing,
+     simulation setup, and result review; it does not claim deferred solver
+     execution is available.
+3. Add regression coverage.
+   - `test_monolith_help_menu` verifies menu/action restoration, Welcome
+     dialog content, About dialog content, and dialog reuse on repeated
+     triggers.
+4. Verification gate:
+   - targeted Help/Workbench menu tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
+
 ## Active Phase: Autonomous Research Refresh
 
-1. Re-check the remaining original XQ/MITK Workbench parity gaps after surface
-   recent project behavior is restored.
+1. Re-check the remaining original XQ/MITK Workbench parity gaps after Help
+   menu behavior is restored.
 2. Select the next highest-value Windows monolith slice that moves the running
    application closer to the original Workbench without faking unsupported
    behavior.
