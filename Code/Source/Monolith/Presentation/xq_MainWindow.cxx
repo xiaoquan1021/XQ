@@ -89,6 +89,21 @@ namespace xq::presentation
 namespace
 {
 
+constexpr int kMaxRecentProjects = 10;
+
+void RemovePathCaseInsensitive(QStringList& paths, const QString& path)
+{
+    const QString normalizedPath = path.trimmed();
+    if (normalizedPath.isEmpty())
+        return;
+
+    for (int i = paths.size() - 1; i >= 0; --i)
+    {
+        if (paths.at(i).compare(normalizedPath, Qt::CaseInsensitive) == 0)
+            paths.removeAt(i);
+    }
+}
+
 QString RoleDisplayName(xq::core::DataWorkflowRole role)
 {
     switch (role)
@@ -346,13 +361,11 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     fileMenu->addAction(saveSceneAction);
     fileMenu->addSeparator();
 
-    auto* recentProjectsMenu =
+    m_RecentProjectsMenu =
         fileMenu->addMenu(QStringLiteral("Recent Projects"));
-    recentProjectsMenu->setObjectName(
+    m_RecentProjectsMenu->setObjectName(
         QStringLiteral("xqRecentProjectsMenu"));
-    auto* noRecentProjectsAction =
-        recentProjectsMenu->addAction(QStringLiteral("(No recent projects)"));
-    noRecentProjectsAction->setEnabled(false);
+    UpdateRecentProjectsMenu();
     fileMenu->addSeparator();
 
     auto* exitAction = new QAction(QStringLiteral("Exit"), this);
@@ -1299,6 +1312,7 @@ void MainWindow::SaveProjectAsFromProvider()
         return;
     }
 
+    const QString replacedProjectFilePath = currentProject->ProjectFilePath;
     const auto projectFile =
         m_ProjectFilePathProvider->SaveAsProjectFilePath(*currentProject);
     if (projectFile.ProjectFilePath.trimmed().isEmpty() ||
@@ -1320,6 +1334,7 @@ void MainWindow::SaveProjectAsFromProvider()
 
     m_Context.PostDiagnostic(QStringLiteral("Project saved as %1.")
                                  .arg(projectFile.ProjectFilePath));
+    RecordRecentProject(projectFile.ProjectFilePath, replacedProjectFilePath);
     UpdateProjectActions();
     UpdateProjectPage(m_Context.Projects()->CurrentProject());
     UpdateProjectPageDataCount();
@@ -2054,6 +2069,7 @@ void MainWindow::CreateProjectFromProvider()
     }
 
     UpdateProjectActions();
+    RecordRecentProject(projectFile.ProjectFilePath);
 }
 
 void MainWindow::OpenProjectFromProvider()
@@ -2070,6 +2086,11 @@ void MainWindow::OpenProjectFromProvider()
     if (projectFilePath.trimmed().isEmpty())
         return;
 
+    OpenProjectFromPath(projectFilePath);
+}
+
+void MainWindow::OpenProjectFromPath(const QString& projectFilePath)
+{
     QString message;
     if (!m_Context.ProjectSession()->Open(projectFilePath, &message))
     {
@@ -2083,6 +2104,12 @@ void MainWindow::OpenProjectFromProvider()
     UpdateProjectActions();
     UpdateProjectPageDataCount();
     UpdateProjectStructureTree();
+    RecordRecentProject(projectFilePath);
+}
+
+void MainWindow::OpenRecentProject(const QString& projectFilePath)
+{
+    OpenProjectFromPath(projectFilePath);
 }
 
 void MainWindow::OpenPreferencesDialog()
@@ -2201,6 +2228,95 @@ void MainWindow::UpdateProjectActions()
         m_ProjectRefreshButton->setEnabled(hasProject);
     if (m_ProjectOpenFolderButton)
         m_ProjectOpenFolderButton->setEnabled(hasProject);
+    UpdateRecentProjectsMenu();
+}
+
+QStringList MainWindow::RecentProjectPaths() const
+{
+    QStringList paths;
+    const auto* preferences = m_Context.Preferences();
+    if (!preferences)
+        return paths;
+
+    const int storedCount = preferences->IntValue(
+        QStringLiteral("project.recent.count"),
+        0);
+    const int readCount =
+        storedCount > 0 ? qMin(storedCount, kMaxRecentProjects)
+                        : kMaxRecentProjects;
+
+    for (int i = 0; i < readCount; ++i)
+    {
+        const QString path = preferences
+                                 ->StringValue(
+                                     QStringLiteral("project.recent.%1").arg(i))
+                                 .trimmed();
+        if (path.isEmpty())
+            continue;
+
+        RemovePathCaseInsensitive(paths, path);
+        paths.push_back(path);
+    }
+
+    return paths;
+}
+
+void MainWindow::RecordRecentProject(const QString& projectFilePath,
+                                     const QString& replacedProjectFilePath)
+{
+    auto* preferences = m_Context.Preferences();
+    if (!preferences)
+        return;
+
+    const QString normalizedPath = projectFilePath.trimmed();
+    if (normalizedPath.isEmpty())
+        return;
+
+    QStringList paths = RecentProjectPaths();
+    RemovePathCaseInsensitive(paths, replacedProjectFilePath);
+    RemovePathCaseInsensitive(paths, normalizedPath);
+    paths.push_front(normalizedPath);
+    while (paths.size() > kMaxRecentProjects)
+        paths.removeLast();
+
+    preferences->SetIntValue(QStringLiteral("project.recent.count"),
+                             paths.size());
+    for (int i = 0; i < kMaxRecentProjects; ++i)
+    {
+        preferences->SetStringValue(
+            QStringLiteral("project.recent.%1").arg(i),
+            i < paths.size() ? paths.at(i) : QString());
+    }
+
+    UpdateRecentProjectsMenu();
+}
+
+void MainWindow::UpdateRecentProjectsMenu()
+{
+    if (!m_RecentProjectsMenu)
+        return;
+
+    m_RecentProjectsMenu->clear();
+    const QStringList paths = RecentProjectPaths();
+    if (paths.isEmpty())
+    {
+        auto* noRecentProjectsAction = m_RecentProjectsMenu->addAction(
+            QStringLiteral("(No recent projects)"));
+        noRecentProjectsAction->setEnabled(false);
+        return;
+    }
+
+    for (const auto& path : paths)
+    {
+        auto* action = m_RecentProjectsMenu->addAction(path);
+        action->setData(path);
+        connect(action,
+                &QAction::triggered,
+                this,
+                [this, path]() {
+                    OpenRecentProject(path);
+                });
+    }
 }
 
 void MainWindow::ImportData()

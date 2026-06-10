@@ -5783,10 +5783,40 @@ The next monolith slice is grounded in these comparable systems:
    - full CTest.
    - clean-PATH direct startup smoke.
 
+## Completed Phase: Workbench Recent Projects Menu Restore
+
+1. Replace the restored File -> Recent Projects placeholder with a functional
+   Workbench-style recent project menu.
+   - Show a disabled `(No recent projects)` item when no recent project paths
+     are stored.
+   - Persist recent project paths through `PreferencesService` under
+     `project.recent.*` keys.
+   - Promote newly created, opened, and Save As project paths to the top of
+     the menu.
+   - Remove the old active path from recent history after Save As promotes the
+     new path.
+   - Open recent project actions directly through `ProjectSessionService`
+     without asking the project file path provider again.
+2. Keep scope honest.
+   - This slice does not add cross-process persistence loading at application
+     startup beyond the existing preferences service boundary.
+   - It does not implement missing-file pruning yet; stale recent paths fail
+     through the normal project-open diagnostic path.
+3. Add regression coverage.
+   - `test_monolith_recent_projects_menu` verifies empty menu state, New
+     Project recording, Save As promotion/replacement, Open Project promotion,
+     direct Recent Projects opening, and rebuild from stored preferences.
+4. Verification gate:
+   - targeted recent-projects/project-menu tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
+
 ## Active Phase: Autonomous Research Refresh
 
 1. Re-check the remaining original XQ/MITK Workbench parity gaps after surface
-   measurement is restored.
+   recent project behavior is restored.
 2. Select the next highest-value Windows monolith slice that moves the running
    application closer to the original Workbench without faking unsupported
    behavior.

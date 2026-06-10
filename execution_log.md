@@ -4079,6 +4079,48 @@
 - Promoted Run Script Monolith Fallback to completed in `plan.md`.
 - Started Active Phase: Autonomous Research Refresh.
 
+## Current Run Update: Workbench Recent Projects Menu Restore
+
+- Chosen next Workbench parity slice:
+  - Restore File -> Recent Projects as a real recent project history instead
+    of a static disabled placeholder.
+  - Keep behavior inside the existing monolith project/session/preferences
+    boundaries.
+- Red test added:
+  - Added `test_monolith_recent_projects_menu`.
+  - Registered the test in `Code/Testing/CMakeLists.txt`.
+  - The test covers empty placeholder state, New Project recording, Save As
+    promotion/replacement, Open Project promotion, direct recent-project
+    opening without path-provider reentry, and rebuilding from stored
+    preferences.
+- Red failure observed:
+  - After fixing a missing test include, `test_monolith_recent_projects_menu`
+    failed with `New Project should add the created project to recent history`.
+- Implemented Recent Projects behavior:
+  - `MainWindow` now owns the Recent Projects submenu and rebuilds it from
+    `PreferencesService`.
+  - New Project, Open Project, and Save As record/promote recent project
+    paths.
+  - Save As removes the old active path when promoting the new path.
+  - Recent project menu actions open directly through `ProjectSessionService`
+    without asking `ProjectFilePathProvider`.
+- Red/green target verification:
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(recent_projects_menu|project_menu_actions|project_save_as_action|workbench_menu_toolbar)"`
+    passed: 4/4.
+- Verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 89/89.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed for
+    `build\windows-msvc-release\bin\XQ.exe`.
+- Promoted Workbench Recent Projects Menu Restore to completed in `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+
 ## Current Run Final Update: Workbench Surface Measurement Actions
 
 - Continued restoring original XQ/MITK Workbench Tools menu behavior after

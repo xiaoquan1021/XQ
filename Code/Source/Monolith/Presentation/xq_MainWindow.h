@@ -3,6 +3,7 @@
 
 #include <QHash>
 #include <QMainWindow>
+#include <QStringList>
 
 class QAction;
 class QActionGroup;
@@ -11,6 +12,7 @@ class QDockWidget;
 class QFormLayout;
 class QLabel;
 class QListWidget;
+class QMenu;
 class QPushButton;
 class QSlider;
 class QStackedWidget;
@@ -68,7 +70,9 @@ private:
     void CloseWorkspace();
     void ImportData();
     void ImportDicomData();
+    void OpenProjectFromPath(const QString& projectFilePath);
     void OpenProjectFromProvider();
+    void OpenRecentProject(const QString& projectFilePath);
     void OpenPreferencesDialog();
     void RemoveSelectedData();
     void SaveProjectAsFromProvider();
@@ -105,6 +109,10 @@ private:
     void UpdateProjectStructureTree();
     void UpdateProjectWindowState(const xq::core::ProjectMetadata& project);
     void UpdateProjectActions();
+    QStringList RecentProjectPaths() const;
+    void RecordRecentProject(const QString& projectFilePath,
+                             const QString& replacedProjectFilePath = {});
+    void UpdateRecentProjectsMenu();
     void RenameSelectedData();
     void SyncTreeSelectionFromCore(const QString& hierarchyNodeId);
     void UpdateDataActions();
@@ -168,6 +176,7 @@ private:
     QAction* m_PointsRepresentationAction = nullptr;
     QAction* m_MeasureAreaAction = nullptr;
     QAction* m_MeasureVolumeAction = nullptr;
+    QMenu* m_RecentProjectsMenu = nullptr;
     xq::core::DataImportCommand* m_DataImportCommand = nullptr;
     xq::core::DataImportCommand* m_DicomImportCommand = nullptr;
     xq::core::MeasurementService* m_MeasurementService = nullptr;
