@@ -440,6 +440,42 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     viewMenu->addAction(showWorkspaceExplorerAction);
     viewMenu->addSeparator();
 
+    auto* loggingAction = new QAction(QStringLiteral("Logging"), this);
+    loggingAction->setObjectName(QStringLiteral("xqLoggingAction"));
+    loggingAction->setCheckable(true);
+    viewMenu->addAction(loggingAction);
+    viewMenu->addSeparator();
+
+    auto createSlicePlaneAction =
+        [this, viewMenu](const QString& text,
+                         const QString& objectName,
+                         const QString& preferenceKey) {
+            auto* action = new QAction(text, this);
+            action->setObjectName(objectName);
+            action->setCheckable(true);
+            action->setChecked(m_Context.Preferences()->BoolValue(
+                preferenceKey,
+                true));
+            viewMenu->addAction(action);
+            connect(action,
+                    &QAction::triggered,
+                    this,
+                    [this, text, preferenceKey](bool checked) {
+                        SetSlicePlaneEnabled(text, preferenceKey, checked);
+                    });
+            return action;
+        };
+    createSlicePlaneAction(QStringLiteral("Axial"),
+                           QStringLiteral("xqAxialSliceAction"),
+                           QStringLiteral("view.slice.axial.enabled"));
+    createSlicePlaneAction(QStringLiteral("Sagittal"),
+                           QStringLiteral("xqSagittalSliceAction"),
+                           QStringLiteral("view.slice.sagittal.enabled"));
+    createSlicePlaneAction(QStringLiteral("Coronal"),
+                           QStringLiteral("xqCoronalSliceAction"),
+                           QStringLiteral("view.slice.coronal.enabled"));
+    viewMenu->addSeparator();
+
     auto* screenshotAction =
         new QAction(QIcon(QStringLiteral(":/xq/camera-photo.svg")),
                     QStringLiteral("Screenshot..."),
@@ -655,6 +691,27 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
                 }
                 m_Context.WorkflowSelection()->SelectWorkflow(
                     QStringLiteral("project"));
+            });
+    connect(loggingAction,
+            &QAction::triggered,
+            this,
+            [this, loggingAction](bool checked) {
+                if (!m_DiagnosticsDock)
+                    return;
+
+                if (checked)
+                {
+                    m_DiagnosticsDock->setFloating(false);
+                    addDockWidget(Qt::BottomDockWidgetArea,
+                                  m_DiagnosticsDock);
+                    m_DiagnosticsDock->show();
+                    m_DiagnosticsDock->raise();
+                }
+                else
+                {
+                    m_DiagnosticsDock->hide();
+                }
+                loggingAction->setChecked(m_DiagnosticsDock->isVisible());
             });
     connect(resetViewPresetAction,
             &QAction::triggered,
@@ -1229,6 +1286,11 @@ MainWindow::MainWindow(xq::core::ApplicationContext& context, QWidget* parent)
     diagnosticsDock->setWidget(m_Diagnostics);
     m_DiagnosticsDock = diagnosticsDock;
     addDockWidget(Qt::BottomDockWidgetArea, diagnosticsDock);
+    loggingAction->setChecked(diagnosticsDock->isVisible());
+    connect(diagnosticsDock,
+            &QDockWidget::visibilityChanged,
+            loggingAction,
+            &QAction::setChecked);
     viewMenu->addSeparator();
     addDockToggleAction(m_DiagnosticsDock,
                         QStringLiteral("xqToggleDiagnosticsDockAction"));
@@ -3186,6 +3248,17 @@ void MainWindow::SetCrosshairEnabled(bool enabled)
     m_Context.PostDiagnostic(
         enabled ? QStringLiteral("Crosshair enabled.")
                 : QStringLiteral("Crosshair disabled."));
+}
+
+void MainWindow::SetSlicePlaneEnabled(const QString& planeName,
+                                      const QString& preferenceKey,
+                                      bool enabled)
+{
+    m_Context.Preferences()->SetBoolValue(preferenceKey, enabled);
+    m_Context.PostDiagnostic(
+        QStringLiteral("%1 slice plane %2.")
+            .arg(planeName, enabled ? QStringLiteral("enabled")
+                                    : QStringLiteral("disabled")));
 }
 
 void MainWindow::ShowOnlySelectedData()

@@ -4123,6 +4123,53 @@
   - Clean-PATH direct startup smoke passed: staged `XQ.exe` stayed alive for
     10 seconds with PATH reduced to Windows system directories.
 
+## Current Run Update: Workbench View Menu Slice Controls Restore
+
+- Completed autonomous research refresh:
+  - Rechecked old `xq_WorkbenchWindowAdvisor` View menu entries after concrete
+    View Preset behavior landed.
+  - The monolith still lacked the original `Logging`, `Axial`, `Sagittal`,
+    and `Coronal` controls.
+  - Chosen next slice: restore those View menu controls with deterministic Qt
+    behavior and preference-backed slice-plane intent.
+- Red test observed:
+  - Extended `test_monolith_view_menu_actions` to require the restored
+    Logging and slice-plane actions.
+  - After rebuilding the test, `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_view_menu_actions"`
+    failed as expected with:
+    `View menu should restore checkable Logging action`.
+- Implemented View menu controls:
+  - Added checkable `xqLoggingAction`, `xqAxialSliceAction`,
+    `xqSagittalSliceAction`, and `xqCoronalSliceAction`.
+  - `Logging` now shows/hides the existing Diagnostics dock and mirrors dock
+    visibility changes.
+  - Slice-plane actions persist intent through `PreferencesService` keys
+    `view.slice.axial.enabled`, `view.slice.sagittal.enabled`, and
+    `view.slice.coronal.enabled`.
+  - Slice-plane changes post deterministic diagnostics while real MITK
+    slice-window visibility remains a future integration point.
+- Red/green target verification:
+  - After implementation, `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals`
+    passed.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_view_menu_actions"`
+    passed: 1/1.
+  - Adjacent targeted verification
+    `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120 -R "test_monolith_(view_menu_actions|workbench_menu_toolbar|main_window_workbench_layout|main_window_diagnostics_log|workbench_theme)"`
+    passed: 5/5.
+- Promoted Workbench View Menu Slice Controls Restore to completed in
+  `plan.md`.
+- Started Active Phase: Autonomous Research Refresh.
+- Final verification for this iteration:
+  - `scripts\build-xq.ps1 configure -ExternalsRoot ..\Externals` passed.
+  - `scripts\build-xq.ps1 build -ExternalsRoot ..\Externals` passed.
+  - All XQ PowerShell tests in `tests\*.ps1` passed: 20/20.
+  - All Externals PowerShell tests in `tests\*.ps1` passed: 31/31.
+  - `ctest --test-dir .\build\windows-msvc-release --output-on-failure --timeout 120`
+    passed: 90/90.
+  - `git diff --check` passed in both `XQ` and `Externals`.
+  - Clean-PATH direct startup smoke passed: staged `XQ.exe` stayed alive for
+    10 seconds with PATH reduced to Windows system directories.
+
 ## Current Run Update: Workbench View Preset Behavior Restore
 
 - Completed autonomous research refresh:

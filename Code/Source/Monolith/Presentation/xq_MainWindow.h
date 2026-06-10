@@ -79,6 +79,9 @@ private:
     void ApplyViewPreset(const QString& presetName);
     void RemoveSelectedData();
     void ResetViewPreset();
+    void SetSlicePlaneEnabled(const QString& planeName,
+                              const QString& preferenceKey,
+                              bool enabled);
     void SaveProjectAsFromProvider();
     void SaveMitkScene();
     void SetCrosshairEnabled(bool enabled);

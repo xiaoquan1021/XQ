@@ -5956,10 +5956,46 @@ The next monolith slice is grounded in these comparable systems:
    - full CTest.
    - clean-PATH direct startup smoke.
 
-## Active Phase: Autonomous Research Refresh
+## Completed Phase: Autonomous Research Refresh
 
 1. Re-check the remaining original XQ/MITK Workbench parity gaps after
    concrete View Preset behavior is restored.
+2. Select the next highest-value Windows monolith slice that moves the running
+   application closer to the original Workbench without faking unsupported
+   behavior.
+3. Chosen next slice: restore the original View menu `Logging`, `Axial`,
+   `Sagittal`, and `Coronal` controls with honest monolith behavior.
+
+## Completed Phase: Workbench View Menu Slice Controls Restore
+
+1. Restore original Workbench View menu entries.
+   - Add checkable `Logging`, `Axial`, `Sagittal`, and `Coronal` actions with
+     stable object names.
+   - Place them in the View menu before Screenshot/Volume Rendering/Crosshair,
+     matching the old Workbench grouping.
+2. Implement honest monolith behavior.
+   - `Logging` controls the existing Diagnostics dock and mirrors its checked
+     state.
+   - `Axial`, `Sagittal`, and `Coronal` persist user intent through
+     `PreferencesService` keys until real MITK slice-plane visibility control
+     is wired.
+   - Post deterministic diagnostics for slice-plane intent changes instead of
+     pretending to control unsupported render-window internals.
+3. Add regression coverage before implementation.
+   - Extend View menu tests to verify action presence, checked state,
+     Diagnostics dock behavior, preference persistence, and absence of old
+     unavailable placeholders.
+4. Verification gate:
+   - targeted View/menu/layout tests.
+   - configure/build.
+   - XQ and Externals PowerShell tests.
+   - full CTest.
+   - clean-PATH direct startup smoke.
+
+## Active Phase: Autonomous Research Refresh
+
+1. Re-check the remaining original XQ/MITK Workbench parity gaps after
+   Logging and slice-plane View menu controls are restored.
 2. Select the next highest-value Windows monolith slice that moves the running
    application closer to the original Workbench without faking unsupported
    behavior.
