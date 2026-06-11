@@ -22,10 +22,70 @@ set(XQ_TEST_LIBRARY_PATHS
 )
 list(JOIN XQ_TEST_LIBRARY_PATHS ":" XQ_TEST_LIBRARY_PATH)
 
-function(xq_set_test_runtime_environment target)
-    set_tests_properties(${target} PROPERTIES
-        ENVIRONMENT "LD_LIBRARY_PATH=${XQ_TEST_LIBRARY_PATH}:$ENV{LD_LIBRARY_PATH};QT_PLUGIN_PATH=${XQ_EXTERNALS_DIR}/qt-6.7.0/plugins"
+if(WIN32)
+    set(XQ_TEST_WINDOWS_RUNTIME_PATHS
+        "${CMAKE_BINARY_DIR}/bin"
+        "${CMAKE_BINARY_DIR}/lib"
+        "${CMAKE_BINARY_DIR}/lib/plugins"
+        "${XQ_EXTERNALS_DIR}/qt-6.7.0/bin"
+        "${XQ_EXTERNALS_DIR}/qt-6.7.0/plugins"
+        "${XQ_EXTERNALS_DIR}/python-3.11.0"
+        "${XQ_EXTERNALS_DIR}/hdf5-1.14.3/bin"
+        "${XQ_EXTERNALS_DIR}/hdf5-1.12.2/bin"
+        "${XQ_EXTERNALS_DIR}/gdcm-3.0.10/bin"
+        "${XQ_EXTERNALS_DIR}/vtk-9.3.0/bin"
+        "${XQ_EXTERNALS_DIR}/itk-5.4.0/bin"
+        "${XQ_EXTERNALS_DIR}/mitk-2024.06/bin"
+        "${XQ_EXTERNALS_DIR}/mitk-2024.06/bin/plugins"
+        "${XQ_EXTERNALS_DIR}/opencascade-7.6.0/win64/vc14/bin"
+        "${XQ_EXTERNALS_DIR}/opencascade-7.6.0/bin"
+        "${XQ_EXTERNALS_DIR}/freetype-2.13.0/bin"
+        "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/MITK/MITK-build/bin"
+        "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/MITK/MITK-build/bin/plugins"
+        "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/MITK/ep/src/CTK-build/CTK-build/bin"
     )
+
+    set(XQ_TEST_BLUEBERRY_PLUGIN_PATHS
+        "${CMAKE_BINARY_DIR}/lib/plugins"
+        "${CMAKE_BINARY_DIR}/bin/plugins"
+        "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/MITK/MITK-build/bin/plugins"
+        "${XQ_EXTERNALS_ROOT}/build/${XQ_EXTERNALS_PLATFORM}/MITK/MITK-build/lib/plugins"
+        "${XQ_EXTERNALS_DIR}/mitk-2024.06/bin/plugins"
+        "${XQ_EXTERNALS_DIR}/mitk-2024.06/lib/plugins"
+        "${XQ_EXTERNALS_DIR}/mitk-2024.06/plugins"
+    )
+
+    set(XQ_TEST_ENVIRONMENT_MODIFICATIONS)
+    set(_xq_test_runtime_prepend_paths ${XQ_TEST_WINDOWS_RUNTIME_PATHS})
+    list(REVERSE _xq_test_runtime_prepend_paths)
+    foreach(_xq_test_path IN LISTS _xq_test_runtime_prepend_paths)
+        list(APPEND XQ_TEST_ENVIRONMENT_MODIFICATIONS "PATH=path_list_prepend:${_xq_test_path}")
+    endforeach()
+
+    list(APPEND XQ_TEST_ENVIRONMENT_MODIFICATIONS
+        "QT_PLUGIN_PATH=set:${XQ_EXTERNALS_DIR}/qt-6.7.0/plugins"
+        "XQ_PLUGIN_PATH=set:${CMAKE_BINARY_DIR}/lib/plugins"
+    )
+
+    list(GET XQ_TEST_BLUEBERRY_PLUGIN_PATHS 0 _xq_first_blueberry_plugin_path)
+    list(APPEND XQ_TEST_ENVIRONMENT_MODIFICATIONS "BLUEBERRY_PLUGIN_PATH=set:${_xq_first_blueberry_plugin_path}")
+    foreach(_xq_test_plugin_path IN LISTS XQ_TEST_BLUEBERRY_PLUGIN_PATHS)
+        if(NOT "${_xq_test_plugin_path}" STREQUAL "${_xq_first_blueberry_plugin_path}")
+            list(APPEND XQ_TEST_ENVIRONMENT_MODIFICATIONS "BLUEBERRY_PLUGIN_PATH=path_list_append:${_xq_test_plugin_path}")
+        endif()
+    endforeach()
+endif()
+
+function(xq_set_test_runtime_environment target)
+    if(WIN32)
+        set_tests_properties(${target} PROPERTIES
+            ENVIRONMENT_MODIFICATION "${XQ_TEST_ENVIRONMENT_MODIFICATIONS}"
+        )
+    else()
+        set_tests_properties(${target} PROPERTIES
+            ENVIRONMENT "LD_LIBRARY_PATH=${XQ_TEST_LIBRARY_PATH}:$ENV{LD_LIBRARY_PATH};QT_PLUGIN_PATH=${XQ_EXTERNALS_DIR}/qt-6.7.0/plugins"
+        )
+    endif()
 endfunction()
 
 function(xq_add_registered_test target)

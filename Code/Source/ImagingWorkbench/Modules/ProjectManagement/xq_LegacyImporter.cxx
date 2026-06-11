@@ -27,26 +27,24 @@
 #include <tinyxml2.h>
 
 #include <algorithm>
-#include <dirent.h>
-#include <sys/stat.h>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <system_error>
 
 // ---------------------------------------------------------------------------
 // Helper: check if file/dir exists
 // ---------------------------------------------------------------------------
 static bool FileExists(const std::string& path)
 {
-    struct stat info;
-    return (stat(path.c_str(), &info) == 0) && !(info.st_mode & S_IFDIR);
+    std::error_code ec;
+    return std::filesystem::is_regular_file(path, ec) && !ec;
 }
 
 static bool DirExists(const std::string& path)
 {
-    struct stat info;
-    if (stat(path.c_str(), &info) != 0)
-        return false;
-    return (info.st_mode & S_IFDIR) != 0;
+    std::error_code ec;
+    return std::filesystem::is_directory(path, ec) && !ec;
 }
 
 static std::string GetFileNameOnly(const std::string& path)
@@ -965,37 +963,29 @@ std::vector<std::string> xq_LegacyImporter::ScanDirectory(
 {
     std::vector<std::string> result;
 
-    DIR* dir = opendir(dirPath.c_str());
-    if (!dir)
+    std::error_code ec;
+    std::filesystem::directory_iterator entries(dirPath, ec);
+    if (ec)
         return result;
 
-    struct dirent* entry;
-    while ((entry = readdir(dir)) != nullptr)
+    for (const auto& entry : entries)
     {
-        std::string name(entry->d_name);
-        if (name == "." || name == "..")
+        std::error_code entryError;
+        if (!entry.is_regular_file(entryError) || entryError)
             continue;
 
-        std::string fullPath = dirPath + "/" + name;
-        struct stat info;
-        if (stat(fullPath.c_str(), &info) != 0)
-            continue;
-
-        if (info.st_mode & S_IFDIR)
-            continue; // skip subdirectories
-
+        const std::string name = entry.path().filename().string();
         std::string ext = GetExtension(name);
         for (const auto& target : extensions)
         {
             if (ext == target)
             {
-                result.push_back(fullPath);
+                result.push_back(entry.path().generic_string());
                 break;
             }
         }
     }
 
-    closedir(dir);
     std::sort(result.begin(), result.end());
     return result;
 }

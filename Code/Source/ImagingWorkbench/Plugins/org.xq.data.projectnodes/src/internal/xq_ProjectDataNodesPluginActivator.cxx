@@ -152,15 +152,17 @@ void xq_ProjectDataNodesPluginActivator::LoadModules()
     // the side effect of forcing the static initializers (and therefore
     // the mapper factory registrations) to execute before any data node
     // reaches the rendering pipeline.
-    LoadLibrary("xq_Path (centerlines)",      "xqModulePath");
-    LoadLibrary("xq_Segmentation",             "xqModuleSegmentation");
-    LoadLibrary("xq_ModelCommon",              "xqModuleModelCommon");
-    LoadLibrary("xq_ModelOCCT",                "xqModuleModelOCCT");
-    LoadLibrary("xq_MeshCommon",               "xqModuleMeshCommon");
-    LoadLibrary("xq_Simulation",               "xqModuleSimulation");
+    LoadQtLibrary("xq_Path (centerlines)",      "xqModulePath");
+    LoadQtLibrary("xq_Segmentation",             "xqModuleSegmentation");
+    LoadQtLibrary("xq_ModelCommon",              "xqModuleModelCommon");
+    LoadQtLibrary("xq_ModelOCCT",                "xqModuleModelOCCT");
+    LoadQtLibrary("xq_MeshCommon",               "xqModuleMeshCommon");
+    LoadQtLibrary("xq_Simulation",               "xqModuleSimulation");
+    LoadQtLibrary("xq_ROMSimulation",            "xqModuleROMSimulation");
+    LoadQtLibrary("xq_MultiPhysics",             "xqModuleMultiPhysics");
 }
 
-void xq_ProjectDataNodesPluginActivator::LoadLibrary(QString name, QString libFileName)
+void xq_ProjectDataNodesPluginActivator::LoadQtLibrary(QString name, QString libFileName)
 {
     QLibrary lib(libFileName);
     if (!lib.load())

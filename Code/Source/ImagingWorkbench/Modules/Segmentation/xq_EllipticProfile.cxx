@@ -2,7 +2,8 @@
 
 #include <cmath>
 
-constexpr double kTwoPi = 2.0 * M_PI;
+constexpr double kPi = 3.141592653589793238462643383279502884;
+constexpr double kTwoPi = 2.0 * kPi;
 
 xq_EllipticProfile::xq_EllipticProfile()
 {
