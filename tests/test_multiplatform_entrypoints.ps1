@@ -5,6 +5,7 @@ $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
 foreach ($relativePath in @(
     "Build-XQ.cmd",
+    "Run-XQ.cmd",
     "Start-XQ.cmd",
     "build-xq.sh",
     "run-xq.sh",
@@ -45,6 +46,7 @@ if ($linuxPreset.cacheVariables.XQ_BUILD_MONOLITH -ne "OFF") {
 }
 
 $buildCmd = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "Build-XQ.cmd")
+$runCmd = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "Run-XQ.cmd")
 $startCmd = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "Start-XQ.cmd")
 $buildSh = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "build-xq.sh")
 $runSh = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot "run-xq.sh")
@@ -64,6 +66,9 @@ foreach ($required in @(
     'scripts\run-xq.ps1',
     '-ExternalsRoot "%SCRIPT_DIR%..\Externals"'
 )) {
+    if ($runCmd -notmatch [regex]::Escape($required)) {
+        throw "Run-XQ.cmd must dispatch to the Windows PowerShell run entrypoint with the local Externals default"
+    }
     if ($startCmd -notmatch [regex]::Escape($required)) {
         throw "Start-XQ.cmd must dispatch to the Windows PowerShell run entrypoint with the local Externals default"
     }
