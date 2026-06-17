@@ -21,7 +21,10 @@ public:
 
 private:
     xq_FlowSolverRegistry();
+    xq_FlowSolverRegistry(const xq_FlowSolverRegistry&) = delete;
+    xq_FlowSolverRegistry& operator=(const xq_FlowSolverRegistry&) = delete;
+    xq_FlowSolverRegistry(xq_FlowSolverRegistry&&) = delete;
+    xq_FlowSolverRegistry& operator=(xq_FlowSolverRegistry&&) = delete;
 
     std::vector<std::unique_ptr<xq_FlowSolverBackend>> m_Backends;
 };
-

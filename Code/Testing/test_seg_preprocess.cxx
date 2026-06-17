@@ -19,8 +19,10 @@
 
 // Suppress deprecation warnings in the test itself — we intentionally call the
 // deprecated aliases to verify backward compat is preserved.
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 
 #include "xq_ProfileGroup.h"
 #include "xq_PipelineDataUtils.h"
@@ -78,6 +80,11 @@
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+namespace
+{
+constexpr double kPi = 3.141592653589793238462643383279502884;
+}
 
 static xq_CircularProfile* MakeCircle()
 {
@@ -1095,13 +1102,74 @@ static bool test_model_mesh_simprep_pipeline_contract()
 
 static bool test_sv_project_import_creates_vascular_nodes()
 {
-    const std::string projectDir = "/home/xiaoquan/0007_H_AO_H";
+    const auto projectDir = std::filesystem::temp_directory_path() /
+                            "xq_legacy_sv_project_import_contract";
+    std::filesystem::remove_all(projectDir);
+    std::filesystem::create_directories(projectDir / "Paths");
+    std::filesystem::create_directories(projectDir / "Segmentations");
+
+    {
+        std::ofstream os(projectDir / ".svproj");
+        os <<
+            "<projectDescription>"
+            "  <paths folder_name=\"Paths\"/>"
+            "  <segmentations folder_name=\"Segmentations\"/>"
+            "</projectDescription>";
+    }
+
+    {
+        std::ofstream os(projectDir / "Paths" / "artery.pth");
+        os <<
+            "<path id=\"17\">"
+            "  <timestep>"
+            "    <path_element>"
+            "      <control_points>"
+            "        <point x=\"0\" y=\"0\" z=\"0\"/>"
+            "        <point x=\"0\" y=\"0\" z=\"10\"/>"
+            "      </control_points>"
+            "      <path_points>"
+            "        <path_point id=\"0\">"
+            "          <pos x=\"0\" y=\"0\" z=\"0\"/>"
+            "          <tangent x=\"0\" y=\"0\" z=\"1\"/>"
+            "          <rotation x=\"1\" y=\"0\" z=\"0\"/>"
+            "        </path_point>"
+            "      </path_points>"
+            "    </path_element>"
+            "  </timestep>"
+            "</path>";
+    }
+
+    {
+        std::ofstream os(projectDir / "Segmentations" / "artery.ctgr");
+        os <<
+            "<contourgroup path_id=\"17\" path_name=\"artery\">"
+            "  <timestep>"
+            "    <contour>"
+            "      <path_point id=\"0\">"
+            "        <pos x=\"0\" y=\"0\" z=\"0\"/>"
+            "        <tangent x=\"0\" y=\"0\" z=\"1\"/>"
+            "        <rotation x=\"1\" y=\"0\" z=\"0\"/>"
+            "      </path_point>"
+            "      <contour_points>"
+            "        <point x=\"1\" y=\"0\" z=\"0\"/>"
+            "        <point x=\"0\" y=\"1\" z=\"0\"/>"
+            "        <point x=\"-1\" y=\"0\" z=\"0\"/>"
+            "        <point x=\"0\" y=\"-1\" z=\"0\"/>"
+            "      </contour_points>"
+            "    </contour>"
+            "  </timestep>"
+            "</contourgroup>";
+    }
+
     auto ds = mitk::StandaloneDataStorage::New();
 
     xq_LegacyImporter importer;
-    if (!importer.ImportProject(ds, projectDir))
+    if (!importer.ImportProject(ds, projectDir.string()))
     {
         std::cerr << "FAIL test_sv_project_import_creates_vascular_nodes: import failed\n";
+        for (const auto& log : importer.GetImportLog())
+            std::cerr << "  import log: " << log << "\n";
+        std::filesystem::remove_all(projectDir);
         return false;
     }
 
@@ -1144,21 +1212,25 @@ static bool test_sv_project_import_creates_vascular_nodes()
     if (pathNodeCount == 0)
     {
         std::cerr << "FAIL test_sv_project_import_creates_vascular_nodes: no imported path nodes were converted to xq_VesselCenterline\n";
+        std::filesystem::remove_all(projectDir);
         return false;
     }
 
     if (profileGroupCount == 0)
     {
         std::cerr << "FAIL test_sv_project_import_creates_vascular_nodes: no imported contour groups were converted to xq_ProfileGroup\n";
+        std::filesystem::remove_all(projectDir);
         return false;
     }
 
     if (pathPointSetCount > 0 || segPointSetCount > 0)
     {
         std::cerr << "FAIL test_sv_project_import_creates_vascular_nodes: legacy importer still created PointSet nodes under Paths/Segmentations\n";
+        std::filesystem::remove_all(projectDir);
         return false;
     }
 
+    std::filesystem::remove_all(projectDir);
     std::cout << "PASS test_sv_project_import_creates_vascular_nodes\n";
     return true;
 }
@@ -1763,7 +1835,7 @@ static bool test_loft_contours_aligns_cyclic_point_order()
 
     for (int i = 0; i < kSamples; ++i)
     {
-        const double angle = 2.0 * M_PI * static_cast<double>(i) / static_cast<double>(kSamples);
+        const double angle = 2.0 * kPi * static_cast<double>(i) / static_cast<double>(kSamples);
         mitk::Point3D point;
         point[0] = kRadius * std::cos(angle);
         point[1] = kRadius * std::sin(angle);
@@ -1775,7 +1847,7 @@ static bool test_loft_contours_aligns_cyclic_point_order()
     for (int i = 0; i < kSamples; ++i)
     {
         const int shifted = (i + kSamples / 2) % kSamples;
-        const double angle = 2.0 * M_PI * static_cast<double>(shifted) / static_cast<double>(kSamples);
+        const double angle = 2.0 * kPi * static_cast<double>(shifted) / static_cast<double>(kSamples);
         mitk::Point3D point;
         point[0] = kRadius * std::cos(angle);
         point[1] = kRadius * std::sin(angle);
@@ -1799,7 +1871,7 @@ static bool test_loft_contours_aligns_cyclic_point_order()
     mass->Update();
 
     const double measuredArea = mass->GetSurfaceArea();
-    const double expectedArea = 2.0 * M_PI * kRadius * kLength + 2.0 * M_PI * kRadius * kRadius;
+    const double expectedArea = 2.0 * kPi * kRadius * kLength + 2.0 * kPi * kRadius * kRadius;
     const double relativeError = std::abs(measuredArea - expectedArea) / expectedArea;
 
     if (relativeError > 0.35)
@@ -1963,12 +2035,12 @@ static bool test_profile_statistics_helper()
                   << stats.pointCount << "\n";
         return false;
     }
-    if (std::abs(stats.perimeter - (2.0 * M_PI * 5.0)) > 1.0)
+    if (std::abs(stats.perimeter - (2.0 * kPi * 5.0)) > 1.0)
     {
         std::cerr << "FAIL test_profile_statistics_helper: perimeter mismatch\n";
         return false;
     }
-    if (std::abs(stats.area - (M_PI * 25.0)) > 2.0)
+    if (std::abs(stats.area - (kPi * 25.0)) > 2.0)
     {
         std::cerr << "FAIL test_profile_statistics_helper: area mismatch\n";
         return false;
@@ -4256,7 +4328,9 @@ static bool test_legacy_levelset_does_not_return_threshold_fallback()
 // main
 // ---------------------------------------------------------------------------
 
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop  // restore -Wdeprecated-declarations
+#endif
 
 int main()
 {

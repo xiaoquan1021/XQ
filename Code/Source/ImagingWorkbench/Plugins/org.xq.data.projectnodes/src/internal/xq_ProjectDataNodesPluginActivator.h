@@ -22,7 +22,7 @@ public:
 
 private:
     void LoadModules();
-    void LoadLibrary(QString name, QString libFileName);
+    void LoadQtLibrary(QString name, QString libFileName);
 };
 
 #endif // XQ_PROJECTDATANODESPLUGINACTIVATOR_H

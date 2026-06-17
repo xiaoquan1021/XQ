@@ -90,7 +90,7 @@ public:
 protected:
     xq_ProfileGroup();
     xq_ProfileGroup(const xq_ProfileGroup& other);
-    ~xq_ProfileGroup() override = default;
+    ~xq_ProfileGroup() override;
     itk::LightObject::Pointer InternalClone() const override;
 
     // Map: timeStep -> (pathPosIndex -> owned contour)

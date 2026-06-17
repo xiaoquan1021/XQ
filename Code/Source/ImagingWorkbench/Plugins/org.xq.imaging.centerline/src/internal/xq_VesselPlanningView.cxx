@@ -49,6 +49,9 @@ const QString xq_VesselPlanningView::VIEW_ID = "org.xq.views.pathplanning";
 namespace
 {
 
+constexpr double kPi = 3.141592653589793238462643383279502884;
+constexpr double kTwoPi = 2.0 * kPi;
+
 std::vector<xq_ProfilePlacementFrame> BuildPlacementFrames(xq_VesselCenterline* centerline)
 {
   std::vector<xq_ProfilePlacementFrame> frames;
@@ -1428,7 +1431,7 @@ void xq_VesselPlanningView::SmoothPath()
       {
         for (int j = 0; j < n; ++j)
         {
-          double angle = -2.0 * M_PI * k * j / n;
+          double angle = -kTwoPi * k * j / n;
           realCoeffs[k] += input[j] * std::cos(angle);
           imagCoeffs[k] += input[j] * std::sin(angle);
         }
@@ -1442,7 +1445,7 @@ void xq_VesselPlanningView::SmoothPath()
         double val = realCoeffs[0] / n;
         for (int k = 1; k <= keepModes; ++k)
         {
-          double angle = 2.0 * M_PI * k * t / n;
+          double angle = kTwoPi * k * t / n;
           val += 2.0 * (realCoeffs[k] * std::cos(angle)
                       - imagCoeffs[k] * std::sin(angle)) / n;
         }

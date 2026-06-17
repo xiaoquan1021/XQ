@@ -253,6 +253,10 @@ function(xq_create_plugin)
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/plugins"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/plugins"
   )
+  if(WIN32)
+    # MITK's provisioning generator writes CTK plug-in DLLs as lib<target>.dll.
+    set_target_properties(${XQ_PLG_TARGET} PROPERTIES PREFIX "lib")
+  endif()
 
   # 5. Set CppMicroServices module name
   set_property(TARGET ${XQ_PLG_TARGET} PROPERTY US_MODULE_NAME ${XQ_PLG_TARGET})

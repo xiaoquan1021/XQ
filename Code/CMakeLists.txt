@@ -21,7 +21,7 @@ include(${XQ_CMAKE_DIR}/XQExternals.cmake)
 # Qt6
 find_package(Qt6 REQUIRED COMPONENTS
   Core Widgets Gui Xml OpenGL OpenGLWidgets
-  Network WebEngineWidgets Svg UiTools
+  Network Quick Svg UiTools
 )
 
 # VTK (save VTK_DIR before ITK overwrites it)
@@ -125,8 +125,8 @@ set(US_RCC_EXECUTABLE_NAME usResourceCompiler)
 #-----------------------------------------------------------------------------
 # 6. MITK include directories
 #-----------------------------------------------------------------------------
-set(MITK_SRC_DIR "${XQ_EXTERNALS_ROOT}/src/MITK-2024.06")
-set(MITK_BUILD_DIR "${MITK_SRC_DIR}/build/MITK-build")
+set(MITK_SRC_DIR "${XQ_EXTERNALS_ROOT}/src/MITK-2024.06" CACHE PATH "MITK source tree")
+set(MITK_BUILD_DIR "${MITK_DIR}" CACHE PATH "MITK build tree containing generated headers")
 
 # MITK build-tree headers (Modules, Plugins)
 include_directories(
@@ -142,36 +142,44 @@ include_directories(
   ${MITK_INSTALL_DIR}/include/ctk
 )
 
-# BlueBerry plugin include directories
-set(BERRY_PLUGIN_SOURCE_DIRS
-  "${MITK_SRC_DIR}/Plugins/org.blueberry.core.runtime/src"
-  "${MITK_SRC_DIR}/Plugins/org.blueberry.core.commands/src"
-  "${MITK_SRC_DIR}/Plugins/org.blueberry.ui.qt/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.common/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.common/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.application/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.ext/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.extapplication/src"
-  "${MITK_SRC_DIR}/Plugins/org.mitk.gui.qt.datamanager/src"
-)
+if(XQ_BUILD_LEGACY_BLUEBERRY)
+  set(XQ_REQUIRED_MITK_BLUEBERRY_PLUGINS
+    org.blueberry.core.runtime
+    org.blueberry.core.commands
+    org.blueberry.ui.qt
+    org.mitk.gui.common
+    org.mitk.gui.qt.common
+    org.mitk.gui.qt.application
+    org.mitk.gui.qt.ext
+    org.mitk.gui.qt.extapplication
+    org.mitk.gui.qt.datamanager
+    org.mitk.gui.qt.mitkworkbench.intro
+    org.mitk.gui.qt.stdmultiwidgeteditor
+    org.mitk.gui.qt.mxnmultiwidgeteditor
+    org.mitk.gui.qt.dicombrowser
+    org.mitk.gui.qt.imagenavigator
+    org.mitk.gui.qt.measurementtoolbox
+    org.mitk.gui.qt.properties
+    org.mitk.gui.qt.segmentation
+    org.mitk.gui.qt.volumevisualization
+    org.mitk.gui.qt.moviemaker
+    org.mitk.gui.qt.pointsetinteraction
+    org.mitk.gui.qt.remeshing
+    org.mitk.gui.qt.viewnavigator
+    org.mitk.gui.qt.imagecropper
+    org.mitk.gui.qt.pixelvalue
+  )
 
-# Add build-tree generated headers for each plugin
-set(BERRY_PLUGIN_BUILD_DIRS
-  "${MITK_BUILD_DIR}/Plugins/org.blueberry.core.runtime"
-  "${MITK_BUILD_DIR}/Plugins/org.blueberry.core.commands"
-  "${MITK_BUILD_DIR}/Plugins/org.blueberry.ui.qt"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.common"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.common"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.application"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.ext"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.extapplication"
-  "${MITK_BUILD_DIR}/Plugins/org.mitk.gui.qt.datamanager"
-)
+  foreach(_xq_mitk_plugin IN LISTS XQ_REQUIRED_MITK_BLUEBERRY_PLUGINS)
+    list(APPEND BERRY_PLUGIN_SOURCE_DIRS "${MITK_SRC_DIR}/Plugins/${_xq_mitk_plugin}/src")
+    list(APPEND BERRY_PLUGIN_BUILD_DIRS "${MITK_BUILD_DIR}/Plugins/${_xq_mitk_plugin}")
+  endforeach()
 
-include_directories(
-  ${BERRY_PLUGIN_SOURCE_DIRS}
-  ${BERRY_PLUGIN_BUILD_DIRS}
-)
+  include_directories(
+    ${BERRY_PLUGIN_SOURCE_DIRS}
+    ${BERRY_PLUGIN_BUILD_DIRS}
+  )
+endif()
 
 #-----------------------------------------------------------------------------
 # 7. Module library name variables
@@ -223,50 +231,56 @@ foreach(_mod_dir ${XQ_MODULE_DIRS})
 endforeach()
 
 #-----------------------------------------------------------------------------
-# 10. Add Plugin subdirectories (CTK-integrated)
+# 10. Add legacy Plugin subdirectories (CTK-integrated)
 #-----------------------------------------------------------------------------
-include(${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Plugins/PluginList.cmake)
+if(XQ_BUILD_LEGACY_BLUEBERRY)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Plugins/PluginList.cmake)
 
-# Register XQ plugin libraries variable with CTK plugin framework.
-# ctkFunctionGetAllPluginTargets() reads CTK_PLUGIN_LIBRARIES_VARS to discover
-# all known plugins. We add our own variable so our plugins appear in provisioning.
-set(XQ_PLUGIN_LIBRARIES "" CACHE INTERNAL "XQ CTK plug-in targets" FORCE)
-set_property(GLOBAL APPEND PROPERTY CTK_PLUGIN_LIBRARIES_VARS XQ_PLUGIN_LIBRARIES)
+  # Register XQ plugin libraries variable with CTK plugin framework.
+  # ctkFunctionGetAllPluginTargets() reads CTK_PLUGIN_LIBRARIES_VARS to discover
+  # all known plugins. We add our own variable so our plugins appear in provisioning.
+  set(XQ_PLUGIN_LIBRARIES "" CACHE INTERNAL "XQ CTK plug-in targets" FORCE)
+  set_property(GLOBAL APPEND PROPERTY CTK_PLUGIN_LIBRARIES_VARS XQ_PLUGIN_LIBRARIES)
 
-# Define GetMyTargetLibraries so ctkMacroGetAllProjectTargetLibraries can
-# identify XQ plugin targets as "project" targets (not external).
-macro(GetMyTargetLibraries all_target_libraries varname)
-  set(re_ctkplugin "^org_xq_[a-zA-Z0-9_]+$")
-  set(_tmp_list)
-  list(APPEND _tmp_list ${all_target_libraries})
-  ctkMacroListFilter(_tmp_list re_ctkplugin OUTPUT_VARIABLE ${varname})
-endmacro()
+  # Define GetMyTargetLibraries so ctkMacroGetAllProjectTargetLibraries can
+  # identify XQ plugin targets as "project" targets (not external).
+  macro(GetMyTargetLibraries all_target_libraries varname)
+    set(re_ctkplugin "^org_xq_[a-zA-Z0-9_]+$")
+    set(_tmp_list)
+    list(APPEND _tmp_list ${all_target_libraries})
+    ctkMacroListFilter(_tmp_list re_ctkplugin OUTPUT_VARIABLE ${varname})
+  endmacro()
 
-set(XQ_PLUGIN_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Plugins")
+  set(XQ_PLUGIN_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/ImagingWorkbench/Plugins")
 
-foreach(_plugin_entry ${XQ_PLUGINS})
-  # Parse "plugin_name:ON/OFF"
-  string(REPLACE ":" ";" _plugin_parts "${_plugin_entry}")
-  list(GET _plugin_parts 0 _plugin_name)
-  list(GET _plugin_parts 1 _plugin_enabled)
+  foreach(_plugin_entry ${XQ_PLUGINS})
+    # Parse "plugin_name:ON/OFF"
+    string(REPLACE ":" ";" _plugin_parts "${_plugin_entry}")
+    list(GET _plugin_parts 0 _plugin_name)
+    list(GET _plugin_parts 1 _plugin_enabled)
 
-  if(_plugin_enabled STREQUAL "ON")
-    if(EXISTS "${XQ_PLUGIN_BASE_DIR}/${_plugin_name}/CMakeLists.txt")
-      add_subdirectory("${XQ_PLUGIN_BASE_DIR}/${_plugin_name}")
+    if(_plugin_enabled STREQUAL "ON")
+      if(EXISTS "${XQ_PLUGIN_BASE_DIR}/${_plugin_name}/CMakeLists.txt")
+        add_subdirectory("${XQ_PLUGIN_BASE_DIR}/${_plugin_name}")
+      endif()
     endif()
-  endif()
-endforeach()
+  endforeach()
+endif()
 
 #-----------------------------------------------------------------------------
-# 11. Add Application subdirectory
+# 11. Add Application subdirectories
 #-----------------------------------------------------------------------------
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Application/CMakeLists.txt")
+if(XQ_BUILD_MONOLITH AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Monolith/CMakeLists.txt")
+  add_subdirectory(Source/Monolith)
+endif()
+
+if(XQ_BUILD_LEGACY_BLUEBERRY AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Application/CMakeLists.txt")
   add_subdirectory(Source/Application)
 endif()
 
 #-----------------------------------------------------------------------------
 # 12. Add Testing subdirectory
 #-----------------------------------------------------------------------------
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Testing/CMakeLists.txt")
+if(XQ_BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Testing/CMakeLists.txt")
   add_subdirectory(Testing)
 endif()

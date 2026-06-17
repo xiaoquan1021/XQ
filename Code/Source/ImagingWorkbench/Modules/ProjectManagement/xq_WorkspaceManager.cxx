@@ -26,9 +26,9 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <sys/stat.h>
-#include <dirent.h>
+#include <filesystem>
 #include <fstream>
+#include <system_error>
 
 static const char* PROJECT_FILE_EXTENSION = ".xqproj";
 static const char* PROJECT_VERSION = "1.0";
@@ -106,27 +106,23 @@ xq_WorkspaceManager::~xq_WorkspaceManager()
 
 bool xq_WorkspaceManager::DirExists(const std::string& path)
 {
-    struct stat info;
-    if (stat(path.c_str(), &info) != 0)
-        return false;
-    return (info.st_mode & S_IFDIR) != 0;
+    std::error_code ec;
+    return std::filesystem::is_directory(path, ec) && !ec;
 }
 
 bool xq_WorkspaceManager::FileExists(const std::string& path)
 {
-    struct stat info;
-    return (stat(path.c_str(), &info) == 0) && !(info.st_mode & S_IFDIR);
+    std::error_code ec;
+    return std::filesystem::is_regular_file(path, ec) && !ec;
 }
 
 bool xq_WorkspaceManager::CreateDir(const std::string& path)
 {
     if (DirExists(path))
         return true;
-#ifdef _WIN32
-    return _mkdir(path.c_str()) == 0;
-#else
-    return mkdir(path.c_str(), 0755) == 0;
-#endif
+
+    std::error_code ec;
+    return std::filesystem::create_directory(path, ec) && !ec;
 }
 
 bool xq_WorkspaceManager::RemoveFile(const std::string& path)
@@ -176,25 +172,19 @@ std::string xq_WorkspaceManager::GetFileNameWithoutExtension(const std::string& 
 std::vector<std::string> xq_WorkspaceManager::GetFilesInDirectory(const std::string& dirPath)
 {
     std::vector<std::string> files;
-    DIR* dir = opendir(dirPath.c_str());
-    if (!dir)
+    std::error_code ec;
+    std::filesystem::directory_iterator entries(dirPath, ec);
+    if (ec)
         return files;
 
-    struct dirent* entry;
-    while ((entry = readdir(dir)) != nullptr)
+    for (const auto& entry : entries)
     {
-        std::string name(entry->d_name);
-        if (name == "." || name == "..")
+        std::error_code entryError;
+        if (!entry.is_regular_file(entryError) || entryError)
             continue;
 
-        std::string fullPath = dirPath + "/" + name;
-        struct stat info;
-        if (stat(fullPath.c_str(), &info) == 0 && !(info.st_mode & S_IFDIR))
-        {
-            files.push_back(name);
-        }
+        files.push_back(entry.path().filename().string());
     }
-    closedir(dir);
 
     std::sort(files.begin(), files.end());
     return files;
