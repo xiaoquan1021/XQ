@@ -39,3 +39,22 @@
 **/*.tar.xz
 **/*.zip
 **/*.7z
+
+# Common editor, cache and test output
+*.backup_*
+*.bak
+*.tmp
+*.orig
+*.old
+__pycache__/
+*.py[cod]
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.superpowers/
+.DS_Store
+Thumbs.db
+CMakeUserPresets.json
+Testing/

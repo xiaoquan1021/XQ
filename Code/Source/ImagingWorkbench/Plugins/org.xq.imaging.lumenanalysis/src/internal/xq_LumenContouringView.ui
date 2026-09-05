@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>xq_LumenContouringView</class>
+ <widget class="QWidget" name="xq_LumenContouringView">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>400</width><height>800</height></rect>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <!-- Path Selection -->
+   <item>
+    <widget class="QGroupBox" name="grpPathSelection">
+     <property name="title"><string>Path Selection</string></property>
+     <layout class="QVBoxLayout" name="pathLayout">
+      <item>
+       <widget class="QComboBox" name="pathComboBox"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Contour Groups -->
+   <item>
+    <widget class="QGroupBox" name="grpContourGroups">
+     <property name="title"><string>Contour Groups</string></property>
+     <layout class="QVBoxLayout" name="groupLayout">
+      <item>
+       <widget class="QListWidget" name="contourGroupListWidget">
+        <property name="minimumHeight"><number>100</number></property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="groupButtonLayout">
+        <item>
+         <widget class="QPushButton" name="btnCreateGroup">
+          <property name="text"><string>Create Group</string></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnDeleteGroup">
+          <property name="text"><string>Delete Group</string></property>
+          <property name="enabled"><bool>false</bool></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnLoft">
+          <property name="text"><string>Loft</string></property>
+          <property name="enabled"><bool>false</bool></property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Contour Tools -->
+   <item>
+    <widget class="QGroupBox" name="grpContourTools">
+     <property name="title"><string>Contour Tools</string></property>
+     <layout class="QVBoxLayout" name="toolsLayout">
+      <item>
+       <widget class="QToolBox" name="contourToolBox">
+        <!-- Circle page -->
+        <widget class="QWidget" name="pageCircle">
+         <property name="geometry">
+          <rect><x>0</x><y>0</y><width>380</width><height>100</height></rect>
+         </property>
+         <attribute name="label"><string>Circle</string></attribute>
+         <layout class="QFormLayout" name="circleLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblCircleRadius">
+            <property name="text"><string>Radius:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinCircleRadius">
+            <property name="minimum"><double>0.01</double></property>
+            <property name="maximum"><double>100.0</double></property>
+            <property name="value"><double>1.0</double></property>
+            <property name="singleStep"><double>0.1</double></property>
+            <property name="decimals"><number>3</number></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <!-- Ellipse page -->
+        <widget class="QWidget" name="pageEllipse">
+         <property name="geometry">
+          <rect><x>0</x><y>0</y><width>380</width><height>100</height></rect>
+         </property>
+         <attribute name="label"><string>Ellipse</string></attribute>
+         <layout class="QFormLayout" name="ellipseLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblEllipseMajor">
+            <property name="text"><string>Major Radius:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinEllipseMajor">
+            <property name="minimum"><double>0.01</double></property>
+            <property name="maximum"><double>100.0</double></property>
+            <property name="value"><double>2.0</double></property>
+            <property name="singleStep"><double>0.1</double></property>
+            <property name="decimals"><number>3</number></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblEllipseMinor">
+            <property name="text"><string>Minor Radius:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="spinEllipseMinor">
+            <property name="minimum"><double>0.01</double></property>
+            <property name="maximum"><double>100.0</double></property>
+            <property name="value"><double>1.0</double></property>
+            <property name="singleStep"><double>0.1</double></property>
+            <property name="decimals"><number>3</number></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <!-- SplinePolygon page -->
+        <widget class="QWidget" name="pageSplinePolygon">
+         <property name="geometry">
+          <rect><x>0</x><y>0</y><width>380</width><height>100</height></rect>
+         </property>
+         <attribute name="label"><string>SplinePolygon</string></attribute>
+         <layout class="QFormLayout" name="splineLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblSplinePoints">
+            <property name="text"><string>Control Points:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="spinSplinePoints">
+            <property name="minimum"><number>3</number></property>
+            <property name="maximum"><number>100</number></property>
+            <property name="value"><number>8</number></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblSplineSubdiv">
+            <property name="text"><string>Subdivisions:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="spinSplineSubdiv">
+            <property name="minimum"><number>1</number></property>
+            <property name="maximum"><number>10</number></property>
+            <property name="value"><number>3</number></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <!-- Manual page -->
+        <widget class="QWidget" name="pageManual">
+         <property name="geometry">
+          <rect><x>0</x><y>0</y><width>380</width><height>60</height></rect>
+         </property>
+         <attribute name="label"><string>Manual</string></attribute>
+         <layout class="QVBoxLayout" name="manualLayout">
+          <item>
+           <widget class="QLabel" name="lblManualInfo">
+            <property name="text"><string>Click on the image to draw contour points manually.</string></property>
+            <property name="wordWrap"><bool>true</bool></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Contours -->
+   <item>
+    <widget class="QGroupBox" name="grpContours">
+     <property name="title"><string>Contours</string></property>
+     <layout class="QVBoxLayout" name="contourLayout">
+      <item>
+       <widget class="QListWidget" name="contourListWidget">
+        <property name="minimumHeight"><number>80</number></property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="contourButtonLayout">
+        <item>
+         <widget class="QPushButton" name="btnAddContour">
+          <property name="text"><string>Add Contour</string></property>
+          <property name="enabled"><bool>false</bool></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnDeleteContour">
+          <property name="text"><string>Delete Contour</string></property>
+          <property name="enabled"><bool>false</bool></property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="contourToolLayout">
+        <item>
+         <widget class="QPushButton" name="btnCopyContour">
+          <property name="text"><string>Copy</string></property>
+          <property name="toolTip"><string>Copy the selected contour</string></property>
+          <property name="enabled"><bool>false</bool></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnPasteContour">
+          <property name="text"><string>Paste</string></property>
+          <property name="toolTip"><string>Paste the copied contour at a new position</string></property>
+          <property name="enabled"><bool>false</bool></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnScaleContour">
+          <property name="text"><string>Scale</string></property>
+          <property name="toolTip"><string>Scale the selected contour by a factor</string></property>
+          <property name="enabled"><bool>false</bool></property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Contour Editing -->
+   <item>
+    <widget class="QGroupBox" name="grpContourEditing">
+     <property name="title"><string>Contour Editing</string></property>
+     <layout class="QVBoxLayout" name="editingLayout">
+      <item>
+       <layout class="QFormLayout" name="smoothFormLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="lblSmoothIterations">
+          <property name="text"><string>Smooth Iterations:</string></property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QSpinBox" name="spinSmoothIterations">
+          <property name="minimum"><number>1</number></property>
+          <property name="maximum"><number>100</number></property>
+          <property name="value"><number>10</number></property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="lblSmoothFactor">
+          <property name="text"><string>Relaxation Factor:</string></property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QDoubleSpinBox" name="spinSmoothFactor">
+          <property name="minimum"><double>0.01</double></property>
+          <property name="maximum"><double>1.0</double></property>
+          <property name="value"><double>0.50</double></property>
+          <property name="singleStep"><double>0.01</double></property>
+          <property name="decimals"><number>2</number></property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="lblResamplePoints">
+          <property name="text"><string>Target Points:</string></property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QSpinBox" name="spinResamplePoints">
+          <property name="minimum"><number>10</number></property>
+          <property name="maximum"><number>500</number></property>
+          <property name="value"><number>50</number></property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnSmoothContour">
+        <property name="text"><string>Smooth Selected Contour</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnResampleContour">
+        <property name="text"><string>Resample Contour</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnContourStats">
+        <property name="text"><string>Contour Statistics</string></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Automatic Segmentation -->
+   <item>
+    <widget class="QGroupBox" name="grpAutoSegmentation">
+     <property name="title"><string>Automatic Segmentation</string></property>
+     <layout class="QVBoxLayout" name="autoSegLayout">
+      <item>
+       <layout class="QFormLayout" name="autoSegFormLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="lblLowerThresh">
+          <property name="text"><string>Lower Threshold:</string></property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QDoubleSpinBox" name="spinLowerThresh">
+          <property name="minimum"><double>-10000.0</double></property>
+          <property name="maximum"><double>10000.0</double></property>
+          <property name="value"><double>100.0</double></property>
+          <property name="singleStep"><double>10.0</double></property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="lblUpperThresh">
+          <property name="text"><string>Upper Threshold:</string></property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QDoubleSpinBox" name="spinUpperThresh">
+          <property name="minimum"><double>-10000.0</double></property>
+          <property name="maximum"><double>10000.0</double></property>
+          <property name="value"><double>600.0</double></property>
+          <property name="singleStep"><double>10.0</double></property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="autoSegMethodLayout">
+        <item>
+         <widget class="QRadioButton" name="rbThresholdSeg">
+          <property name="text"><string>Threshold</string></property>
+          <property name="checked"><bool>true</bool></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbRegionGrow">
+          <property name="text"><string>Region Growing</string></property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="autoSegPostLayout">
+        <item>
+         <widget class="QCheckBox" name="cbAutoSmooth">
+          <property name="text"><string>Smooth</string></property>
+          <property name="checked"><bool>true</bool></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cbAutoDecimate">
+          <property name="text"><string>Decimate</string></property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnPerformSegmentation">
+        <property name="text"><string>Perform Segmentation</string></property>
+        <property name="toolTip"><string>Run automatic segmentation on the selected image</string></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Threshold Contour -->
+   <item>
+    <widget class="QGroupBox" name="grpThresholdContour">
+     <property name="title"><string>Threshold Contour</string></property>
+     <layout class="QVBoxLayout" name="threshContourLayout">
+      <item>
+       <widget class="QLabel" name="lblThreshContourInfo">
+        <property name="text"><string>Generate a 2D contour on the current slice by thresholding image intensity values.</string></property>
+        <property name="wordWrap"><bool>true</bool></property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QFormLayout" name="threshContourFormLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="lblThreshContourValue">
+          <property name="text"><string>Threshold Value:</string></property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QDoubleSpinBox" name="spinThreshContourValue">
+          <property name="minimum"><double>-10000.0</double></property>
+          <property name="maximum"><double>10000.0</double></property>
+          <property name="value"><double>200.0</double></property>
+          <property name="singleStep"><double>10.0</double></property>
+          <property name="decimals"><number>1</number></property>
+          <property name="toolTip"><string>Intensity threshold for contour generation</string></property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnApplyThresholdContour">
+        <property name="text"><string>Apply Threshold Contour</string></property>
+        <property name="toolTip"><string>Generate a contour on the current slice using the threshold value</string></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

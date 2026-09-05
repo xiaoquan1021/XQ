@@ -1,0 +1,15 @@
+/* XQ Active Tab Style (active/focused view tabs) */
+berry--QCTabBar::tab:selected {
+    background: #DBEAFE;
+    border: 1px solid #2563EB;
+    border-bottom: 2px solid #2563EB;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    color: #1E40AF;
+    font-weight: bold;
+}
+
+QFrame#ViewFormContentFrame {
+    border: 2px solid #2563EB;
+    background: #FFFFFF;
+}

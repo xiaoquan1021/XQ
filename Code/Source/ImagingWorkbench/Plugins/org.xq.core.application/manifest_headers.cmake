@@ -1,0 +1,5 @@
+set(Plugin-Name "XQ Application")
+set(Plugin-Version "1.0.0")
+set(Plugin-Vendor "XQ Project")
+set(Plugin-ContactAddress "https://xq-project.org")
+set(Require-Plugin org.mitk.gui.qt.extapplication)

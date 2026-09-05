@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>xq_GridGenerationView</class>
+ <widget class="QWidget" name="xq_GridGenerationView">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>400</width><height>700</height></rect>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <!-- Model selector -->
+   <item>
+    <layout class="QHBoxLayout" name="selectorLayout">
+     <item>
+      <widget class="QLabel" name="lblModel">
+       <property name="text"><string>Model:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboModelSelector"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCreateMesh">
+       <property name="text"><string>New Mesh...</string></property>
+       <property name="enabled"><bool>false</bool></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Tabs -->
+   <item>
+    <widget class="QTabWidget" name="tabMeshing">
+
+     <!-- Global Settings Tab -->
+     <widget class="QWidget" name="tabGlobal">
+      <attribute name="title"><string>Global Settings</string></attribute>
+      <layout class="QVBoxLayout" name="globalLayout">
+       <item>
+        <widget class="QGroupBox" name="grpGlobalParams">
+         <property name="title"><string>Global Mesh Parameters</string></property>
+         <layout class="QFormLayout" name="globalFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblMeshType">
+            <property name="text"><string>Mesh Type:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="comboMeshType">
+            <item><property name="text"><string>TetGen</string></property></item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblGlobalEdge">
+            <property name="text"><string>Global Edge Size:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="spinGlobalEdgeSize">
+            <property name="minimum"><double>0.001</double></property>
+            <property name="maximum"><double>1000.0</double></property>
+            <property name="value"><double>1.0</double></property>
+            <property name="singleStep"><double>0.1</double></property>
+            <property name="decimals"><number>3</number></property>
+            <property name="enabled"><bool>false</bool></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="runLayout">
+         <item>
+          <widget class="QPushButton" name="btnRunMeshing">
+           <property name="text"><string>Run Meshing</string></property>
+           <property name="enabled"><bool>false</bool></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnAdaptMesh">
+           <property name="text"><string>Adapt Mesh</string></property>
+           <property name="enabled"><bool>false</bool></property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="globalSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+
+     <!-- Local Size Tab -->
+     <widget class="QWidget" name="tabLocal">
+      <attribute name="title"><string>Local Size</string></attribute>
+      <layout class="QVBoxLayout" name="localLayout">
+       <item>
+        <widget class="QTableWidget" name="tableLocalSize">
+         <property name="minimumHeight"><number>150</number></property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="localBtnLayout">
+         <item>
+          <widget class="QPushButton" name="btnAddLocalSize">
+           <property name="text"><string>Add</string></property>
+           <property name="enabled"><bool>false</bool></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnRemoveLocalSize">
+           <property name="text"><string>Remove</string></property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="localBtnSpacer">
+           <property name="orientation"><enum>Qt::Horizontal</enum></property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+
+     <!-- Boundary Layer Tab -->
+     <widget class="QWidget" name="tabBoundaryLayer">
+      <attribute name="title"><string>Boundary Layer</string></attribute>
+      <layout class="QVBoxLayout" name="blLayout">
+       <item>
+        <widget class="QCheckBox" name="chkBoundaryLayer">
+         <property name="text"><string>Enable Boundary Layer Mesh</string></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="grpBLParams">
+         <property name="title"><string>Boundary Layer Parameters</string></property>
+         <property name="enabled"><bool>false</bool></property>
+         <layout class="QFormLayout" name="blFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblBLLayers">
+            <property name="text"><string>Number of Layers:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="spinBLLayers">
+            <property name="minimum"><number>1</number></property>
+            <property name="maximum"><number>20</number></property>
+            <property name="value"><number>4</number></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblBLFirstHeight">
+            <property name="text"><string>First Layer Height:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="spinBLFirstHeight">
+            <property name="minimum"><double>0.001</double></property>
+            <property name="maximum"><double>10.0</double></property>
+            <property name="value"><double>0.1</double></property>
+            <property name="singleStep"><double>0.01</double></property>
+            <property name="decimals"><number>4</number></property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lblBLGrowthRate">
+            <property name="text"><string>Growth Rate:</string></property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="spinBLGrowthRate">
+            <property name="minimum"><double>1.0</double></property>
+            <property name="maximum"><double>5.0</double></property>
+            <property name="value"><double>1.2</double></property>
+            <property name="singleStep"><double>0.1</double></property>
+            <property name="decimals"><number>2</number></property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="chkBLDirectionInward">
+            <property name="text"><string>Direction Inward</string></property>
+            <property name="checked"><bool>true</bool></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnPreviewBL">
+         <property name="text"><string>Preview Boundary Layer</string></property>
+         <property name="enabled"><bool>false</bool></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblBLStatus">
+         <property name="text"><string></string></property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="blSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+
+     <!-- Refinement Regions Tab -->
+     <widget class="QWidget" name="tabRefinementRegions">
+      <attribute name="title"><string>Refinement Regions</string></attribute>
+      <layout class="QVBoxLayout" name="refRegionLayout">
+       <item>
+        <widget class="QTableWidget" name="tableRefinementRegions">
+         <property name="minimumHeight"><number>150</number></property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="refBtnLayout">
+         <item>
+          <widget class="QPushButton" name="btnAddSphereRegion">
+           <property name="text"><string>Add Sphere</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnAddCylinderRegion">
+           <property name="text"><string>Add Cylinder</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnRemoveRegion">
+           <property name="text"><string>Remove Selected</string></property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnVisualizeRegions">
+         <property name="text"><string>Visualize Regions</string></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblRegionCount">
+         <property name="text"><string>0 refinement regions defined</string></property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="refRegionSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+
+     <!-- Advanced Tab -->
+     <widget class="QWidget" name="tabAdvanced">
+      <attribute name="title"><string>Advanced</string></attribute>
+      <layout class="QVBoxLayout" name="advLayout">
+       <item>
+        <widget class="QGroupBox" name="grpStatistics">
+         <property name="title"><string>Mesh Statistics</string></property>
+         <layout class="QVBoxLayout" name="statsLayout">
+          <item>
+           <widget class="QLabel" name="lblNumElements">
+            <property name="text"><string>Elements: --</string></property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblNumNodes">
+            <property name="text"><string>Nodes: --</string></property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblQuality">
+            <property name="text"><string>Quality: --</string></property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnQualityReport">
+            <property name="text"><string>Quality Report</string></property>
+            <property name="toolTip"><string>Show detailed mesh quality metrics</string></property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnExportMesh">
+            <property name="text"><string>Export Mesh</string></property>
+            <property name="toolTip"><string>Export mesh to STL, VTK, or VTP file</string></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="advSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+
+    </widget>
+   </item>
+  </layout>
+ </widget>
+</ui>

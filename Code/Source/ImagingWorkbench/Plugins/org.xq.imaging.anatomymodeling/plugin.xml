@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension point="org.blueberry.ui.views">
+    <view id="org.xq.views.modeling"
+          name="Solid Modeling"
+          icon="resources/modeling.svg"
+          class="xq_VascularModelingView"
+          category="Stage 4 – Modeling"/>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="org.xq.views.modeling.preferencepage"
+          name="Solid Modeling"
+          class="xq_ModelPreferencePage"/>
+  </extension>
+
+  <extension point="org.xq.core.datamanager.contextMenuActions">
+    <contextMenuAction nodeDescriptorName="xq_ProfileGroup"
+                       label="Create Model from Contours"
+                       class="xq_ModelCreateAction"/>
+  </extension>
+</plugin>

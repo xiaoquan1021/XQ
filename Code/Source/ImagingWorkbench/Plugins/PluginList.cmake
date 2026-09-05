@@ -1,0 +1,16 @@
+set(XQ_PLUGINS
+    org.xq.core.application:ON
+    org.xq.data.projectnodes:ON
+    org.xq.data.pythonnodes:ON
+    org.xq.core.datamanager:ON
+    org.xq.core.workspace:ON
+    org.xq.imaging.preprocess:ON
+    org.xq.imaging.centerline:ON
+    org.xq.imaging.lumenanalysis:ON
+    org.xq.imaging.volumesegmentation:ON
+    org.xq.imaging.anatomymodeling:ON
+    org.xq.imaging.volumemeshing:ON
+    org.xq.imaging.flowanalysis:ON
+    org.xq.imaging.reducedflow:ON
+    org.xq.imaging.multiphysics:ON
+)

@@ -1,0 +1,9 @@
+set(CPP_FILES
+  xq_PythonDataNodesPluginActivator.cxx
+)
+set(MOC_H_FILES
+  src/internal/xq_PythonDataNodesPluginActivator.h
+)
+set(CACHED_RESOURCE_FILES
+  plugin.xml
+)

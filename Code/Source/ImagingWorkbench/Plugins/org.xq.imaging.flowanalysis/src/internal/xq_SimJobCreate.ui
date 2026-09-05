@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>xq_SimJobCreate</class>
+ <widget class="QDialog" name="xq_SimJobCreate">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>380</width><height>180</height></rect>
+  </property>
+  <property name="windowTitle"><string>Create Simulation Job</string></property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <!-- Job name -->
+   <item>
+    <layout class="QHBoxLayout" name="nameLayout">
+     <item>
+      <widget class="QLabel" name="lblJobName">
+       <property name="text"><string>Job Name:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="editJobName">
+       <property name="placeholderText"><string>Enter job name</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Mesh selection -->
+   <item>
+    <layout class="QHBoxLayout" name="meshLayout">
+     <item>
+      <widget class="QLabel" name="lblMesh">
+       <property name="text"><string>Mesh:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboMesh"/>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Buttons -->
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="btnSpacer">
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnOk">
+       <property name="text"><string>OK</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text"><string>Cancel</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+</ui>

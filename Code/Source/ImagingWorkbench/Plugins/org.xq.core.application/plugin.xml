@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension id="org.xq.qt.application" point="org.blueberry.osgi.applications">
+    <application>
+      <run class="xq_Application"/>
+    </application>
+  </extension>
+  <extension id="xqworkbench" point="org.blueberry.core.runtime.products">
+    <product name="XQ" application="org.xq.qt.application"/>
+  </extension>
+  <extension point="org.blueberry.ui.perspectives">
+    <perspective id="org.xq.application.defaultperspective"
+                 name="XQ Default"
+                 class="xq_DefaultPerspective"
+                 icon="resources/icon.png"/>
+    <perspective id="org.xq.application.viewerperspective"
+                 name="Viewer"
+                 class="xq_ViewerPerspective"
+                 icon="resources/icon.png"/>
+    <perspective id="org.xq.application.visualizationperspective"
+                 name="Visualization"
+                 class="xq_VisualizationPerspective"
+                 icon="resources/icon.png"/>
+  </extension>
+  <extension point="org.blueberry.ui.intro">
+    <intro id="org.xq.welcome" class="xq_WelcomePart"/>
+    <introProductBinding introId="org.xq.welcome" productId="xqworkbench"/>
+  </extension>
+</plugin>

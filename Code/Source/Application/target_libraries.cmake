@@ -1,0 +1,20 @@
+set(target_libraries
+  org_blueberry_ui_qt
+  org_mitk_gui_qt_extapplication
+  org_mitk_gui_qt_datamanager
+  org_mitk_gui_qt_mitkworkbench_intro
+  org_mitk_gui_qt_stdmultiwidgeteditor
+  org_mitk_gui_qt_mxnmultiwidgeteditor
+  org_mitk_gui_qt_dicombrowser
+  org_mitk_gui_qt_imagenavigator
+  org_mitk_gui_qt_measurementtoolbox
+  org_mitk_gui_qt_properties
+  org_mitk_gui_qt_segmentation
+  org_mitk_gui_qt_volumevisualization
+  org_mitk_gui_qt_moviemaker
+  org_mitk_gui_qt_pointsetinteraction
+  org_mitk_gui_qt_remeshing
+  org_mitk_gui_qt_viewnavigator
+  org_mitk_gui_qt_imagecropper
+  org_mitk_gui_qt_pixelvalue
+)

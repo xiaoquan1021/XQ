@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension point="org.blueberry.ui.views">
+    <view id="org.xq.views.projectmanager"
+          name="XQ Project Manager"
+          icon="resources/projectmanager.png"
+          class="xq_WorkspaceExplorer"/>
+  </extension>
+
+  <extension point="org.xq.core.datamanager.contextMenuActions">
+    <contextMenuAction nodeDescriptorName="xq_ImageFolder"
+                       label="Add/Replace Image"
+                       class="xq_AddImageAction"/>
+    <contextMenuAction nodeDescriptorName="xq_RepositoryFolder"
+                       label="Check Pipeline Consistency"
+                       class="xq_PipelineCheckAction"/>
+  </extension>
+</plugin>

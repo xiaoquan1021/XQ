@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statemachine>
+    <state name="ready" startstate="true">
+        <transition event_class="MousePressEvent" event_variant="AddPointClick" target="addingContour">
+            <action name="addContourPoint"/>
+        </transition>
+        <transition event_class="MousePressEvent" event_variant="SelectPointClick" target="movingPoint">
+            <action name="selectContourPoint"/>
+        </transition>
+        <transition event_class="KeyEvent" event_variant="DeleteKey" target="ready">
+            <action name="removeContourPoint"/>
+        </transition>
+        <transition event_class="MousePressEvent" event_variant="DeselectClick" target="ready">
+            <action name="deselectAll"/>
+        </transition>
+    </state>
+    <state name="addingContour">
+        <transition event_class="MousePressEvent" event_variant="AddPointClick" target="addingContour">
+            <action name="addContourPoint"/>
+        </transition>
+        <transition event_class="KeyEvent" event_variant="FinishContourKey" target="ready">
+            <action name="finishContour"/>
+        </transition>
+        <transition event_class="KeyEvent" event_variant="CancelKey" target="ready">
+            <action name="cancelContour"/>
+        </transition>
+    </state>
+    <state name="movingPoint">
+        <transition event_class="MouseMoveEvent" event_variant="MovePoint" target="movingPoint">
+            <action name="moveContourPoint"/>
+        </transition>
+        <transition event_class="MouseReleaseEvent" event_variant="MoveEnd" target="ready">
+            <action name="releaseContourPoint"/>
+        </transition>
+    </state>
+</statemachine>
