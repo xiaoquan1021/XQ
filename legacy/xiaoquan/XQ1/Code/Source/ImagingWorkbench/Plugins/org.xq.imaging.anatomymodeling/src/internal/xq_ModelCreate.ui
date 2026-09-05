@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>xq_ModelCreate</class>
+ <widget class="QDialog" name="xq_ModelCreate">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>420</width><height>480</height></rect>
+  </property>
+  <property name="windowTitle"><string>Create Model</string></property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <!-- Model name -->
+   <item>
+    <layout class="QHBoxLayout" name="nameLayout">
+     <item>
+      <widget class="QLabel" name="lblModelName">
+       <property name="text"><string>Model Name:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="editModelName">
+       <property name="placeholderText"><string>Enter model name</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Model type -->
+   <item>
+    <layout class="QHBoxLayout" name="typeLayout">
+     <item>
+      <widget class="QLabel" name="lblModelType">
+       <property name="text"><string>Type:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboModelType">
+       <item><property name="text"><string>PolyData</string></property></item>
+       <item><property name="text"><string>OCCT</string></property></item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Segmentation groups -->
+   <item>
+    <widget class="QGroupBox" name="grpSegGroups">
+     <property name="title"><string>Segmentation Groups</string></property>
+     <layout class="QVBoxLayout" name="segLayout">
+      <item>
+       <widget class="QListWidget" name="listSegGroups">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::ExtendedSelection</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Lofting parameters -->
+   <item>
+    <widget class="QGroupBox" name="grpLoftingParams">
+     <property name="title"><string>Lofting Parameters</string></property>
+     <layout class="QFormLayout" name="loftLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblSampling">
+        <property name="text"><string>Sampling Points:</string></property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="spinSamplingPoints">
+        <property name="minimum"><number>10</number></property>
+        <property name="maximum"><number>1000</number></property>
+        <property name="value"><number>60</number></property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblLinearMult">
+        <property name="text"><string>Linear Multiplier:</string></property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="spinLinearMult">
+        <property name="minimum"><number>1</number></property>
+        <property name="maximum"><number>20</number></property>
+        <property name="value"><number>1</number></property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblUseFFD">
+        <property name="text"><string>Use FFD:</string></property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="chkUseFFD"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Buttons -->
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="btnSpacer">
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnOk">
+       <property name="text"><string>OK</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text"><string>Cancel</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+</ui>

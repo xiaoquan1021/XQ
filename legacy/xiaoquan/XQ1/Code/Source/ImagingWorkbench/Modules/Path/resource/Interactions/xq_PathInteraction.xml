@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <!-- Event-variant definitions for the xq_PathConfig state machine -->
+
+    <!-- Ctrl + Left-click to add a control point -->
+    <event_variant class="MousePressEvent" name="AddPointClick">
+        <attribute name="EventButton" value="LeftMouseButton"/>
+        <attribute name="ModifierKey"  value="ctrl"/>
+    </event_variant>
+
+    <!-- Left-click to select a control point -->
+    <event_variant class="MousePressEvent" name="SelectPointClick">
+        <attribute name="EventButton" value="LeftMouseButton"/>
+        <attribute name="ModifierKey"  value="none"/>
+    </event_variant>
+
+    <!-- Right-click to deselect -->
+    <event_variant class="MousePressEvent" name="DeselectClick">
+        <attribute name="EventButton" value="RightMouseButton"/>
+        <attribute name="ModifierKey"  value="none"/>
+    </event_variant>
+
+    <!-- Left-click and hold to start moving a selected point -->
+    <event_variant class="MousePressEvent" name="MoveStart">
+        <attribute name="EventButton" value="LeftMouseButton"/>
+        <attribute name="ModifierKey"  value="none"/>
+    </event_variant>
+
+    <!-- Mouse move while dragging -->
+    <event_variant class="MouseMoveEvent" name="MovePoint">
+    </event_variant>
+
+    <!-- Release to finish a move -->
+    <event_variant class="MouseReleaseEvent" name="MoveEnd">
+        <attribute name="EventButton" value="LeftMouseButton"/>
+    </event_variant>
+
+    <!-- Delete key to remove selected point -->
+    <event_variant class="KeyEvent" name="DeleteKey">
+        <attribute name="Key" value="Delete"/>
+    </event_variant>
+</config>

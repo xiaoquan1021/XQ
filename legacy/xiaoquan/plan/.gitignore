@@ -1,0 +1,23 @@
+# Build output
+build/
+build-*/
+out/
+cmake-build-*/
+
+# Local bindings (machine paths / toolchain). Never commit.
+*.local.json
+.local/
+
+# Editor / system
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+.env
+.env.*
+
+# Python caches (if any tooling is used)
+__pycache__/
+*.py[cod]
+.pytest_cache/

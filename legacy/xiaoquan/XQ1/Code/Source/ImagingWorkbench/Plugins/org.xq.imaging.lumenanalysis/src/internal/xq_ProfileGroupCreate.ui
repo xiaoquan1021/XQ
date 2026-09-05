@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>xq_ProfileGroupCreate</class>
+ <widget class="QDialog" name="xq_ProfileGroupCreate">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>350</width><height>150</height></rect>
+  </property>
+  <property name="windowTitle"><string>Create Contour Group</string></property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblGroupName">
+       <property name="text"><string>Group Name:</string></property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="editGroupName">
+       <property name="placeholderText"><string>Enter group name</string></property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblPath">
+       <property name="text"><string>Associated Path:</string></property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="comboPath"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok|QDialogButtonBox::Cancel</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statemachine>
+    <state name="start" startstate="true">
+        <!-- Add a control point via Ctrl+click -->
+        <transition event_class="MousePressEvent" event_variant="AddPointClick" target="start">
+            <action name="addPoint"/>
+        </transition>
+
+        <!-- Select an existing control point by clicking near it -->
+        <transition event_class="MousePressEvent" event_variant="SelectPointClick" target="pointSelected">
+            <condition name="checkPointClick"/>
+            <action name="selectPoint"/>
+        </transition>
+
+        <!-- Right-click deselects everything -->
+        <transition event_class="MousePressEvent" event_variant="DeselectClick" target="start">
+            <action name="deselectAll"/>
+        </transition>
+    </state>
+
+    <state name="pointSelected">
+        <!-- Begin dragging the selected point -->
+        <transition event_class="MousePressEvent" event_variant="MoveStart" target="pointMoving">
+            <condition name="checkSelection"/>
+            <action name="initMove"/>
+        </transition>
+
+        <!-- Delete selected point -->
+        <transition event_class="KeyEvent" event_variant="DeleteKey" target="start">
+            <condition name="checkSelection"/>
+            <action name="removePoint"/>
+        </transition>
+
+        <!-- Click somewhere else to select a different point or deselect -->
+        <transition event_class="MousePressEvent" event_variant="SelectPointClick" target="pointSelected">
+            <condition name="checkPointClick"/>
+            <action name="selectPoint"/>
+        </transition>
+
+        <!-- Ctrl+click to add while a point is selected -->
+        <transition event_class="MousePressEvent" event_variant="AddPointClick" target="start">
+            <action name="addPoint"/>
+        </transition>
+
+        <!-- Right-click deselects -->
+        <transition event_class="MousePressEvent" event_variant="DeselectClick" target="start">
+            <action name="deselectAll"/>
+        </transition>
+    </state>
+
+    <state name="pointMoving">
+        <!-- Continue moving -->
+        <transition event_class="MouseMoveEvent" event_variant="MovePoint" target="pointMoving">
+            <action name="movePoint"/>
+        </transition>
+
+        <!-- Release finishes the move -->
+        <transition event_class="MouseReleaseEvent" event_variant="MoveEnd" target="pointSelected">
+            <action name="finishMove"/>
+        </transition>
+    </state>
+</statemachine>

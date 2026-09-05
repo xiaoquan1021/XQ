@@ -1,0 +1,9 @@
+tar
+src
+build
+install
+output
+downloads
+*.zip
+*.tar.gz
+*.tar

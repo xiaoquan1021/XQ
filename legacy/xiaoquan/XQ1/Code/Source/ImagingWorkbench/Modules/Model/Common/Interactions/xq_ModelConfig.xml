@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StateMachine>
+    <State NAME="idle" ID="1" START_STATE="TRUE">
+        <Transition NAME="leftClick" NEXT_STATE_ID="2" EVENT_ID="1">
+            <Condition NAME="checkFaceClick" />
+            <Action NAME="selectFace" />
+        </Transition>
+    </State>
+
+    <State NAME="faceSelected" ID="2">
+        <Transition NAME="leftClick" NEXT_STATE_ID="2" EVENT_ID="1">
+            <Condition NAME="checkFaceClick" />
+            <Action NAME="selectFace" />
+        </Transition>
+        <Transition NAME="rightClick" NEXT_STATE_ID="1" EVENT_ID="2">
+            <Action NAME="deselectAll" />
+        </Transition>
+        <Transition NAME="escape" NEXT_STATE_ID="1" EVENT_ID="14">
+            <Action NAME="deselectAll" />
+        </Transition>
+    </State>
+</StateMachine>

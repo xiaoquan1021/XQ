@@ -1,0 +1,95 @@
+#!/bin/bash
+if [ -x /usr/bin/gcc-11 ] && [ -x /usr/bin/g++-11 ]; then
+    export CC=/usr/bin/gcc-11
+    export CXX=/usr/bin/g++-11
+fi
+
+export ROOT_DIR=$(pwd)
+
+export QT_VERSION=6.7.0
+export HDF5_VERSION=1.14.3
+export TINYXML2_VERSION=8.0.0
+export PYTHON_VERSION=3.11.0
+export PYTHON_MAJOR_VERSION=3
+export PYTHON_MINOR_VERSION=11
+export FREETYPE_VERSION=2.13.0
+export SWIG_VERSION=3.0.12
+export MMG_VERSION=5.3.9
+export GDCM_VERSION=3.0.10
+export OPENCASCADE_VERSION=7.6.0
+export VTK_VERSION=9.3.0
+export ITK_VERSION=5.4.0
+export MITK_VERSION=2024.06
+
+# set library location environment variables
+
+CUR_DIR=$(pwd)
+
+# set directories
+export SRC_DIR=$CUR_DIR'/src'
+export INSTALL_DIR=$CUR_DIR'/install'
+
+# Qt
+
+export QT_INSTALL_DIR=$INSTALL_DIR/qt-$QT_VERSION
+export QT_INSTALL_DIR_CMAKE=$QT_INSTALL_DIR/lib/cmake/Qt6/
+
+# HDF5
+
+export HDF5_INSTALL_DIR=$INSTALL_DIR/hdf5-$HDF5_VERSION
+export HDF5_CMAKE_DIR=$HDF5_INSTALL_DIR/cmake
+
+# Tinyxml2
+
+export TINYXML2_INSTALL_DIR=$INSTALL_DIR/tinyxml2-$TINYXML2_VERSION
+export TINYXML2_INSTALL_DIR_CMAKE=$TINYXML2_INSTALL_DIR/lib/cmake/tinyxml2/
+
+# Python
+export PYTHON_EXECUTABLE=bin/python3
+export PYTHON_INCLUDE_DIR=include/python3.11
+export PYTHON_LIBRARY=lib/libpython3.11.so
+export PYTHON_INSTALL_DIR=$INSTALL_DIR/python-$PYTHON_VERSION
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PYTHON_INSTALL_DIR/lib
+
+# Freetype
+
+export FREETYPE_INSTALL_DIR=$INSTALL_DIR/freetype-$FREETYPE_VERSION
+export FREETYPE_LIBRARY=libfreetype.so.$FREETYPE_VERSION
+
+# Swig
+
+export SWIG_INSTALL_DIR=$INSTALL_DIR/swig-$SWIG_VERSION
+export SWIG_EXECUTABLE=$SWIG_INSTALL_DIR/bin/swig
+
+# Mmg
+
+export MMG_INSTALL_DIR=$INSTALL_DIR/mmg-$MMG_VERSION
+
+# Gdcm
+
+GDCM_MAJOR_VERSION=${GDCM_VERSION%.*}
+export GDCM_INSTALL_DIR=$INSTALL_DIR/gdcm-$GDCM_VERSION
+export GDCM_INCLUDE_DIR=$GDCM_INSTALL_DIR/include/gdcm-$GDCM_MAJOR_VERSION
+export GDCM_LIB_DIR=$GDCM_INSTALL_DIR/lib
+export GDCM_CMAKE_DIR=$GDCM_INSTALL_DIR/lib/gdcm-$GDCM_MAJOR_VERSION
+
+# VTK
+
+VTK_MAJOR_VERSION=${VTK_VERSION%.*}
+export VTK_INSTALL_DIR=$INSTALL_DIR/vtk-$VTK_VERSION
+export VTK_CMAKE_DIR=$VTK_INSTALL_DIR/lib/cmake/vtk-$VTK_MAJOR_VERSION
+
+# ITK
+
+ITK_MAJOR_VERSION=${ITK_VERSION%.*}
+export ITK_INSTALL_DIR=$INSTALL_DIR/itk-$ITK_VERSION
+export ITK_INSTALL_DIR_CMAKE=$ITK_INSTALL_DIR/lib/cmake/ITK-$ITK_MAJOR_VERSION
+
+# Opencascade
+
+export OPENCASCADE_INSTALL_DIR=$INSTALL_DIR/opencascade-$OPENCASCADE_VERSION
+
+# Mitk
+
+export MITK_INSTALL_DIR=$INSTALL_DIR/mitk-$MITK_VERSION
+

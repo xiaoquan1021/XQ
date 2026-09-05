@@ -1,0 +1,46 @@
+目标:修复 MSHMeshReader 的 preservedArrays 检测 bug(语义按 SimVascular 真实数据为准),全新 Release 全量验收 16/16,然后新建一个 commit。
+
+已确诊事实(无需复查):0090_0001.vtu 与 .vtp 的真实数组分布:
+- vtu: PointData={GlobalNodeID}; CellData={GlobalElementID}; FieldData=空
+- vtp: PointData={GlobalBoundaryPoints, GlobalNodeID}; CellData={GlobalBoundaryCells, CapID, BadTriangle, FreeEdge, BooleanRegion, ModelFaceID, Normals, ActiveCells, GlobalElementID}; FieldData=空
+即 ModelFaceID/CapID 在 SimVascular 设计里只属于面网格 vtp(边���面/帽概念),体网格 vtu 天然没有。当前 MSHMeshReader::read_preserved_arrays 只查 vtu,导致 ModelFaceID/CapID 误报 false。正确语义:preservedArrays 表达"这个 mesh 数据集整体是否保留了该数组",应合并 vtu+vtp 一起判断。
+
+只改:
+- src/adapters/vtk/MSHMeshReader.cpp
+- tests/adapters/test_msh_reader.cpp
+
+改法(MSHMeshReader.cpp):
+- 现有内部静态函数 read_preserved_arrays(vtkUnstructuredGrid*) 改为同时接收体网格与面网格,例如 read_preserved_arrays(vtkUnstructuredGrid* vol, vtkPolyData* surf)。
+- 对每个目标数组名(GlobalNodeID/GlobalElementID/ModelFaceID/CapID),只要 vol 的 Point/CellData 或 surf 的 Point/CellData 任一含有该名字,即置 true。把 has_point_or_cell_array helper 改成接收 vtkDataSet* 基类(vtkUnstructuredGrid 与 vtkPolyData 都派生自 vtkDataSet,GetPointData/GetCellData 在 vtkDataSet 上即有),一个 helper 同时服务两者。
+- 调用点改为传入 volumeGrid 与 surface polyData 两者。此函数在读完 vtu 和 vtp 之后调用,任一指针为空时只查另一个(判空保护)。
+- 这些都是 .cpp 内部实现,public 头 MSHMeshReader.h 不得改动,不得出现 vtk 类型。
+
+改法(test_msh_reader.cpp):
+- 更新 preservedArrays 断言为 4 个全部应为 true:GlobalNodeID/GlobalElementID/ModelFaceID/CapID 全 true,任一为 false 则 fprintf(stderr,...) + return 1。
+- 保留打印实测数据(vtu/vtp 点cell数、boundaryFaces 个数、4 个数组 bool),fflush(stdout) 后 return 0。
+- 用 if-return 风格,不得用 assert 包任何有副作用调用。
+
+allowed_paths(只准动这两个):
+- src/adapters/vtk/MSHMeshReader.cpp
+- tests/adapters/test_msh_reader.cpp
+
+forbidden_actions:
+- 不得改 MSHMeshReader.h 或任何 public 头;不得在头文件暴露 vtk 类型。
+- 不得改其它 reader/测试/CMakeLists。
+- 不得 mock/跳过。
+- 不得 git push。
+
+验收(全新 build):
+1. 删 build_reader_d_acc 若存在(里面有 _tmp_msh_array_probe 临时脚本,一并删无妨)。
+2. call "C:\software\Visual Studio\Visual Studio2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+3. cmake -S . -B build_reader_d_acc -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="C:/Users/OCEAN/Desktop/XIAOQUAN/Externals/install/windows-x64;C:/Users/OCEAN/Desktop/XIAOQUAN/Externals/install/windows-x64/tinyxml2-8.0.0"
+4. cmake --build build_reader_d_acc
+5. cd build_reader_d_acc && ctest --output-on-failure
+要求 16/16 全绿,test_msh_reader 打印 ModelFaceID=true CapID=true。
+
+提交(新 commit,别 amend):确认 16/16 全绿后 git add src/adapters/vtk/MSHMeshReader.cpp tests/adapters/test_msh_reader.cpp,git commit -m "fix: Reader-D preservedArrays 合并 vtu+vtp 检测(ModelFaceID/CapID 属面网格)"。不要 push。
+
+报告:
+- 16/16 是否全绿,逐条 test 名+状态。
+- test_msh_reader 完整 stdout(4 个数组 bool 必须全 true)。
+- 新 commit hash + git status --short(工作树须干净)。

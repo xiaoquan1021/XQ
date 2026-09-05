@@ -1,0 +1,27 @@
+{
+  "fixture_id": "L1-0007_H_AO_H",
+  "format": "svproject",
+  "source_binding": "Vascular Model Repository public fixture 0007_H_AO_H",
+  "scene": {
+    "nodes": [
+      { "domain_type": "image", "display_name": "OSMSC0090-cm" },
+      { "domain_type": "path", "display_name": "aorta" },
+      { "domain_type": "path", "display_name": "btrunk" },
+      { "domain_type": "path", "display_name": "carotid" },
+      { "domain_type": "path", "display_name": "rt_carotid" },
+      { "domain_type": "path", "display_name": "subclavian" },
+      { "domain_type": "contour_group", "display_name": "aorta_final" },
+      { "domain_type": "contour_group", "display_name": "btrunk_final" },
+      { "domain_type": "contour_group", "display_name": "carotid_final" },
+      { "domain_type": "contour_group", "display_name": "rt_carotid_final" },
+      { "domain_type": "contour_group", "display_name": "subclavian_final" }
+    ],
+    "derived_relations": [
+      { "source": "aorta", "derived": "aorta_final" },
+      { "source": "btrunk", "derived": "btrunk_final" },
+      { "source": "carotid", "derived": "carotid_final" },
+      { "source": "rt_carotid", "derived": "rt_carotid_final" },
+      { "source": "subclavian", "derived": "subclavian_final" }
+    ]
+  }
+}

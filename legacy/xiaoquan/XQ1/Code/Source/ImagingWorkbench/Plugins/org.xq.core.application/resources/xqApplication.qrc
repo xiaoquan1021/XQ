@@ -1,0 +1,29 @@
+<RCC>
+    <qresource prefix="/xq">
+        <file>icon.png</file>
+        <file>xq.qss</file>
+        <file>xq-tab.qss</file>
+        <file>xq-activetab.qss</file>
+        <file>document-new.svg</file>
+        <file>document-open.svg</file>
+        <file>document-save.svg</file>
+        <file>edit-undo.svg</file>
+        <file>edit-redo.svg</file>
+        <file>camera-photo.svg</file>
+        <file>tool-process.svg</file>
+        <file>tool-path.svg</file>
+        <file>tool-seg-2d.svg</file>
+        <file>tool-seg-3d.svg</file>
+        <file>tool-model.svg</file>
+        <file>tool-mesh.svg</file>
+        <file>tool-flow.svg</file>
+        <file>sidebar-save.svg</file>
+        <file>sidebar-undo.svg</file>
+        <file>sidebar-redo.svg</file>
+        <file>sidebar-screenshot.svg</file>
+        <file>arrow-up.svg</file>
+        <file>arrow-up-disabled.svg</file>
+        <file>arrow-down.svg</file>
+        <file>arrow-down-disabled.svg</file>
+    </qresource>
+</RCC>

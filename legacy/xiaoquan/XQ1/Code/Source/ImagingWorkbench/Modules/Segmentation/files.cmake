@@ -1,0 +1,94 @@
+set(H_FILES
+    xq_LumenProfile.h
+    xq_CircularProfile.h
+    xq_EllipticProfile.h
+    xq_PolygonalProfile.h
+    xq_TensionProfile.h
+    xq_SplineProfile.h
+    xq_ThresholdContour.h
+    xq_ContourModelVtkMapper2D.h
+    xq_ThresholdInteractor.h
+    xq_ProfileGroup.h
+    xq_ProfileGroupInteractor.h
+    xq_ProfileRenderer2D.h
+    xq_ProfileRenderer3D.h
+    xq_ProfileOp.h
+    xq_LumenSurface.h
+    xq_SurfaceRenderer3D.h
+    xq_Seg3DUtils.h
+    xq_MitkSeg3D.h
+    xq_MitkSeg3DOperation.h
+    xq_MitkSeg3DIO.h
+    xq_MitkSeg3DVtkMapper3D.h
+    xq_MitkSeg3DDataInteractor.h
+    xq_SegmentationUtils.h
+    xq_LumenSegIO.h
+    xq_LumenLegacyIO.h
+    xq_SegmentationObjectFactory.h
+    xq_ContourGroup.h
+    xq_ContourGroupIO.h
+    xq_ContourGroupMigration.h
+    xq_SegUndoActor.h
+    xq_SegmentationPipeline.h
+    xq_SegmentationAlgorithm.h
+    xq_ITKLevelSetSegmentation.h
+    xq_MLSegmentation.h
+)
+
+set(CPP_FILES
+    xq_LumenProfile.cxx
+    xq_CircularProfile.cxx
+    xq_EllipticProfile.cxx
+    xq_PolygonalProfile.cxx
+    xq_TensionProfile.cxx
+    xq_SplineProfile.cxx
+    xq_ThresholdContour.cxx
+    xq_ContourModelVtkMapper2D.cxx
+    xq_ThresholdInteractor.cxx
+    xq_ProfileGroup.cxx
+    xq_ProfileGroupInteractor.cxx
+    xq_ProfileRenderer2D.cxx
+    xq_ProfileRenderer3D.cxx
+    xq_ProfileOp.cxx
+    xq_LumenSurface.cxx
+    xq_SurfaceRenderer3D.cxx
+    xq_Seg3DUtils.cxx
+    xq_MitkSeg3D.cxx
+    xq_MitkSeg3DOperation.cxx
+    xq_MitkSeg3DIO.cxx
+    xq_MitkSeg3DVtkMapper3D.cxx
+    xq_MitkSeg3DDataInteractor.cxx
+    xq_SegmentationUtils.cxx
+    xq_LumenSegIO.cxx
+    xq_LumenLegacyIO.cxx
+    xq_SegmentationObjectFactory.cxx
+    xq_ContourGroup.cxx
+    xq_ContourGroupIO.cxx
+    xq_ContourGroupMigration.cxx
+    xq_SegUndoActor.cxx
+    xq_SegmentationPipeline.cxx
+    xq_SegmentationAlgorithm.cxx
+    xq_ITKLevelSetSegmentation.cxx
+    xq_MLSegmentation.cxx
+)
+
+set(MOC_H_FILES
+    xq_ThresholdContour.h
+    xq_ContourModelVtkMapper2D.h
+    xq_ThresholdInteractor.h
+    xq_ProfileGroup.h
+    xq_ProfileGroupInteractor.h
+    xq_ProfileRenderer2D.h
+    xq_ProfileRenderer3D.h
+    xq_LumenSurface.h
+    xq_SurfaceRenderer3D.h
+    xq_MitkSeg3D.h
+    xq_MitkSeg3DVtkMapper3D.h
+    xq_MitkSeg3DDataInteractor.h
+    xq_SegmentationObjectFactory.h
+)
+
+set(RESOURCE_FILES
+    Interactions/xq_ProfileGroupInteraction.xml
+    Interactions/xq_ProfileGroupConfig.xml
+)

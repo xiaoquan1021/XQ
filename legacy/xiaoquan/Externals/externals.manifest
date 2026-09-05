@@ -1,0 +1,13 @@
+# key|name|version|repository|official_url|target_path|order
+Qt|Qt|6.7.0|https://github.com/xiaoquan1021/Qt.git|https://download.qt.io/archive/qt/6.7/6.7.0/single/qt-everywhere-src-6.7.0.tar.xz|src/qt-everywhere-src-6.7.0|10
+Python|Python|3.11.0|https://github.com/xiaoquan1021/Python.git|https://www.python.org/ftp/python/3.11.0/Python-3.11.0.tar.xz|src/Python-3.11.0|20
+HDF5|HDF5|1.14.3|https://github.com/xiaoquan1021/HDF5.git|https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_3.tar.gz|src/hdf5-1.14.3|30
+TinyXML2|TinyXML2|8.0.0|https://github.com/xiaoquan1021/TinyXML2.git|https://github.com/leethomason/tinyxml2/archive/refs/tags/8.0.0.tar.gz|src/tinyxml2-8.0.0|40
+FreeType|FreeType|2.13.0|https://github.com/xiaoquan1021/FreeType.git|https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.13.0.tar.gz|src/freetype-2.13.0|50
+SWIG|SWIG|3.0.12|https://github.com/xiaoquan1021/SWIG.git|https://downloads.sourceforge.net/project/swig/swig/swig-3.0.12/swig-3.0.12.tar.gz|src/swig-3.0.12|60
+MMG|MMG|5.3.9|https://github.com/xiaoquan1021/MMG.git|https://github.com/MmgTools/mmg/archive/refs/tags/v5.3.9.tar.gz|src/mmg-5.3.9|70
+GDCM|GDCM|3.0.10|https://github.com/xiaoquan1021/GDCM.git|https://github.com/malaterre/GDCM/archive/refs/tags/v3.0.10.tar.gz|src/GDCM-3.0.10|80
+VTK|VTK|9.3.0|https://github.com/xiaoquan1021/VTK.git|https://www.vtk.org/files/release/9.3/VTK-9.3.0.tar.gz|src/VTK-9.3.0|90
+ITK|ITK|5.4.0|https://github.com/xiaoquan1021/ITK.git|https://github.com/InsightSoftwareConsortium/ITK/releases/download/v5.4.0/InsightToolkit-5.4.0.tar.gz|src/InsightToolkit-5.4.0|100
+OpenCascade|OpenCascade|7.6.0|https://github.com/xiaoquan1021/OpenCascade.git|https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/V7_6_0.tar.gz|src/opencascade-7.6.0|110
+MITK|MITK|2024.06|https://github.com/xiaoquan1021/MITK.git|https://github.com/MITK/MITK/archive/refs/tags/v2024.06.tar.gz|src/MITK-2024.06|120

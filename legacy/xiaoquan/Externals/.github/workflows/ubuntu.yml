@@ -1,0 +1,36 @@
+name: Ubuntu
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check shell syntax
+        shell: bash
+        run: |
+          bash -n build_all.sh
+          bash -n env_variables.sh
+          bash -n scripts/*.sh
+          bash -n tests/*.sh
+
+      - name: Validate source fetch script
+        shell: bash
+        run: |
+          bash scripts/fetch_sources.sh --dry-run Qt
+          bash tests/test_fetch_sources.sh
+
+      - name: Validate build preflight
+        shell: bash
+        run: |
+          bash build_all.sh --help
+          bash tests/test_build_all_preflight.sh

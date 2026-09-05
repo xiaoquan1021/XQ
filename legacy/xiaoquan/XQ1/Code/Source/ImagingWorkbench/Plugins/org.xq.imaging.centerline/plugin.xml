@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension point="org.blueberry.ui.views">
+    <view id="org.xq.views.pathplanning"
+          name="Path Planning"
+          icon="resources/pathplanning.svg"
+          class="xq_VesselPlanningView"
+          category="Stage 2 – Paths"/>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="org.xq.views.pathplanning.preferencepage"
+          name="Path Planning"
+          class="xq_PathPreferencePage"/>
+  </extension>
+
+  <extension point="org.xq.core.datamanager.contextMenuActions">
+    <contextMenuAction nodeDescriptorName="xq_PathFolder"
+                       label="Create Path"
+                       class="xq_PathCreateAction"/>
+  </extension>
+</plugin>

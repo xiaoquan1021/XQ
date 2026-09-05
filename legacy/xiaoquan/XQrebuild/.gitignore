@@ -1,0 +1,5 @@
+build/
+build*/
+.codegraph/
+.serena/
+.codex_tasks/

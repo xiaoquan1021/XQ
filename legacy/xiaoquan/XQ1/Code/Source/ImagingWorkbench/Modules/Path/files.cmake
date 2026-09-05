@@ -1,0 +1,40 @@
+set(H_FILES
+    xq_CenterlineSegment.h
+    xq_VesselCenterline.h
+    xq_CenterlineOp.h
+    xq_CenterlineInteractor.h
+    xq_VesselTracer3D.h
+    xq_VesselTracer2D.h
+    xq_CenterlineIO.h
+    xq_CenterlineLegacyIO.h
+    xq_PathObjectFactory.h
+    xq_PathPlanner.h
+    xq_PathPipeline.h
+)
+
+set(CPP_FILES
+    xq_CenterlineSegment.cxx
+    xq_VesselCenterline.cxx
+    xq_CenterlineOp.cxx
+    xq_CenterlineInteractor.cxx
+    xq_VesselTracer3D.cxx
+    xq_VesselTracer2D.cxx
+    xq_CenterlineIO.cxx
+    xq_CenterlineLegacyIO.cxx
+    xq_PathObjectFactory.cxx
+    xq_PathPlanner.cxx
+    xq_PathPipeline.cxx
+)
+
+set(MOC_H_FILES
+    xq_VesselCenterline.h
+    xq_CenterlineInteractor.h
+    xq_VesselTracer3D.h
+    xq_VesselTracer2D.h
+    xq_PathObjectFactory.h
+)
+
+set(RESOURCE_FILES
+    Interactions/xq_PathConfig.xml
+    Interactions/xq_PathInteraction.xml
+)

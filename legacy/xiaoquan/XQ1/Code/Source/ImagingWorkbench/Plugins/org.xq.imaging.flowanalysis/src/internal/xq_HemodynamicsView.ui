@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>xq_HemodynamicsView</class>
+ <widget class="QWidget" name="xq_HemodynamicsView">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>400</width><height>750</height></rect>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <!-- Job and mesh selector -->
+   <item>
+    <layout class="QHBoxLayout" name="jobLayout">
+     <item>
+      <widget class="QLabel" name="lblJobNameLabel">
+       <property name="text"><string>Job:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblJobName">
+       <property name="text"><string>(none)</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCreateJob">
+       <property name="text"><string>Create Job...</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <item>
+    <layout class="QHBoxLayout" name="meshLayout">
+     <item>
+      <widget class="QLabel" name="lblMesh">
+       <property name="text"><string>Mesh:</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboMeshSelector"/>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Tabs -->
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+
+     <!-- Tab: Basic -->
+     <widget class="QWidget" name="tabBasic">
+      <attribute name="title"><string>Basic</string></attribute>
+      <layout class="QVBoxLayout" name="basicLayout">
+       <item>
+        <widget class="QGroupBox" name="grpTimeStepping">
+         <property name="title"><string>Time Stepping</string></property>
+         <layout class="QFormLayout" name="timeLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblStartTime">
+            <property name="text"><string>Start Time:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinStartTime">
+            <property name="minimum"><double>0.0</double></property>
+            <property name="maximum"><double>1.0e+10</double></property>
+            <property name="value"><double>0.0</double></property>
+            <property name="decimals"><number>6</number></property>
+            <property name="singleStep"><double>0.001</double></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblEndTime">
+            <property name="text"><string>End Time:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="spinEndTime">
+            <property name="minimum"><double>0.0</double></property>
+            <property name="maximum"><double>1.0e+10</double></property>
+            <property name="value"><double>1.0</double></property>
+            <property name="decimals"><number>6</number></property>
+            <property name="singleStep"><double>0.001</double></property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lblTimeStepSize">
+            <property name="text"><string>Time Step Size:</string></property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="spinTimeStepSize">
+            <property name="minimum"><double>1.0e-12</double></property>
+            <property name="maximum"><double>1.0e+6</double></property>
+            <property name="value"><double>0.001</double></property>
+            <property name="decimals"><number>8</number></property>
+            <property name="singleStep"><double>0.0001</double></property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="lblNumTimeSteps">
+            <property name="text"><string>Num Time Steps:</string></property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="spinNumTimeSteps">
+            <property name="minimum"><number>1</number></property>
+            <property name="maximum"><number>1000000000</number></property>
+            <property name="value"><number>1000</number></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnSaveJob">
+         <property name="text"><string>Save Job</string></property>
+         <property name="enabled"><bool>false</bool></property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="basicSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+
+     <!-- Tab: Inlet/Outlet BCs -->
+     <widget class="QWidget" name="tabBCs">
+      <attribute name="title"><string>Inlet/Outlet BCs</string></attribute>
+      <layout class="QVBoxLayout" name="bcLayout">
+       <item>
+        <widget class="QTableWidget" name="tableBCs">
+         <property name="minimumHeight"><number>200</number></property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SingleSelection</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="bcBtnLayout">
+         <item>
+          <widget class="QPushButton" name="btnAddBC">
+           <property name="text"><string>Add BC</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnRemoveBC">
+           <property name="text"><string>Remove BC</string></property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="bcBtnSpacer">
+           <property name="orientation"><enum>Qt::Horizontal</enum></property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="bcSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+
+     <!-- Tab: Wall Properties -->
+     <widget class="QWidget" name="tabWall">
+      <attribute name="title"><string>Wall Properties</string></attribute>
+      <layout class="QVBoxLayout" name="wallLayout">
+       <item>
+        <layout class="QHBoxLayout" name="wallTypeLayout">
+         <item>
+          <widget class="QLabel" name="lblWallType">
+           <property name="text"><string>Wall Type:</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboWallType">
+           <item><property name="text"><string>Rigid</string></property></item>
+           <item><property name="text"><string>Deformable</string></property></item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="grpDeformable">
+         <property name="title"><string>Deformable Wall Properties</string></property>
+         <layout class="QFormLayout" name="deformLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblThickness">
+            <property name="text"><string>Thickness:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinWallThickness">
+            <property name="minimum"><double>0.0</double></property>
+            <property name="maximum"><double>100.0</double></property>
+            <property name="value"><double>0.5</double></property>
+            <property name="decimals"><number>4</number></property>
+            <property name="singleStep"><double>0.01</double></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblElasticMod">
+            <property name="text"><string>Elastic Modulus:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="spinElasticModulus">
+            <property name="minimum"><double>0.0</double></property>
+            <property name="maximum"><double>1.0e+12</double></property>
+            <property name="value"><double>4.0e+6</double></property>
+            <property name="decimals"><number>2</number></property>
+            <property name="singleStep"><double>1000.0</double></property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lblPoisson">
+            <property name="text"><string>Poisson Ratio:</string></property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="spinPoissonRatio">
+            <property name="minimum"><double>0.0</double></property>
+            <property name="maximum"><double>0.5</double></property>
+            <property name="value"><double>0.5</double></property>
+            <property name="decimals"><number>4</number></property>
+            <property name="singleStep"><double>0.01</double></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chkVariableWall">
+         <property name="text"><string>Variable Wall Properties</string></property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="wallSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+
+     <!-- Tab: Solver Parameters -->
+     <widget class="QWidget" name="tabSolver">
+      <attribute name="title"><string>Solver Parameters</string></attribute>
+      <layout class="QVBoxLayout" name="solverLayout">
+       <item>
+        <layout class="QHBoxLayout" name="presetLayout">
+         <item>
+          <widget class="QLabel" name="lblPreset">
+           <property name="text"><string>Preset:</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboSolverPreset">
+           <item><property name="text"><string>Custom</string></property></item>
+           <item><property name="text"><string>Steady Flow</string></property></item>
+           <item><property name="text"><string>Pulsatile Flow</string></property></item>
+           <item><property name="text"><string>Deformable Wall</string></property></item>
+           <item><property name="text"><string>High Accuracy</string></property></item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnApplyPreset">
+           <property name="text"><string>Apply Preset</string></property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="grpSolverParams">
+         <property name="title"><string>Solver Settings</string></property>
+         <layout class="QFormLayout" name="solverFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblResidualTol">
+            <property name="text"><string>Residual Tolerance:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinResidualTol">
+            <property name="minimum"><double>1.0e-15</double></property>
+            <property name="maximum"><double>1.0</double></property>
+            <property name="value"><double>0.001</double></property>
+            <property name="decimals"><number>10</number></property>
+            <property name="singleStep"><double>0.0001</double></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblStepConstruction">
+            <property name="text"><string>Step Construction:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="comboStepConstruction">
+            <item><property name="text"><string>0 1 0 1</string></property></item>
+            <item><property name="text"><string>0 1 0 1 0 1</string></property></item>
+            <item><property name="text"><string>0 1 0 1 0 1 0 1</string></property></item>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lblPressureCoupling">
+            <property name="text"><string>Pressure Coupling:</string></property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="comboPressureCoupling">
+            <item><property name="text"><string>Implicit</string></property></item>
+            <item><property name="text"><string>Explicit</string></property></item>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="lblMaxIterations">
+            <property name="text"><string>Max Iterations:</string></property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="spinMaxIterations">
+            <property name="minimum"><number>1</number></property>
+            <property name="maximum"><number>100000</number></property>
+            <property name="value"><number>10</number></property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="lblStabilization">
+            <property name="text"><string>Stabilization:</string></property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QCheckBox" name="chkStabilization">
+            <property name="checked"><bool>true</bool></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="solverSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+
+     <!-- Tab: Run -->
+     <widget class="QWidget" name="tabRun">
+      <attribute name="title"><string>Run</string></attribute>
+      <layout class="QVBoxLayout" name="runLayout">
+       <item>
+        <layout class="QHBoxLayout" name="procsLayout">
+         <item>
+          <widget class="QLabel" name="lblNumProcs">
+           <property name="text"><string>Num Processors:</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinNumProcs">
+           <property name="minimum"><number>1</number></property>
+           <property name="maximum"><number>256</number></property>
+           <property name="value"><number>1</number></property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="runBtnLayout">
+         <item>
+          <widget class="QPushButton" name="btnRunSim">
+           <property name="text"><string>Run Simulation</string></property>
+           <property name="enabled"><bool>false</bool></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnStopSim">
+           <property name="text"><string>Stop</string></property>
+           <property name="enabled"><bool>false</bool></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnExportResults">
+           <property name="text"><string>Export Results...</string></property>
+           <property name="enabled"><bool>false</bool></property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="exportBtnLayout">
+         <item>
+          <widget class="QPushButton" name="btnExportOnly">
+           <property name="text"><string>Export Only</string></property>
+           <property name="enabled"><bool>false</bool></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnExportAndRun">
+           <property name="text"><string>Export and Run</string></property>
+           <property name="enabled"><bool>false</bool></property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="exportBtnSpacer">
+           <property name="orientation"><enum>Qt::Horizontal</enum></property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QProgressBar" name="progressBar">
+         <property name="value"><number>0</number></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textLog">
+         <property name="readOnly"><bool>true</bool></property>
+         <property name="minimumHeight"><number>150</number></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+
+     <!-- Tab: Results -->
+     <widget class="QWidget" name="tabResults">
+      <attribute name="title"><string>Results</string></attribute>
+      <layout class="QVBoxLayout" name="resultsLayout">
+       <item>
+        <layout class="QHBoxLayout" name="resultFieldLayout">
+         <item>
+          <widget class="QLabel" name="lblResultField">
+           <property name="text"><string>Result Field:</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboResultField">
+           <item><property name="text"><string>Pressure</string></property></item>
+           <item><property name="text"><string>Velocity Magnitude</string></property></item>
+           <item><property name="text"><string>Wall Shear Stress</string></property></item>
+           <item><property name="text"><string>Vorticity</string></property></item>
+           <item><property name="text"><string>Oscillatory Shear Index</string></property></item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="grpRange">
+         <property name="title"><string>Scalar Range</string></property>
+         <layout class="QFormLayout" name="rangeLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblResultMin">
+            <property name="text"><string>Range Min:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinResultMin">
+            <property name="minimum"><double>-1.0e+12</double></property>
+            <property name="maximum"><double>1.0e+12</double></property>
+            <property name="value"><double>0.0</double></property>
+            <property name="decimals"><number>2</number></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblResultMax">
+            <property name="text"><string>Range Max:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="spinResultMax">
+            <property name="minimum"><double>-1.0e+12</double></property>
+            <property name="maximum"><double>1.0e+12</double></property>
+            <property name="value"><double>100.0</double></property>
+            <property name="decimals"><number>2</number></property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QCheckBox" name="chkAutoRange">
+            <property name="text"><string>Auto Range</string></property>
+            <property name="checked"><bool>true</bool></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="colorMapLayout">
+         <item>
+          <widget class="QLabel" name="lblColorMap">
+           <property name="text"><string>Color Map:</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboColorMap">
+           <item><property name="text"><string>Rainbow</string></property></item>
+           <item><property name="text"><string>Cool-Warm</string></property></item>
+           <item><property name="text"><string>Grayscale</string></property></item>
+           <item><property name="text"><string>Red-Blue</string></property></item>
+           <item><property name="text"><string>Viridis</string></property></item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnApplyColorMap">
+         <property name="text"><string>Apply Color Map</string></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnShowLegend">
+         <property name="text"><string>Show/Hide Legend</string></property>
+         <property name="checkable"><bool>true</bool></property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="timeStepLayout">
+         <item>
+          <widget class="QLabel" name="lblTimeStep">
+           <property name="text"><string>Time Step:</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinTimeStep">
+           <property name="minimum"><number>0</number></property>
+           <property name="maximum"><number>10000</number></property>
+           <property name="value"><number>0</number></property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnAnimateResults">
+         <property name="text"><string>Animate</string></property>
+         <property name="checkable"><bool>true</bool></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textResultSummary">
+         <property name="readOnly"><bool>true</bool></property>
+         <property name="maximumSize">
+          <size><width>16777215</width><height>100</height></size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="resultsSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+
+    </widget>
+   </item>
+  </layout>
+ </widget>
+</ui>
