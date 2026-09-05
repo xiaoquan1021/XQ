@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Assembler/controller 必须保持 pure service 和薄 UI 分层。"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Path、Contour、Profile 的 frame 与面积都必须保持 LPS/mm/mm2。"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "多 source relation、原子 command、undo 与 stale 是本任务核心契约。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "实现面积和 frame 逻辑前必须搜索并复用现有 Path/Contour/loft 工具。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Profile 从 core 到 service/controller/io/persistence 跨多层。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/current-state.md", "reason": "记录现有 Path/Contour 能力与 MainWindow flow assembly 重复点。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/decision-log.md", "reason": "冻结 Path/Contour/Profile 三层权威和 Profile 唯一消费者契约。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/acceptance-matrix.md", "reason": "覆盖 validator、cm-to-canonical、multi-parent、stale 和 honesty 门。"}

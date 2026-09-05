@@ -1,0 +1,3 @@
+{"file": ".trellis/tasks/07-01-xq-audit-fixes/research/code-audit.md", "reason": "audit finding and required tests"}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "source and lazy geometry contracts"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "local build and test commands"}

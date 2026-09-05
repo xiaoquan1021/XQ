@@ -1,0 +1,35 @@
+{
+  "id": "shell-a-v1-alignment",
+  "name": "shell-a-v1-alignment",
+  "title": "壳档 A v1 对齐",
+  "description": "以 D:\\XQ 的 A1-A15 为唯一验收源，复用现有宿主与依赖整改证据，补齐 canonical 构建入口、正半径 Path 契约、Path-only 模块挂载、ITK 3D thinning 中心线 B 和最终复现仪式。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P0",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-07-12",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "feat/google-earth-shell-a",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "07-12-shell-a-canonical-entry",
+    "07-12-shell-a-path-module-contract",
+    "07-12-shell-a-centerline-b",
+    "07-12-shell-a-acceptance-v1"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "2026-07-14 memory correction: this is the authoritative current shell task. Automatic portal/hepatic vessel segmentation belongs to post-Shell-A v2 and must not block A1-A15. Resume the existing canonical-entry, Path/module, centerline-B and final-acceptance sequence; do not replace this task with the segmentation child.",
+  "meta": {
+    "delivery_tier": "shell-a-v1",
+    "authoritative_acceptance": "D:/XQ 规划-GoogleEarth全路线与壳子阶段.md A1-A15",
+    "blocked_by_auto_segmentation": false
+  }
+}

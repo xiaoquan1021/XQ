@@ -1,0 +1,9 @@
+{"file":".trellis/spec/XQ/architecture/external-libs.md","reason":"Check exact discovery, single-prefix runtime, public boundary, and research-only rules."}
+{"file":".trellis/spec/XQ/core/acceptance.md","reason":"Require real Release builds and full CTest evidence without skips or false completion claims."}
+{"file":".trellis/spec/XQ/core/build-and-test.md","reason":"Check canonical Windows toolchain, runtime PATH, and sequential CTest execution."}
+{"file":".trellis/tasks/07-11-vascular-foundation-dependency-remediation/prd.md","reason":"Evaluate every remediation acceptance criterion and scope boundary."}
+{"file":".trellis/tasks/07-11-vascular-foundation-dependency-remediation/design.md","reason":"Verify the isolated-prefix, target-specific-linking, PE-scan, and rollback design was followed."}
+{"file":".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-audit/research/audit-matrix.md","reason":"Compare the final product baseline against the original accepted/blocked decisions."}
+{"file":".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-audit/research/abi-report.md","reason":"Confirm both original build-ingress blockers are actually removed."}
+{"file":".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-audit/research/license-report.md","reason":"Ensure technical success does not overstate distribution approval."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/shell-a-gap-memory.md", "reason": "检查独立整改树证据没有越界为所有壳入口已迁移"}

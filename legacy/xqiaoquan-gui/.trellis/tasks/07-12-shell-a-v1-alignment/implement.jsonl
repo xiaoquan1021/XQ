@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Preserve XQ layer direction and XQ-owned public contracts."}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Use the audited dependency baseline and external-kernel boundaries."}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Keep Path, image and thinning outputs in patient LPS/mm."}
+{"file": ".trellis/spec/XQ/architecture/flow-capabilities.md", "reason": "Do not conflate Flow availability with the new Path module registry."}
+{"file": ".trellis/spec/XQ/core/vessel-profile.md", "reason": "Keep VesselProfile as persisted physical geometry authority."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Feed external kernels through stable XQ-owned read-only sources."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Use proven Windows build recipes and sequential full suites."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Trace Path/mask/module data across core, services, app and persistence."}
+{"file": ".trellis/tasks/07-12-shell-a-v1-alignment/research/a1-a15-baseline.md", "reason": "Authoritative current gap matrix and child ownership."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/shell-a-gap-memory.md", "reason": "Preserve completion-definition and evidence boundaries."}
+{"file": ".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-remediation/research/remediation-report.md", "reason": "Reuse the verified isolated dependency evidence without overclaiming."}

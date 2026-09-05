@@ -1,0 +1,31 @@
+{
+  "id": "07-02-xq-global-audit",
+  "name": "07-02-xq-global-audit",
+  "title": "XQ 全局架构审计与修复(P0~P4)",
+  "description": "面向 XQ 整体的架构审计与安全修复。P0-1 依赖逆流下沉 core;P0-2 junction 逃逸 canonical 封闭校验;P0-3 resample 死循环上限;P1 资产 id 溢出/mmap 对齐断言;P3 渲染器 voxel 性能;P4 测试缺口。所有决策已拍板,见 EXECUTE-P0.md / EXECUTE-P1-P4.md / checklist.md。",
+  "status": "completed",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P0",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-07-02",
+  "completedAt": "2026-07-03",
+  "branch": "fix/xq-global-audit",
+  "base_branch": "feat/m8b2-runtime-memory",
+  "worktree_path": null,
+  "commit": "1d6047d",
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    ".trellis/tasks/07-02-xq-global-audit/EXECUTE-P0.md",
+    ".trellis/tasks/07-02-xq-global-audit/EXECUTE-P1-P4.md",
+    ".trellis/tasks/07-02-xq-global-audit/checklist.md",
+    ".trellis/tasks/07-02-xq-global-audit/audit-report.md"
+  ],
+  "notes": "执行前置硬门:工作树必须干净(git status 非干净就停)。在 feat/m8b2-runtime-memory 基线上开 fix/xq-global-audit 分支执行。每 commit 精确列文件,禁 git add -A。",
+  "meta": {}
+}

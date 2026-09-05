@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Reject dependency inversion and third-party public API leakage."}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Audit exact versions, roles, optionality and forbidden runtime ingress."}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Check bridge probe LPS/mm/direction fidelity."}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Require real execution, Release tests and no mock/skip claims."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Verify clean reproducible Windows build trees and sequential suites."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-dependency-audit/prd.md", "reason": "Check every child acceptance criterion and scope boundary."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-dependency-audit/design.md", "reason": "Review evidence authority, ABI inspection, license handling and rollback."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-dependency-audit/research/baseline-inventory.md", "reason": "Compare final claims to the pre-audit baseline."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-dependency-audit/research/audit-matrix.md", "reason": "Ensure every pending cell becomes accepted/rejected/blocked with evidence."}

@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "M9b 建在已冻 Source 1.0 上:IGeometrySource/IVoxelSource/ReadLease 契约 + M9a 消费者迁移落地节 + eviction-gating lease。M9b 只能加不破签名,此为权威边界。"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "分层约束(app→services→adapters→io→core、VTK 仅 visualization/adapters 私有)。MappedGeometrySource 入 io、几何工厂入 services、LOD/渐进上传入 visualization 的判据。"}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "VTK 9.3 在哪层、如何用;M9b 的 LOD/decimation/拾取/裁剪都是 VTK 能力,边界规则在此。"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "构建/测试配方(vcvars64+CMAKE_PREFIX_PATH+offscreen ctest);M9b 大规模性能验证脚本比照此。"}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "验收铁律:Release+全量 ctest+假绿抽查+副作用不进 assert。M9b 各工作块验收门遵此。"}

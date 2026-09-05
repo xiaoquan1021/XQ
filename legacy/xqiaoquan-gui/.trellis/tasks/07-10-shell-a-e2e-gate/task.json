@@ -1,0 +1,29 @@
+{
+  "id": "shell-a-e2e-gate",
+  "name": "shell-a-e2e-gate",
+  "title": "壳A：端到端验收门",
+  "description": "贯通真实 DICOM 到持久化 Flow smoke 的 headless 与 GUI 双重验收。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P0",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-07-10",
+  "completedAt": null,
+  "branch": "feat/google-earth-shell-a",
+  "base_branch": "feat/render-arch",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-10-google-earth-shell-a",
+  "relatedFiles": [],
+  "notes": "Automated headless and Qt-offscreen GUI gates are complete. Keep this task in_progress and do not archive it until the user's physical-machine GUI acceptance is recorded.",
+  "meta": {
+    "pending_acceptance": "physical-machine-gui",
+    "archive_blocked_until_acceptance": true
+  }
+}

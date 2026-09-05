@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Verify no layer-boundary regression from lifecycle cleanup."}
+{"file": ".trellis/spec/XQ/core/index.md", "reason": "Verify core ownership rules remain satisfied."}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "Verify project close/reset lifecycle contract and tests."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Verify required targeted and full Release ctest commands."}

@@ -1,0 +1,3 @@
+{"file": ".trellis/tasks/06-30-m8b-2-lease-mmap/prd.md", "reason": "8 条 AC 是验收清单;重点 AC7 open-time 不物化 + AC8 分层零违反 + AC5 lease 签名零改动"}
+{"file": ".trellis/tasks/06-30-m8b-2-lease-mmap/design.md", "reason": "严格不做清单 + 决策理由,check 据此核验没碰几何 payload/renderer 几何路径、没改 lease 签名"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "分层铁律,check 判断 manager/io/core 分层与依赖方向是否违反"}

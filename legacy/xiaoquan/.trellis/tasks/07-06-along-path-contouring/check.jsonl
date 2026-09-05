@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/XQ/visualization/render-scene.md", "reason": "复核断面重采样是否遵渲染场景契约(VTK-free 头/actor 常驻/不每帧重建 GL)。"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "复核 reslice frame ↔ ContourFrame 坐标一致性(P3-1 命门),核对轴序映射正确。"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "复核分层未越界:visualization 碰 VTK、services 纯域、core 无 VTK/Qt。"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "复核构建/测试规范执行:全新构建、ctest 基线、英文注释、无中文注释假语法错。"}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "复核验收纪律:新断言可证伪、假绿抽查、真机门禁未被 headless 可测性架空。"}

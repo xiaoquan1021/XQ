@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Layering contract: keep lifecycle cleanup in core and avoid UI/IO coupling."}
+{"file": ".trellis/spec/XQ/core/index.md", "reason": "Core layer routing and required ownership/build specs."}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "Project ownership and lifecycle state contracts for scene and asset registry cleanup."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Required local build and ctest commands."}
+{"file": ".trellis/spec/guides/index.md", "reason": "Shared pre-development thinking guide index."}

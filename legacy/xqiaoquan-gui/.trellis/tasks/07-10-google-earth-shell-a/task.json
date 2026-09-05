@@ -1,0 +1,33 @@
+{
+  "id": "google-earth-shell-a",
+  "name": "google-earth-shell-a",
+  "title": "Google Earth 壳档 A 实现",
+  "description": "复用 XQ 现有 Project/Scene/Asset/Source/GUI/Flow 基础，交付真实 DICOM→VesselProfileV1→L0 flow smoke 的可持久、可追溯、可关闭壳档 A。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P0",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-07-10",
+  "completedAt": null,
+  "branch": "feat/google-earth-shell-a",
+  "base_branch": "feat/render-arch",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "07-10-shell-a-domain-contracts",
+    "07-10-shell-a-dicom-spine",
+    "07-10-shell-a-profile-assembly",
+    "07-10-shell-a-flow-smoke",
+    "07-10-shell-a-flow-capability",
+    "07-10-shell-a-e2e-gate"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "2026-07-11 scope correction: this task is an internal host/data-spine vertical slice, not completion of the external-dependency vascular imaging foundation. See scope-correction.md.",
+  "meta": {}
+}

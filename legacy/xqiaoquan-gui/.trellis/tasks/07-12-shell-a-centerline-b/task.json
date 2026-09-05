@@ -1,0 +1,30 @@
+{
+  "id": "shell-a-centerline-b",
+  "name": "shell-a-centerline-b",
+  "title": "壳档 A：ITK 中心线 B",
+  "description": "在 vmtk OFF 下接入真实 ITK 3D thinning、物理距离图半径、图提取/剪枝，并原子发布合法档 A Path。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P0",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-07-12",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "feat/google-earth-shell-a",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-12-shell-a-v1-alignment",
+  "relatedFiles": [],
+  "notes": "Owns the minimal Shell A v1 A13 fallback: vmtk-OFF 3D thinning plus physical distance-map radius to one valid Path. The v2 centerline-tree task depends on and extends this implementation for automatic endpoints, tree topology and production quality; it must not duplicate the thinning/distance kernel.",
+  "meta": {
+    "delivery_tier": "shell-a-v1",
+    "scope_boundary": "minimal-a13-single-path",
+    "extended_by": "07-12-vascular-foundation-centerline-tree"
+  }
+}

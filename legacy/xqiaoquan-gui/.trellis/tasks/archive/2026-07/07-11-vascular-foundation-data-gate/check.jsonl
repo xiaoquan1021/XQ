@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Audit numerical image/label LPS alignment rather than screenshot-only evidence."}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Ensure data readers remain private C++ kernels and no Python runtime enters."}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Require real sample execution, XQ-owned objects and no mocks/skips."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Verify external data-root configuration, Release gates and no machine-path leakage."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/prd.md", "reason": "Check actual acquisition, license, hashes, alignment, gold separation and frozen metrics."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/design.md", "reason": "Review bundle structure, native C++ reader path, evaluator separation and safety."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/current-data.md", "reason": "Prevent current LIDC or derived SimVascular products from being promoted beyond their evidence."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/candidate-and-metric-plan.md", "reason": "Verify candidate facts from official sources and that metrics were frozen before final output."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/selected-dataset.md", "reason": "Verify actual acquired bytes, accepted roles, license boundary and non-fabricated frame handling."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/alignment-report.md", "reason": "Check C++ reader reuse, exact physical alignment, identities, hashes and label counts."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/validation-baseline.md", "reason": "Ensure held-out split, gold separation and numeric metrics were frozen before predictions."}

@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Audit canonical dependency identity and runtime closure."}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Audit patient LPS/mm and physical-radius fidelity."}
+{"file": ".trellis/spec/XQ/architecture/flow-capabilities.md", "reason": "Reject module-registry claims based only on WorkflowCapabilities."}
+{"file": ".trellis/spec/XQ/core/vessel-profile.md", "reason": "Reject duplicate writable geometry authorities."}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Require real execution, XQ-owned objects and full Release tests."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Verify reproducible scripts and sequential CTest."}
+{"file": ".trellis/tasks/07-12-shell-a-v1-alignment/research/a1-a15-baseline.md", "reason": "Check every A1-A15 row and owning evidence."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/shell-a-gap-memory.md", "reason": "Prevent old Shell, LIDC or remediation evidence from crossing scope."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/scope-correction.md", "reason": "Preserve the corrected meaning of historical Shell A work."}
+{"file": ".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-remediation/research/remediation-report.md", "reason": "Check dependency evidence and remaining canonical-entry gap."}

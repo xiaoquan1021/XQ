@@ -1,0 +1,11 @@
+{"file": ".trellis/tasks/06-28-payload-persistence/prd.md", "reason": "M8a v2 重型基线需求 + 四类资产模型 + AC1~AC10 验收标准,实现的总纲"}
+{"file": ".trellis/tasks/06-28-payload-persistence/design.md", "reason": "决策表 D1~D8 + AssetRegistry/BufferRef 结构 + assets 段文法 + 无头 BlobStore + 两段式 reader + S1~S4 步骤,实现的技术依据"}
+{"file": ".trellis/tasks/06-28-payload-persistence/field-spec.md", "reason": "8 类 payload 的真实字段 getter/setter 清单(实读 core 头),S4 重建 payload 的字段事实基线"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "三条铁律 + 分层依赖方向(io 只 link xq_core+tinyxml2)——铁律1 io 零 VTK 的总纲(AC8)"}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "外部库当 kernel 不当架构;SHA-256 走 header-only vendoring、不引 VTK/动态库的依据"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "坐标系(LPS)/单位冻结;影像 geometry round-trip 必须保 coordSys/spacing/origin/direction,缺失发诊断(AC6)"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "scene/node/payload 所有权与关系模型;XQDataNode 加 assetId + 扩展 reader/writer 不破坏现有结构序列化(AC10)"}
+{"file": "XQ/src/io/project/XQProjectWriter.cpp", "reason": "S3:schema 1.1→1.2 + minReader 1.2;endScene 后写 assets 段(asset 记录/external 定位/geometry/blob 引用行/nodeAssets/assetRel),空工程也写 assets 0"}
+{"file": "XQ/src/io/project/XQProjectReader.cpp", "reason": "S3:补 minimumReaderVersion 比对(kReaderMajor/Minor,D2 严格);两段式解析 assets 段(line_starts_with_token peek 段头)+ 统一验证引用完整性 + registerAsset/setAssetId/addRelation 重建;旧档发 PROJECT_NO_ASSET_DATA Info"}
+{"file": "XQ/tests/io/test_asset_metadata_roundtrip.cpp", "reason": "S3 验收门:逐字段元数据 round-trip(External dicom/geometry/fingerprint + Derived blob 引用 + 血缘 + node 绑定)+ 空段 + 旧档 Info + D2 minReader 拒 + 引用完整性失败"}
+{"file": "XQ/tests/io/test_project_versioned_save.cpp", "reason": "S3 必改:schemaVersion 1.1→1.2;两个手写旧档测试 diagnostics.empty() 改为查 Info PROJECT_NO_ASSET_DATA(诊断矛盾消解)"}

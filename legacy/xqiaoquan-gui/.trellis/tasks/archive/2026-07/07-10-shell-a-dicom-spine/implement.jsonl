@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "DICOM 必须作为私有 adapter，服务和 core 只见 XQ 类型。"}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "锁定 GDCM/ITK 角色、版本和禁止 DCMTK/Python 的依赖边界。"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "DICOM geometry 必须准确进入 LPS/mm origin/spacing/direction。"}
+{"file": ".trellis/spec/XQ/architecture/reference-sources.md", "reason": "行为优先参考 GDCM/ITK 与 SimVascular/MITK 语义，不参考 XQ1。"}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "解码像素通过 IVoxelSource/lease 提供，不能建立逐体素虚调用或 GUI 私有真源。"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "import node/asset 提交、undo 和 provenance 必须原子。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/current-state.md", "reason": "记录当前 VTI-only 与 activeImage 私有状态缺口。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/reuse-map.md", "reason": "明确复用 GDCM/ITK、Asset/Blob/Source 与现有 GUI，而非搬整机。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/dicom-fixture-policy.md", "reason": "冻结 ExternalSource、显式 UID、rescale、fixture 许可去标识与真实数据门。"}

@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "App-layer dependency direction and UI boundary rules for startup wiring."}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "Workflow startup must attach a command stack to the mutable scene and preserve command/undo contracts."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Windows Release build and Qt offscreen test environment for the new app startup test."}
+{"file": ".trellis/tasks/07-01-xq-audit-fixes/research/code-audit.md", "reason": "Parent audit evidence identifying the real app entry defect and risk priority."}

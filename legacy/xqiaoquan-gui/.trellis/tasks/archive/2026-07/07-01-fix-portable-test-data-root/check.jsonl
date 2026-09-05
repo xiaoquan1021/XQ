@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Checker must verify the correct Release build and CTest commands for this Windows workspace."}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Checker must preserve the real 0007_H_AO_H end-to-end validation contract."}
+{"file": ".trellis/spec/guides/index.md", "reason": "Checker should apply shared verification guidance and avoid accepting tautological tests."}

@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "最终链必须保持 app/service/adapter/io/core 边界。"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "端到端检查 DICOM、Path、Contour、Profile 与 solver conversion 坐标单位。"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "验证完整 lineage、undo 和 transitive stale。"}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "验证重开后 headless voxel acquire 不依赖 GUI cache。"}
+{"file": ".trellis/spec/XQ/visualization/index.md", "reason": "GUI 显示复用既有 VTK host 且不泄漏渲染类型。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/current-state.md", "reason": "覆盖已确认壳缺口与现有回归基线。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/decision-log.md", "reason": "执行最终 stop line、smoke 标签和 out-of-scope。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/reuse-map.md", "reason": "确认最终实现复用现有工程和前人成果而未搬整机。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/dicom-fixture-policy.md", "reason": "执行自动 fixture、真实数据、ExternalSource、unsupported 与 PHI 门。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/acceptance-matrix.md", "reason": "最终逐能力核对正负路径、持久化、人工门和不宣称事项。"}

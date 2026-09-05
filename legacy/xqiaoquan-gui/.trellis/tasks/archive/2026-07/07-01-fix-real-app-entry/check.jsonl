@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Child task completion requires explicit ctest verification, not compile-only confidence."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "CTest environment must include Qt offscreen settings for app/window tests."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Startup crosses app, io, core, and UI workflow boundaries; check data flow and error paths."}
+{"file": ".trellis/tasks/07-01-xq-audit-fixes/research/code-audit.md", "reason": "Check worker should verify the implemented fix addresses the audited defect, not adjacent GUI scope."}

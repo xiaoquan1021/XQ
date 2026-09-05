@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "命令/undo 语义、payload 复制保留 id 与来源、scene 变更经命令栈"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "分层:service 纯领域不依赖 Qt/VTK,经命令改 scene"}
+{"file": ".trellis/spec/XQ/architecture/reference-sources.md", "reason": "path 语义参考 SimVascular(及底层),XQ1 不参考"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "path 点坐标空间、LPS/mm、标架语义"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "构建/测试配方:vcvars64 + CMAKE_PREFIX_PATH + offscreen ctest"}

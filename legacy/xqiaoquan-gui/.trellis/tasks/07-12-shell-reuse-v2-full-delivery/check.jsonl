@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/07-12-shell-reuse-v2-full-delivery/fp-analysis.md","reason":"Verify every completion claim traces to ground truths."}
+{"file":".trellis/tasks/07-12-shell-reuse-v2-full-delivery/research/reuse-replacement-matrix.md","reason":"Detect duplicated standard kernels or uncut legacy paths."}
+{"file":".trellis/spec/XQ/core/acceptance.md","reason":"Function-first and physical-machine acceptance discipline."}
+{"file":".trellis/spec/XQ/core/build-and-test.md","reason":"Purpose-bound regression and canonical build evidence."}
+{"file":".trellis/tasks/07-11-vascular-imaging-foundation/research/acceptance-matrix.md","reason":"Parent real-data production gates."}

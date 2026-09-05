@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "检查真实数据、XQ-owned 落地和 Release full ctest 门。"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "使用已验证 Windows/Qt/ITK 运行环境和 offscreen ctest 配方。"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "独立复核 LPS、direction、spacing、rescale 与 voxel/world round-trip。"}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "检查 IVoxelSource 生命周期、连续视图和 headless 获取路径。"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "检查 import 失败和 undo 不留下孤儿 node/asset。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "DICOM adapter 到 project reopen 是多层数据流，需检查每个转换边界。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/decision-log.md", "reason": "检查本任务未扩张到图谱、分割或完整数字孪生。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/dicom-fixture-policy.md", "reason": "审计 UID 选择、ExternalSource 重开、unsupported、fixture 与 PHI 规则。"}

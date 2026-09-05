@@ -1,0 +1,68 @@
+@echo off
+rem Canonical Shell A environment owner.
+rem
+rem This helper intentionally does not use setlocal: callers receive the
+rem XQ_CANONICAL_* variables. Every value may be overridden before the call.
+
+for %%I in ("%~dp0.") do set "XQ_CANONICAL_SCRIPT_DIR=%%~fI"
+if not defined XQ_CANONICAL_REPO_ROOT for %%I in ("%XQ_CANONICAL_SCRIPT_DIR%\..\..\..") do set "XQ_CANONICAL_REPO_ROOT=%%~fI"
+if not defined XQ_CANONICAL_XQ_SOURCE_DIR set "XQ_CANONICAL_XQ_SOURCE_DIR=%XQ_CANONICAL_REPO_ROOT%\XQ"
+if not defined XQ_CANONICAL_EXTERNALS_ROOT set "XQ_CANONICAL_EXTERNALS_ROOT=%XQ_CANONICAL_REPO_ROOT%\..\XIAOQUAN\Externals"
+if not defined XQ_CANONICAL_TEST_DATA_ROOT set "XQ_CANONICAL_TEST_DATA_ROOT=%XQ_CANONICAL_REPO_ROOT%\..\XIAOQUAN\0007_H_AO_H"
+
+if not defined XQ_CANONICAL_QT_PLATFORM set "XQ_CANONICAL_QT_PLATFORM=windows-x64-vascular"
+if not defined XQ_CANONICAL_QT_BUILD_DIR set "XQ_CANONICAL_QT_BUILD_DIR=%XQ_CANONICAL_EXTERNALS_ROOT%\build\%XQ_CANONICAL_QT_PLATFORM%\QtBaseClean"
+if not defined XQ_CANONICAL_QT_ROOT set "XQ_CANONICAL_QT_ROOT=%XQ_CANONICAL_EXTERNALS_ROOT%\install\%XQ_CANONICAL_QT_PLATFORM%\qt-6.7.0"
+if not defined XQ_CANONICAL_LEGACY_QT_ROOT set "XQ_CANONICAL_LEGACY_QT_ROOT=%XQ_CANONICAL_EXTERNALS_ROOT%\install\windows-x64\qt-6.7.0"
+if not defined XQ_CANONICAL_VTK_ROOT set "XQ_CANONICAL_VTK_ROOT=%XQ_CANONICAL_EXTERNALS_ROOT%\install\windows-x64\vtk-9.3.0"
+if not defined XQ_CANONICAL_ITK_ROOT set "XQ_CANONICAL_ITK_ROOT=%XQ_CANONICAL_EXTERNALS_ROOT%\install\windows-x64\itk-5.4.0"
+if not defined XQ_CANONICAL_GDCM_ROOT set "XQ_CANONICAL_GDCM_ROOT=%XQ_CANONICAL_EXTERNALS_ROOT%\install\windows-x64\gdcm-3.0.10"
+if not defined XQ_CANONICAL_HDF5_ROOT set "XQ_CANONICAL_HDF5_ROOT=%XQ_CANONICAL_EXTERNALS_ROOT%\install\windows-x64\hdf5-1.14.3"
+if not defined XQ_CANONICAL_TINYXML2_ROOT set "XQ_CANONICAL_TINYXML2_ROOT=%XQ_CANONICAL_EXTERNALS_ROOT%\install\windows-x64\tinyxml2-8.0.0"
+if not defined XQ_CANONICAL_PYTHON_ROOT set "XQ_CANONICAL_PYTHON_ROOT=%XQ_CANONICAL_EXTERNALS_ROOT%\install\windows-x64\python-3.11.0"
+
+for %%I in ("%XQ_CANONICAL_REPO_ROOT%") do set "XQ_CANONICAL_REPO_ROOT=%%~fI"
+for %%I in ("%XQ_CANONICAL_XQ_SOURCE_DIR%") do set "XQ_CANONICAL_XQ_SOURCE_DIR=%%~fI"
+for %%I in ("%XQ_CANONICAL_EXTERNALS_ROOT%") do set "XQ_CANONICAL_EXTERNALS_ROOT=%%~fI"
+for %%I in ("%XQ_CANONICAL_TEST_DATA_ROOT%") do set "XQ_CANONICAL_TEST_DATA_ROOT=%%~fI"
+for %%I in ("%XQ_CANONICAL_QT_BUILD_DIR%") do set "XQ_CANONICAL_QT_BUILD_DIR=%%~fI"
+for %%I in ("%XQ_CANONICAL_QT_ROOT%") do set "XQ_CANONICAL_QT_ROOT=%%~fI"
+for %%I in ("%XQ_CANONICAL_LEGACY_QT_ROOT%") do set "XQ_CANONICAL_LEGACY_QT_ROOT=%%~fI"
+for %%I in ("%XQ_CANONICAL_VTK_ROOT%") do set "XQ_CANONICAL_VTK_ROOT=%%~fI"
+for %%I in ("%XQ_CANONICAL_ITK_ROOT%") do set "XQ_CANONICAL_ITK_ROOT=%%~fI"
+for %%I in ("%XQ_CANONICAL_GDCM_ROOT%") do set "XQ_CANONICAL_GDCM_ROOT=%%~fI"
+for %%I in ("%XQ_CANONICAL_HDF5_ROOT%") do set "XQ_CANONICAL_HDF5_ROOT=%%~fI"
+for %%I in ("%XQ_CANONICAL_TINYXML2_ROOT%") do set "XQ_CANONICAL_TINYXML2_ROOT=%%~fI"
+for %%I in ("%XQ_CANONICAL_PYTHON_ROOT%") do set "XQ_CANONICAL_PYTHON_ROOT=%%~fI"
+
+if not defined XQ_CANONICAL_QT_DIR set "XQ_CANONICAL_QT_DIR=%XQ_CANONICAL_QT_ROOT%\lib\cmake\Qt6"
+if not defined XQ_CANONICAL_VTK_DIR set "XQ_CANONICAL_VTK_DIR=%XQ_CANONICAL_VTK_ROOT%\lib\cmake\vtk-9.3"
+if not defined XQ_CANONICAL_ITK_DIR set "XQ_CANONICAL_ITK_DIR=%XQ_CANONICAL_ITK_ROOT%\lib\cmake\ITK-5.4"
+if not defined XQ_CANONICAL_GDCM_DIR set "XQ_CANONICAL_GDCM_DIR=%XQ_CANONICAL_GDCM_ROOT%\lib\gdcm-3.0"
+if not defined XQ_CANONICAL_HDF5_DIR set "XQ_CANONICAL_HDF5_DIR=%XQ_CANONICAL_HDF5_ROOT%\cmake"
+if not defined XQ_CANONICAL_TINYXML2_DIR set "XQ_CANONICAL_TINYXML2_DIR=%XQ_CANONICAL_TINYXML2_ROOT%\lib\cmake\tinyxml2"
+if not defined XQ_CANONICAL_PYTHON_EXE set "XQ_CANONICAL_PYTHON_EXE=%XQ_CANONICAL_PYTHON_ROOT%\python.exe"
+if not defined XQ_CANONICAL_PYTHON_INCLUDE set "XQ_CANONICAL_PYTHON_INCLUDE=%XQ_CANONICAL_PYTHON_ROOT%\include"
+if not defined XQ_CANONICAL_PYTHON_LIBRARY set "XQ_CANONICAL_PYTHON_LIBRARY=%XQ_CANONICAL_PYTHON_ROOT%\libs\python311.lib"
+
+if not defined XQ_CANONICAL_BUILD_ON set "XQ_CANONICAL_BUILD_ON=%XQ_CANONICAL_XQ_SOURCE_DIR%\build_shell_a_on"
+if not defined XQ_CANONICAL_BUILD_OFF set "XQ_CANONICAL_BUILD_OFF=%XQ_CANONICAL_XQ_SOURCE_DIR%\build_shell_a_off"
+for %%I in ("%XQ_CANONICAL_BUILD_ON%") do set "XQ_CANONICAL_BUILD_ON=%%~fI"
+for %%I in ("%XQ_CANONICAL_BUILD_OFF%") do set "XQ_CANONICAL_BUILD_OFF=%%~fI"
+if /I "%XQ_CANONICAL_BUILD_ON%"=="%XQ_CANONICAL_BUILD_OFF%" (
+    echo [XQ canonical shell] ERROR: Flow ON and OFF build directories must be different. 1>&2
+    exit /b 1
+)
+
+if not defined XQ_CANONICAL_VCVARS64 set "XQ_CANONICAL_VCVARS64=C:\software\Visual Studio\Visual Studio2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+if not defined XQ_CANONICAL_CMAKE set "XQ_CANONICAL_CMAKE=C:\software\Visual Studio\Visual Studio2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
+if not defined XQ_CANONICAL_CTEST set "XQ_CANONICAL_CTEST=C:\software\Visual Studio\Visual Studio2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe"
+if not defined XQ_CANONICAL_DUMPBIN set "XQ_CANONICAL_DUMPBIN=C:\software\Visual Studio\Visual Studio2022\Community\VC\Tools\MSVC\14.43.34808\bin\Hostx64\x64\dumpbin.exe"
+if not defined XQ_CANONICAL_LOG_ROOT set "XQ_CANONICAL_LOG_ROOT=%XQ_CANONICAL_REPO_ROOT%\.trellis\workspace\ocean\shell-a-canonical-logs"
+if not defined XQ_CANONICAL_SAMPLE_ID set "XQ_CANONICAL_SAMPLE_ID=0007_H_AO_H"
+
+set "XQ_CANONICAL_PREFIX_PATH=%XQ_CANONICAL_QT_ROOT%;%XQ_CANONICAL_GDCM_ROOT%;%XQ_CANONICAL_HDF5_ROOT%;%XQ_CANONICAL_ITK_ROOT%;%XQ_CANONICAL_TINYXML2_ROOT%;%XQ_CANONICAL_VTK_ROOT%"
+set "XQ_CANONICAL_RUNTIME_PATH=%XQ_CANONICAL_ITK_ROOT%\bin;%XQ_CANONICAL_GDCM_ROOT%\bin;%XQ_CANONICAL_HDF5_ROOT%\bin;%XQ_CANONICAL_TINYXML2_ROOT%\bin;%XQ_CANONICAL_QT_ROOT%\bin;%XQ_CANONICAL_VTK_ROOT%\bin"
+set "XQ_CANONICAL_QT_PLUGIN_PATH=%XQ_CANONICAL_QT_ROOT%\plugins"
+set "XQ_CANONICAL_APP_EXE=%XQ_CANONICAL_BUILD_ON%\xq_app.exe"
+exit /b 0

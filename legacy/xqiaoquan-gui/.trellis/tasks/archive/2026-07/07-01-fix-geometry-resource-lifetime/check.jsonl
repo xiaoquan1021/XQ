@@ -1,0 +1,3 @@
+{"file":".trellis/spec/XQ/core/source-interface.md","reason":"Check source handle ownership, lease validity, and eviction pin behavior against the documented source contract."}
+{"file":".trellis/spec/XQ/core/acceptance.md","reason":"Final quality gate requires Release targeted tests and full ctest; tests must cover failure paths, not only happy paths."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"The fix crosses services cache handles, io mmap sources, and core source leases; check data/lifetime boundaries explicitly."}

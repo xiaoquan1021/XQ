@@ -1,0 +1,3 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `C:/software/anaconda/python.exe .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "Command stack and scene mutation contract"}
+{"file": ".trellis/tasks/07-01-xq-audit-fixes/research/code-audit.md", "reason": "Audit evidence for command-stack defect"}

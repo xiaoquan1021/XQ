@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "M9a 迁移目标接口的权威契约:IGeometrySource/IVoxelSource/ReadLease 不变量、租约=驱逐 gating pin、连续 span 访问范式。迁移消费者必须遵此契约,不得改签名。"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "分层约束(app→services→adapters→io→core 依赖方向、core 零外部依赖、VTK 仅在 visualization/adapters 私有实现)。AC7 分层零违反的判据。"}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "VTK 9.3 / TetGen 在哪层、如何被允许使用;renderer 上传核重写用 VTK 批量 API、TetGen 适配器走连续 span 的边界规则。"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "XQ 构建/测试配方(vcvars64+CMAKE_PREFIX_PATH+offscreen ctest),build_m9a.bat 比照此。"}

@@ -1,0 +1,4 @@
+{"file":".trellis/tasks/07-12-shell-reuse-v2-full-delivery/fp-analysis.md","reason":"Prevent child/test evidence from replacing the full product outcome."}
+{"file":".trellis/tasks/07-12-shell-reuse-v2-full-delivery/research/reuse-replacement-matrix.md","reason":"Confirm every promised predecessor capability is really used."}
+{"file":".trellis/spec/XQ/core/acceptance.md","reason":"Final physical-machine and honest reporting gate."}
+{"file":".trellis/spec/XQ/core/build-and-test.md","reason":"Regression evidence is secondary and correctly scoped."}

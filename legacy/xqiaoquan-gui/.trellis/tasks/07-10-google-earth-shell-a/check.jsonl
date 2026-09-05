@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Reject dependency inversion, UI business logic and duplicate host architecture."}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Audit LPS/mm, frame identity and the single mm-to-CGS conversion boundary."}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Audit that ITK/GDCM/VTK types remain private."}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "Review atomic mutation, undo/redo, multi-parent lineage and transitive stale behavior."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Review IVoxelSource reuse, source lifetime and external/managed resolution boundaries."}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Require XQ-owned objects, 0007 regression and Release full CTest."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Check verified build commands, GUI test environment and portable test-data roots."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/prd.md", "reason": "Check every parent acceptance criterion and the explicit stop line."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/design.md", "reason": "Review frozen contracts, reuse choices, persistence strategy and rollback boundaries."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/dicom-fixture-policy.md", "reason": "Audit DICOM UID selection, rescale, geometry, source drift, fixture licensing and PHI handling."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/acceptance-matrix.md", "reason": "Use the positive/negative/persistence/manual/honesty matrix as the final release gate."}

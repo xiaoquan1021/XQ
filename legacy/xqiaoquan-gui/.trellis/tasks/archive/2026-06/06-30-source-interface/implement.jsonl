@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "XQ 分层与依赖方向(app→services→adapters→io→core);Source 接口必须落 core 且零外部依赖,worker 须遵守此约束"}
+{"file": ".trellis/spec/XQ/core/index.md", "reason": "core 层契约(explicit result, no exceptions through UI;纯 XQ 值类型),决定 Source 的错误语义与类型约束"}
+{"file": ".trellis/tasks/06-30-source-interface/design.md", "reason": "本任务技术设计:ReadSpan/ReadLease/IVoxelSource/IGeometrySource 类型、借用vs物化决策、Resident 实现与适配器细节"}

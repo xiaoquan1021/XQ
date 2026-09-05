@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Audit final dependency identity and prohibited runtimes."}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Audit final physical-coordinate and radius evidence."}
+{"file": ".trellis/spec/XQ/architecture/flow-capabilities.md", "reason": "Reject false A8 evidence from capability gating."}
+{"file": ".trellis/spec/XQ/core/vessel-profile.md", "reason": "Reject duplicate geometry authority or source mislabeling."}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Require real execution and no skip/mock/Noop substitution."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Verify fixed scripts, logs and sequential suites."}
+{"file": ".trellis/tasks/07-12-shell-a-v1-alignment/research/a1-a15-baseline.md", "reason": "Require all A1-A15 rows to be PASS."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/shell-a-gap-memory.md", "reason": "Prevent scope or evidence overclaim."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/scope-correction.md", "reason": "Preserve the historical Shell A scope correction."}
+{"file": ".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-remediation/research/remediation-report.md", "reason": "Verify final canonical results against the remediated baseline."}

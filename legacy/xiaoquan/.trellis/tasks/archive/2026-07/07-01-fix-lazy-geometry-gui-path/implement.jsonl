@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "App startup and layer-boundary contract for real project loading and UI-shell responsibilities."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Lazy geometry source ownership, lease, and copy-on-upload contracts used by GUI selection rendering."}
+{"file": ".trellis/spec/XQ/visualization/lod-and-upload.md", "reason": "Renderer progressive source APIs and validation contracts for IGeometrySource-driven rendering."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Qt offscreen CTest environment and Release validation commands for GUI tests."}

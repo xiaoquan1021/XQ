@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Review must catch architecture boundary violations."}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Completion requires Release build, full ctest, and real-sample/true-app discipline where applicable."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Check worker must use verified Windows build/test commands and Qt offscreen environment for ctest."}
+{"file": ".trellis/spec/XQ/visualization/index.md", "reason": "Review rendering changes against visualization-layer constraints."}
+{"file": ".trellis/tasks/06-30-gui-product-polish/research/i18n-qrc-translator.md", "reason": "Verify translator fix and tests match Qt i18n/qrc evidence."}
+{"file": ".trellis/tasks/06-30-gui-product-polish/research/qt-vtk-resize-performance.md", "reason": "Verify resize coalescing and 3D widget initialization match Qt/VTK guidance."}
+{"file": ".trellis/tasks/06-30-gui-product-polish/research/qt-theme-options.md", "reason": "Verify UI polish stays within approved no-new-dependency scope."}

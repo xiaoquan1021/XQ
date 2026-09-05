@@ -1,0 +1,6 @@
+{"file": ".trellis/tasks/07-05-workflow-usability/prd.md", "reason": "需求与验收标准(P1 消 NodeId 手填 + P2 引导,真机硬门禁)"}
+{"file": ".trellis/tasks/07-05-workflow-usability/design.md", "reason": "技术设计:nodeLister 枚举 provider、NodeComboBox、右键直达、addPath 回调修复、引导条/tooltip/估计按钮/Ctrl+A/浮层,含全部盘点行号"}
+{"file": ".trellis/tasks/07-05-workflow-usability/research/sv-workflow-comparison.md", "reason": "SV 对照调研:P1/P2 清单出处与 SV 交互先例(SegSelectionWidget/CreateAction/Estimate/Ctrl+A)"}
+{"file": ".trellis/spec/XQ/visualization/render-scene.md", "reason": "渲染层契约:sliceIndex/探针/axis 约定(Ctrl+A 取十字线位置要用)"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "构建纪律:cmd //c 绝对路径、offscreen ctest、i18n 手工 ts 勿跑 lupdate"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "分层铁律与后台任务线程纪律(work/commit 契约、忙态矩阵)"}

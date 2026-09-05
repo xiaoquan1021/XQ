@@ -1,0 +1,32 @@
+{
+  "id": "render-arch-rebuild",
+  "name": "render-arch-rebuild",
+  "title": "可视化层推倒重写:常驻 GPU 渲染管线 + 可见性驱动场景合成",
+  "description": "GUI v2(07-03)交付后真机验收失败:比 MITK 版更卡、功能残缺。根因是渲染架构级错误(离屏渲染贴 QLabel 的测试脚手架当产品出货 + 只渲染选中单节点)。本任务推倒重写可视化层(~4500 行),core/services/io/adapters 与 controllers/命令栈/TaskRunner 全部保留。",
+  "status": "completed",
+  "dev_type": null,
+  "scope": "visualization + app 渲染联动",
+  "package": "XQ",
+  "priority": "P0",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-07-04",
+  "completedAt": "2026-07-05",
+  "branch": "feat/render-arch",
+  "base_branch": "feat/gui-v2",
+  "worktree_path": "C:\\Users\\OCEAN\\Desktop\\XQIAOQUAN-gui\\XQ",
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "XQ/src/visualization/XQMprView.cpp",
+    "XQ/src/visualization/XQSceneRenderer.cpp",
+    "XQ/src/visualization/XQRenderWidget.cpp",
+    "XQ/src/app/XQMainWindow.cpp",
+    "XQ/src/ui/panels/XQStageWidgets.cpp"
+  ],
+  "notes": "验收以用户真机目视+流畅度为主门槛;ctest 绿不作为达标依据。M1 渲染内核完成后必须先给用户过目,不过目不盖 M2。",
+  "meta": {}
+}

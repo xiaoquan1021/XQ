@@ -1,0 +1,31 @@
+{
+  "id": "m9b-large-scale-viz",
+  "name": "m9b-large-scale-viz",
+  "title": "M9b 大规模可视化前处理(LOD/渐进上传/mmap几何源/拾取加速)",
+  "description": "",
+  "status": "completed",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P2",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-06-30",
+  "completedAt": "2026-06-30",
+  "branch": null,
+  "base_branch": "feat/m8b2-runtime-memory",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "06-30-m9b-a-geometry-mmap-source",
+    "06-30-m9b-b-lod-decimation",
+    "06-30-m9b-c-progressive-upload",
+    "06-30-m9b-e-payload-devector"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Layering contract for services -> io private dependency and app/service boundaries."}
+{"file": ".trellis/spec/XQ/core/index.md", "reason": "Core/source guideline routing for geometry source work."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "MappedGeometrySource, lazy resolver, cache-key, integrity, and read-only source contracts."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Required local build and ctest commands."}
+{"file": ".trellis/spec/guides/index.md", "reason": "Shared pre-development thinking guide index."}

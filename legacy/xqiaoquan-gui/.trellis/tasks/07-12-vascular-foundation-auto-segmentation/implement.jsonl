@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/07-11-vascular-imaging-foundation/prd.md","reason":"Parent automatic segmentation and anti-gold requirements."}
+{"file":".trellis/tasks/archive/2026-07/07-11-vascular-foundation-data-gate/design.md","reason":"Gold firewall and frozen metric design."}
+{"file":".trellis/tasks/archive/2026-07/07-12-vascular-foundation-itk-preprocess/prd.md","reason":"Approved vesselness input contract."}
+{"file":".trellis/spec/XQ/architecture/external-libs.md","reason":"Use ITK kernels behind XQ-owned APIs."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Prevent new custom morphology/connectivity kernels."}

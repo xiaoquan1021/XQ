@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "检查 ON/OFF 两种真实构建和非 Flow 主链验收。"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "复核独立 build dir、Release ctest 和运行时 DLL 环境。"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "检查条件编译未污染 core/public API 或形成通用插件层。"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "检查 OFF build 仍能保存/读取历史 Flow 数据。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/decision-log.md", "reason": "确保 scope 未扩展到 OperationRegistry/DLL/Python。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/acceptance-matrix.md", "reason": "检查 runtime OFF、no-flow build、历史结果只读和非 Flow 壳能力。"}

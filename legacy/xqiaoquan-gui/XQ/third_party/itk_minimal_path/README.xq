@@ -1,0 +1,37 @@
+ITKMinimalPathExtraction source lock used by XQ
+
+Upstream: https://github.com/InsightSoftwareConsortium/ITKMinimalPathExtraction
+Commit: 35dd8e83b7df2059876e6835a5741eb3d45973bf
+Archive: D:/XQ/research/ITKMinimalPathExtraction-35dd8e83.tar.gz
+Archive SHA-256: A2EDCCA4BC07175487BE34E0A6C1B780CC176A67E6F9A1DE20C21D55911D4FB4
+License: Apache-2.0 (see LICENSE)
+
+Vendored files:
+
+- itkArrivalFunctionToPathFilter.h
+  SHA-256 14683803a97fccb521bed000a031bbbed5ae3d034aa19dba36a1eaa50bada8ed
+- itkArrivalFunctionToPathFilter.hxx
+  SHA-256 2cdb95a76d9c67395c7b6d27f176073331271a1e91b436c04e8f708da476f9d0
+- itkPhysicalCentralDifferenceImageFunction.h
+  SHA-256 605129e43d956afb8ec59b79c836df72450fdb8004159f2a83241a73dd4f21d4
+- itkPhysicalCentralDifferenceImageFunction.hxx
+  SHA-256 7edf7e4369d53c1da3d8033dd25086ac26dabcfa356b2c0793c6d71ecc434f85
+- itkSingleImageCostFunction.h
+  SHA-256 d572e2681535d8e6def865e30b5dda7dd65f11d9d84472e66fd27c8dff31ba9e
+- itkSingleImageCostFunction.hxx
+  SHA-256 f7ea2a02ecf168a84b327fe92dfefbd14a167746191c18463aee685d1bee8bfe
+- itkSpeedFunctionPathInformation.h
+  SHA-256 be2b96ab3a819cdf45c8949e0874ab8424d4dedd098b979f6f0594cc2c8d5e81
+- itkSpeedFunctionPathInformation.hxx
+  SHA-256 43186d4c25e1702800bb6641424307a93fecfd2bfd0ccae4a536689260add549
+- itkSpeedFunctionToPathFilter.h
+  SHA-256 05b0e6602212f94c0c3a6502cfa72bbccdac0e03ae87cfcb42dfc7eb2efac158
+- itkSpeedFunctionToPathFilter.hxx
+  SHA-256 d9e4c7541807cafb76da13df6389c35590a2b0d34beaa51c6ceea532a738fe27
+- itkIterateNeighborhoodOptimizer.h
+  SHA-256 3c88b9dd66f76efb47f22b32dcab2ff6244c67f99ca0ec7155809226fd3bd4e6
+- itkIterateNeighborhoodOptimizer.cxx
+  SHA-256 9863f8a508a5c4806c69e9f94106e81e39473bb35723823a672f34fe3ffd4d24
+
+XQ compiles these sources against the locked product ITK 5.4 installation. No
+second ITK prefix is introduced.

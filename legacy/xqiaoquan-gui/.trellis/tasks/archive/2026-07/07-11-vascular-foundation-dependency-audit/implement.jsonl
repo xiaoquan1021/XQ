@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Keep external libraries as private kernels and preserve XQ layer direction during probes/build changes."}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Use the authoritative dependency baseline and adapter-only rules."}
+{"file": ".trellis/spec/XQ/architecture/reference-sources.md", "reason": "Use SimVascular/MITK and official dependency semantics without referencing XQ1."}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Define the oblique LPS/mm bridge probe contract."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Use verified Windows Release configuration, DLL PATH and sequential full-suite rules."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/prd.md", "reason": "Parent dependency, centerline and meshing acceptance boundaries."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/dependency-and-data-gates.md", "reason": "Parent truth-level, ABI and license gate model."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-dependency-audit/prd.md", "reason": "Child requirements and acceptance criteria."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-dependency-audit/design.md", "reason": "Evidence model, probe architecture and backend decision rules."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-dependency-audit/research/baseline-inventory.md", "reason": "Known manifest/CMake/install facts before execution."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-dependency-audit/research/audit-matrix.md", "reason": "Track installed/link/executed/license/decision states without collapsing them."}

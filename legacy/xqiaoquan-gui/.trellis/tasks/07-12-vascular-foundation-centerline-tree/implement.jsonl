@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/07-11-vascular-imaging-foundation/design.md","reason":"Unified A/B centerline architecture and real-data metrics."}
+{"file":".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-remediation/research/remediation-report.md","reason":"Locked vtkvmtk and ITKThickness3D source identities."}
+{"file":".trellis/tasks/07-12-shell-a-centerline-b/prd.md","reason":"Existing Shell A A13 thinning, distance-map and single-Path implementation boundary to reuse without duplication."}
+{"file":".trellis/tasks/07-12-shell-reuse-v2-full-delivery/research/task-topology.md","reason":"Post-Shell-A dependency graph and split ownership between the minimal fallback and v2 tree extension."}
+{"file":".trellis/spec/XQ/architecture/coordinate-and-units.md","reason":"Physical position/radius contract."}
+{"file":".trellis/spec/XQ/core/vessel-path-modules.md","reason":"Compatible read-only Path view and source honesty."}

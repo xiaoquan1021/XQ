@@ -1,0 +1,12 @@
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/prd.md","reason":"Verify delivered behavior follows schema 4, exact reuse identities, case-1 gates and case-5 freeze."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/scope-correction.md","reason":"Verify no deferred segmentation work is used to block, replace or redefine Shell A v1 acceptance."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/design.md","reason":"Verify ITK/upstream own kernels while XQ owns only explicit portal strategy, adapters and provenance."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/implement.md","reason":"Verify work ran in order and no production cutover occurred before the case-1 data gate."}
+{"file":"D:/XQ/可复用工作打包说明.md","reason":"Verify direct reuse of the selected ITK chain and correct shell/core ownership split."}
+{"file":"D:/XQ/规划-血管前处理与血流.md","reason":"Verify peripheral branch recovery, topology separation and optional reconnection match the selected project work."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/research/dependency-source-lock.md","reason":"Verify exact versions/source hashes, private MinimalPath integration and zero Python/second-ITK runtime leakage."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/research/schema4-peripheral-recovery-experiments.md","reason":"Verify every case-1 run was predeclared, recorded and judged against full frozen metrics rather than quick overlap."}
+{"file":".trellis/spec/XQ/core/automatic-vessel-segmentation.md","reason":"Verify schema-4 profile, typed failures, component/path records, gold firewall and artifact-v7 contract."}
+{"file":".trellis/spec/XQ/core/acceptance.md","reason":"Verify quantitative and real desktop visual acceptance outrank compilation and test-count evidence."}
+{"file":".trellis/spec/XQ/architecture/coordinate-and-units.md","reason":"Verify ROI, thresholds, endpoint distance, speed image and output remain on the CT LPS/mm frame."}
+{"file":".trellis/spec/XQ/architecture/external-libs.md","reason":"Verify explicit dependency closure and absence of TubeTK/Python/TotalSegmentator/second ITK from the product."}

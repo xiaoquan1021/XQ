@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Implement exact package roots, QtBase isolation and closure checks."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Follow Windows MSVC/Ninja/VSLANG and sequential suite rules."}
+{"file": ".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-remediation/research/remediation-report.md", "reason": "Propagate the proven dependency recipe to canonical entry scripts."}
+{"file": ".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-audit/research/dependency-lock.md", "reason": "Use exact dependency versions, commits and hashes."}
+{"file": ".trellis/tasks/07-12-shell-a-v1-alignment/research/a1-a15-baseline.md", "reason": "Close only A1/A15 canonical-entry gaps."}

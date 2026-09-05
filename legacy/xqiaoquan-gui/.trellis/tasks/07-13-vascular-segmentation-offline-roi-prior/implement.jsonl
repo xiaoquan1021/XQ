@@ -1,0 +1,13 @@
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/prd.md","reason":"Authoritative schema-4 requirements: ITK/upstream kernel reuse plus project-owned portal topology, peripheral recovery and optional reconnection."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/scope-correction.md","reason":"Current routing boundary: this post-Shell-A v2 segmentation child is deferred and must not block or replace Shell A v1 work."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/design.md","reason":"Schema-4 kernel-to-adapter-to-XQ strategy mapping, gold firewall and legacy replacement semantics."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/implement.md","reason":"Ordered baseline reproduction, controlled case-1 improvement, production migration and verification gates."}
+{"file":"D:/XQ/可复用工作打包说明.md","reason":"Highest-authority reuse boundary: direct ITK kernels, offline ROI data, adapter isolation and XQ-owned parameter/topology strategy."}
+{"file":"D:/XQ/规划-血管前处理与血流.md","reason":"Highest-authority requirement for ROI-constrained peripheral-branch recovery, optional graph reconnection and project-owned pipeline tuning."}
+{"file":"D:/XQ/参考文献/论文与资源清单.md","reason":"Local paper and upstream resource index for Frangi/Sato and reusable ITK/path work."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/research/dependency-source-lock.md","reason":"Exact product dependency roots, licenses, locked MinimalPath source and offline/runtime boundary."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/research/case1-roi-findings.md","reason":"Case-1 ROI/candidate coverage evidence and preserved negative history; its old MinimalPath prohibition is superseded by the PRD/design authority correction."}
+{"file":".trellis/tasks/07-13-vascular-segmentation-offline-roi-prior/research/schema4-peripheral-recovery-experiments.md","reason":"One-hypothesis-at-a-time experiment log, frozen gates and current lower-target-domain hypothesis."}
+{"file":".trellis/spec/XQ/core/automatic-vessel-segmentation.md","reason":"Executable schema-4 contracts, ownership, profile, typed failures, artifact and gold-firewall rules."}
+{"file":".trellis/spec/XQ/architecture/external-libs.md","reason":"Exact ITK/GDCM/VTK baseline, explicit module closure and no runtime dependency leakage."}
+{"file":".trellis/spec/XQ/architecture/coordinate-and-units.md","reason":"LPS/mm physical geometry and resampling rules for ROI, morphology and path inputs."}

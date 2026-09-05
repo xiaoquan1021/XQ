@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/07-11-vascular-imaging-foundation/design.md","reason":"Parent image pipeline and adapter boundaries."}
+{"file":".trellis/tasks/07-11-vascular-foundation-dependency-remediation/research/remediation-report.md","reason":"Exact ITK/VTK/GDCM components and isolated build baseline."}
+{"file":".trellis/tasks/07-11-vascular-foundation-data-gate/design.md","reason":"Real-data geometry and gold separation contract."}
+{"file":".trellis/spec/XQ/architecture/coordinate-and-units.md","reason":"Preserve LPS/mm and full direction."}
+{"file":".trellis/spec/XQ/architecture/external-libs.md","reason":"Keep ITK types private and link only approved targets."}
+{"file":".trellis/spec/XQ/core/source-interface.md","reason":"Consume XQ voxel sources without leaking ITK."}

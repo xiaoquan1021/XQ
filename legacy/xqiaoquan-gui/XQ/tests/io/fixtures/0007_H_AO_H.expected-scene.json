@@ -1,0 +1,45 @@
+{
+  "fixture_id": "L1-0007_H_AO_H",
+  "format": "svproject",
+  "source_binding": "Vascular Model Repository public fixture 0007_H_AO_H",
+  "scene": {
+    "groups": {
+      "Images": 1,
+      "Paths": 5,
+      "Segmentations": 5,
+      "Models": 1,
+      "Meshes": 1,
+      "Simulations": 1
+    },
+    "nodes": [
+      { "domain_type": "image", "display_name": "OSMSC0090-cm" },
+      { "domain_type": "path", "display_name": "aorta" },
+      { "domain_type": "path", "display_name": "btrunk" },
+      { "domain_type": "path", "display_name": "carotid" },
+      { "domain_type": "path", "display_name": "rt_carotid" },
+      { "domain_type": "path", "display_name": "subclavian" },
+      { "domain_type": "contour_group", "display_name": "aorta_final" },
+      { "domain_type": "contour_group", "display_name": "btrunk_final" },
+      { "domain_type": "contour_group", "display_name": "carotid_final" },
+      { "domain_type": "contour_group", "display_name": "rt_carotid_final" },
+      { "domain_type": "contour_group", "display_name": "subclavian_final" },
+      { "domain_type": "surface_model", "display_name": "0090_0001" },
+      { "domain_type": "mesh", "display_name": "0090_0001" },
+      { "domain_type": "simulation_case", "display_name": "0090_0001" }
+    ],
+    "derived_relations": [
+      { "source": "path:aorta", "derived": "contour_group:aorta_final" },
+      { "source": "path:btrunk", "derived": "contour_group:btrunk_final" },
+      { "source": "path:carotid", "derived": "contour_group:carotid_final" },
+      { "source": "path:rt_carotid", "derived": "contour_group:rt_carotid_final" },
+      { "source": "path:subclavian", "derived": "contour_group:subclavian_final" },
+      { "source": "contour_group:aorta_final", "derived": "surface_model:0090_0001" },
+      { "source": "contour_group:btrunk_final", "derived": "surface_model:0090_0001" },
+      { "source": "contour_group:carotid_final", "derived": "surface_model:0090_0001" },
+      { "source": "contour_group:rt_carotid_final", "derived": "surface_model:0090_0001" },
+      { "source": "contour_group:subclavian_final", "derived": "surface_model:0090_0001" },
+      { "source": "surface_model:0090_0001", "derived": "mesh:0090_0001" },
+      { "source": "mesh:0090_0001", "derived": "simulation_case:0090_0001" }
+    ]
+  }
+}

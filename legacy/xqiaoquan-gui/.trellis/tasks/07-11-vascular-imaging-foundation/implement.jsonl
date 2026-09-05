@@ -1,0 +1,14 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Keep library-first services, strict layer direction and external kernels behind XQ-owned APIs."}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Use the locked dependency baseline and prevent ITK/VTK/GDCM/MMG types from leaking into public contracts."}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Preserve full LPS/mm image, mask, centerline, surface and mesh geometry across ITK/VTK boundaries."}
+{"file": ".trellis/spec/XQ/architecture/reference-sources.md", "reason": "Reference SimVascular/MITK and underlying official library semantics while never consulting XQ1."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Feed ITK/VTK/meshing kernels through stable XQ read-only voxel and geometry Source contracts."}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "Commit image-derived mask/tree/surface/mesh atomically with lineage, undo and stale propagation."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Use the verified Windows Release build recipes, portable external data roots and sequential build-tree testing."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Trace DICOM through ITK, VTK, XQ objects, persistence and GUI without implicit format or coordinate assumptions."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/prd.md", "reason": "Authoritative requirements, scope correction and anti-fake-completion acceptance criteria."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/design.md", "reason": "Target adapter/service contracts, data flow, backend choices and failure rules."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/current-state-audit.md", "reason": "Code-backed baseline separating installed/existing capabilities from missing production vascular work."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/dependency-and-data-gates.md", "reason": "ABI, license, real CTA, gold separation and metric-freeze gates that must precede production claims."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/decision-log.md", "reason": "Frozen user intent and scope decisions for this corrected stage."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/shell-a-gap-memory.md", "reason": "壳完成定义、证据边界、canonical 依赖迁移与缺失实现 child 的审查记忆"}

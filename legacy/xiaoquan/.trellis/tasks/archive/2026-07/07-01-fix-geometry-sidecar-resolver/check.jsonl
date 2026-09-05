@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Verify no layer-boundary regression from resolver changes."}
+{"file": ".trellis/spec/XQ/core/index.md", "reason": "Verify core/source rules remain satisfied."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Verify lazy resolver integrity mode, fallback, and cache-key contracts."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Verify targeted and full Release ctest commands."}

@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Reject registry placement or external-type boundary violations."}
+{"file": ".trellis/spec/XQ/architecture/flow-capabilities.md", "reason": "Verify Flow OFF leaves Path modules available."}
+{"file": ".trellis/spec/XQ/core/vessel-profile.md", "reason": "Reject radius duplication and Profile/Path authority drift."}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Require real registry execution and failure-path assertions."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Verify focused and full Release regression gates."}
+{"file": ".trellis/tasks/07-12-shell-a-v1-alignment/research/a1-a15-baseline.md", "reason": "Check A5-A8 against exact D-XQ semantics."}
+{"file": ".trellis/spec/XQ/core/vessel-path-modules.md", "reason": "Verify provenance validation, Path-only header guard, typed failures and sequential ON/OFF gates."}

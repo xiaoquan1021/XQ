@@ -1,0 +1,28 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/xq">
+    <file alias="xq.qss">xq.qss</file>
+    <file alias="arrow-down-disabled.svg">icons/arrow-down-disabled.svg</file>
+    <file alias="arrow-down.svg">icons/arrow-down.svg</file>
+    <file alias="arrow-up-disabled.svg">icons/arrow-up-disabled.svg</file>
+    <file alias="arrow-up.svg">icons/arrow-up.svg</file>
+    <file alias="check.svg">icons/check.svg</file>
+    <file alias="document-open.svg">icons/document-open.svg</file>
+    <file alias="document-save.svg">icons/document-save.svg</file>
+    <file alias="edit-redo.svg">icons/edit-redo.svg</file>
+    <file alias="edit-undo.svg">icons/edit-undo.svg</file>
+    <file alias="node-image.svg">icons/node-image.svg</file>
+    <file alias="node-mesh.svg">icons/node-mesh.svg</file>
+    <file alias="node-model.svg">icons/node-model.svg</file>
+    <file alias="node-path.svg">icons/node-path.svg</file>
+    <file alias="node-project.svg">icons/node-project.svg</file>
+    <file alias="tool-flow.svg">icons/tool-flow.svg</file>
+    <file alias="tool-image.svg">icons/tool-image.svg</file>
+    <file alias="tool-mesh.svg">icons/tool-mesh.svg</file>
+    <file alias="tool-model.svg">icons/tool-model.svg</file>
+    <file alias="tool-path.svg">icons/tool-path.svg</file>
+    <file alias="tool-seg-2d.svg">icons/tool-seg-2d.svg</file>
+</qresource>
+<qresource prefix="/i18n">
+    <file alias="xq_zh_CN.qm">i18n/xq_zh_CN.qm</file>
+</qresource>
+</RCC>

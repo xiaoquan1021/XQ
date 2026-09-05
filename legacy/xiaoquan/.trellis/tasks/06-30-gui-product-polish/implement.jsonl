@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Implementation must preserve XQ layer boundaries and keep app as a thin UI shell."}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Theme or rendering changes must respect locked external dependency rules and VTK/Qt placement."}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "Any UI action remains scene/command-stack driven; no direct business mutation in widgets."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Use the verified Windows Release build and ctest environment."}
+{"file": ".trellis/spec/XQ/visualization/index.md", "reason": "Rendering changes belong in app/visualization and must keep VTK private."}
+{"file": ".trellis/tasks/06-30-gui-product-polish/research/i18n-qrc-translator.md", "reason": "Qt translator/qrc evidence and required diagnostics for Chinese UI."}
+{"file": ".trellis/tasks/06-30-gui-product-polish/research/qt-vtk-resize-performance.md", "reason": "Qt resize and VTK widget guidance for performance and 3D fixes."}
+{"file": ".trellis/tasks/06-30-gui-product-polish/research/qt-theme-options.md", "reason": "UI polish strategy and dependency decision."}

@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "能力关闭必须保持 typed service/controller 分层，不能引入治理平台。"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "关闭执行能力时历史 scene 数据、commands 和 project state 仍须稳定。"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "新增 ON/OFF 构建矩阵必须沿用已验证 Windows Release 配方。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "从真实 Flow 重复点提取最小配置，不预测通用 operation 抽象。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/decision-log.md", "reason": "冻结 typed capability、无插件市场和 Flow 可关决策。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/acceptance-matrix.md", "reason": "覆盖 runtime OFF、no-flow build、历史结果只读与非 Flow 壳门。"}

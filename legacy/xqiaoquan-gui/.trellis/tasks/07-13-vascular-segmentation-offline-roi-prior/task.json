@@ -1,0 +1,31 @@
+{
+  "id": "vascular-segmentation-offline-roi-prior",
+  "name": "vascular-segmentation-offline-roi-prior",
+  "title": "血管分割：ITK/前人实现复用优先的离线 ROI v4",
+  "description": "按 D:/XQ 选定的传统 ITK 链复用去噪、Frangi/Sato vesselness、区域生长/阈值、连通域，并复用锁定的 ITK MinimalPath/level-set kernel；XQ 负责可配置的门静脉拓扑、外周分支恢复、可选重连、持久化和调用入口。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P0",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-07-13",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "feat/google-earth-shell-a",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-12-vascular-foundation-auto-segmentation",
+  "relatedFiles": [],
+  "notes": "2026-07-13 v4 权威纠正：D:/XQ 明确把混合管线设计与调参、门静脉/肝静脉/脾静脉拓扑分离、ROI 约束外周细支恢复和可选重连归为项目工作。禁止的是重写 ITK/上游 kernel、让 gold/case 身份进入生产、以及引入 Python 产品运行时；不是禁止 XQ 的门脉策略。case 1 是开发例，case 5 在 profile 冻结前保持关闭。2026-07-14 壳子范围纠正：本任务是 post-Shell-A v2 的自动分割子任务，不是壳子本身，不阻塞 Shell A v1；保留研究证据，壳 A 未完成期间不继续模型检索、调参或产品迁移。见 scope-correction.md。",
+  "meta": {
+    "delivery_tier": "post-shell-a-v2",
+    "blocks_shell_a_v1": false,
+    "execution_disposition": "deferred-until-shell-a-v1-complete",
+    "superseding_current_task": "07-12-shell-a-v1-alignment"
+  }
+}

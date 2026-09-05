@@ -1,0 +1,4 @@
+{"file":".trellis/tasks/07-11-vascular-imaging-foundation/prd.md","reason":"Check R3 and real-data acceptance rather than toy-only output."}
+{"file":".trellis/spec/XQ/core/acceptance.md","reason":"Verify actual product behavior before test counts."}
+{"file":".trellis/spec/XQ/core/build-and-test.md","reason":"Verify real target linkage and focused regression purpose."}
+{"file":".trellis/spec/XQ/architecture/coordinate-and-units.md","reason":"Numerically audit physical-space preservation."}

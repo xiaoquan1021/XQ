@@ -1,0 +1,4 @@
+{"file":".trellis/tasks/07-11-vascular-imaging-foundation/design.md","reason":"Surface/volume mesh production design and quality gates."}
+{"file":".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-remediation/research/remediation-report.md","reason":"TetGen/MMG technical and research-only license boundary."}
+{"file":".trellis/spec/XQ/architecture/external-libs.md","reason":"Adapter and license isolation."}
+{"file":".trellis/spec/XQ/architecture/coordinate-and-units.md","reason":"Mesh physical-space and marker preservation."}

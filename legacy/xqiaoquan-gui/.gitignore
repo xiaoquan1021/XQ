@@ -1,0 +1,27 @@
+# 大数据目录(医学影像,体积大,不纳入版本控制)
+/0007_H_AO_H/
+/0080_H_PULM_H/
+
+# 独立 git 子仓库(各自单独管理,不纳入本仓库)
+/Externals/
+/XQ1/
+/XQrebuild/
+/plan/
+
+# XQ 工程构建产物(不纳入版本控制)
+/XQ/build/
+/XQ/build_*/
+
+# 机器特定的临时构建/测试脚本(配方已沉淀进 spec/XQ/core/build-and-test.md)
+/XQ/build_*.bat
+/XQ/ctest_*.bat
+/XQ/run_*.bat
+
+# Shell A canonical public entries are reproducible product workflow, not
+# machine-local throwaway helpers.
+!/XQ/build_gui_wt.bat
+!/XQ/build_shell_noflow_wt.bat
+!/XQ/run_xq.bat
+
+# 临时调研探针(throwaway,结论沉淀进 task RESULTS/memory,源不入库)
+/.trellis/workspace/

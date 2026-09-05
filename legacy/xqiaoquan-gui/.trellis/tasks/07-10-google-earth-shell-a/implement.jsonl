@@ -1,0 +1,15 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Preserve library-first XQ layer boundaries and keep UI thin."}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Freeze patient LPS/mm and explicit path/contour/frame semantics."}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Keep ITK/GDCM/VTK private kernels and XQ-owned public contracts."}
+{"file": ".trellis/spec/XQ/architecture/reference-sources.md", "reason": "Use SimVascular/MITK and underlying library semantics without importing their host architecture."}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "Implement all mutations through atomic commands, undo, lineage and transitive stale."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Reuse IVoxelSource and existing residency/mmap contracts for image data."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Use the verified Windows Release build, CTest and portable data-root conventions."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Trace DICOM and Profile data across adapter, service, store, reopen, GUI and solver boundaries."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Extend existing project, source, command, controller and solver mechanisms before adding new abstractions."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/current-state.md", "reason": "Code-backed baseline, reusable assets and confirmed shell gaps."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/decision-log.md", "reason": "Frozen geometry authority, capability and stop-line decisions."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/reuse-map.md", "reason": "Defines direct, conditional, conceptual and forbidden reuse."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/dicom-fixture-policy.md", "reason": "ExternalSource strategy, DICOM semantics, fixtures, PHI rules and real-data gate."}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/acceptance-matrix.md", "reason": "Cross-capability positive, negative, persistence and honesty gates."}
+

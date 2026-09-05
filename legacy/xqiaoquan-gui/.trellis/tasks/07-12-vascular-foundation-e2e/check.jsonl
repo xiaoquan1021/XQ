@@ -1,0 +1,4 @@
+{"file":".trellis/tasks/07-12-shell-reuse-v2-full-delivery/prd.md","reason":"Check the whole user workflow and legacy cutover."}
+{"file":".trellis/spec/XQ/core/acceptance.md","reason":"Function-first, save/reopen and real-machine acceptance rules."}
+{"file":".trellis/spec/XQ/core/command-and-scene.md","reason":"Check atomicity, lineage and no half-state."}
+{"file":".trellis/spec/XQ/core/build-and-test.md","reason":"Purpose-bound regression after functional verification."}

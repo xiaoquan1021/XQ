@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "审查 round-trip、真实 XQ 对象落地和 Release 全量测试门。"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "使用项目已验证的 Windows Release 构建和 ctest 环境。"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "检查 frame/unit/default migration 是否违反冻结坐标契约。"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "检查新 domain 的 command、relation 与 transitive stale 行为。"}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "检查 payload 是否错误拥有像素或泄漏 Source 实现。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "逐层核对 domain、asset、serialization、scene model 与测试映射。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/decision-log.md", "reason": "复核三层几何权威与明确 out-of-scope。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/acceptance-matrix.md", "reason": "逐项审查领域契约、迁移、revision、lineage 与持久化负路径。"}

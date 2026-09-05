@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Release full ctest is the acceptance gate; side-effecting assertions must be avoided."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Check lazy source lifetime and copy-on-upload usage after GUI resolver integration."}
+{"file": ".trellis/spec/XQ/visualization/lod-and-upload.md", "reason": "Check progressive renderer stats and invalid-source behavior for lazy GUI rendering."}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Check app/UI/service/io layering after adding startup resource wiring."}

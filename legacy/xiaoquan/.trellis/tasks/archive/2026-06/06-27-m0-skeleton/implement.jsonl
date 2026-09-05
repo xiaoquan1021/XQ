@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "架构铁律与分层依赖方向,core 零外部依赖约束"}
+{"file": ".trellis/spec/XQ/architecture/reference-sources.md", "reason": "代码起点 XQrebuild;算法参考 SimVascular/MITK;XQ1 全面作废"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "payload 机制、命令/undo、source/derived/stale 契约——M0 核心改动依据"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "影像 payload 必存字段、LPS/mm 语义"}

@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "分层:service 纯领域零依赖,adapter 私有实现持 VTK,经命令改 scene"}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "外部库只进 adapter 私有实现,不进公开 API;ITK/VTK 边界"}
+{"file": ".trellis/spec/XQ/architecture/reference-sources.md", "reason": "分割算法参考 SimVascular/MITK(及底层 ITK/VTK),XQ1 不参考"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "命令/undo、掩膜保留来源关系、service 不直接改 scene"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "构建/测试配方"}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "验收:Release 全量 ctest 真绿,数据进 XQ 自有对象"}

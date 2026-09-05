@@ -1,0 +1,36 @@
+{
+  "id": "vascular-foundation-centerline-tree",
+  "name": "vascular-foundation-centerline-tree",
+  "title": "血管地基：自动中心线树",
+  "description": "按统一契约接入 vtkvmtk C++ 或经批准的三维 thinning fallback，产出中心线、半径和树拓扑。",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P0",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-07-12",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "feat/google-earth-shell-a",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-11-vascular-imaging-foundation",
+  "relatedFiles": [],
+  "notes": "Post-Shell-A v2 production extension. Reuse the minimal A13 thinning/distance fallback from 07-12-shell-a-centerline-b; own automatic endpoints, full tree topology, real-data quality gates and production A/B backend selection without duplicating the fallback kernel.",
+  "meta": {
+    "delivery_tier": "post-shell-a-v2",
+    "extends": "07-12-shell-a-centerline-b",
+    "depends_on": [
+      "07-12-shell-a-centerline-b",
+      "07-12-vascular-foundation-auto-segmentation",
+      "07-12-vascular-foundation-itk-vtk-bridge",
+      "07-11-vascular-foundation-data-gate",
+      "07-11-vascular-foundation-dependency-remediation"
+    ]
+  }
+}

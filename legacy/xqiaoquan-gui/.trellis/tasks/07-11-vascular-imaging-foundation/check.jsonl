@@ -1,0 +1,14 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Reject duplicated host architecture, UI algorithms and dependency inversion."}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Audit exact versions, adapter-only third-party types and optional backend isolation."}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Audit LPS/mm/direction and physical-coordinate fidelity across every stage."}
+{"file": ".trellis/spec/XQ/architecture/reference-sources.md", "reason": "Ensure implementation semantics follow SimVascular/MITK/official libraries and never XQ1."}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "Require XQ-owned objects, Release full CTest and real sample integration without mocks."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Review safe, efficient voxel/geometry access and lifetime at external kernel boundaries."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Verify reproducible Windows builds, real data-root configuration and sequential full suites."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/prd.md", "reason": "Check every parent requirement and acceptance criterion without substituting old Shell A evidence."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/design.md", "reason": "Review shared production path, backend fallback integrity, persistence and rollback boundaries."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/current-state-audit.md", "reason": "Verify completion claims against the actual pre-task baseline."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/dependency-and-data-gates.md", "reason": "Audit actual dependency execution, dataset provenance, gold isolation and pre-frozen metrics."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/acceptance-matrix.md", "reason": "Run unit, real-data, negative, persistence and physical-GUI evidence gates without fake substitutes."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/decision-log.md", "reason": "Check that implementation and wording stay within the corrected stage and exclusions."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/shell-a-gap-memory.md", "reason": "防止用旧 Shell 测试、LIDC IO 或独立整改树冒充血管影像地基完成"}

@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/XQ/visualization/lod-and-upload.md", "reason": "Progressive upload, chunking, RenderStats, and LOD invariants for renderer changes."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "IGeometrySource point/connectivity lease contract consumed by renderer."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Validated Windows build and ctest commands for XQ."}

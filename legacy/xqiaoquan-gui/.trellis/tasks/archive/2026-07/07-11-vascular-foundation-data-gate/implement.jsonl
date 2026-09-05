@@ -1,0 +1,15 @@
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "Verify image/label LPS/mm/direction and index-to-physical alignment."}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "Use GDCM/ITK as private C++ readers without Python runtime."}
+{"file": ".trellis/spec/XQ/architecture/reference-sources.md", "reason": "Follow official ITK/GDCM and SimVascular/MITK data semantics, never XQ1."}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Load accepted image bytes through XQ voxel Source contracts."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Use portable external data roots and verified real-data test configuration."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/prd.md", "reason": "Parent real CTA, gold isolation and anti-fake acceptance requirements."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/dependency-and-data-gates.md", "reason": "Parent data hard gates and metric-freeze protocol."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/prd.md", "reason": "Child data acquisition, license, integrity, alignment and metric requirements."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/design.md", "reason": "External bundle, reader, alignment, evaluator and safety contracts."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/current-data.md", "reason": "Preserve the exact IO-only role of current LIDC and local derived samples."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/candidate-and-metric-plan.md", "reason": "Prioritize IRCADb carefully and freeze evaluation before final predictions."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/candidate-matrix.md", "reason": "Use the accepted IRCAD decision and preserve the researched fallback boundary."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/selected-dataset.md", "reason": "Consume the exact accepted case, external root, label roles and frame-normalization decision."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/alignment-report.md", "reason": "Reuse the verified CT/mask geometry, identities, hashes and XQ label counts."}
+{"file": ".trellis/tasks/07-11-vascular-foundation-data-gate/research/validation-baseline.md", "reason": "Keep downstream production/gold separation, split and numeric thresholds frozen."}

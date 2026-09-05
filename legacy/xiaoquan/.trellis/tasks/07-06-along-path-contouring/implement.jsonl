@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/XQ/visualization/render-scene.md", "reason": "断面重采样属 visualization 层,须遵渲染场景契约(四视图/切片/pimpl VTK-free 头/actor 常驻)。P3-1 新增 XQCrossSectionResampler/ViewWidget 要与此契约一致。"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "reslice 的 ResliceAxes 与 PathSamplePoint {tangent,normal,binormal} 坐标系映射是 P3-1 命门,须遵坐标与单位约定(世界坐标/mm/轴序),否则断面 frame 与 ContourFrame 对不上导致放样几何错位。"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "分层铁律:core 纯域无 VTK/Qt,services 纯域,visualization 才碰 VTK,app 接线。P3-1 断面重采样归 visualization,断面 2D 轮廓算法归 services,不得越层。"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "构建/测试规范:.bat + cmd //c 绝对路径、ctest_merge 基线、改 Q_OBJECT 头 rm -rf build_gui 全新构建、新源文件英文注释。"}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "验收硬规范:GUI 类 ctest 全绿≠达标、真机第一优先、假绿抽查纪律、断言可证伪。"}
+{"file": ".trellis/tasks/07-05-workflow-usability/research/sv-workflow-comparison.md", "reason": "SimVascular 2D 分割工作流对照全文(§2.2),P3-1 的沿路径 reslice 滑条(sv4guiResliceSlider/UpdatePathPoint)参照。"}

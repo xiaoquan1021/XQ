@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "检查真实服务执行、持久化对象和 full Release ctest。"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "使用项目标准 Windows Release/ctest 配方。"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "复算 mm→cm、mm2→cm2 且检查无 GUI 散落转换。"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "复核 bundle 原子性、undo/redo 与传递 stale。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查是否复用现有 solver/protocol 测试而非创建平行实现。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/decision-log.md", "reason": "检查 smoke 标签和 M5 out-of-scope 没有被弱化。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/acceptance-matrix.md", "reason": "复算均匀 station、唯一 CGS 边界、结果血缘和 L0 smoke 完成门。"}

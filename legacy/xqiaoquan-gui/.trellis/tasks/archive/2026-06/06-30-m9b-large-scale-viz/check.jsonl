@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "验收铁律:Release+全量 ctest+假绿抽查+副作用不进 assert。检查阶段据此判定 M9b 各 AC 真绿。"}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "核查 M9b 未破已冻 Source 1.0 公共签名(static_assert 成立),新增如 borrow-faceId/GeometrySourceSpec 是加非破。"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "核查分层零违反:io/core 无 vtk 依赖、新增 link 边方向合法无环。"}

@@ -1,0 +1,4 @@
+{"file": ".trellis/tasks/06-30-scale-probe/design.md", "reason": "探针架构 + 两路决策 + 完整性 A/B 候选 + 10 条勘察事实,worker 的实现蓝图"}
+{"file": ".trellis/tasks/06-30-source-interface/design.md", "reason": "M8b-1 接口设计(探针要喂的目标):ReadSpan/ReadLease/借用vs物化/keepalive,探针 Mapped*Source 须对齐这些签名"}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Source 只读契约的两条不变量(借用/物化、租约延寿),探针打穿的就是它们在并发/mmap 下是否成立"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "依赖方向 + 探针隔离原则(R6 不污染主线),probe/ 不得反向依赖或改 core"}

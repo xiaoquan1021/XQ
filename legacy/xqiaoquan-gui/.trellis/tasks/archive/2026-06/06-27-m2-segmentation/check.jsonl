@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "验收:Release 全量 ctest 真绿、副作用别进 assert"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "校验 service 零外部依赖、adapter 边界、依赖方向"}
+{"file": ".trellis/spec/XQ/architecture/external-libs.md", "reason": "校验 ITK/VTK/ONNX 不进公开 API"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "校验命令/undo、掩膜来源关系、不碰 mutator"}

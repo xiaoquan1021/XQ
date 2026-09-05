@@ -1,0 +1,9 @@
+{"file":".trellis/spec/XQ/architecture/index.md","reason":"Enforce kernel-only external dependency and public API boundaries."}
+{"file":".trellis/spec/XQ/architecture/external-libs.md","reason":"Use the audited Qt/VTK/ITK/GDCM/MMG/TetGen discovery, runtime, and license contracts."}
+{"file":".trellis/spec/XQ/architecture/reference-sources.md","reason":"Keep SimVascular/official dependency semantics and exclude XQ1 as a reference."}
+{"file":".trellis/spec/XQ/core/build-and-test.md","reason":"Use the proven MSVC/Ninja/VSLANG/CTest environment and sequential build-tree validation rules."}
+{"file":".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-audit/research/dependency-lock.md","reason":"Consume the exact versions, commits, hashes, components, and accepted/blocked decisions."}
+{"file":".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-audit/research/abi-report.md","reason":"Remediate the Qt-zstd and broad ITK/Python build-ingress blockers without weakening ABI evidence."}
+{"file":".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-audit/research/license-report.md","reason":"Preserve vtkvmtk notices, MMG obligations, and TetGen research-only classification."}
+{"file":".trellis/tasks/archive/2026-07/07-11-vascular-foundation-dependency-audit/research/probe-results.md","reason":"Retain the proven component recipes, ON/ON tests, negative cases, and known limits."}
+{"file": ".trellis/tasks/07-11-vascular-imaging-foundation/research/shell-a-gap-memory.md", "reason": "继续依赖整改前核对 canonical Shell 脚本迁移缺口和完成声明边界"}

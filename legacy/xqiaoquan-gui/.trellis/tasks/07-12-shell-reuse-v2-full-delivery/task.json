@@ -1,0 +1,42 @@
+{
+  "id": "shell-reuse-v2-full-delivery",
+  "name": "shell-reuse-v2-full-delivery",
+  "title": "完整复用壳 v2 总交付",
+  "description": "按 D:\\XQ 复用清单，以 GDCM/ITK/VTK/vtkvmtk-or-thinning/TetGen-MMG 和现有 XQ 宿主构成真实 CTA 到 GUI 的完整生产壳；整壳实机验收前不交付。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P0",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-07-12",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "feat/google-earth-shell-a",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "07-12-shell-reuse-v2-final-acceptance"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "Post-Shell-A v2 enhancement umbrella. Depends on 07-12-shell-a-v1-alignment and 07-11-vascular-imaging-foundation, never blocks Shell A v1, and does not deliver child results independently.",
+  "meta": {
+    "delivery_tier": "post-shell-a-v2",
+    "blocks_shell_a_v1": false,
+    "depends_on": [
+      "07-12-shell-a-v1-alignment",
+      "07-11-vascular-imaging-foundation"
+    ],
+    "fp_analysis": {
+      "completed": true,
+      "axioms_count": 5,
+      "assumptions_challenged": 9,
+      "ground_truths_count": 6,
+      "validation_passed": true
+    }
+  }
+}

@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "验收标准:Release+全量 ctest、0007 读成 scene、副作用别进 assert"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "校验命令/undo 复原语义、payload 复制保留 id 与来源"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "校验 core 未引入外部依赖、依赖方向未被破坏"}

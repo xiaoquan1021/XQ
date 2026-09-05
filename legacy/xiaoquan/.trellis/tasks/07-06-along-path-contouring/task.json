@@ -1,0 +1,28 @@
+{
+  "id": "along-path-contouring",
+  "name": "along-path-contouring",
+  "title": "沿血管中心线逐层轮廓提取(对标 SimVascular)",
+  "description": "把血管腔轮廓提取阶段从整卷阈值重构为沿中心线逐层描轮廓:断面重采样视图+沿路径滑条+断面2D轮廓生成(手绘圆/椭圆/多边形/样条+断面阈值+断面水平集/区域生长)+轮廓组绑路径+批量/多血管+放样打通",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P1",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-07-06",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "fix/xq-global-audit",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "07-06-pick-interaction-fix"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

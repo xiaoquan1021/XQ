@@ -1,0 +1,31 @@
+{
+  "id": "xq-rebuild",
+  "name": "xq-rebuild",
+  "title": "XQ 重建主线(路径→分割→建模→网格→流体→AI)",
+  "description": "血管影像建模+血流分析桌面应用重建的父任务。M0~M7 主线已完成(端到端跑通,详见 PROGRESS-archive.md),不补建历史子任务。当前在建生产级体网格 kernel 与存档持久化两条子线。库优先/无治理层/外部库当 kernel/依赖方向 app→services→adapters→io→core。",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": "XQ",
+  "priority": "P1",
+  "creator": "ocean",
+  "assignee": "ocean",
+  "createdAt": "2026-06-29",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "06-28-volume-mesh-kernel",
+    "06-28-payload-persistence",
+    "06-30-source-interface",
+    "06-30-scale-probe"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "Architecture layer confirms app/service/core boundaries and that this task should stay in build/test configuration scope."}
+{"file": ".trellis/spec/XQ/core/index.md", "reason": "Core index routes build and acceptance work to the relevant core specs."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Defines the verified Windows CMake, MSVC, Qt/VTK, and CTest environment used for validation."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Repeated hard-coded paths must be replaced by a single source of truth."}

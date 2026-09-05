@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "最终检查真实数据、XQ-owned 对象、0007 gate 与 Release full ctest。"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "核对 ON/OFF 构建、offscreen ctest 与真机运行配方。"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "独立检查 patient-space 对齐和唯一单位转换。"}
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "检查所有 failure matrix 的零副作用、relations 和 stale。"}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "检查销毁 cache 后重开仍从 asset/source 取得体素。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/decision-log.md", "reason": "检查验收后停止壳扩张且未冒称最终数字孪生。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/dicom-fixture-policy.md", "reason": "检查 fixture 许可去标识、真实数据门、ExternalSource 和 PHI。"}
+{"file": ".trellis/tasks/07-10-google-earth-shell-a/research/acceptance-matrix.md", "reason": "作为壳 A 最终 release gate 审计全部能力与诚实口径。"}

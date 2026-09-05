@@ -1,0 +1,4 @@
+{"file": ".trellis/tasks/06-30-m8b-2-lease-mmap/design.md", "reason": "M8b-2 架构 + 三个核心决策(段表存储/lease gating/体素链接入),worker 实现蓝图"}
+{"file": ".trellis/tasks/06-30-source-interface/design.md", "reason": "M8b-1 接口设计:MappedVoxelSource 要实现的 IVoxelSource 签名、borrow/own、keepalive 语义"}
+{"file": ".trellis/spec/XQ/core/source-interface.md", "reason": "Source 只读契约 + 两条不变量;lease 并发契约文本要在此强化(决策 B)"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "依赖方向 app→services→io→core;manager 在 services、MappedVoxelSource 在 io、绝不进 core,新增 services→io link 边须守此"}

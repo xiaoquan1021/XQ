@@ -1,0 +1,6 @@
+{"file": ".trellis/tasks/06-28-payload-persistence/prd.md", "reason": "AC1~AC10 是 check 的判定清单;铁律(io 零 VTK / 大数组不进主档 / 严格 minReader / 加载失败语义)逐条审计依据"}
+{"file": ".trellis/tasks/06-28-payload-persistence/design.md", "reason": "S1~S4 各自验收门 + D6 无头blob / D7 写事务 / D8 整体失败语义,check 须逐条核对未被实现偷工"}
+{"file": ".trellis/spec/XQ/architecture/index.md", "reason": "审计 io 零 VTK、公开 API 只用 XQ 自有类型(AC8)"}
+{"file": ".trellis/spec/XQ/core/acceptance.md", "reason": "验收原则(Release + 全量 ctest 全绿 + 数据进 XQ 自有对象才算);假绿抽查与副作用不进 assert 的判定基准(AC9)"}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "已实证构建/测试配方:vcvars64 + CMAKE_PREFIX_PATH + offscreen ctest;全新 build + 全量 ctest 的执行依据(AC9)"}
+{"file": ".trellis/spec/XQ/architecture/coordinate-and-units.md", "reason": "验证影像 geometry round-trip 保 coordSys/spacing/origin/direction 且缺失发诊断(AC6)"}

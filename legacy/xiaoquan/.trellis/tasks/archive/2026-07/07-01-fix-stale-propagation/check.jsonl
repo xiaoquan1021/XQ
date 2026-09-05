@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/XQ/core/command-and-scene.md", "reason": "Check transitive stale semantics, source non-stale invariant, and command/scene consistency."}
+{"file": ".trellis/spec/XQ/core/build-and-test.md", "reason": "Check required targeted and full Release ctest gates."}
